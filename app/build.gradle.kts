@@ -1,0 +1,16 @@
+plugins {
+    id("buildsrc.convention.kotlin-jvm")
+    alias(libs.plugins.kotlinPluginSerialization)
+    application
+}
+
+dependencies {
+    implementation(project(":konvo-core"))
+    implementation(project(":konvo-backend-mcp"))
+    implementation(project(":konvo-backend-ollama"))
+    implementation(project(":konvo-frontend-discord"))
+}
+
+application {
+    mainClass = "io.github.ptitjes.konvo.MainKt"
+}
