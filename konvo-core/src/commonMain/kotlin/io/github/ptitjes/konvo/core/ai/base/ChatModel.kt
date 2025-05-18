@@ -1,42 +1,65 @@
-package io.github.ptitjes.konvo.core
+package io.github.ptitjes.konvo.core.ai.base
 
-import io.github.ptitjes.konvo.core.spi.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import kotlin.contracts.*
 
-interface Model {
-    suspend fun preload()
+interface ChatModel {
     suspend fun chat(
-        context: List<ChatMessage>,
+        memoryId: Any,
+        userMessage: ChatMessage.User,
         vetoToolCalls: suspend (calls: List<VetoableToolCall>) -> Unit = {},
-    ): List<ChatMessage>
+    ): Flow<ChatMessage>
+
+    fun getChatMemory(memoryId: Any): ChatMemory?
+
+    fun evictChatMemory(memoryId: Any): Boolean
 }
 
 interface ModelBuilder {
-    fun tools(tools: List<Tool>)
+    fun chatMemory(memoryProvider: ChatMemoryProvider)
+    fun tools(toolSelector: ToolSelector)
+}
+
+typealias ChatMemoryProvider = ChatMemoryProviderScope.() -> ChatMemory
+
+interface ChatMemoryProviderScope {
+    val memoryId: Any
+}
+
+typealias ToolSelector = ToolSelectorScope.() -> List<Tool>?
+
+interface ToolSelectorScope {
+    val memoryId: Any
+    val userMessage: ChatMessage.User
 }
 
 @OptIn(ExperimentalContracts::class)
-fun buildModel(
+fun ChatModel(
     modelCard: ModelCard,
     builderAction: ModelBuilder.() -> Unit = {},
-): Model {
+): ChatModel {
     contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
 
     class ModelBuilderImpl : ModelBuilder {
-        var tools: List<Tool>? = null
+        var memoryProvider: ChatMemoryProvider? = null
+        var toolSelector: ToolSelector? = null
 
-        override fun tools(
-            tools: List<Tool>,
-        ) {
-            this.tools = tools
+        override fun chatMemory(memoryProvider: ChatMemoryProvider) {
+            this.memoryProvider = memoryProvider
         }
 
-        fun build(): DefaultModel {
-            return DefaultModel(
+        override fun tools(toolSelector: ToolSelector) {
+            this.toolSelector = toolSelector
+        }
+
+        fun build(): DefaultChatModel {
+            return DefaultChatModel(
                 modelCard = modelCard,
-                tools = tools,
+                memoryProvider = memoryProvider ?: { ObliviousChatMemory(memoryId) },
+                toolSelector = toolSelector ?: { null }
             )
         }
     }
@@ -44,50 +67,68 @@ fun buildModel(
     return ModelBuilderImpl().apply(builderAction).build()
 }
 
-private class DefaultModel(
+private class DefaultChatModel(
     private val modelCard: ModelCard,
-    private val tools: List<Tool>?,
-) : Model {
-    override suspend fun preload() {
-        modelCard.provider.preloadModel(modelCard)
-    }
-
+    private val memoryProvider: ChatMemoryProvider,
+    private val toolSelector: ToolSelector,
+) : ChatModel {
     override suspend fun chat(
-        context: List<ChatMessage>,
+        memoryId: Any,
+        userMessage: ChatMessage.User,
         vetoToolCalls: suspend (calls: List<VetoableToolCall>) -> Unit,
-    ): List<ChatMessage> {
-        val outgoingMessages = mutableListOf<ChatMessage>()
+    ): Flow<ChatMessage> = flow {
+        val scope = ChatScope(memoryId, userMessage)
+
+        val memory = getChatMemory(memoryId) ?: scope.memoryProvider().also { chatMemories.put(memoryId, it) }
+
+        val tools = scope.toolSelector()
+        println("====================== $tools")
+
+
+        memory.add(userMessage)
 
         do {
-            val newMessages = modelCard.provider.chat(modelCard, context + outgoingMessages, tools)
+            val newMessages = modelCard.provider.chat(modelCard, memory.messages, tools)
 
             var hadToolCalls = false
             for (message in newMessages) {
                 if (message !is ChatMessage.Assistant) continue
 
-                outgoingMessages.add(message)
+                memory.add(message)
+                emit(message)
 
                 val toolCalls = message.toolCalls
                 if (toolCalls != null) {
+                    if (tools == null) error("Received a tool call, but no tools were given")
                     hadToolCalls = true
 
                     val pendingCalls = toolCalls
                         .toPendingCalls()
-                        .validate()
+                        .validate(tools)
                         .waitForPermissions(vetoToolCalls)
                         .execute()
 
                     for (pendingCall in pendingCalls) {
                         if (pendingCall.result == null) error("Invalid state")
                         val toolMessage = ChatMessage.Tool(call = pendingCall.original, result = pendingCall.result)
-                        outgoingMessages.add(toolMessage)
+
+                        memory.add(toolMessage)
+                        emit(toolMessage)
                     }
                 }
             }
         } while (hadToolCalls)
-
-        return outgoingMessages
     }
+
+    private class ChatScope(
+        override val memoryId: Any,
+        override val userMessage: ChatMessage.User,
+    ) : ChatMemoryProviderScope, ToolSelectorScope
+
+    private val chatMemories = mutableMapOf<Any, ChatMemory>()
+
+    override fun getChatMemory(memoryId: Any): ChatMemory? = chatMemories[memoryId]
+    override fun evictChatMemory(memoryId: Any): Boolean = chatMemories.remove(memoryId) != null
 
     private data class PendingCall(
         val original: ToolCall,
@@ -97,10 +138,10 @@ private class DefaultModel(
 
     private fun List<ToolCall>.toPendingCalls(): List<PendingCall> = map { PendingCall(it) }
 
-    private fun List<PendingCall>.validate(): List<PendingCall> = map { it.validate() }
+    private fun List<PendingCall>.validate(tools: List<Tool>): List<PendingCall> = map { it.validate(tools) }
 
-    private fun PendingCall.validate(): PendingCall {
-        val tool = tools?.find { it.name == original.name }
+    private fun PendingCall.validate(tools: List<Tool>): PendingCall {
+        val tool = tools.find { it.name == original.name }
 
         // TODO sanitize and validate arguments
 
@@ -134,6 +175,7 @@ private class DefaultModel(
 
         if (vetoableCalls.isEmpty()) return this
 
+        @Suppress("AssignedValueIsNeverRead")
         remaining = vetoableCalls.toMutableList()
 
         vetoToolCalls.invoke(vetoableCalls)

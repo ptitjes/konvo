@@ -1,12 +1,11 @@
 package io.github.ptitjes.konvo.backend.ollama
 
-import io.github.ptitjes.konvo.core.spi.*
-import io.github.ptitjes.konvo.core.spi.Tool
-import io.github.ptitjes.konvo.core.spi.ToolCall
+import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.spi.Tool
+import io.github.ptitjes.konvo.core.ai.spi.ToolCall
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import org.nirmato.ollama.api.*
 import org.nirmato.ollama.client.ktor.*
@@ -61,17 +60,6 @@ class OllamaProvider(private val urlString: String) : ModelProvider {
         if (model.provider != this) error("This model is not provided by Ollama")
     }
 
-    override suspend fun preloadModel(modelCard: ModelCard) = withContext(Dispatchers.IO) {
-        checkModelProvider(modelCard)
-
-        ollamaClient.chatStream(
-            ChatRequest.Companion.chatRequest {
-                model(modelCard.name)
-                messages(listOf())
-            }
-        ).collect()
-    }
-
     override suspend fun chat(
         modelCard: ModelCard,
         context: List<ChatMessage>,
@@ -81,17 +69,19 @@ class OllamaProvider(private val urlString: String) : ModelProvider {
 
         if (tools != null && !modelCard.supportsTools) error("This model does not support tools")
 
-        val incomingContext = context.map { it.toOllamaMessage() }
+        val messages = context.map { it.toOllamaMessage() }
 
         val ollamaResponse = ollamaClient.chat(
             ChatRequest.Companion.chatRequest {
                 model(modelCard.name)
-                messages(incomingContext)
+                messages(messages)
                 if (tools != null) {
                     tools(tools.map { it.toOllamaToolSpecification() })
                 }
             }
         )
+
+        println("----------------> ${ollamaResponse.promptEvalCount};${ollamaResponse.evalCount}")
 
         val message = ollamaResponse.message ?: error("Model return an empty response")
         listOf(message.toKonvoMessage())

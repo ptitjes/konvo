@@ -1,51 +1,34 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.spi.*
+import io.github.ptitjes.konvo.core.ai.base.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 
 abstract class TurnBasedConversation(
     coroutineScope: CoroutineScope,
 ) : Conversation(coroutineScope) {
-    abstract fun buildModel(): Model
-    abstract fun buildSystemPrompt(): String
-    open fun buildInitialAssistantMessage(): String? = null
+    abstract fun buildModel(): ChatModel
+    open fun getInitialAssistantMessage(): String? = null
 
     init {
         startConversation()
     }
 
-    private val context = mutableListOf<ChatMessage>()
-
-    private fun addMessageToContext(message: ChatMessage) {
-        println(message)
-        context.add(message)
-    }
-
     private fun startConversation() = launch {
         val model = buildModel()
 
-        model.preload()
-
-        val message = ChatMessage.System(text = buildSystemPrompt())
-        addMessageToContext(message)
-
-        val assistantMessage = buildInitialAssistantMessage()
-        if (assistantMessage != null) {
-            addMessageToContext(ChatMessage.Assistant(text = assistantMessage))
-            sendAssistantEvent(AssistantEvent.Message(assistantMessage))
+        getInitialAssistantMessage()?.let {
+            sendAssistantEvent(AssistantEvent.Message(it))
         }
 
         while (isActive) {
-            val content = awaitUserEvent()
-            addMessageToContext(ChatMessage.User(text = content))
+            val userMessage = ChatMessage.User(text = awaitUserEvent())
 
             sendAssistantEvent(AssistantEvent.Processing)
-            val messages = model.chat(context) { calls ->
+            val messages = model.chat(userMessage) { calls ->
                 sendAssistantEvent(AssistantEvent.ToolUsePermission(calls))
             }
-            messages.forEach { message ->
-                addMessageToContext(message)
+            messages.collect { message ->
                 if (message is ChatMessage.Assistant) {
                     if (message.text.isNotBlank()) {
                         sendAssistantEvent(AssistantEvent.Message(message.text))

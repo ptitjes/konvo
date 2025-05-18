@@ -22,9 +22,13 @@ suspend fun MessageChannelBehavior.typingToggler(): TypingToggler = coroutineSco
             if (typingJob == null) {
                 type()
                 typingJob = coroutineScope.launch {
-                    while (true) {
-                        delay(8.seconds)
-                        type()
+                    try {
+                        while (true) {
+                            delay(8.seconds)
+                            type()
+                        }
+                    } finally {
+                        typingJob = null
                     }
                 }
             }

@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord.utils
 
-import io.github.ptitjes.konvo.core.spi.ModelCard
+import io.github.ptitjes.konvo.core.ai.spi.ModelCard
 import kotlin.math.*
 
 val ModelCard.shortName: String get() = name.removeSuffix(":latest")

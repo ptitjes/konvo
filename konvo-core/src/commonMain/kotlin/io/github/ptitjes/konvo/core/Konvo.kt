@@ -1,7 +1,10 @@
 package io.github.ptitjes.konvo.core
 
+import io.github.ptitjes.konvo.core.ai.spi.ModelCard
+import io.github.ptitjes.konvo.core.ai.spi.ModelProvider
+import io.github.ptitjes.konvo.core.ai.spi.Tool
+import io.github.ptitjes.konvo.core.ai.spi.ToolProvider
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.spi.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import kotlin.coroutines.*

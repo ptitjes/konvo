@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.base.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 import kotlin.random.*
 
@@ -8,18 +9,29 @@ class RoleplayingConversation(
     coroutineScope: CoroutineScope,
     override val configuration: RoleplayingModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
-    override fun buildModel() = buildModel(configuration.model)
+    override fun buildModel() = ChatModel(configuration.model) {
+        chatMemory {
+            MessageWindowChatMemory(
+                maxMessageCount = 10,
+                memoryStore = InMemoryChatMemoryStore(),
+            ).also { memory ->
+                memory.add(ChatMessage.System(text = buildSystemPrompt()))
+
+                getInitialAssistantMessage()?.let {
+                    memory.add(ChatMessage.Assistant(text = it))
+                }
+            }
+        }
+    }
 
     private val character = configuration.character
     private val userName = configuration.userName
 
-    override fun buildSystemPrompt(): String {
+    fun buildSystemPrompt(): String {
         return character.systemPrompt.replaceTags(userName, character.name)
     }
 
-    override val hasInitialAssistantMessage: Boolean get() = true
-
-    override fun buildInitialAssistantMessage(): String? {
+    override fun getInitialAssistantMessage(): String? {
         val greetings = character.greetings
         val greetingIndex = configuration.characterGreetingIndex ?: Random.Default.nextInt(0, greetings.size)
         val selectedGreeting = greetings[greetingIndex]

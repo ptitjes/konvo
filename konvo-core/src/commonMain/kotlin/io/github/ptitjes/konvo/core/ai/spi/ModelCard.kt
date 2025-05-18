@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.spi
+package io.github.ptitjes.konvo.core.ai.spi
 
 data class ModelCard(
     val provider: ModelProvider,

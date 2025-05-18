@@ -1,8 +1,9 @@
 package io.github.ptitjes.konvo.frontend.discord
 
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.spi.ModelCard
+import io.github.ptitjes.konvo.core.ai.spi.Tool
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.spi.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 data class ConversationBuilder(

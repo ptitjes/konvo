@@ -1,11 +1,9 @@
-package io.github.ptitjes.konvo.core.spi
+package io.github.ptitjes.konvo.core.ai.spi
 
 interface ModelProvider {
     val name: String
 
     suspend fun queryModels(): List<ModelCard>
-
-    suspend fun preloadModel(modelCard: ModelCard)
 
     suspend fun chat(
         modelCard: ModelCard,

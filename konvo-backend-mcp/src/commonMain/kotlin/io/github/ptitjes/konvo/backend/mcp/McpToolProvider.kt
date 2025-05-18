@@ -1,7 +1,8 @@
 package io.github.ptitjes.konvo.backend.mcp
 
-import io.github.ptitjes.konvo.core.spi.*
-import io.github.ptitjes.konvo.core.spi.Tool
+import io.github.ptitjes.konvo.core.ai.spi.Tool
+import io.github.ptitjes.konvo.core.ai.spi.ToolParameters
+import io.github.ptitjes.konvo.core.ai.spi.ToolProvider
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.serialization.json.*

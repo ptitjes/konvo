@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.base.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
@@ -9,11 +10,19 @@ class QuestionAnswerConversation(
     coroutineScope: CoroutineScope,
     override val configuration: QuestionAnswerModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
-    override fun buildModel() = buildModel(configuration.model) {
-        tools(configuration.tools)
+    override fun buildModel() = ChatModel(configuration.model) {
+        chatMemory {
+            MessageWindowChatMemory(
+                maxMessageCount = 10,
+                memoryStore = InMemoryChatMemoryStore(),
+            ).also { memory ->
+                memory.add(ChatMessage.System(text = buildSystemPrompt()))
+            }
+        }
+        tools { configuration.tools }
     }
 
-    override fun buildSystemPrompt(): String = buildString {
+    fun buildSystemPrompt(): String = buildString {
         appendLine(
             """
             You are a helpful assistant and an expert in function composition.

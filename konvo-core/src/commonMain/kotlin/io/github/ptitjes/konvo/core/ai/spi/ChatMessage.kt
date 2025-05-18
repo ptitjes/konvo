@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.spi
+package io.github.ptitjes.konvo.core.ai.spi
 
 sealed interface ChatMessage {
     data class System(
@@ -12,7 +12,9 @@ sealed interface ChatMessage {
     data class Assistant(
         val text: String,
         val toolCalls: List<ToolCall>? = null,
-    ) : ChatMessage
+    ) : ChatMessage {
+        fun hasToolCalls() = !toolCalls.isNullOrEmpty()
+    }
 
     data class Tool(
         val call: ToolCall,

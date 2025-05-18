@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.spi.ModelCard
+import io.github.ptitjes.konvo.core.ai.spi.ModelCard
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
 

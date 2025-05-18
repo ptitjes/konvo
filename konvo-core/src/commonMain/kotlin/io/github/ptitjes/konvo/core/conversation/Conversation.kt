@@ -1,6 +1,8 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.spi.*
+import io.github.ptitjes.konvo.core.ai.spi.ToolCall
+import io.github.ptitjes.konvo.core.ai.spi.ToolCallResult
+import io.github.ptitjes.konvo.core.ai.spi.VetoableToolCall
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlin.coroutines.*

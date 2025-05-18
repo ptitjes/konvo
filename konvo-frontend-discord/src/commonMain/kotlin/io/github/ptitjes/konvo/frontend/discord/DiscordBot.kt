@@ -15,8 +15,8 @@ import dev.kord.rest.builder.component.*
 import dev.kord.rest.builder.interaction.*
 import dev.kord.rest.builder.message.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.spi.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
@@ -148,8 +148,18 @@ class KonvoBot(
                         content.forEach { channel.createMessage(it) }
                     }
 
-                    is AssistantEvent.ToolUsePermission -> channel.askForToolUse(event)
-                    is AssistantEvent.ToolUseResult -> channel.notifyToolUse(event)
+                    is AssistantEvent.ToolUsePermission -> {
+                        assistantProcessing.stop()
+                        channel.askForToolUse(event) {
+                            assistantProcessing.start()
+                        }
+                    }
+
+                    is AssistantEvent.ToolUseResult -> {
+                        assistantProcessing.stop()
+                        channel.notifyToolUse(event)
+                        assistantProcessing.start()
+                    }
                 }
             }
         }
@@ -200,10 +210,12 @@ private fun MessageBuilder.conversationStartMessage(
         when (configuration) {
             is QuestionAnswerModeConfiguration -> {
                 val modelName = configuration.model.shortName
+                val toolNames = configuration.tools.map { it.name }
 
                 textDisplay {
                     content = buildString {
                         appendLine("**Model:** $modelName")
+                        appendLine("**Tools:** ${toolNames.joinToString()}")
                     }
                 }
             }
@@ -248,15 +260,23 @@ private fun MessageBuilder.conversationStartMessage(
     }
 }
 
-private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.ToolUsePermission) {
+private suspend fun MessageChannelBehavior.askForToolUse(
+    event: AssistantEvent.ToolUsePermission,
+    onAllCallsAcknowledged: suspend () -> Unit,
+) {
     val callsToCheck = event.calls.toMutableList()
 
     createEphemeralMessage {
+        suspend fun finished() {
+            delete()
+            onAllCallsAcknowledged()
+        }
+
         suspend fun HandlerScope<*>.allowToolCall(call: VetoableToolCall, allowed: Boolean) {
             acknowledge()
             if (allowed) call.allow() else call.reject()
             callsToCheck.remove(call)
-            if (callsToCheck.isEmpty()) delete() else update()
+            if (callsToCheck.isEmpty()) finished() else update()
         }
 
         container {
