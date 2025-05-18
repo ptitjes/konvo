@@ -1,8 +1,7 @@
 package io.github.ptitjes.konvo.backend.mcp
 
+import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.ai.spi.Tool
-import io.github.ptitjes.konvo.core.ai.spi.ToolParameters
-import io.github.ptitjes.konvo.core.ai.spi.ToolProvider
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.serialization.json.*
@@ -32,15 +31,14 @@ private fun buildKonvoTool(
     tool: McpTool,
     permissions: ToolPermissions?,
 ): Tool {
-    val fullName = clientName + "_" + tool.name
     return Tool(
-        name = fullName,
+        name = tool.name,
         description = tool.description ?: "",
         parameters = ToolParameters(
             properties = tool.inputSchema.properties.mapValues { (_, property) -> property.jsonObject },
             required = tool.inputSchema.required ?: emptyList(),
         ),
-        askPermission = doesToolRequirePermission(fullName, permissions),
+        askPermission = doesToolRequirePermission(clientName, tool.name, permissions),
         evaluator = { arguments ->
             val result = client.callTool(tool.name, arguments)
             val content = result?.content?.joinToString("\n") { (it as? TextContent)?.text ?: "" } ?: ""
@@ -50,12 +48,15 @@ private fun buildKonvoTool(
     )
 }
 
-private fun doesToolRequirePermission(toolName: String, permissions: ToolPermissions?): Boolean {
+private fun doesToolRequirePermission(clientName: String, toolName: String, permissions: ToolPermissions?): Boolean {
     if (permissions == null) return true
+
+    val fullName = "$clientName:$toolName"
     for (rule in permissions.rules ?: emptyList()) {
-        if (rule.pattern.matches(toolName)) {
+        if (rule.pattern.matches(fullName)) {
             return rule.permission == ToolPermission.ASK
         }
     }
+
     return permissions.default == ToolPermission.ASK
 }
