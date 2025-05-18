@@ -11,14 +11,19 @@ class QuestionAnswerConversation(
     override val configuration: QuestionAnswerModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
     override fun buildModel() = ChatModel(configuration.model) {
+        val contextSize = configuration.model.contextSize?.toInt()
+        val evictionStrategy = if (contextSize != null) TokenWindowEvictionStrategy(contextSize)
+        else MessageWindowEvictionStrategy(20)
+
         chatMemory {
-            MessageWindowChatMemory(
-                maxMessageCount = 10,
+            DefaultChatMemory(
                 memoryStore = InMemoryChatMemoryStore(),
-            ).also { memory ->
-                memory.add(ChatMessage.System(text = buildSystemPrompt()))
-            }
+                evictionStrategy = evictionStrategy
+            )
         }
+
+        prompt { listOf(ChatMessage.System(text = buildSystemPrompt())) }
+
         tools { configuration.tools }
     }
 

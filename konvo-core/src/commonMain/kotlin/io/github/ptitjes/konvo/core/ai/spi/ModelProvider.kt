@@ -5,9 +5,14 @@ interface ModelProvider {
 
     suspend fun queryModels(): List<ModelCard>
 
+    suspend fun withTokenCount(
+        modelCard: ModelCard,
+        message: ChatMessage,
+    ): ChatMessage
+
     suspend fun chat(
         modelCard: ModelCard,
         context: List<ChatMessage>,
         tools: List<Tool>? = null,
-    ): List<ChatMessage>
+    ): ChatMessage.Assistant
 }
