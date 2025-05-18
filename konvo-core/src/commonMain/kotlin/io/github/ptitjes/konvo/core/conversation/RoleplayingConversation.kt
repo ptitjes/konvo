@@ -10,16 +10,21 @@ class RoleplayingConversation(
     override val configuration: RoleplayingModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
     override fun buildModel() = ChatModel(configuration.model) {
-        chatMemory {
-            MessageWindowChatMemory(
-                maxMessageCount = 10,
-                memoryStore = InMemoryChatMemoryStore(),
-            ).also { memory ->
-                memory.add(ChatMessage.System(text = buildSystemPrompt()))
+        val contextSize = configuration.model.contextSize?.toInt()
+        val evictionStrategy = if (contextSize != null) TokenWindowEvictionStrategy(contextSize)
+        else MessageWindowEvictionStrategy(20)
 
-                getInitialAssistantMessage()?.let {
-                    memory.add(ChatMessage.Assistant(text = it))
-                }
+        chatMemory {
+            DefaultChatMemory(
+                memoryStore = InMemoryChatMemoryStore(),
+                evictionStrategy = evictionStrategy,
+            )
+        }
+
+        prompt {
+            buildList {
+                add(ChatMessage.System(text = buildSystemPrompt()))
+                getInitialAssistantMessage()?.let { add(ChatMessage.Assistant(text = it)) }
             }
         }
     }

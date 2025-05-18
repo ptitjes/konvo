@@ -20,6 +20,7 @@ interface ChatModel {
 
 interface ModelBuilder {
     fun chatMemory(memoryProvider: ChatMemoryProvider)
+    fun prompt(promptProvider: PromptProvider)
     fun tools(toolSelector: ToolSelector)
 }
 
@@ -27,6 +28,13 @@ typealias ChatMemoryProvider = ChatMemoryProviderScope.() -> ChatMemory
 
 interface ChatMemoryProviderScope {
     val memoryId: Any
+}
+
+typealias PromptProvider = PromptProviderScope.() -> List<ChatMessage>
+
+interface PromptProviderScope {
+    val memoryId: Any
+    val userMessage: ChatMessage.User
 }
 
 typealias ToolSelector = ToolSelectorScope.() -> List<Tool>?
@@ -45,10 +53,15 @@ fun ChatModel(
 
     class ModelBuilderImpl : ModelBuilder {
         var memoryProvider: ChatMemoryProvider? = null
+        var promptProvider: PromptProvider? = null
         var toolSelector: ToolSelector? = null
 
         override fun chatMemory(memoryProvider: ChatMemoryProvider) {
             this.memoryProvider = memoryProvider
+        }
+
+        override fun prompt(promptProvider: PromptProvider) {
+            this.promptProvider = promptProvider
         }
 
         override fun tools(toolSelector: ToolSelector) {
@@ -59,6 +72,7 @@ fun ChatModel(
             return DefaultChatModel(
                 modelCard = modelCard,
                 memoryProvider = memoryProvider ?: { ObliviousChatMemory(memoryId) },
+                promptProvider = promptProvider ?: { listOf() },
                 toolSelector = toolSelector ?: { null }
             )
         }
@@ -70,6 +84,7 @@ fun ChatModel(
 private class DefaultChatModel(
     private val modelCard: ModelCard,
     private val memoryProvider: ChatMemoryProvider,
+    private var promptProvider: PromptProvider,
     private val toolSelector: ToolSelector,
 ) : ChatModel {
     override suspend fun chat(
@@ -79,42 +94,43 @@ private class DefaultChatModel(
     ): Flow<ChatMessage> = flow {
         val scope = ChatScope(memoryId, userMessage)
 
-        val memory = getChatMemory(memoryId) ?: scope.memoryProvider().also { chatMemories.put(memoryId, it) }
+        val memory = getChatMemory(memoryId) ?: scope.memoryProvider().also { memory ->
+            chatMemories.put(memoryId, memory)
+
+            val prompt = scope.promptProvider()
+            for (message in prompt) {
+                memory.add(modelCard.provider.withTokenCount(modelCard, message))
+            }
+        }
 
         val tools = scope.toolSelector()
-        println("====================== $tools")
 
-
-        memory.add(userMessage)
+        memory.add(modelCard.provider.withTokenCount(modelCard, userMessage))
 
         do {
-            val newMessages = modelCard.provider.chat(modelCard, memory.messages, tools)
+            val assistantMessage = modelCard.provider.chat(modelCard, memory.messages, tools)
+
+            memory.add(assistantMessage)
+            emit(assistantMessage)
 
             var hadToolCalls = false
-            for (message in newMessages) {
-                if (message !is ChatMessage.Assistant) continue
+            val toolCalls = assistantMessage.toolCalls
+            if (toolCalls != null) {
+                if (tools == null) error("Received a tool call, but no tools were given")
+                hadToolCalls = true
 
-                memory.add(message)
-                emit(message)
+                val pendingCalls = toolCalls
+                    .toPendingCalls()
+                    .validate(tools)
+                    .waitForPermissions(vetoToolCalls)
+                    .execute()
 
-                val toolCalls = message.toolCalls
-                if (toolCalls != null) {
-                    if (tools == null) error("Received a tool call, but no tools were given")
-                    hadToolCalls = true
+                for (pendingCall in pendingCalls) {
+                    if (pendingCall.result == null) error("Invalid state")
+                    val toolMessage = ChatMessage.Tool(call = pendingCall.original, result = pendingCall.result)
 
-                    val pendingCalls = toolCalls
-                        .toPendingCalls()
-                        .validate(tools)
-                        .waitForPermissions(vetoToolCalls)
-                        .execute()
-
-                    for (pendingCall in pendingCalls) {
-                        if (pendingCall.result == null) error("Invalid state")
-                        val toolMessage = ChatMessage.Tool(call = pendingCall.original, result = pendingCall.result)
-
-                        memory.add(toolMessage)
-                        emit(toolMessage)
-                    }
+                    memory.add(modelCard.provider.withTokenCount(modelCard, toolMessage))
+                    emit(toolMessage)
                 }
             }
         } while (hadToolCalls)
@@ -123,7 +139,7 @@ private class DefaultChatModel(
     private class ChatScope(
         override val memoryId: Any,
         override val userMessage: ChatMessage.User,
-    ) : ChatMemoryProviderScope, ToolSelectorScope
+    ) : ChatMemoryProviderScope, PromptProviderScope, ToolSelectorScope
 
     private val chatMemories = mutableMapOf<Any, ChatMemory>()
 

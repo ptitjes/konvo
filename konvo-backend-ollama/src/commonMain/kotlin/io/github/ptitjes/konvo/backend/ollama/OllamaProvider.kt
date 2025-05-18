@@ -8,6 +8,8 @@ import io.ktor.client.plugins.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import org.nirmato.ollama.api.*
+import org.nirmato.ollama.api.ChatRequest.Companion.chatRequest
+import org.nirmato.ollama.api.EmbedRequest.Companion.embedRequest
 import org.nirmato.ollama.client.ktor.*
 import org.nirmato.ollama.api.Tool as OTool
 import org.nirmato.ollama.api.ToolCall as OToolCall
@@ -60,11 +62,48 @@ class OllamaProvider(private val urlString: String) : ModelProvider {
         if (model.provider != this) error("This model is not provided by Ollama")
     }
 
+    override suspend fun withTokenCount(
+        modelCard: ModelCard,
+        message: ChatMessage,
+    ): ChatMessage {
+        if (message is ChatMessage.Assistant) {
+            if (message.metadata == null) error("Assistant message should already have metadata")
+            return message
+        }
+
+        val text = when (message) {
+            is ChatMessage.System -> message.text
+            is ChatMessage.User -> message.text
+            is ChatMessage.Tool -> message.result.contentString(message.call)
+            else -> error("Invalid state")
+        }
+
+        // FIXME we temporarily use embedding generation to count the tokens
+        // Can be fixed when https://github.com/ollama/ollama/issues/3582 is closed
+        val response = ollamaClient.generateEmbed(
+            embedRequest {
+                model(modelCard.name)
+                this.input(EmbeddedInput.EmbeddedText(text))
+            }
+        )
+
+        // TODO determine if these fields are always set
+        val promptEvalCount = response.promptEvalCount!!
+        val metadata = ChatMessage.Metadata(promptEvalCount)
+
+        return when (message) {
+            is ChatMessage.System -> message.copy(metadata = metadata)
+            is ChatMessage.User -> message.copy(metadata = metadata)
+            is ChatMessage.Tool -> message.copy(metadata = metadata)
+            else -> error("Invalid state")
+        }
+    }
+
     override suspend fun chat(
         modelCard: ModelCard,
         context: List<ChatMessage>,
         tools: List<Tool>?,
-    ): List<ChatMessage> = withContext(Dispatchers.IO) {
+    ): ChatMessage.Assistant = withContext(Dispatchers.IO) {
         checkModelProvider(modelCard)
 
         if (tools != null && !modelCard.supportsTools) error("This model does not support tools")
@@ -72,7 +111,7 @@ class OllamaProvider(private val urlString: String) : ModelProvider {
         val messages = context.map { it.toOllamaMessage() }
 
         val ollamaResponse = ollamaClient.chat(
-            ChatRequest.Companion.chatRequest {
+            chatRequest {
                 model(modelCard.name)
                 messages(messages)
                 if (tools != null) {
@@ -81,24 +120,22 @@ class OllamaProvider(private val urlString: String) : ModelProvider {
             }
         )
 
-        println("----------------> ${ollamaResponse.promptEvalCount};${ollamaResponse.evalCount}")
+        val message = ollamaResponse.message ?: error("Model returned an empty response")
+        if (message.role != Role.ASSISTANT) error("Model did not return a message with assistant role")
 
-        val message = ollamaResponse.message ?: error("Model return an empty response")
-        listOf(message.toKonvoMessage())
-    }
+        // TODO determine if these fields are always set
+        val evalCount = ollamaResponse.evalCount!!
 
-
-    private fun Message.toKonvoMessage(): ChatMessage = when (role) {
-        Role.ASSISTANT -> ChatMessage.Assistant(
-            text = content, toolCalls = tools?.map {
+        ChatMessage.Assistant(
+            text = message.content,
+            toolCalls = message.tools?.map {
                 ToolCall(
                     name = it.function.name,
                     arguments = it.function.arguments,
                 )
-            }
+            },
+            metadata = ChatMessage.Metadata(tokenCount = evalCount),
         )
-
-        else -> error("Illegal state")
     }
 
     private fun ChatMessage.toOllamaMessage(): Message = when (this) {
