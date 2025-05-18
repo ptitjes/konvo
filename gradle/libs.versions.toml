@@ -12,6 +12,13 @@ ollama = "0.1.2-SNAPSHOT"
 
 kord = "feat-components-v2-didier-SNAPSHOT"
 
+# For tools
+shadow = "9.0.0-beta13"
+kotlinxCli = "0.3.6"
+slf4j = "2.0.17"
+ksoup = "0.2.3"
+flexmark = "0.64.8"
+
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
@@ -22,6 +29,7 @@ kotlinxIoCore = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref 
 ktorClientContentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktorSerializationKotlinxJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktorClientLogging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktorClientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
@@ -30,9 +38,18 @@ ollama = { module = "org.nirmato.ollama:nirmato-ollama-client-ktor", version.ref
 
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
 
+# For tools
+kotlinxCli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version.ref = "kotlinxCli" }
+slf4jNop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+ksoup = { module = "com.fleeksoft.ksoup:ksoup-kotlinx", version.ref = "ksoup" }
+flexmarkHtmlMarkdownConverter = { module = "com.vladsch.flexmark:flexmark-html2md-converter", version.ref = "flexmark" }
+
 [bundles]
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines", "kotlinxIoCore"]
-ktorClient = ["ktorClientCore", "ktorClientContentNegotiation", "ktorSerializationKotlinxJson"]
+ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiation", "ktorSerializationKotlinxJson"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+# For tools
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

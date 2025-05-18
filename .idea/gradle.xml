@@ -27,6 +27,7 @@
             <option value="$PROJECT_DIR$/konvo-backend-ollama" />
             <option value="$PROJECT_DIR$/konvo-core" />
             <option value="$PROJECT_DIR$/konvo-frontend-discord" />
+            <option value="$PROJECT_DIR$/konvo-tool-web" />
           </set>
         </option>
       </GradleProjectSettings>
