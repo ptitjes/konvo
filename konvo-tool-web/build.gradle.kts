@@ -50,3 +50,7 @@ tasks.named<ShadowJar>("shadowJar") {
         attributes["Main-Class"] = "io.github.ptitjes.konvo.tool.web.MainKt"
     }
 }
+
+tasks.withType<Sync> {
+    destinationDir = File("/opt/konvo/mcp-servers/konvo-tool-web")
+}

@@ -1,7 +1,7 @@
 # Konvo Sample Application
 
 1. Create a `data` directory. You can put character cards in the `characters` subdirectory.
-2. Create a `konvo.json` file, similar to the following:
+2. Create a `config/konvo.json` file, similar to the following:
    ```json
    {
      "dataDirectory": "./data",

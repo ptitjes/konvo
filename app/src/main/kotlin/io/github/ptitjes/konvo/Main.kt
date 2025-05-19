@@ -7,7 +7,7 @@ import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.io.files.*
 
 suspend fun main() {
-    val configuration = KonvoAppConfiguration.readConfiguration(Path("konvo.json"))
+    val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json"))
 
     val mcpServersManager = McpServersManager(
         specifications = configuration.mcp.servers,

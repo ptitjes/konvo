@@ -12,5 +12,21 @@ dependencies {
 }
 
 application {
+    applicationName = "konvo"
     mainClass = "io.github.ptitjes.konvo.MainKt"
+}
+
+distributions {
+    main {
+        distributionBaseName = "konvo"
+    }
+}
+
+tasks.withType<Sync> {
+    destinationDir = File("/opt/konvo")
+    preserve {
+        include("data/**")
+        include("config/**")
+        include("mcp-servers/**")
+    }
 }
