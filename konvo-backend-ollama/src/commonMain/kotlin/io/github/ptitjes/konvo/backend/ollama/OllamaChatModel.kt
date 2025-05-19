@@ -83,8 +83,10 @@ internal class OllamaChatModel(
                     arguments = it.function.arguments,
                 )
             },
-            metadata = ChatMessage.Metadata(tokenCount = evalCount),
-        )
+        ).maybeFixToolCalls(tools = tools)
+            // Note that the token count will be wrong if the tool call has been fixed
+            // This should not have a big impact though
+            .copy(metadata = ChatMessage.Metadata(tokenCount = evalCount))
     }
 
     private fun ChatMessage.toOllamaMessage(): Message = when (this) {
