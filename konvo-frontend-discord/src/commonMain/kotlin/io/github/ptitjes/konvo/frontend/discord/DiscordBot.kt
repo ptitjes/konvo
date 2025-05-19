@@ -209,7 +209,7 @@ private fun MessageBuilder.conversationStartMessage(
 
         when (configuration) {
             is QuestionAnswerModeConfiguration -> {
-                val modelName = configuration.model.shortName
+                val modelName = configuration.modelCard.shortName
                 val toolNames = configuration.tools.map { it.name }
 
                 textDisplay {
@@ -221,7 +221,7 @@ private fun MessageBuilder.conversationStartMessage(
             }
 
             is RoleplayingModeConfiguration -> {
-                val modelName = configuration.model.shortName
+                val modelName = configuration.modelCard.shortName
                 val characterName = configuration.character.name
                 val characterUrl = configuration.character.avatarUrl
                 val userName = configuration.userName

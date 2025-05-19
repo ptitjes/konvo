@@ -12,12 +12,12 @@ sealed interface ConversationModeConfiguration
 
 data class QuestionAnswerModeConfiguration(
     val tools: List<Tool>,
-    val model: ModelCard,
+    val modelCard: ModelCard,
     val customSystemPrompt: String?,
 ) : ConversationModeConfiguration
 
 data class RoleplayingModeConfiguration(
-    val model: ModelCard,
+    val modelCard: ModelCard,
     val character: Character,
     val characterGreetingIndex: Int?,
     val userName: String,

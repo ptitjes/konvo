@@ -10,8 +10,8 @@ class QuestionAnswerConversation(
     coroutineScope: CoroutineScope,
     override val configuration: QuestionAnswerModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
-    override fun buildModel() = ChatModel(configuration.model) {
-        val contextSize = configuration.model.contextSize?.toInt()
+    override fun buildChatBot() = ChatBot(configuration.modelCard) {
+        val contextSize = configuration.modelCard.contextSize?.toInt()
         val evictionStrategy = if (contextSize != null) TokenWindowEvictionStrategy(contextSize)
         else MessageWindowEvictionStrategy(20)
 

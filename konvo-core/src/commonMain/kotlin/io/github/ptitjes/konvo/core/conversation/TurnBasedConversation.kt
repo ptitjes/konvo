@@ -7,7 +7,7 @@ import kotlinx.coroutines.*
 abstract class TurnBasedConversation(
     coroutineScope: CoroutineScope,
 ) : Conversation(coroutineScope) {
-    abstract fun buildModel(): ChatModel
+    abstract fun buildChatBot(): ChatBot
     open fun getInitialAssistantMessage(): String? = null
 
     init {
@@ -15,7 +15,7 @@ abstract class TurnBasedConversation(
     }
 
     private fun startConversation() = launch {
-        val model = buildModel()
+        val model = buildChatBot()
 
         getInitialAssistantMessage()?.let {
             sendAssistantEvent(AssistantEvent.Message(it))

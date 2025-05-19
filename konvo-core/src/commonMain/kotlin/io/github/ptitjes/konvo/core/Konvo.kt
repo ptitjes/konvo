@@ -69,7 +69,7 @@ class Konvo(
     private lateinit var _characters: List<Character>;
 
     suspend fun init() {
-        _models = configuration.modelProviders.flatMap { it.queryModels() }
+        _models = configuration.modelProviders.flatMap { it.queryModelCards() }
         _tools = configuration.toolProviders.flatMap { it.queryTools() }
         _characters = loadCharacters()
     }

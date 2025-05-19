@@ -38,7 +38,7 @@ data class QuestionAnswerModeBuilder(
 
         return QuestionAnswerModeConfiguration(
             tools = tools,
-            model = model,
+            modelCard = model,
             customSystemPrompt = customSystemPrompt,
         )
     }
@@ -59,7 +59,7 @@ data class RoleplayingModeBuilder(
             error("Conversation configuration is incomplete")
 
         return RoleplayingModeConfiguration(
-            model = model,
+            modelCard = model,
             character = character,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import kotlin.contracts.*
 
-interface ChatModel {
+interface ChatBot {
     suspend fun chat(
         memoryId: Any,
         userMessage: ChatMessage.User,
@@ -18,7 +18,7 @@ interface ChatModel {
     fun evictChatMemory(memoryId: Any): Boolean
 }
 
-interface ModelBuilder {
+interface ChatBotBuilder {
     fun chatMemory(memoryProvider: ChatMemoryProvider)
     fun prompt(promptProvider: PromptProvider)
     fun tools(toolSelector: ToolSelector)
@@ -45,13 +45,24 @@ interface ToolSelectorScope {
 }
 
 @OptIn(ExperimentalContracts::class)
-fun ChatModel(
+fun ChatBot(
     modelCard: ModelCard,
-    builderAction: ModelBuilder.() -> Unit = {},
-): ChatModel {
+    builderAction: ChatBotBuilder.() -> Unit = {},
+): ChatBot {
     contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
 
-    class ModelBuilderImpl : ModelBuilder {
+    val chatModel = modelCard.provider.newChatModel(modelCard)
+    return ChatBot(chatModel, builderAction)
+}
+
+@OptIn(ExperimentalContracts::class)
+fun ChatBot(
+    model: ChatModel,
+    builderAction: ChatBotBuilder.() -> Unit = {},
+): ChatBot {
+    contract { callsInPlace(builderAction, InvocationKind.EXACTLY_ONCE) }
+
+    class ChatBotBuilderImpl : ChatBotBuilder {
         var memoryProvider: ChatMemoryProvider? = null
         var promptProvider: PromptProvider? = null
         var toolSelector: ToolSelector? = null
@@ -68,9 +79,9 @@ fun ChatModel(
             this.toolSelector = toolSelector
         }
 
-        fun build(): DefaultChatModel {
-            return DefaultChatModel(
-                modelCard = modelCard,
+        fun build(): DefaultChatBot {
+            return DefaultChatBot(
+                model = model,
                 memoryProvider = memoryProvider ?: { ObliviousChatMemory(memoryId) },
                 promptProvider = promptProvider ?: { listOf() },
                 toolSelector = toolSelector ?: { null }
@@ -78,37 +89,37 @@ fun ChatModel(
         }
     }
 
-    return ModelBuilderImpl().apply(builderAction).build()
+    return ChatBotBuilderImpl().apply(builderAction).build()
 }
 
-private class DefaultChatModel(
-    private val modelCard: ModelCard,
+private class DefaultChatBot(
+    private val model: ChatModel,
     private val memoryProvider: ChatMemoryProvider,
     private var promptProvider: PromptProvider,
     private val toolSelector: ToolSelector,
-) : ChatModel {
+) : ChatBot {
     override suspend fun chat(
         memoryId: Any,
         userMessage: ChatMessage.User,
         vetoToolCalls: suspend (calls: List<VetoableToolCall>) -> Unit,
     ): Flow<ChatMessage> = flow {
-        val scope = ChatScope(memoryId, userMessage)
+        val scope = ChatBotScope(memoryId, userMessage)
 
         val memory = getChatMemory(memoryId) ?: scope.memoryProvider().also { memory ->
             chatMemories.put(memoryId, memory)
 
             val prompt = scope.promptProvider()
             for (message in prompt) {
-                memory.add(modelCard.provider.withTokenCount(modelCard, message))
+                memory.add(model.withTokenCount(message))
             }
         }
 
         val tools = scope.toolSelector()
 
-        memory.add(modelCard.provider.withTokenCount(modelCard, userMessage))
+        memory.add(model.withTokenCount(userMessage))
 
         do {
-            val assistantMessage = modelCard.provider.chat(modelCard, memory.messages, tools)
+            val assistantMessage = model.chat(memory.messages, tools)
 
             memory.add(assistantMessage)
             emit(assistantMessage)
@@ -129,14 +140,14 @@ private class DefaultChatModel(
                     if (pendingCall.result == null) error("Invalid state")
                     val toolMessage = ChatMessage.Tool(call = pendingCall.original, result = pendingCall.result)
 
-                    memory.add(modelCard.provider.withTokenCount(modelCard, toolMessage))
+                    memory.add(model.withTokenCount(toolMessage))
                     emit(toolMessage)
                 }
             }
         } while (hadToolCalls)
     }
 
-    private class ChatScope(
+    private class ChatBotScope(
         override val memoryId: Any,
         override val userMessage: ChatMessage.User,
     ) : ChatMemoryProviderScope, PromptProviderScope, ToolSelectorScope
