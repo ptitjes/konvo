@@ -21,7 +21,8 @@ fun Server.addKonvoWebTools() {
     addTool(
         name = "wikipedia_search",
         description = """
-            Search for a Wikipedia page.
+            Search Wikipedia for pages that match the given query.
+            Use this function if you need to find or search for a Wikipedia page.
             The search results are returned in JSON format with the following schema:
             ${Json.encodeToString(Wikipedia.searchOutputSchema)}
             You can actually use the `key` property of a returned search result as input to the `wikipedia_get_page` tool.  
@@ -55,9 +56,10 @@ fun Server.addKonvoWebTools() {
     }
 
     addTool(
-        name = "wikipedia_get_page",
+        name = "wikipedia_fetch_page",
         description = """
             Fetch the content of a Wikipedia page by the given key.
+            Use this function if you need to fetch or get a specific Wikipedia page.
             A Wikipedia page key is a list of words separated by underscore (`_`) characters.
             You can find page keys in the result of a `wikipedia_search` tool call.
         """.trimIndent(),
