@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.backend.ollama
 
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.spi.Format
 import io.github.ptitjes.konvo.core.ai.spi.Tool
 import io.github.ptitjes.konvo.core.ai.spi.ToolCall
 import kotlinx.coroutines.*
@@ -8,6 +9,7 @@ import org.nirmato.ollama.api.*
 import org.nirmato.ollama.api.ChatRequest.Companion.chatRequest
 import org.nirmato.ollama.api.EmbedRequest.Companion.embedRequest
 import org.nirmato.ollama.client.ktor.*
+import org.nirmato.ollama.api.Format as OFormat
 import org.nirmato.ollama.api.Tool as OTool
 import org.nirmato.ollama.api.ToolCall as OToolCall
 
@@ -54,6 +56,7 @@ internal class OllamaChatModel(
     override suspend fun chat(
         context: List<ChatMessage>,
         tools: List<Tool>?,
+        format: Format?,
     ): ChatMessage.Assistant = withContext(Dispatchers.IO) {
         if (tools != null && !modelCard.supportsTools) error("This model does not support tools")
 
@@ -65,6 +68,9 @@ internal class OllamaChatModel(
                 messages(messages)
                 if (tools != null) {
                     tools(tools.map { it.toOllamaToolSpecification() })
+                }
+                if (format != null) {
+                    format(format.toOllamaFormat())
                 }
             }
         )
@@ -87,6 +93,11 @@ internal class OllamaChatModel(
             // Note that the token count will be wrong if the tool call has been fixed
             // This should not have a big impact though
             .copy(metadata = ChatMessage.Metadata(tokenCount = evalCount))
+    }
+
+    private fun Format.toOllamaFormat(): OFormat = when (this) {
+        is Format.FormatSchema -> OFormat.FormatSchema(schema)
+        is Format.FormatType -> OFormat.FormatType(value)
     }
 
     private fun ChatMessage.toOllamaMessage(): Message = when (this) {

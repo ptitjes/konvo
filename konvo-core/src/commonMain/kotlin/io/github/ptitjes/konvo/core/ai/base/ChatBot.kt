@@ -1,10 +1,13 @@
 package io.github.ptitjes.konvo.core.ai.base
 
 import io.github.ptitjes.konvo.core.ai.spi.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.*
-import kotlin.contracts.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.serialization.json.JsonElement
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 interface ChatBot {
     suspend fun chat(
@@ -22,27 +25,21 @@ interface ChatBotBuilder {
     fun chatMemory(memoryProvider: ChatMemoryProvider)
     fun prompt(promptProvider: PromptProvider)
     fun tools(toolSelector: ToolSelector)
+    fun format(formatSelector: FormatSelector)
 }
 
-typealias ChatMemoryProvider = ChatMemoryProviderScope.() -> ChatMemory
-
-interface ChatMemoryProviderScope {
+interface ChatMemoryScope {
     val memoryId: Any
 }
 
-typealias PromptProvider = PromptProviderScope.() -> List<ChatMessage>
-
-interface PromptProviderScope {
-    val memoryId: Any
+interface ChatRequestScope : ChatMemoryScope {
     val userMessage: ChatMessage.User
 }
 
-typealias ToolSelector = ToolSelectorScope.() -> List<Tool>?
-
-interface ToolSelectorScope {
-    val memoryId: Any
-    val userMessage: ChatMessage.User
-}
+typealias ChatMemoryProvider = ChatMemoryScope.() -> ChatMemory
+typealias PromptProvider = ChatRequestScope.() -> List<ChatMessage>
+typealias ToolSelector = ChatRequestScope.() -> List<Tool>?
+typealias FormatSelector = ChatRequestScope.() -> Format?
 
 @OptIn(ExperimentalContracts::class)
 fun ChatBot(
@@ -66,6 +63,7 @@ fun ChatBot(
         var memoryProvider: ChatMemoryProvider? = null
         var promptProvider: PromptProvider? = null
         var toolSelector: ToolSelector? = null
+        var formatSelector: FormatSelector? = null
 
         override fun chatMemory(memoryProvider: ChatMemoryProvider) {
             this.memoryProvider = memoryProvider
@@ -79,12 +77,17 @@ fun ChatBot(
             this.toolSelector = toolSelector
         }
 
+        override fun format(formatSelector: FormatSelector) {
+            this.formatSelector = formatSelector
+        }
+
         fun build(): DefaultChatBot {
             return DefaultChatBot(
                 model = model,
                 memoryProvider = memoryProvider ?: { ObliviousChatMemory(memoryId) },
                 promptProvider = promptProvider ?: { listOf() },
-                toolSelector = toolSelector ?: { null }
+                toolSelector = toolSelector ?: { null },
+                formatSelector = formatSelector ?: { null },
             )
         }
     }
@@ -97,6 +100,7 @@ private class DefaultChatBot(
     private val memoryProvider: ChatMemoryProvider,
     private var promptProvider: PromptProvider,
     private val toolSelector: ToolSelector,
+    private val formatSelector: FormatSelector,
 ) : ChatBot {
     override suspend fun chat(
         memoryId: Any,
@@ -115,11 +119,12 @@ private class DefaultChatBot(
         }
 
         val tools = scope.toolSelector()
+        val format = scope.formatSelector()
 
         memory.add(model.withTokenCount(userMessage))
 
         do {
-            val assistantMessage = model.chat(memory.messages, tools)
+            val assistantMessage = model.chat(memory.messages, tools, format)
 
             memory.add(assistantMessage)
             emit(assistantMessage)
@@ -150,7 +155,7 @@ private class DefaultChatBot(
     private class ChatBotScope(
         override val memoryId: Any,
         override val userMessage: ChatMessage.User,
-    ) : ChatMemoryProviderScope, PromptProviderScope, ToolSelectorScope
+    ) : ChatRequestScope
 
     private val chatMemories = mutableMapOf<Any, ChatMemory>()
 
