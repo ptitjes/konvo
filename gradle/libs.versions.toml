@@ -7,6 +7,7 @@ kotlinxIo = "0.7.0"
 ktor = "3.1.3"
 
 mcp = "0.5.0"
+xemanticJsonSchema = "1.1.2"
 
 ollama = "0.1.2-SNAPSHOT"
 
@@ -33,6 +34,7 @@ ktorClientLogging = { module = "io.ktor:ktor-client-logging", version.ref = "kto
 ktorClientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
+xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
 
 ollama = { module = "org.nirmato.ollama:nirmato-ollama-client-ktor", version.ref = "ollama" }
 
