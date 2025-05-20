@@ -6,5 +6,6 @@ interface ChatModel {
     suspend fun chat(
         context: List<ChatMessage>,
         tools: List<Tool>? = null,
+        format: Format? = null,
     ): ChatMessage.Assistant
 }
