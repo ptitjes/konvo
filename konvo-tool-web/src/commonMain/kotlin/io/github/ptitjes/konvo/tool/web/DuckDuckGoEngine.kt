@@ -1,54 +1,32 @@
 package io.github.ptitjes.konvo.tool.web
 
 import com.fleeksoft.ksoup.*
-import io.github.ptitjes.konvo.tool.web.utils.HtmlToMarkdown
+import com.xemantic.ai.tool.schema.meta.*
+import io.github.ptitjes.konvo.tool.web.utils.*
 import io.ktor.client.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.*
 
 class DuckDuckGoEngine(
     private val client: HttpClient,
     private val converter: HtmlToMarkdown,
 ) {
-    suspend fun query(
-        keywords: String,
-        maxResults: Int? = null,
-        region: Region = Region.AllRegions,
-        timeFrame: TimeFrame = TimeFrame.AnyTime,
-    ): List<SearchResult> {
-        val response = client.submitForm(
-            url = "https://lite.duckduckgo.com/lite/",
-            formParameters = parameters {
-                append("q", keywords)
-                append("kl", region.value)
-                append("df", timeFrame.value)
-                append("o", "json")
-            }
-        ) {
-            headers {
-                append(HttpHeaders.Referrer, "https://lite.duckduckgo.com/")
-                append("Sec-Fetch-User", "?1")
-            }
-        }
+    @Serializable
+    data class SearchRequest(
+        @Description("The query to search for. It should only contain the search term and be relatively short.")
+        val query: String,
+        @Description("The maximum number of search results to query.")
+        val maxResults: Int? = null,
+        @Description("The region to search in.")
+        val region: Region = Region.AllRegions,
+        @Description("The time frame to search in.")
+        val timeFrame: TimeFrame = TimeFrame.AnyTime,
+    )
 
-        val body = response.bodyAsText()
-        val document = Ksoup.parse(body)
-        val lastTable = document.select("table").last()!!
-        val resultRows = lastTable.select("tr").chunked(4)
-
-        return resultRows.mapNotNull { rows ->
-            if (rows.size != 4) return@mapNotNull null
-
-            val link = rows[0].select("a")
-            val title = link.text()
-            val url = link.attr("href")
-            val snippet = converter.convert(rows[1].select("td.result-snippet").html()).trim()
-            SearchResult(title, url, snippet)
-        }
-    }
-
-    @Suppress("EnumEntryName")
+    @Suppress("EnumEntryName", "unused")
+    @Serializable
     enum class Region(val value: String) {
         AllRegions(""),
         Argentina("ar-es"),
@@ -116,11 +94,52 @@ class DuckDuckGoEngine(
         Vietnam_en("vn-en"),
     }
 
+    @Suppress("unused")
+    @Serializable
     enum class TimeFrame(val value: String) {
         AnyTime(""),
         PastDay("d"),
         PastWeek("w"),
         PastMonth("m"),
         PastYear("y"),
+    }
+
+    @Serializable
+    data class SearchResult(
+        val title: String,
+        val url: String,
+        val snippet: String,
+    )
+
+    suspend fun search(request: SearchRequest): List<SearchResult> {
+        val response = client.submitForm(
+            url = "https://lite.duckduckgo.com/lite/",
+            formParameters = parameters {
+                append("q", value = request.query)
+                append("kl", request.region.value)
+                append("df", request.timeFrame.value)
+                append("o", "json")
+            }
+        ) {
+            headers {
+                append(HttpHeaders.Referrer, "https://lite.duckduckgo.com/")
+                append("Sec-Fetch-User", "?1")
+            }
+        }
+
+        val body = response.bodyAsText()
+        val document = Ksoup.parse(body)
+        val lastTable = document.select("table").last()!!
+        val resultRows = lastTable.select("tr").chunked(4)
+
+        return resultRows.mapNotNull { rows ->
+            if (rows.size != 4) return@mapNotNull null
+
+            val link = rows[0].select("a")
+            val title = link.text()
+            val url = link.attr("href")
+            val snippet = converter.convert(rows[1].select("td.result-snippet").html()).trim()
+            SearchResult(title, url, snippet)
+        }
     }
 }

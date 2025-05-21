@@ -1,17 +1,25 @@
 package io.github.ptitjes.konvo.tool.web
 
 import com.fleeksoft.ksoup.*
-import io.github.ptitjes.konvo.tool.web.utils.HtmlToMarkdown
+import com.xemantic.ai.tool.schema.meta.*
+import io.github.ptitjes.konvo.tool.web.utils.*
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import kotlinx.serialization.*
 
 class Fetcher(
     private val client: HttpClient,
     private val converter: HtmlToMarkdown,
 ) {
-    suspend fun fetch(url: String): String {
-        val response = client.get(url)
+    @Serializable
+    data class FetchRequest(
+        @Description("The url of the page to fetch.")
+        val url: String,
+    )
+
+    suspend fun fetch(request: FetchRequest): String {
+        val response = client.get(request.url)
         val body = response.bodyAsText()
 
         val document = Ksoup.parse(body)

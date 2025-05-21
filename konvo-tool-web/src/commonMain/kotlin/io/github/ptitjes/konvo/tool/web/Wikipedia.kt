@@ -1,9 +1,11 @@
 package io.github.ptitjes.konvo.tool.web
 
+import com.xemantic.ai.tool.schema.meta.*
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
 class Wikipedia(
@@ -11,16 +13,29 @@ class Wikipedia(
     private val baseUrl: String = "https://en.wikipedia.org/w/",
     private val pathPrefix: String = "rest.php/v1/",
 ) {
+    @Serializable
+    data class SearchRequest(
+        @Description("The query to search for. It should only contain the search term and be relatively short.")
+        val query: String,
+        @Description("The maximum number of search results to query. Defaults to ${DEFAULT_LIMIT}.")
+        val limit: Int? = null,
+    )
 
-    suspend fun search(query: String, limit: Int? = DEFAULT_LIMIT): JsonObject {
+    suspend fun search(request: SearchRequest): JsonObject {
         return request("search/page") {
-            append("q", query)
-            append("limit", (limit ?: DEFAULT_LIMIT).toString())
+            append("q", request.query)
+            append("limit", (request.limit ?: DEFAULT_LIMIT).toString())
         }
     }
 
-    suspend fun getPage(key: String): JsonObject {
-        return request("page/$key")
+    @Serializable
+    data class GetPageRequest(
+        @Description("The key of the page to fetch.")
+        val key: String,
+    )
+
+    suspend fun getPage(request: GetPageRequest): JsonObject {
+        return request("page/${request.key}")
     }
 
     private suspend fun request(path: String, parametersBuilder: ParametersBuilder.() -> Unit = {}): JsonObject {

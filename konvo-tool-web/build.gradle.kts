@@ -24,6 +24,7 @@ kotlin {
                 implementation(libs.bundles.kotlinxEcosystem)
                 implementation(libs.kotlinxCli)
                 implementation(libs.mcp)
+                implementation(libs.xemanticJsonSchema)
 
                 implementation(libs.bundles.ktorClient)
                 implementation(libs.ktorClientCio)
