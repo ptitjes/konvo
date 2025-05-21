@@ -7,6 +7,12 @@ import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.io.files.*
 
 suspend fun main() {
+    @Suppress("ConstantConditionIf")
+    if (true) {
+        runExperiments()
+        return
+    }
+
     val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json"))
 
     val mcpServersManager = McpServersManager(
