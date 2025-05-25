@@ -48,93 +48,91 @@ class Wikipedia(
     companion object {
         const val DEFAULT_LIMIT = 5
 
-        val searchOutputSchema = Json.encodeToString(
-            Json.decodeFromString<JsonObject>(
-                $$"""
-                {
-                  "$schema": "http://json-schema.org/draft-07/schema#",
-                  "type": "object",
-                  "properties": {
-                    "pages": {
-                      "type": "array",
-                      "items": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "number"
-                            },
-                            "key": {
+        val searchOutputSchema = Json.decodeFromString<JsonObject>(
+            $$"""
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "pages": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "excerpt": {
+                          "type": "string"
+                        },
+                        "matched_title": {
+                          "anyOf": [
+                            {
                               "type": "string"
                             },
-                            "title": {
-                              "type": "string"
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "thumbnail": {
+                          "anyOf": [
+                            {
+                              "type": "null"
                             },
-                            "excerpt": {
-                              "type": "string"
-                            },
-                            "matched_title": {
-                              "anyOf": [
-                                {
+                            {
+                              "type": "object",
+                              "properties": {
+                                "mimetype": {
                                   "type": "string"
                                 },
-                                {
-                                  "type": "null"
-                                }
-                              ]
-                            },
-                            "description": {
-                              "type": "string"
-                            },
-                            "thumbnail": {
-                              "anyOf": [
-                                {
+                                "width": {
+                                  "type": "number"
+                                },
+                                "height": {
+                                  "type": "number"
+                                },
+                                "duration": {
                                   "type": "null"
                                 },
-                                {
-                                  "type": "object",
-                                  "properties": {
-                                    "mimetype": {
-                                      "type": "string"
-                                    },
-                                    "width": {
-                                      "type": "number"
-                                    },
-                                    "height": {
-                                      "type": "number"
-                                    },
-                                    "duration": {
-                                      "type": "null"
-                                    },
-                                    "url": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "mimetype",
-                                    "url"
-                                  ]
+                                "url": {
+                                  "type": "string"
                                 }
+                              },
+                              "required": [
+                                "mimetype",
+                                "url"
                               ]
                             }
-                          },
-                          "required": [
-                            "id",
-                            "key",
-                            "title",
-                            "excerpt",
-                            "description"
                           ]
                         }
+                      },
+                      "required": [
+                        "id",
+                        "key",
+                        "title",
+                        "excerpt",
+                        "description"
                       ]
                     }
-                  },
-                  "required": [
-                    "pages"
                   ]
                 }
-                """.trimIndent()
-            )
+              },
+              "required": [
+                "pages"
+              ]
+            }
+            """.trimIndent()
         )
     }
 }
