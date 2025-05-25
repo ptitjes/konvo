@@ -9,7 +9,6 @@ import io.modelcontextprotocol.kotlin.sdk.server.*
 import kotlinx.serialization.json.*
 
 fun Server.addKonvoWebTools() {
-    val prettyJson = Json { prettyPrint = true }
 
     val client = HttpClient(CIO) {
         expectSuccess = true
@@ -27,7 +26,7 @@ fun Server.addKonvoWebTools() {
             Search the web for web pages that match the given query.
             Use this function if you need to find or search for a Web page.
             The search results are returned in JSON format with the following schema:
-            ${prettyJson.encodeToString(jsonSchemaOf<List<DuckDuckGoEngine.SearchResult>>())}
+            ${Json.encodeToString(jsonSchemaOf<List<DuckDuckGoEngine.SearchResult>>())}
             You can actually use the `url` property of a returned search result as input to the `web_fetch` tool.
         """.trimIndent(),
         handler = duckDuckGo::search,
@@ -52,7 +51,7 @@ fun Server.addKonvoWebTools() {
             Search Wikipedia for pages that match the given query.
             Use this function if you need to find or search for a Wikipedia page.
             The search results are returned in JSON format with the following schema:
-            ${prettyJson.encodeToString(Wikipedia.searchOutputSchema)}
+            ${Json.encodeToString(Wikipedia.searchOutputSchema)}
             You can actually use the `key` property of a returned search result as input to the `wikipedia_get_page` tool.  
         """.trimIndent(),
         handler = wikipedia::search,
