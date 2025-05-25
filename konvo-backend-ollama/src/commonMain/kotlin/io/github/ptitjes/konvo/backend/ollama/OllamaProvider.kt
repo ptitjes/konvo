@@ -8,12 +8,12 @@ import kotlinx.serialization.json.*
 import org.nirmato.ollama.api.*
 import org.nirmato.ollama.client.ktor.*
 
-class OllamaProvider(private val urlString: String) : ModelProvider {
+class OllamaProvider(private val urlString: String = "http://localhost:11434") : ModelProvider {
     override val name: String get() = "Ollama"
 
     private val client = OllamaClient(CIO) {
         defaultRequest {
-            url(urlString)
+            url("$urlString/api")
         }
         install(HttpTimeout) {
             requestTimeoutMillis = Long.MAX_VALUE
