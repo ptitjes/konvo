@@ -11,6 +11,7 @@ kotlin {
             dependencies {
                 api(libs.bundles.kotlinxEcosystem)
                 api(libs.xemanticJsonSchema)
+                api(libs.koog)
             }
         }
 

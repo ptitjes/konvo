@@ -30,3 +30,7 @@ tasks.withType<Sync> {
         include("mcp-servers/**")
     }
 }
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
+}
