@@ -81,7 +81,6 @@ fun runMcpServerUsingStdio() {
             done.complete()
         }
         done.join()
-        println("Server closed")
     }
 }
 
