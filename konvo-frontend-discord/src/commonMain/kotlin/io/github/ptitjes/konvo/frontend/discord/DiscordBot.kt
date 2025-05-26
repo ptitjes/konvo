@@ -285,7 +285,7 @@ private suspend fun MessageChannelBehavior.askForToolUse(
             callsToCheck.forEach { call ->
                 textDisplay {
                     content = buildString {
-                        appendLine("-# Called **${call.tool.name}**")
+                        appendLine("-# Called **${call.tool}**")
                         if (call.arguments.isNotEmpty()) {
                             call.arguments.forEach { (name, value) ->
                                 appendLine("> -# **$name:** $value")

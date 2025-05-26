@@ -202,7 +202,7 @@ private class DefaultChatBot(
             if (call.result != null) return@mapIndexedNotNull null
             if (call.resolvedTool == null) return@mapIndexedNotNull null
             if (!call.resolvedTool.askPermission) return@mapIndexedNotNull null
-            VetoableCall(index, callback, call.resolvedTool, call.original.arguments)
+            VetoableCall(index, callback, call.resolvedTool.name, call.original.arguments)
         }
 
         if (vetoableCalls.isEmpty()) return this
@@ -233,7 +233,7 @@ private class DefaultChatBot(
     private class VetoableCall(
         val index: Int,
         val callback: (index: Int, call: VetoableCall, allowed: Boolean) -> Unit,
-        override val tool: Tool,
+        override val tool: String,
         override val arguments: Map<String, JsonElement>,
     ) : VetoableToolCall {
         override fun allow() = callback(index, this, true)
