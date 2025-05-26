@@ -3,7 +3,7 @@ package io.github.ptitjes.konvo.core.ai.spi
 import kotlinx.serialization.json.*
 
 interface VetoableToolCall {
-    val tool: Tool
+    val tool: String
     val arguments: Map<String, JsonElement>
 
     fun allow()
