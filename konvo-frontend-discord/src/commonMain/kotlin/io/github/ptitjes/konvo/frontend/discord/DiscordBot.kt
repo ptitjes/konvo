@@ -135,34 +135,7 @@ class KonvoBot(
             conversationStartMessage(conversation = conversation, fullSizeCharacterAvatar = true)
         }
 
-        launch {
-            val assistantProcessing = channel.typingToggler()
-
-            for (event in conversation.assistantEvents) {
-                when (event) {
-                    AssistantEvent.Processing -> assistantProcessing.start()
-
-                    is AssistantEvent.Message -> {
-                        assistantProcessing.stop()
-                        val content = event.content.maybeSplitDiscordContent()
-                        content.forEach { channel.createMessage(it) }
-                    }
-
-                    is AssistantEvent.ToolUsePermission -> {
-                        assistantProcessing.stop()
-                        channel.askForToolUse(event) {
-                            assistantProcessing.start()
-                        }
-                    }
-
-                    is AssistantEvent.ToolUseResult -> {
-                        assistantProcessing.stop()
-                        channel.notifyToolUse(event)
-                        assistantProcessing.start()
-                    }
-                }
-            }
-        }
+        launch { channel.handleAssistantEvents(conversation) }
 
         return conversation
     }
@@ -260,16 +233,42 @@ private fun MessageBuilder.conversationStartMessage(
     }
 }
 
-private suspend fun MessageChannelBehavior.askForToolUse(
-    event: AssistantEvent.ToolUsePermission,
-    onAllCallsAcknowledged: suspend () -> Unit,
-) {
+private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: Conversation) = coroutineScope {
+    val assistantProcessing = typingToggler(this@handleAssistantEvents)
+
+    for (event in conversation.assistantEvents) {
+        when (event) {
+            AssistantEvent.Processing -> assistantProcessing.start()
+
+            is AssistantEvent.Message -> {
+                assistantProcessing.stop()
+                val content = event.content.maybeSplitDiscordContent()
+                content.forEach { createMessage(it) }
+            }
+
+            is AssistantEvent.ToolUsePermission -> {
+                assistantProcessing.stop()
+                askForToolUse(event)
+                assistantProcessing.start()
+            }
+
+            is AssistantEvent.ToolUseResult -> {
+                assistantProcessing.stop()
+                notifyToolUse(event)
+                assistantProcessing.start()
+            }
+        }
+    }
+}
+
+private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.ToolUsePermission) {
+    val done = CompletableDeferred<Unit>()
     val callsToCheck = event.calls.toMutableList()
 
     createEphemeralMessage {
         suspend fun finished() {
             delete()
-            onAllCallsAcknowledged()
+            done.complete(Unit)
         }
 
         suspend fun HandlerScope<*>.allowToolCall(call: VetoableToolCall, allowed: Boolean) {
@@ -311,6 +310,8 @@ private suspend fun MessageChannelBehavior.askForToolUse(
             }
         }
     }
+
+    done.await()
 }
 
 private suspend fun MessageChannelBehavior.notifyToolUse(event: AssistantEvent.ToolUseResult) {

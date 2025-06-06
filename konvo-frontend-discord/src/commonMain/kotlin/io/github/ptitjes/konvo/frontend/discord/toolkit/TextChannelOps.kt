@@ -13,30 +13,27 @@ interface TypingToggler {
     suspend fun stop()
 }
 
-suspend fun MessageChannelBehavior.typingToggler(): TypingToggler = coroutineScope {
-    val coroutineScope = this
-    object : TypingToggler {
-        private var typingJob: Job? = null
+fun CoroutineScope.typingToggler(channel: MessageChannelBehavior): TypingToggler = object : TypingToggler {
+    private var typingJob: Job? = null
 
-        override suspend fun start() {
-            if (typingJob == null) {
-                type()
-                typingJob = coroutineScope.launch {
-                    try {
-                        while (true) {
-                            delay(8.seconds)
-                            type()
-                        }
-                    } finally {
-                        typingJob = null
+    override suspend fun start() {
+        if (typingJob == null) {
+            channel.type()
+            typingJob = launch {
+                try {
+                    while (isActive) {
+                        delay(8.seconds)
+                        channel.type()
                     }
+                } finally {
+                    typingJob = null
                 }
             }
         }
+    }
 
-        override suspend fun stop() {
-            typingJob?.cancel()
-            typingJob = null
-        }
+    override suspend fun stop() {
+        typingJob?.cancel()
+        typingJob = null
     }
 }
