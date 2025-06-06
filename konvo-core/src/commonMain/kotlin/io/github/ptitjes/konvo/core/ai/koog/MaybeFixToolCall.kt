@@ -1,18 +1,33 @@
-package io.github.ptitjes.konvo.backend.ollama
+package io.github.ptitjes.konvo.core.ai.koog
 
-import io.github.ptitjes.konvo.core.ai.spi.*
+import ai.koog.agents.core.dsl.builder.*
+import ai.koog.prompt.message.*
+import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+
+fun AIAgentSubgraphBuilderBase<*, *>.nodeMaybeFixToolCall(name: String? = null) =
+    node<Message.Response, Message.Response>(name) { response ->
+        val fixedResponse = response.maybeFixToolCall()
+        if (response == fixedResponse) return@node response
+
+        llm.writeSession {
+            prompt = prompt.copy(
+                messages = prompt.messages.map { message -> if (message != response) message else fixedResponse }
+            )
+        }
+
+        fixedResponse
+    }
 
 /**
  * This is a dirty hack to account for small models having difficulties producing properly formatted tool calls.
  */
-internal fun ChatMessage.Assistant.maybeFixToolCalls(tools: List<Tool>?): ChatMessage.Assistant {
-    if (tools.isNullOrEmpty()) return this
-    if (toolCalls != null) return this
+fun Message.Response.maybeFixToolCall(): Message.Response {
+    if (this is Message.Tool.Call) return this
 
-    val text = text.trim()
+    val text = content.trim()
 
-    if (text.startsWith("[") && text.endsWith("]")) return parsePythonToolCall(tools)
+    if (text.startsWith("[") && text.endsWith("]")) return maybeParsePythonToolCall()
     if (!text.startsWith("{\"name\":") || !text.endsWith("}")) return this
 
     val functionNameAndParameters = text.removePrefix("{\"name\":").removeSuffix("}").trim()
@@ -21,7 +36,6 @@ internal fun ChatMessage.Assistant.maybeFixToolCalls(tools: List<Tool>?): ChatMe
 
     val functionName = functionNameAndParameters.substring(0, commaIndex).trim()
         .removePrefix("\"").removeSuffix("\"")
-    if (tools.firstOrNull { it.name == functionName } == null) return this
 
     val parametersProperty = functionNameAndParameters.substring(commaIndex + 1).trim()
 
@@ -30,17 +44,14 @@ internal fun ChatMessage.Assistant.maybeFixToolCalls(tools: List<Tool>?): ChatMe
     return this
 }
 
-internal fun ChatMessage.Assistant.parsePythonToolCall(tools: List<Tool>): ChatMessage.Assistant {
-    val text = text.trim()
+internal fun Message.Response.maybeParsePythonToolCall(): Message.Response {
+    val text = content.trim()
 
     val functionNameAndParameters = text.removePrefix("[").removeSuffix("]").trim()
     val parenthesisIndex = functionNameAndParameters.indexOf("(")
     if (parenthesisIndex == -1) return this
 
     val functionName = functionNameAndParameters.substring(0, parenthesisIndex).trim()
-    if (tools.firstOrNull { it.name == functionName } == null) return this
-
-
     val parametersString = functionNameAndParameters.substring(parenthesisIndex + 1).trim()
         .removePrefix("(").removeSuffix(")").trim()
 
@@ -55,16 +66,28 @@ internal fun ChatMessage.Assistant.parsePythonToolCall(tools: List<Tool>): ChatM
     return this
 }
 
-private fun validToolCallOrNull(text: String): ChatMessage.Assistant? {
+private fun Message.Response.validToolCallOrNull(text: String): Message.Tool.Call? {
     try {
-        val jsonObject = Json.Default.decodeFromString<JsonObject>(text)
-        val name = jsonObject["name"]?.jsonPrimitive?.content ?: return null
+        val jsonObject = Json.decodeFromString<JsonObject>(text)
+
+        val toolName = jsonObject["name"]?.jsonPrimitive?.content ?: return null
         val arguments = jsonObject["parameters"]?.jsonObject ?: return null
-        return ChatMessage.Assistant(
-            text = "",
-            toolCalls = listOf(ToolCall(name, arguments)),
-        )
+
+        val toolCallContent = Json.encodeToString(arguments)
+
+        val id = generateToolCallId(toolName, toolCallContent)
+
+        return Message.Tool.Call(id = id, tool = toolName, content = toolCallContent, metaInfo = metaInfo)
     } catch (_: Throwable) {
         return null
     }
+}
+
+private fun generateToolCallId(toolName: String, content: String, index: Int = 0): String {
+    // Create a deterministic ID using tool name, content hash, and index
+    val combined = "$toolName:$content:$index"
+    val hashCode = combined.hashCode()
+
+    // Format as "fixed_tool_call_" + positive hash to match common ID patterns
+    return "fixed_tool_call_${hashCode.toUInt()}"
 }

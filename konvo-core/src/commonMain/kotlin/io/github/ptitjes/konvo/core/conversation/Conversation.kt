@@ -1,10 +1,9 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.ai.spi.ToolCall
-import io.github.ptitjes.konvo.core.ai.spi.ToolCallResult
-import io.github.ptitjes.konvo.core.ai.spi.VetoableToolCall
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
+import kotlinx.serialization.json.*
 import kotlin.coroutines.*
 
 abstract class Conversation(
@@ -27,8 +26,6 @@ abstract class Conversation(
     val userEvents: SendChannel<String> = userEventsChannel
     val assistantEvents: ReceiveChannel<AssistantEvent> = assistantEventsChannel
 
-    open val hasInitialAssistantMessage: Boolean get() = false
-
     protected suspend fun awaitUserEvent(): String = userEventsChannel.receive()
     protected suspend fun sendAssistantEvent(event: AssistantEvent) = assistantEventsChannel.send(event)
 
@@ -41,5 +38,17 @@ sealed interface AssistantEvent {
     data object Processing : AssistantEvent
     data class Message(val content: String) : AssistantEvent
     data class ToolUsePermission(val calls: List<VetoableToolCall>) : AssistantEvent
-    data class ToolUseResult(val call: ToolCall, val result: ToolCallResult) : AssistantEvent
+    data class ToolUseResult(
+        val tool: String,
+        val arguments: Map<String, JsonElement>,
+        val result: ToolCallResult,
+    ) : AssistantEvent
+}
+
+interface VetoableToolCall {
+    val tool: String
+    val arguments: Map<String, JsonElement>
+
+    fun allow()
+    fun reject()
 }

@@ -4,6 +4,4 @@ interface ModelProvider {
     val name: String
 
     suspend fun queryModelCards(): List<ModelCard>
-
-    fun newChatModel(modelCard: ModelCard): ChatModel
 }

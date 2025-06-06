@@ -1,7 +1,10 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.ai.base.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import ai.koog.agents.core.dsl.builder.*
+import ai.koog.agents.core.dsl.extension.*
+import ai.koog.prompt.dsl.*
+import ai.koog.prompt.executor.llms.*
+import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlinx.coroutines.*
 import kotlin.random.*
 
@@ -9,24 +12,24 @@ class RoleplayingConversation(
     coroutineScope: CoroutineScope,
     override val configuration: RoleplayingModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
-    override fun buildChatBot() = ChatBot(configuration.modelCard) {
-        val contextSize = configuration.modelCard.contextSize?.toInt()
-        val evictionStrategy = if (contextSize != null) TokenWindowEvictionStrategy(contextSize)
-        else MessageWindowEvictionStrategy(20)
+    override fun buildChatAgent(): ChatAgent {
+        val model = configuration.model
 
-        chatMemory {
-            DefaultChatMemory(
-                memoryStore = InMemoryChatMemoryStore(),
-                evictionStrategy = evictionStrategy,
-            )
-        }
+        return ChatAgent(
+            initialPrompt = prompt("roleplaying") {
+                system { +buildSystemPrompt() }
+                getInitialAssistantMessage()?.let { assistant { +it } }
+            },
+            model = model.toLLModel(),
+            maxAgentIterations = 50,
+            promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),
+            strategy = strategy("roleplaying") {
+                val request by nodeLLMRequest()
 
-        prompt {
-            buildList {
-                add(ChatMessage.System(text = buildSystemPrompt()))
-                getInitialAssistantMessage()?.let { add(ChatMessage.Assistant(text = it)) }
-            }
-        }
+                edge(nodeStart forwardTo request)
+                edge(request forwardTo nodeFinish transformed { it.content })
+            },
+        )
     }
 
     private val character = configuration.character

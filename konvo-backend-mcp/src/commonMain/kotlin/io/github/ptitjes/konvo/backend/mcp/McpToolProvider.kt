@@ -1,20 +1,21 @@
 package io.github.ptitjes.konvo.backend.mcp
 
+import ai.koog.agents.core.tools.*
+import ai.koog.agents.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.ai.spi.Tool
-import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.serialization.json.*
+import ai.koog.agents.mcp.McpTool as KoogMcpTool
 import io.modelcontextprotocol.kotlin.sdk.Tool as McpTool
 
 class McpToolProvider(
     private val serversManager: McpServersManager,
     private val permissions: ToolPermissions?,
 ) : ToolProvider {
-    override suspend fun queryTools(): List<Tool> {
+    override suspend fun queryTools(): List<ToolCard> {
         return serversManager.clients.flatMap { (clientName, client) ->
             client.listTools()?.tools?.map { tool ->
-                buildKonvoTool(
+                McpToolCard(
                     clientName = clientName,
                     client = client,
                     tool = tool,
@@ -23,29 +24,28 @@ class McpToolProvider(
             } ?: emptyList()
         }
     }
-}
 
-private fun buildKonvoTool(
-    clientName: String,
-    client: Client,
-    tool: McpTool,
-    permissions: ToolPermissions?,
-): Tool {
-    return Tool(
-        name = tool.name,
-        description = tool.description ?: "",
-        parameters = ToolParameters(
-            properties = tool.inputSchema.properties.mapValues { (_, property) -> property.jsonObject },
-            required = tool.inputSchema.required ?: emptyList(),
-        ),
-        askPermission = doesToolRequirePermission(clientName, tool.name, permissions),
-        evaluator = { arguments ->
-            val result = client.callTool(tool.name, arguments)
-            val content = result?.content?.joinToString("\n") { (it as? TextContent)?.text ?: "" } ?: ""
-            if (result?.isError == true) error("MCP tool call failed: $content")
-            content
-        },
-    )
+    private inner class McpToolCard(
+        val clientName: String,
+        val client: Client,
+        val tool: McpTool,
+        val permissions: ToolPermissions?,
+    ) : ToolCard {
+        override val name: String get() = tool.name
+        override val description: String get() = tool.description ?: ""
+        override val parameters: ToolParameters
+            get() = ToolParameters(
+                properties = tool.inputSchema.properties.mapValues { (_, property) -> property.jsonObject },
+                required = tool.inputSchema.required ?: emptyList(),
+            )
+        override val requiresVetting: Boolean
+            get() = doesToolRequirePermission(clientName, tool.name, permissions)
+
+        override fun toTool(): Tool<*, *> {
+            val descriptor = DefaultMcpToolDescriptorParser.parse(tool)
+            return KoogMcpTool(client, descriptor)
+        }
+    }
 }
 
 private fun doesToolRequirePermission(clientName: String, toolName: String, permissions: ToolPermissions?): Boolean {

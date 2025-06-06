@@ -209,7 +209,7 @@ private fun MessageBuilder.conversationStartMessage(
 
         when (configuration) {
             is QuestionAnswerModeConfiguration -> {
-                val modelName = configuration.modelCard.shortName
+                val modelName = configuration.model.shortName
                 val toolNames = configuration.tools.map { it.name }
 
                 textDisplay {
@@ -221,7 +221,7 @@ private fun MessageBuilder.conversationStartMessage(
             }
 
             is RoleplayingModeConfiguration -> {
-                val modelName = configuration.modelCard.shortName
+                val modelName = configuration.model.shortName
                 val characterName = configuration.character.name
                 val characterUrl = configuration.character.avatarUrl
                 val userName = configuration.userName
@@ -323,9 +323,9 @@ private suspend fun MessageChannelBehavior.notifyToolUse(event: AssistantEvent.T
 
                 textDisplay {
                     content = buildString {
-                        appendLine("-# Called **${event.call.name}**")
-                        if (event.call.arguments.isNotEmpty()) {
-                            event.call.arguments.forEach { (name, value) ->
+                        appendLine("-# Called **${event.tool}**")
+                        if (event.arguments.isNotEmpty()) {
+                            event.arguments.forEach { (name, value) ->
                                 appendLine("> -# **$name:** $value")
                             }
                         }

@@ -1,13 +1,13 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.ai.spi.Tool
+import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 fun EphemeralContainerBuilder.toolSelector(
-    tools: List<Tool>,
-    selectedTools: List<Tool>,
-    onSelectTools: suspend (List<Tool>) -> Unit,
+    tools: List<ToolCard>,
+    selectedTools: List<ToolCard>,
+    onSelectTools: suspend (List<ToolCard>) -> Unit,
 ) {
     textDisplay { content = "**Tools:**" }
 

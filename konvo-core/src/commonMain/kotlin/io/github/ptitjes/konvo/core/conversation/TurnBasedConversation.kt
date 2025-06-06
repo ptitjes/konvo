@@ -1,13 +1,12 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.ai.base.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlinx.coroutines.*
 
 abstract class TurnBasedConversation(
     coroutineScope: CoroutineScope,
 ) : Conversation(coroutineScope) {
-    abstract fun buildChatBot(): ChatBot
+    protected abstract fun buildChatAgent(): ChatAgent
     open fun getInitialAssistantMessage(): String? = null
 
     init {
@@ -15,28 +14,17 @@ abstract class TurnBasedConversation(
     }
 
     private fun startConversation() = launch {
-        val model = buildChatBot()
+        val agent = buildChatAgent()
 
         getInitialAssistantMessage()?.let {
             sendAssistantEvent(AssistantEvent.Message(it))
         }
 
         while (isActive) {
-            val userMessage = ChatMessage.User(text = awaitUserEvent())
-
+            val userMessage = awaitUserEvent()
             sendAssistantEvent(AssistantEvent.Processing)
-            val messages = model.chat(userMessage) { calls ->
-                sendAssistantEvent(AssistantEvent.ToolUsePermission(calls))
-            }
-            messages.collect { message ->
-                if (message is ChatMessage.Assistant) {
-                    if (message.text.isNotBlank()) {
-                        sendAssistantEvent(AssistantEvent.Message(message.text))
-                    }
-                } else if (message is ChatMessage.Tool) {
-                    sendAssistantEvent(AssistantEvent.ToolUseResult(message.call, message.result))
-                }
-            }
+            val result = agent.runAndGetResult(userMessage)
+            result?.let { sendAssistantEvent(AssistantEvent.Message(it)) }
         }
     }
 }

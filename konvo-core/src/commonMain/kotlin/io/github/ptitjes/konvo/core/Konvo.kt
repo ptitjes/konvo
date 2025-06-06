@@ -1,9 +1,6 @@
 package io.github.ptitjes.konvo.core
 
-import io.github.ptitjes.konvo.core.ai.spi.ModelCard
-import io.github.ptitjes.konvo.core.ai.spi.ModelProvider
-import io.github.ptitjes.konvo.core.ai.spi.Tool
-import io.github.ptitjes.konvo.core.ai.spi.ToolProvider
+import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
@@ -65,7 +62,7 @@ class Konvo(
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + handler
 
     private lateinit var _models: List<ModelCard>;
-    private lateinit var _tools: List<Tool>;
+    private lateinit var _tools: List<ToolCard>;
     private lateinit var _characters: List<Character>;
 
     suspend fun init() {
@@ -80,7 +77,7 @@ class Konvo(
 
     val models: List<ModelCard> get() = _models
     val characters: List<Character> get() = _characters
-    val tools: List<Tool> get() = _tools
+    val tools: List<ToolCard> get() = _tools
 
     fun createConversation(configuration: ConversationConfiguration): Conversation = when (configuration.mode) {
         is QuestionAnswerModeConfiguration -> QuestionAnswerConversation(

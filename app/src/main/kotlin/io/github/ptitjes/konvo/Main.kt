@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo
 
 import io.github.ptitjes.konvo.backend.mcp.*
-import io.github.ptitjes.konvo.backend.ollama.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.io.files.*
 
@@ -19,7 +19,7 @@ suspend fun main() {
         val konvo = startKonvo {
             dataDirectory = configuration.dataDirectory
 
-            installModels(OllamaProvider(configuration.ollama.url))
+            installModels(OllamaModelProvider(configuration.ollama.url))
 
             installTools(
                 McpToolProvider(

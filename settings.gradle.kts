@@ -13,7 +13,6 @@ plugins {
 
 include(":konvo-core")
 include(":konvo-backend-mcp")
-include(":konvo-backend-ollama")
 include(":konvo-frontend-discord")
 include(":konvo-tool-web")
 include(":app")

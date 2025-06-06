@@ -1,8 +1,7 @@
 package io.github.ptitjes.konvo.frontend.discord
 
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.ai.spi.ModelCard
-import io.github.ptitjes.konvo.core.ai.spi.Tool
+import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
@@ -26,7 +25,7 @@ sealed interface ConversationModeBuilder {
 }
 
 data class QuestionAnswerModeBuilder(
-    val tools: List<Tool> = emptyList(),
+    val tools: List<ToolCard> = emptyList(),
     val model: ModelCard? = null,
     val customSystemPrompt: String? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
@@ -38,7 +37,7 @@ data class QuestionAnswerModeBuilder(
 
         return QuestionAnswerModeConfiguration(
             tools = tools,
-            modelCard = model,
+            model = model,
             customSystemPrompt = customSystemPrompt,
         )
     }
@@ -59,7 +58,7 @@ data class RoleplayingModeBuilder(
             error("Conversation configuration is incomplete")
 
         return RoleplayingModeConfiguration(
-            modelCard = model,
+            model = model,
             character = character,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,
