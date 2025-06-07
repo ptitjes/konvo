@@ -246,7 +246,7 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
                 content.forEach { createMessage(it) }
             }
 
-            is AssistantEvent.ToolUsePermission -> {
+            is AssistantEvent.ToolUseVetting -> {
                 assistantProcessing.stop()
                 askForToolUse(event)
                 assistantProcessing.start()
@@ -261,7 +261,7 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
     }
 }
 
-private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.ToolUsePermission) {
+private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.ToolUseVetting) {
     val done = CompletableDeferred<Unit>()
     val callsToCheck = event.calls.toMutableList()
 

@@ -2,12 +2,12 @@ package io.github.ptitjes.konvo.core.conversation
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
-import ai.koog.agents.core.environment.*
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.features.eventHandler.feature.*
 import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 
@@ -25,12 +25,9 @@ class QuestionAnswerConversation(
             initialPrompt = configuration.prompt.toPrompt(),
             model = model.toLLModel(),
             maxAgentIterations = 50,
-            promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),
+            promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
             strategy = strategy("qa") {
-                val qa by qaWithTools { call ->
-                    val toolCard = tools.first { it.name == call.tool }
-                    if (toolCard.requiresVetting) vetToolCall(call) else true
-                }
+                val qa by qaWithTools { calls -> vetToolCalls(calls, tools) }
                 nodeStart then qa then nodeFinish
             },
             initialToolRegistry = toolRegistry,
@@ -70,53 +67,54 @@ class QuestionAnswerConversation(
         }
     }
 
-    private suspend fun vetToolCall(call: Message.Tool.Call): Boolean {
-        val vetted = CompletableDeferred<Boolean>()
+    private suspend fun vetToolCalls(calls: List<Message.Tool.Call>, tools: List<ToolCard>): List<Boolean> {
+        val vettedCalls = calls.map { CompletableDeferred<Boolean>() }
 
-        val vetoableToolCall = object : VetoableToolCall {
-            override val tool: String get() = call.tool
-            override val arguments: Map<String, JsonElement> = call.contentJson
+        val (withVetting, withoutVetting) = calls.withIndex().partition { (_, call) ->
+            tools.first { it.name == call.tool }.requiresVetting
+        }
 
-            override fun allow() {
-                vetted.complete(true)
-            }
+        withoutVetting.forEach { (index, _) -> vettedCalls[index].complete(true) }
 
-            override fun reject() {
-                vetted.complete(false)
+        val vetoableToolCalls = withVetting.map { (index, call) ->
+            object : VetoableToolCall {
+                override val tool: String get() = call.tool
+                override val arguments: Map<String, JsonElement> = call.contentJson
+
+                override fun allow() {
+                    vettedCalls[index].complete(true)
+                }
+
+                override fun reject() {
+                    vettedCalls[index].complete(false)
+                }
             }
         }
 
-        sendAssistantEvent(AssistantEvent.ToolUsePermission(listOf(vetoableToolCall)))
+        if (vetoableToolCalls.isNotEmpty()) {
+            sendAssistantEvent(AssistantEvent.ToolUseVetting(vetoableToolCalls))
+        }
 
-        return vetted.await()
+        return vettedCalls.awaitAll()
     }
 }
 
 private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
-    vetToolCall: suspend (Message.Tool.Call) -> Boolean,
+    vetToolCalls: suspend (List<Message.Tool.Call>) -> List<Boolean>,
 ) = subgraph {
-    val initialRequest by nodeLLMRequest()
-    val executeTool by nodeExecuteTool()
-    val toolResultRequest by nodeLLMSendToolResult()
-    val maybeFixToolCall by nodeMaybeFixToolCall()
-    val vetToolCall by nodeVetToolCall(vetToolCall = vetToolCall)
+    val initialRequest by nodeLLMRequestMultiple()
+    val processResponses by nodeDoNothing<List<Message.Response>>()
+    val vetToolCalls by nodeVetToolCalls(vetToolCalls = vetToolCalls)
+    val executeTools by nodeExecuteVettedToolCalls(parallelTools = true)
+    val toolResultsRequest by nodeLLMSendMultipleToolResults()
 
     edge(nodeStart forwardTo initialRequest)
-    edge(initialRequest forwardTo maybeFixToolCall)
+    edge(initialRequest forwardTo processResponses)
 
-    edge(maybeFixToolCall forwardTo vetToolCall onToolCall { true })
-    edge(maybeFixToolCall forwardTo nodeFinish onAssistantMessage { true })
+    edge(processResponses forwardTo vetToolCalls onMultipleToolCalls { true })
+    edge(processResponses forwardTo nodeFinish transformed { it.first() } onAssistantMessage { true })
 
-    edge(vetToolCall forwardTo executeTool onCondition { it.vetted } transformed { it.call })
-    edge(vetToolCall forwardTo toolResultRequest onCondition { !it.vetted } transformed {
-        ReceivedToolResult(
-            id = it.call.id,
-            tool = it.call.tool,
-            content = "Tool call was rejected by user",
-            result = ToolResult.Text("Tool call was rejected by user"),
-        )
-    })
-
-    edge(executeTool forwardTo toolResultRequest)
-    edge(toolResultRequest forwardTo maybeFixToolCall)
+    edge(vetToolCalls forwardTo executeTools)
+    edge(executeTools forwardTo toolResultsRequest)
+    edge(toolResultsRequest forwardTo processResponses)
 }

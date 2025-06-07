@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.serialization.json.*
@@ -37,7 +36,7 @@ abstract class Conversation(
 sealed interface AssistantEvent {
     data object Processing : AssistantEvent
     data class Message(val content: String) : AssistantEvent
-    data class ToolUsePermission(val calls: List<VetoableToolCall>) : AssistantEvent
+    data class ToolUseVetting(val calls: List<VetoableToolCall>) : AssistantEvent
     data class ToolUseResult(
         val tool: String,
         val arguments: Map<String, JsonElement>,
