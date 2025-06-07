@@ -44,24 +44,24 @@ data class QuestionAnswerModeBuilder(
 }
 
 data class RoleplayingModeBuilder(
-    val model: ModelCard? = null,
     val character: Character? = null,
     val characterGreetingIndex: Int? = null,
     val userName: String? = null,
+    val model: ModelCard? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean =
         model != null && character != null && userName != null
 
     override fun build(): ConversationModeConfiguration {
-        if (model == null || character == null || userName == null)
+        if (character == null || userName == null || model == null)
             error("Conversation configuration is incomplete")
 
         return RoleplayingModeConfiguration(
-            model = model,
             character = character,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,
+            model = model,
         )
     }
 }

@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
+import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
@@ -10,7 +10,7 @@ fun EphemeralComponentContainerBuilder.promptSelector(
     selectedPrompt: PromptCard?,
     onSelectPrompt: suspend (PromptCard) -> Unit,
 ) {
-    textDisplay { content = "**Character:**" }
+    textDisplay { content = markdown { bold("Prompt:") } }
 
     actionRow {
         stringSelect(
@@ -31,9 +31,13 @@ fun EphemeralComponentContainerBuilder.promptSelector(
     }
 
     if (selectedPrompt != null) {
-        fun promptDescriptionString(): String = buildString {
-            appendLine("> -# **Name:** ${selectedPrompt.name}")
-            appendLine("> -# **Description:** ${(selectedPrompt.description)}")
+        fun promptDescriptionString(): String = markdown {
+            blockquote {
+                subscript {
+                    line { bold("Name:"); space(); text(selectedPrompt.name) }
+                    selectedPrompt.description?.let { line { bold("Description:"); space(); text(it) } }
+                }
+            }
         }
 
         textDisplay { content = promptDescriptionString() }

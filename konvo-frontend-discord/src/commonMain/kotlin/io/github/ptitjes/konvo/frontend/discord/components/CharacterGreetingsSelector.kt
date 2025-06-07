@@ -1,8 +1,9 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
+import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.conversation.replaceTags
+import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 fun EphemeralComponentContainerBuilder.characterGreetingsSelector(
@@ -10,7 +11,7 @@ fun EphemeralComponentContainerBuilder.characterGreetingsSelector(
     selectedGreetingIndex: Int?,
     onSelectGreeting: suspend (Int?) -> Unit,
 ) {
-    textDisplay { content = "**Character greeting:**" }
+    textDisplay { content = markdown { bold("Character greeting:") } }
 
     val greetings = character.greetings
     if (greetings.size > 1) {
@@ -46,9 +47,13 @@ fun EphemeralComponentContainerBuilder.characterGreetingsSelector(
         textDisplay {
             val greeting = character.greetings[selectedGreetingIndex ?: 0]
             val escaped = greeting.replaceTags("USER", character.name)
-            content = buildString {
-                escaped.maybeEllipsisDiscordContent().lines().forEach { line ->
-                    appendLine("> ${line.takeUnless { it.isBlank() }?.let { "-# $it" } ?: ""}")
+            content = markdown {
+                blockquote {
+                    subscript {
+                        escaped.maybeEllipsisDiscordContent().lines().forEach {
+                            if (it.isBlank()) br() else line { text(it) }
+                        }
+                    }
                 }
             }
         }
