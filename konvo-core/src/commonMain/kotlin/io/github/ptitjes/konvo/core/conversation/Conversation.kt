@@ -52,3 +52,8 @@ interface VetoableToolCall {
     fun allow()
     fun reject()
 }
+
+sealed interface ToolCallResult {
+    data class Success(val text: String) : ToolCallResult
+    data class ExecutionFailure(val reason: String) : ToolCallResult
+}
