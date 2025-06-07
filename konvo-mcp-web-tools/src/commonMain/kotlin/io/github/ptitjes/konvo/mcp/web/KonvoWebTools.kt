@@ -29,7 +29,9 @@ fun Server.addKonvoWebTools() {
             Use this function if you need to find or search for a Web page.
             The search results are returned in JSON format with the following schema:
             ${Json.encodeToString(jsonSchemaOf<List<DuckDuckGoEngine.SearchResult>>())}
-            You can actually use the `url` property of a returned search result as input to the `web_fetch` tool.
+            A search result only contains a snippet of the page and is not accurate to answer the user.
+            You can actually use the `url` property of a returned search result as input to the `web_fetch` tool
+            and retrieve the actual content of the page.
         """.trimIndent(),
         handler = duckDuckGo::search,
     )
@@ -54,7 +56,9 @@ fun Server.addKonvoWebTools() {
             Use this function if you need to find or search for a Wikipedia page.
             The search results are returned in JSON format with the following schema:
             ${Json.encodeToString(Wikipedia.searchOutputSchema)}
-            You can actually use the `key` property of a returned search result as input to the `wikipedia_get_page` tool.  
+            A search result only contains an excerpt of the page and is not accurate to answer the user.
+            You can actually use the `key` property of a returned search result as input to the `wikipedia_get_page` tool
+            and retrieve the actual content of the page.
         """.trimIndent(),
         handler = wikipedia::search,
     )
