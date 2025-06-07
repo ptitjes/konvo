@@ -19,7 +19,13 @@ suspend fun main() {
         val konvo = startKonvo {
             dataDirectory = configuration.dataDirectory
 
-            installModels(OllamaModelProvider(configuration.ollama.url))
+            configuration.llms.forEach { llm ->
+                installModels(
+                    when (llm) {
+                        is LlmClientConfiguration.Ollama -> OllamaModelProvider(llm.url)
+                    }
+                )
+            }
 
             installPrompts(
                 McpPromptProvider(

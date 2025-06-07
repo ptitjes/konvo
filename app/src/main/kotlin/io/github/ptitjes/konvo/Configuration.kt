@@ -10,7 +10,7 @@ import kotlinx.serialization.json.*
 @Serializable
 data class KonvoAppConfiguration(
     val dataDirectory: String,
-    val ollama: OllamaConfiguration,
+    val llms: List<LlmClientConfiguration>,
     val discord: DiscordConfiguration,
     val mcp: McpConfiguration,
 ) {
@@ -28,6 +28,12 @@ data class DiscordConfiguration(
 )
 
 @Serializable
-data class OllamaConfiguration(
-    val url: String,
-)
+sealed interface LlmClientConfiguration {
+
+    @Serializable
+    @SerialName(value = "ollama")
+    data class Ollama(
+        val name: String,
+        val url: String,
+    ) : LlmClientConfiguration
+}
