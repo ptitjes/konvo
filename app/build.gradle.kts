@@ -8,7 +8,6 @@ dependencies {
     implementation(libs.slf4jSimple)
 
     implementation(project(":konvo-core"))
-    implementation(project(":konvo-backend-mcp"))
     implementation(project(":konvo-frontend-discord"))
 }
 

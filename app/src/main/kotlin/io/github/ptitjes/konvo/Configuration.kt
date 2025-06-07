@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo
 
-import io.github.ptitjes.konvo.backend.mcp.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.mcp.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 import kotlinx.serialization.*

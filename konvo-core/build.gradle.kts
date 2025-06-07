@@ -12,6 +12,10 @@ kotlin {
                 api(libs.bundles.kotlinxEcosystem)
                 api(libs.koog)
                 api(libs.xemanticJsonSchema)
+
+                implementation(libs.mcp)
+                implementation(libs.bundles.ktorClient)
+                implementation(libs.ktorClientCio)
             }
         }
 

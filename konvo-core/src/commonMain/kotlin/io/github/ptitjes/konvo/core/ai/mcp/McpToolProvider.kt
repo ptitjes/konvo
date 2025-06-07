@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.backend.mcp
+package io.github.ptitjes.konvo.core.ai.mcp
 
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.mcp.*
