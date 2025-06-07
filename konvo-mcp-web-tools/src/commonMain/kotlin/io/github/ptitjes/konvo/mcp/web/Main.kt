@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.tool.web
+package io.github.ptitjes.konvo.mcp.web
 
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
@@ -50,13 +50,11 @@ fun main(args: Array<String>) {
 fun configureServer(): Server {
     val server = Server(
         Implementation(
-            name = "konvo-tool-web",
+            name = "konvo-web-tools",
             version = "1.0.0"
         ),
         ServerOptions(
             capabilities = ServerCapabilities(
-                // prompts = ServerCapabilities.Prompts(listChanged = true),
-                // resources = ServerCapabilities.Resources(subscribe = true, listChanged = true),
                 tools = ServerCapabilities.Tools(listChanged = true),
             )
         )

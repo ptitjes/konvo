@@ -1,8 +1,8 @@
-package io.github.ptitjes.konvo.tool.web
+package io.github.ptitjes.konvo.mcp.web
 
 import com.fleeksoft.ksoup.*
 import com.xemantic.ai.tool.schema.meta.*
-import io.github.ptitjes.konvo.tool.web.utils.*
+import io.github.ptitjes.konvo.mcp.web.utils.HtmlToMarkdown
 import io.ktor.client.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*

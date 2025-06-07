@@ -21,7 +21,7 @@
              "command": [
                "java",
                "-jar",
-               "../konvo-tool-web/build/libs/konvo-tool-web-all.jar",
+               "../konvo-mcp-web-tools/build/libs/konvo-mcp-web-tools-all.jar",
                "--stdio"
              ]
            }

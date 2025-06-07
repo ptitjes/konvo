@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.tool.web.utils
+package io.github.ptitjes.konvo.mcp.web.utils
 
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import com.vladsch.flexmark.util.data.DataHolder

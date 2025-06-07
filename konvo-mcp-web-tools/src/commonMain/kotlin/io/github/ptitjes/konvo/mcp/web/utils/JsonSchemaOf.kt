@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.tool.web.utils
+package io.github.ptitjes.konvo.mcp.web.utils
 
 import com.xemantic.ai.tool.schema.*
 import com.xemantic.ai.tool.schema.generator.*

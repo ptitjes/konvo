@@ -1,7 +1,9 @@
-package io.github.ptitjes.konvo.tool.web
+package io.github.ptitjes.konvo.mcp.web
 
 import com.xemantic.ai.tool.schema.generator.*
-import io.github.ptitjes.konvo.tool.web.utils.*
+import io.github.ptitjes.konvo.mcp.web.utils.HtmlToMarkdown
+import io.github.ptitjes.konvo.mcp.web.utils.addJsonTool
+import io.github.ptitjes.konvo.mcp.web.utils.addStringTool
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*

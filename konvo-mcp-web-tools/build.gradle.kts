@@ -13,7 +13,7 @@ kotlin {
     jvm {
         binaries {
             executable {
-                mainClass = "io.github.ptitjes.konvo.tool.web.MainKt"
+                mainClass = "io.github.ptitjes.konvo.mcp.web.MainKt"
             }
         }
     }
@@ -48,10 +48,10 @@ kotlin {
 
 tasks.named<ShadowJar>("shadowJar") {
     manifest {
-        attributes["Main-Class"] = "io.github.ptitjes.konvo.tool.web.MainKt"
+        attributes["Main-Class"] = "io.github.ptitjes.konvo.mcp.web.MainKt"
     }
 }
 
 tasks.withType<Sync> {
-    destinationDir = File("/opt/konvo/mcp-servers/konvo-tool-web")
+    destinationDir = File("/opt/konvo/mcp-servers/konvo-web-tools")
 }

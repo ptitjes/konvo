@@ -13,7 +13,7 @@ plugins {
 
 include(":konvo-core")
 include(":konvo-frontend-discord")
-include(":konvo-tool-web")
+include(":konvo-mcp-web-tools")
 include(":app")
 
 rootProject.name = "konvo"

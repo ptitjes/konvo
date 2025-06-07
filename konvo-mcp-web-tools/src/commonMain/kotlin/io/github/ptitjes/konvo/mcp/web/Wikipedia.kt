@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.tool.web
+package io.github.ptitjes.konvo.mcp.web
 
 import com.xemantic.ai.tool.schema.meta.*
 import io.ktor.client.*

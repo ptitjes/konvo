@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.tool.web.utils
+package io.github.ptitjes.konvo.mcp.web.utils
 
 import io.modelcontextprotocol.kotlin.sdk.*
 import kotlinx.serialization.json.*
