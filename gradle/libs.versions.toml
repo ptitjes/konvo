@@ -36,6 +36,7 @@ ktorClientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 koog = { module = "ai.koog:koog-agents", version.ref = "koog" }
+koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" }
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
 xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
 
