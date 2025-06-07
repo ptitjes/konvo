@@ -33,7 +33,7 @@ class QuestionAnswerConversation(
             initialToolRegistry = toolRegistry,
         ) {
             install(EventHandler) {
-                onToolValidationError = { tool, toolArgs, value ->
+                onToolValidationError { tool, toolArgs, value ->
                     @Suppress("UNCHECKED_CAST") val broaderTool = tool as Tool<Tool.Args, ToolResult>
                     sendAssistantEvent(
                         AssistantEvent.ToolUseResult(
@@ -43,7 +43,7 @@ class QuestionAnswerConversation(
                         )
                     )
                 }
-                onToolCallResult = { tool, toolArgs, result ->
+                onToolCallResult { tool, toolArgs, result ->
                     @Suppress("UNCHECKED_CAST") val broaderTool = tool as Tool<Tool.Args, ToolResult>
                     sendAssistantEvent(
                         AssistantEvent.ToolUseResult(
@@ -53,7 +53,7 @@ class QuestionAnswerConversation(
                         )
                     )
                 }
-                onToolCallFailure = { tool, toolArgs, throwable ->
+                onToolCallFailure { tool, toolArgs, throwable ->
                     @Suppress("UNCHECKED_CAST") val broaderTool = tool as Tool<Tool.Args, ToolResult>
                     sendAssistantEvent(
                         AssistantEvent.ToolUseResult(
