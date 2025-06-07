@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
+import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
@@ -9,7 +10,7 @@ fun EphemeralComponentContainerBuilder.characterSelector(
     selectedCharacter: Character?,
     onSelectCharacter: suspend (Character) -> Unit,
 ) {
-    textDisplay { content = "**Character:**" }
+    textDisplay { content = markdown { bold("Character:") } }
 
     actionRow {
         stringSelect(
@@ -31,9 +32,13 @@ fun EphemeralComponentContainerBuilder.characterSelector(
     }
 
     if (selectedCharacter != null) {
-        fun characterDescriptionString(): String = buildString {
-            appendLine("> -# **Name:** ${selectedCharacter.name}")
-            appendLine("> -# **Tags:** ${(selectedCharacter.tags.joinToString(", "))}")
+        fun characterDescriptionString(): String = markdown {
+            blockquote {
+                subscript {
+                    line { bold("Name:"); space(); text(selectedCharacter.name) }
+                    line { bold("Tags:"); space(); text(selectedCharacter.tags.joinToString(", ")) }
+                }
+            }
         }
 
         if (selectedCharacter.avatarUrl != null) {

@@ -5,11 +5,9 @@ import kotlin.math.*
 
 val ModelCard.shortName: String get() = name.removeSuffix(":latest")
 
-val ModelCard.description: String
-    get() = "Parameters: $parameterCount; Context: $contextLengthString; Size: $sizeString; Quantization: $quantizationLevel"
-
-val ModelCard.sizeString: String get() = size.let { it.humanReadableSize(1000) + "B" }
-val ModelCard.contextLengthString: String get() = contextLength?.humanReadableSize(1024, 0) ?: "?"
+val ModelCard.sizeString: String get() = size.humanReadableSize(1000) + "B"
+val ModelCard.parameterCountString: String? get() = parameterCount?.humanReadableSize(1000)
+val ModelCard.contextLengthString: String? get() = contextLength?.humanReadableSize(1024, 0)
 
 private fun Long.humanReadableSize(base: Long, digitCount: Int = 1): String {
     val units = listOf("", "K", "M", "G", "T", "P", "E")

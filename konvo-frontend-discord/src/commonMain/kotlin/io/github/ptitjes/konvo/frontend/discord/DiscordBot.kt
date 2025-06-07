@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord
 
+import ai.koog.prompt.markdown.*
 import dev.kord.common.annotation.*
 import dev.kord.common.entity.*
 import dev.kord.core.*
@@ -15,7 +16,6 @@ import dev.kord.rest.builder.component.*
 import dev.kord.rest.builder.interaction.*
 import dev.kord.rest.builder.message.*
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
@@ -166,45 +166,45 @@ private fun MessageBuilder.conversationStartMessage(
         accentColor = DiscordConstants.KonvoColor
 
         textDisplay {
-            content = buildString {
-                append("### Conversation started in ")
-                append(if (newChannel != null) "channel ${newChannel.link}" else "this channel")
-                appendLine(".")
+            content = markdown {
+                val channelString = if (newChannel != null) "channel ${newChannel.link}" else "this channel"
+                h3("Conversation started in $channelString.")
             }
         }
 
         textDisplay {
-            content = buildString {
-                append("**Mode:** ")
-                appendLine(ConversationMode.forConfiguration(configuration).label)
+            content = markdown {
+                line { bold("Mode:"); space(); text(ConversationMode.forConfiguration(configuration).label) }
             }
         }
 
         when (configuration) {
             is QuestionAnswerModeConfiguration -> {
-                val modelName = configuration.model.shortName
-                val toolNames = configuration.tools.map { it.name }
-
                 textDisplay {
-                    content = buildString {
-                        appendLine("**Model:** $modelName")
-                        appendLine("**Tools:** ${toolNames.joinToString()}")
+                    content = markdown {
+                        line { bold("Prompt:"); space(); text(configuration.prompt.name) }
+                        line {
+                            bold("Tools:"); space()
+                            text(configuration.tools.takeIf { it.isNotEmpty() }?.joinToString { it.name } ?: "None")
+                        }
+                        line { bold("Model:"); space(); text(configuration.model.shortName) }
                     }
                 }
             }
 
             is RoleplayingModeConfiguration -> {
-                val modelName = configuration.model.shortName
-                val characterName = configuration.character.name
-                val characterUrl = configuration.character.avatarUrl
-                val userName = configuration.userName
-
-                fun conversationDescriptionString(): String = buildString {
-                    appendLine("**Model:** $modelName")
-                    appendLine("**Character:** $characterName")
-                    appendLine("**Username:** $userName")
+                fun conversationDescriptionString(): String = markdown {
+                    line { bold("Character:"); space(); text(configuration.character.name) }
+                    if (configuration.character.greetings.isNotEmpty()) line {
+                        bold("Character greeting:"); space()
+                        text(configuration.characterGreetingIndex?.let { "#$it" } ?: "Random")
+                    }
+                    line { bold("Username:"); space(); text(configuration.userName) }
+                    line { bold("Model:"); space(); text(configuration.model.shortName) }
                 }
 
+                val characterName = configuration.character.name
+                val characterUrl = configuration.character.avatarUrl
                 if (fullSizeCharacterAvatar) {
                     textDisplay { content = conversationDescriptionString() }
 
@@ -283,11 +283,11 @@ private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.T
 
             callsToCheck.forEach { call ->
                 textDisplay {
-                    content = buildString {
-                        appendLine("-# Called **${call.tool}**")
-                        if (call.arguments.isNotEmpty()) {
+                    content = markdown {
+                        subscript { text("Agent wants to call"); space(); bold(call.tool) }
+                        if (call.arguments.isNotEmpty()) blockquote {
                             call.arguments.forEach { (name, value) ->
-                                appendLine("> -# **$name:** $value")
+                                subscript { bold(name); space(); text(value.toString()) }
                             }
                         }
                     }
@@ -323,11 +323,11 @@ private suspend fun MessageChannelBehavior.notifyToolUse(event: AssistantEvent.T
                 accentColor = DiscordConstants.KonvoColor
 
                 textDisplay {
-                    content = buildString {
-                        appendLine("-# Called **${event.tool}**")
-                        if (event.arguments.isNotEmpty()) {
+                    content = markdown {
+                        subscript { text("Agent called tool"); space(); bold(event.tool) }
+                        if (event.arguments.isNotEmpty()) blockquote {
                             event.arguments.forEach { (name, value) ->
-                                appendLine("> -# **$name:** $value")
+                                subscript { bold(name); space(); text(value.toString()) }
                             }
                         }
                     }

@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
+import ai.koog.prompt.markdown.markdown
 import dev.kord.rest.builder.component.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
@@ -9,7 +10,7 @@ fun EphemeralContainerBuilder.toolSelector(
     selectedTools: List<ToolCard>?,
     onSelectTools: suspend (List<ToolCard>?) -> Unit,
 ) {
-    textDisplay { content = "**Tools:**" }
+    textDisplay { content = markdown { bold("Tools:") } }
 
     actionRow {
         val selectedToolNames = selectedTools?.map { it.name } ?: emptyList()

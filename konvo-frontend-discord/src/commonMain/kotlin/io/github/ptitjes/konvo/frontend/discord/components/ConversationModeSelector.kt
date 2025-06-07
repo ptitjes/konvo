@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
+import ai.koog.prompt.markdown.markdown
 import dev.kord.rest.builder.component.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.*
@@ -36,7 +37,7 @@ fun EphemeralComponentContainerBuilder.conversationModeSelector(
     selectedMode: ConversationMode?,
     onSelectMode: suspend (ConversationMode) -> Unit,
 ) {
-    textDisplay { content = "**Conversation mode:**" }
+    textDisplay { content = markdown { bold("Conversation mode:") } }
 
     actionRow {
         stringSelect(

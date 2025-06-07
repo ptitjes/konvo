@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
+import ai.koog.prompt.markdown.*
 import dev.kord.common.entity.*
 import dev.kord.core.behavior.*
 import dev.kord.core.behavior.interaction.response.*
@@ -26,7 +27,7 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
         container {
             accentColor = DiscordConstants.KonvoColor
 
-            textDisplay("### Configure the conversation")
+            textDisplay { content = markdown { h3("Configure the conversation") } }
 
             separator { }
 
@@ -56,14 +57,20 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                         updateMode(mode.copy(prompt = it))
                     }
 
+                    separator { divider = false }
+
                     toolSelector(konvo.tools, mode.tools) {
                         updateMode(mode.copy(tools = it))
                     }
+
+                    separator { divider = false }
 
                     val needsToolSupport = mode.tools != null && mode.tools.isNotEmpty()
                     val models = konvo.models.let { models ->
                         if (needsToolSupport) models.filter { it.supportsTools } else models
                     }
+
+                    separator { divider = false }
 
                     modelSelector(models, mode.model) {
                         updateMode(mode.copy(model = it))
@@ -71,12 +78,6 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                 }
 
                 is RoleplayingModeBuilder -> {
-                    modelSelector(konvo.models, mode.model) {
-                        updateMode(mode.copy(model = it))
-                    }
-
-                    separator { divider = false }
-
                     characterSelector(konvo.characters, mode.character) {
                         updateMode(mode.copy(character = it, characterGreetingIndex = null))
                     }
@@ -90,7 +91,11 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                     separator { divider = false }
 
                     section {
-                        textDisplay { content = "You are playing as **${mode.userName}**." }
+                        textDisplay {
+                            content = markdown {
+                                line { text("You are playing as"); space(); bold(mode.userName ?: "?") }
+                            }
+                        }
                         interactionButtonAccessory(
                             style = ButtonStyle.Secondary,
                             onClick = {
@@ -114,6 +119,12 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                         ) {
                             label = "Edit persona"
                         }
+                    }
+
+                    separator { divider = false }
+
+                    modelSelector(konvo.models, mode.model) {
+                        updateMode(mode.copy(model = it))
                     }
                 }
             }

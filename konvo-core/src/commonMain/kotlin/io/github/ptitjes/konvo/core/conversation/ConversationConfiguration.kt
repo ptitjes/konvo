@@ -16,8 +16,8 @@ data class QuestionAnswerModeConfiguration(
 ) : ConversationModeConfiguration
 
 data class RoleplayingModeConfiguration(
-    val model: ModelCard,
     val character: Character,
     val characterGreetingIndex: Int?,
     val userName: String,
+    val model: ModelCard,
 ) : ConversationModeConfiguration
