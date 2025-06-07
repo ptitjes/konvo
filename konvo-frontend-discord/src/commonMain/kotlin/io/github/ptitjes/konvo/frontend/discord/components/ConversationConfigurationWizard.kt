@@ -52,6 +52,10 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                 null -> {}
 
                 is QuestionAnswerModeBuilder -> {
+                    promptSelector(konvo.prompts, mode.prompt) {
+                        updateMode(mode.copy(prompt = it))
+                    }
+
                     toolSelector(konvo.tools, mode.tools) {
                         updateMode(mode.copy(tools = it))
                     }

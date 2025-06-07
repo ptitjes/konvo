@@ -21,6 +21,12 @@ suspend fun main() {
 
             installModels(OllamaModelProvider(configuration.ollama.url))
 
+            installPrompts(
+                McpPromptProvider(
+                    serversManager = mcpServersManager,
+                )
+            )
+
             installTools(
                 McpToolProvider(
                     serversManager = mcpServersManager,

@@ -6,7 +6,7 @@ import kotlinx.coroutines.*
 abstract class TurnBasedConversation(
     coroutineScope: CoroutineScope,
 ) : Conversation(coroutineScope) {
-    protected abstract fun buildChatAgent(): ChatAgent
+    protected abstract suspend fun buildChatAgent(): ChatAgent
     open fun getInitialAssistantMessage(): String? = null
 
     init {

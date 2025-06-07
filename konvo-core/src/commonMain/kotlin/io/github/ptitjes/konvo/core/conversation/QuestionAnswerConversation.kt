@@ -5,11 +5,9 @@ import ai.koog.agents.core.dsl.extension.*
 import ai.koog.agents.core.environment.*
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.features.eventHandler.feature.*
-import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.ai.koog.*
-import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
@@ -19,18 +17,14 @@ class QuestionAnswerConversation(
     coroutineScope: CoroutineScope,
     override val configuration: QuestionAnswerModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
-    override fun buildChatAgent(): ChatAgent {
+    override suspend fun buildChatAgent(): ChatAgent {
         val model = configuration.model
 
         val tools = configuration.tools
-        val toolRegistry = tools
-            .map { ToolRegistry { tool(it.toTool()) } }
-            .reduce { a, b -> a + b }
+        val toolRegistry = tools.map { it.toTool() }.let { ToolRegistry { tools(it) } }
 
         return ChatAgent(
-            initialPrompt = prompt("qa") {
-                system { +buildSystemPrompt() }
-            },
+            initialPrompt = configuration.prompt.toPrompt(),
             model = model.toLLModel(),
             maxAgentIterations = 50,
             promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),
@@ -85,7 +79,7 @@ class QuestionAnswerConversation(
             You can answer general questions using your internal knowledge OR invoke functions when necessary.
             Only use tools if you really need to. When in doubt, ask the user.
             If you use your internal knowledge, tell the user.
-        """.trimIndent()
+            """.trimIndent()
         )
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.format(dateFormat)
         appendLine("Today Date: $today")

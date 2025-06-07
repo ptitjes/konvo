@@ -12,7 +12,7 @@ class RoleplayingConversation(
     coroutineScope: CoroutineScope,
     override val configuration: RoleplayingModeConfiguration,
 ) : TurnBasedConversation(coroutineScope) {
-    override fun buildChatAgent(): ChatAgent {
+    override suspend fun buildChatAgent(): ChatAgent {
         val model = configuration.model
 
         return ChatAgent(

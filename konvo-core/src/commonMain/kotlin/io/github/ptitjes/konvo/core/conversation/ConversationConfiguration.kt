@@ -1,8 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation
 
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.ai.spi.ModelCard
-import io.github.ptitjes.konvo.core.ai.spi.ToolCard
+import io.github.ptitjes.konvo.core.ai.spi.*
 
 data class ConversationConfiguration(
     val mode: ConversationModeConfiguration,
@@ -11,9 +10,9 @@ data class ConversationConfiguration(
 sealed interface ConversationModeConfiguration
 
 data class QuestionAnswerModeConfiguration(
+    val prompt: PromptCard,
     val tools: List<ToolCard>,
     val model: ModelCard,
-    val customSystemPrompt: String?,
 ) : ConversationModeConfiguration
 
 data class RoleplayingModeConfiguration(

@@ -14,6 +14,9 @@ class McpToolProvider(
 ) : ToolProvider {
     override suspend fun queryTools(): List<ToolCard> {
         return serversManager.clients.flatMap { (clientName, client) ->
+            val serverCapabilities = client.serverCapabilities
+            if (serverCapabilities == null || serverCapabilities.tools == null) return@flatMap emptyList()
+
             client.listTools()?.tools?.map { tool ->
                 McpToolCard(
                     clientName = clientName,
@@ -41,7 +44,7 @@ class McpToolProvider(
         override val requiresVetting: Boolean
             get() = doesToolRequirePermission(clientName, tool.name, permissions)
 
-        override fun toTool(): Tool<*, *> {
+        override suspend fun toTool(): Tool<*, *> {
             val descriptor = DefaultMcpToolDescriptorParser.parse(tool)
             return KoogMcpTool(client, descriptor)
         }

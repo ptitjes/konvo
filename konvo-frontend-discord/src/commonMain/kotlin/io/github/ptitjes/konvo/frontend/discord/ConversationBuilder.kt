@@ -25,20 +25,20 @@ sealed interface ConversationModeBuilder {
 }
 
 data class QuestionAnswerModeBuilder(
+    val prompt: PromptCard? = null,
     val tools: List<ToolCard>? = null,
     val model: ModelCard? = null,
-    val customSystemPrompt: String? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean = model != null
 
     override fun build(): ConversationModeConfiguration {
-        if (model == null) error("Conversation configuration is incomplete")
+        if (prompt == null || model == null) error("Conversation configuration is incomplete")
 
         return QuestionAnswerModeConfiguration(
+            prompt = prompt,
             tools = tools ?: emptyList(),
             model = model,
-            customSystemPrompt = customSystemPrompt,
         )
     }
 }
