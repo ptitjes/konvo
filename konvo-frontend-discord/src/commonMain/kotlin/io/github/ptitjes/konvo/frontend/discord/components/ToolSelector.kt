@@ -6,18 +6,18 @@ import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 fun EphemeralContainerBuilder.toolSelector(
     tools: List<ToolCard>,
-    selectedTools: List<ToolCard>,
-    onSelectTools: suspend (List<ToolCard>) -> Unit,
+    selectedTools: List<ToolCard>?,
+    onSelectTools: suspend (List<ToolCard>?) -> Unit,
 ) {
     textDisplay { content = "**Tools:**" }
 
     actionRow {
-        val selectedToolNames = selectedTools.map { it.name }
+        val selectedToolNames = selectedTools?.map { it.name } ?: emptyList()
 
         stringSelect(
             onSelect = { selected ->
                 acknowledge()
-                onSelectTools(tools.filter { it.name in selected })
+                onSelectTools(tools.filter { it.name in selected }.takeIf { it.isNotEmpty() })
             }
         ) {
             placeholder = "Select some tools"

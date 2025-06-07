@@ -56,8 +56,9 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                         updateMode(mode.copy(tools = it))
                     }
 
+                    val needsToolSupport = mode.tools != null && mode.tools.isNotEmpty()
                     val models = konvo.models.let { models ->
-                        if (mode.tools.isNotEmpty()) models.filter { it.supportsTools } else models
+                        if (needsToolSupport) models.filter { it.supportsTools } else models
                     }
 
                     modelSelector(models, mode.model) {

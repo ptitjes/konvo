@@ -25,7 +25,7 @@ sealed interface ConversationModeBuilder {
 }
 
 data class QuestionAnswerModeBuilder(
-    val tools: List<ToolCard> = emptyList(),
+    val tools: List<ToolCard>? = null,
     val model: ModelCard? = null,
     val customSystemPrompt: String? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
@@ -36,7 +36,7 @@ data class QuestionAnswerModeBuilder(
         if (model == null) error("Conversation configuration is incomplete")
 
         return QuestionAnswerModeConfiguration(
-            tools = tools,
+            tools = tools ?: emptyList(),
             model = model,
             customSystemPrompt = customSystemPrompt,
         )
