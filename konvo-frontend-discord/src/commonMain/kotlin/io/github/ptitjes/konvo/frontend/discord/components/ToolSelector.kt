@@ -25,7 +25,9 @@ fun EphemeralContainerBuilder.toolSelector(
             tools.forEach { tool ->
                 option(tool.name, tool.name) {
                     description = tool.description
-                        .replace('\n', ' ').maybeEllipsisDiscordLabel()
+                        ?.replace('\n', ' ')
+                        ?.maybeEllipsisDiscordLabel()
+                        ?: ""
                     default = tool.name in selectedToolNames
                 }
             }

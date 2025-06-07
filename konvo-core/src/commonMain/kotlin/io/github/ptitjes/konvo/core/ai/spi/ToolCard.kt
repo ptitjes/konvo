@@ -4,7 +4,7 @@ import ai.koog.agents.core.tools.*
 
 interface ToolCard {
     val name: String
-    val description: String
+    val description: String?
     val parameters: ToolParameters
     val requiresVetting: Boolean
 

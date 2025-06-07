@@ -32,7 +32,7 @@ class McpToolProvider(
         val permissions: ToolPermissions?,
     ) : ToolCard {
         override val name: String get() = tool.name
-        override val description: String get() = tool.description ?: ""
+        override val description: String? get() = tool.description
         override val parameters: ToolParameters
             get() = ToolParameters(
                 properties = tool.inputSchema.properties.mapValues { (_, property) -> property.jsonObject },
