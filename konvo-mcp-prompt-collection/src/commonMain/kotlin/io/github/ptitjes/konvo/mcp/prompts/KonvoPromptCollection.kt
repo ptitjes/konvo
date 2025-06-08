@@ -8,18 +8,24 @@ import kotlinx.datetime.format.*
 
 fun Server.addKonvoPromptCollection() {
     addKoogPrompt(
-        name = "simple-qa",
+        name = "question-and-answer",
         description = "Answer questions.",
     ) {
         val dateString = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.format(dateFormat)
 
         user {
             markdown {
-                +"You are a helpful assistant and an expert in function composition."
-                +"You can answer general questions using your internal knowledge OR invoke functions when necessary."
-                +"Only use tools if you really need to. When in doubt, ask the user."
-                +"If you use your internal knowledge, tell the user."
-                newline()
+                +"You are a helpful assistant, that thrives at answering the user's questions."
+                br()
+
+                h1("Output Format")
+                bulleted {
+                    item("Use formal language.")
+                    item("Keep responses concise and engaging unless the situation demands elaboration.")
+                    item("If you use Markdown syntax, ensure the syntax is valid.")
+                }
+                br()
+
                 +"Today Date: $dateString"
             }
         }
@@ -34,6 +40,7 @@ fun Server.addKonvoPromptCollection() {
                 +"You are engaging in a casual, friendly conversation as if speaking with a friend."
                 +"Respond naturally and positively, with warmth and humor if appropriate."
                 +"Provide thoughtful insights or advice when asked, but keep the tone light and supportive."
+                br()
 
                 h1("Steps")
                 numbered {
@@ -49,6 +56,7 @@ fun Server.addKonvoPromptCollection() {
                     item("Keep responses concise and engaging unless the situation demands elaboration.")
                     item("Feel free to use emojis or casual expressions to convey friendliness.")
                 }
+                br()
 
                 h1("Examples")
 
@@ -59,6 +67,7 @@ fun Server.addKonvoPromptCollection() {
                 h2("Example 2")
                 line { bold("User:"); text("I'm feeling a bit down today.") }
                 line { bold("Assistant:"); text("I'm sorry to hear that, my friend. Is there anything I can do to help cheer you up or just be here to listen? 😊") }
+                br()
 
                 h1("Notes")
                 bulleted {
