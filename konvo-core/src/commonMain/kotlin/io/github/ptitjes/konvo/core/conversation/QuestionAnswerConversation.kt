@@ -111,10 +111,19 @@ private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
     edge(nodeStart forwardTo initialRequest)
     edge(initialRequest forwardTo processResponses)
 
-    edge(processResponses forwardTo vetToolCalls onMultipleToolCalls { true })
+    edge(processResponses forwardTo vetToolCalls onAnyToolCalls { true })
     edge(processResponses forwardTo nodeFinish transformed { it.first() } onAssistantMessage { true })
 
     edge(vetToolCalls forwardTo executeTools)
     edge(executeTools forwardTo toolResultsRequest)
     edge(toolResultsRequest forwardTo processResponses)
+}
+
+infix fun <IncomingOutput, IntermediateOutput, OutgoingInput>
+        AIAgentEdgeBuilderIntermediate<IncomingOutput, IntermediateOutput, OutgoingInput>.onAnyToolCalls(
+    block: suspend (List<Message.Tool.Call>) -> Boolean
+): AIAgentEdgeBuilderIntermediate<IncomingOutput, List<Message.Tool.Call>, OutgoingInput> {
+    return onIsInstance(List::class)
+        .transformed { it.filterIsInstance<Message.Tool.Call>() }
+        .onCondition { toolCalls -> toolCalls.isNotEmpty() && block(toolCalls) }
 }
