@@ -10,8 +10,8 @@ fun String.maybeSplitDiscordContent(): List<String> {
         val split = mutableListOf<String>()
         do {
             val index = remaining.lastIndexOf('\n', CONTENT_MAX_LENGTH)
-            split.add(remaining.substring(0, index).trim())
-            remaining = remaining.substring(index + 1).trim()
+            split.add(remaining.substring(0, index))
+            remaining = remaining.substring(index + 1)
         } while (remaining.length > CONTENT_MAX_LENGTH)
         split.add(remaining)
         return split
