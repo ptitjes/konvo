@@ -8,7 +8,7 @@ import kotlinx.coroutines.*
 import kotlinx.io.files.*
 
 suspend fun main() = coroutineScope {
-    val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json"))
+    val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json5"))
 
     val mcpServersManager = McpServersManager(
         coroutineContext = coroutineContext,
@@ -21,10 +21,10 @@ suspend fun main() = coroutineScope {
         val konvo = startKonvo {
             dataDirectory = configuration.dataDirectory
 
-            configuration.llms.forEach { llm ->
+            configuration.modelProviders.forEach { (name, configuration) ->
                 installModels(
-                    when (llm) {
-                        is LlmClientConfiguration.Ollama -> OllamaModelProvider(llm.url)
+                    when (configuration) {
+                        is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, configuration.baseUrl)
                     }
                 )
             }

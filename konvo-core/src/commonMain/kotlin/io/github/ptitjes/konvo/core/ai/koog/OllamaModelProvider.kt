@@ -7,11 +7,10 @@ import io.github.ptitjes.konvo.core.ai.spi.*
 import ai.koog.prompt.executor.ollama.client.OllamaModelCard as KoogOllamaModelCard
 
 class OllamaModelProvider(
-    urlString: String = "http://localhost:11434",
+    override val name: String,
+    baseUrl: String = "http://localhost:11434",
 ) : ModelProvider {
-    override val name: String get() = "Koog"
-
-    private val client = OllamaClient(urlString)
+    private val client = OllamaClient(baseUrl)
 
     override suspend fun queryModelCards(): List<ModelCard> {
         return client.getModels().map { card -> OllamaModelCard(card) }

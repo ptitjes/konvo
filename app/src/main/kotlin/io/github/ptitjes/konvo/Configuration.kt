@@ -10,30 +10,34 @@ import kotlinx.serialization.json.*
 @Serializable
 data class KonvoAppConfiguration(
     val dataDirectory: String,
-    val llms: List<LlmClientConfiguration>,
+    val modelProviders: Map<String, ModelProviderConfiguration>,
     val discord: DiscordConfiguration,
     val mcp: McpConfiguration,
 ) {
     companion object {
         fun readConfiguration(path: Path): KonvoAppConfiguration =
             defaultFileSystem.source(path).buffered().use { source ->
-                Json.decodeFromString(source.readString())
+                configurationJson.decodeFromString(source.readString())
             }
+
+        @OptIn(ExperimentalSerializationApi::class)
+        private val configurationJson = Json {
+            isLenient = true
+            allowComments = true
+            allowTrailingComma = true
+        }
     }
+}
+
+@Serializable
+sealed interface ModelProviderConfiguration {
+
+    @Serializable
+    @SerialName(value = "ollama")
+    data class Ollama(val baseUrl: String) : ModelProviderConfiguration
 }
 
 @Serializable
 data class DiscordConfiguration(
     val token: String,
 )
-
-@Serializable
-sealed interface LlmClientConfiguration {
-
-    @Serializable
-    @SerialName(value = "ollama")
-    data class Ollama(
-        val name: String,
-        val url: String,
-    ) : LlmClientConfiguration
-}
