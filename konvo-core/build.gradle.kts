@@ -13,6 +13,7 @@ kotlin {
                 api(libs.koog)
                 api(libs.xemanticJsonSchema)
 
+                implementation(libs.kotlinLogging)
                 implementation(libs.mcp)
                 implementation(libs.bundles.ktorClient)
                 implementation(libs.ktorClientCio)

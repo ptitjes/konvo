@@ -3,19 +3,20 @@ package io.github.ptitjes.konvo.core.ai.mcp
 import io.modelcontextprotocol.kotlin.sdk.client.*
 
 class McpServersManager(private val specifications: Map<String, ServerSpecification>?) {
-    private lateinit var handlers: Map<String, McpServerHandler>
+    private var handlers: Map<String, McpServerHandler>? = null
 
     suspend fun startAndConnectServers() {
-        handlers = specifications?.mapValues { (_, specification) ->
-            McpServerHandler(specification).also { it.connect() }
-        } ?: emptyMap()
-    }
-
-    suspend fun closeServers() {
-        handlers.forEach { (_, handler) ->
-            handler.close()
+        handlers = specifications?.mapValues { (name, specification) ->
+            McpServerHandler(name, specification).also { it.startAndConnect() }
         }
     }
 
-    val clients: Map<String, Client> get() = handlers.mapValues { (_, handler) -> handler.client }
+    suspend fun disconnectAndStopServers() {
+        handlers?.forEach { (_, handler) ->
+            handler.disconnectAndStop()
+        }
+    }
+
+    val clients: Map<String, Client> get() =
+        handlers?.mapValues { (_, handler) -> handler.client } ?: emptyMap()
 }

@@ -43,6 +43,6 @@ suspend fun main() {
 
         konvo.discordBot(configuration.discord.token)
     } finally {
-        mcpServersManager.closeServers()
+        mcpServersManager.disconnectAndStopServers()
     }
 }
