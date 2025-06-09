@@ -4,12 +4,14 @@ import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.frontend.discord.*
+import kotlinx.coroutines.*
 import kotlinx.io.files.*
 
-suspend fun main() {
+suspend fun main() = coroutineScope {
     val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json"))
 
     val mcpServersManager = McpServersManager(
+        coroutineContext = coroutineContext,
         specifications = configuration.mcp.servers,
     )
 

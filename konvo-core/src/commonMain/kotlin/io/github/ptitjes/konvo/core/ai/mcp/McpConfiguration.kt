@@ -27,7 +27,7 @@ sealed interface TransportSpecification {
     @Serializable
     @SerialName("sse")
     data class Sse(
-        val urlString: String? = null,
+        val url: String? = null,
         val reconnectionTime: Duration? = null,
         @Transient
         val requestBuilder: HttpRequestBuilder.() -> Unit = {},

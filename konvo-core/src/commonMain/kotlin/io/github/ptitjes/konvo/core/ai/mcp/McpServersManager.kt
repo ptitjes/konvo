@@ -1,13 +1,17 @@
 package io.github.ptitjes.konvo.core.ai.mcp
 
 import io.modelcontextprotocol.kotlin.sdk.client.*
+import kotlin.coroutines.*
 
-class McpServersManager(private val specifications: Map<String, ServerSpecification>?) {
+class McpServersManager(
+    private val coroutineContext: CoroutineContext,
+    private val specifications: Map<String, ServerSpecification>?,
+) {
     private var handlers: Map<String, McpServerHandler>? = null
 
     suspend fun startAndConnectServers() {
         handlers = specifications?.mapValues { (name, specification) ->
-            McpServerHandler(name, specification).also { it.startAndConnect() }
+            McpServerHandler(coroutineContext, name, specification).also { it.startAndConnect() }
         }
     }
 
