@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.core.conversation
 
+import io.github.oshai.kotlinlogging.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.serialization.json.*
@@ -8,11 +9,14 @@ import kotlin.coroutines.*
 abstract class Conversation(
     coroutineScope: CoroutineScope,
 ) : CoroutineScope {
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+    }
+
     private val job = SupervisorJob()
     private val handler = CoroutineExceptionHandler { _, exception ->
-        // TODO use a logger
-        println("Exception caught in conversation: $exception")
-        exception.printStackTrace()
+        logger.error(exception) { "Exception caught in conversation" }
     }
 
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + job + handler

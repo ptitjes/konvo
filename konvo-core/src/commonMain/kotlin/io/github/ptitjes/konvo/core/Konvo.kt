@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.core
 
+import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import kotlinx.coroutines.*
@@ -62,10 +63,13 @@ class Konvo(
     coroutineScope: CoroutineScope,
     private val configuration: KonvoConfiguration,
 ) : CoroutineScope {
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+    }
+
     private val handler = CoroutineExceptionHandler { _, exception ->
-        // TODO use a logger
-        println("Konvo failed: $exception")
-        exception.printStackTrace()
+        logger.error(exception) { "Exception caught in Konvo" }
     }
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + handler
 
