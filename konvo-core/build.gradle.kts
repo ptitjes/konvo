@@ -10,7 +10,7 @@ kotlin {
         commonMain {
             dependencies {
                 api(libs.bundles.kotlinxEcosystem)
-                api(libs.koog)
+                api(libs.bundles.koog)
                 api(libs.xemanticJsonSchema)
 
                 implementation(libs.kotlinLogging)

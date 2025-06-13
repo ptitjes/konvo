@@ -12,6 +12,7 @@ sealed interface ConversationModeConfiguration
 data class QuestionAnswerModeConfiguration(
     val prompt: PromptCard,
     val tools: List<ToolCard>,
+    val knowledgeBase: KnowledgeBaseCard? = null,
     val model: ModelCard,
 ) : ConversationModeConfiguration
 

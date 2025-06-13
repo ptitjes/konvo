@@ -12,6 +12,7 @@ interface KonvoConfigurationBuilder {
     fun installModels(provider: ModelProvider)
     fun installPrompts(provider: PromptProvider)
     fun installTools(provider: ToolProvider)
+    fun installKnowledgeBase(provider: KnowledgeBaseProvider)
 }
 
 data class KonvoConfiguration(
@@ -19,6 +20,7 @@ data class KonvoConfiguration(
     val modelProviders: List<ModelProvider>,
     val promptProviders: List<PromptProvider>,
     val toolProviders: List<ToolProvider>,
+    val knowledgeBaseProviders: List<KnowledgeBaseProvider>,
 )
 
 suspend fun startKonvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo = coroutineScope {
@@ -27,6 +29,7 @@ suspend fun startKonvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo =
         private val modelProviders = mutableListOf<ModelProvider>()
         private val promptProviders = mutableListOf<PromptProvider>()
         private val toolProviders = mutableListOf<ToolProvider>()
+        private val knowledgeBaseProviders = mutableListOf<KnowledgeBaseProvider>()
 
         override fun installModels(provider: ModelProvider) {
             modelProviders.add(provider)
@@ -40,12 +43,17 @@ suspend fun startKonvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo =
             toolProviders.add(provider)
         }
 
+        override fun installKnowledgeBase(provider: KnowledgeBaseProvider) {
+            knowledgeBaseProviders.add(provider)
+        }
+
         fun build(): KonvoConfiguration {
             return KonvoConfiguration(
                 dataDirectory = dataDirectory,
                 modelProviders = modelProviders.toList(),
                 promptProviders = promptProviders.toList(),
                 toolProviders = toolProviders.toList(),
+                knowledgeBaseProviders = knowledgeBaseProviders.toList(),
             )
         }
     }
@@ -73,15 +81,17 @@ class Konvo(
     }
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + handler
 
-    private lateinit var _models: List<ModelCard>;
-    private lateinit var _prompts: List<PromptCard>;
-    private lateinit var _tools: List<ToolCard>;
-    private lateinit var _characters: List<Character>;
+    private lateinit var _models: List<ModelCard>
+    private lateinit var _prompts: List<PromptCard>
+    private lateinit var _tools: List<ToolCard>
+    private lateinit var _knowledgeBases: List<KnowledgeBaseCard>
+    private lateinit var _characters: List<Character>
 
     suspend fun init() {
         _models = configuration.modelProviders.flatMap { it.queryModelCards() }
         _prompts = configuration.promptProviders.flatMap { it.queryPrompts() }
         _tools = configuration.toolProviders.flatMap { it.queryTools() }
+        _knowledgeBases = configuration.knowledgeBaseProviders.flatMap { it.queryKnowledgeBases() }
         _characters = loadCharacters()
     }
 
@@ -93,6 +103,7 @@ class Konvo(
     val characters: List<Character> get() = _characters
     val prompts: List<PromptCard> get() = _prompts
     val tools: List<ToolCard> get() = _tools
+    val knowledgeBases: List<KnowledgeBaseCard> get() = _knowledgeBases
 
     fun createConversation(configuration: ConversationConfiguration): Conversation = when (configuration.mode) {
         is QuestionAnswerModeConfiguration -> QuestionAnswerConversation(

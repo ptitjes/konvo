@@ -27,7 +27,9 @@ class QuestionAnswerConversation(
             maxAgentIterations = 50,
             promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
             strategy = strategy("qa") {
-                val qa by qaWithTools { calls -> vetToolCalls(calls, tools) }
+                val qa by qaWithTools(
+                    knowledgeBase = configuration.knowledgeBase,
+                ) { calls -> vetToolCalls(calls, tools) }
                 nodeStart then qa then nodeFinish
             },
             initialToolRegistry = toolRegistry,
@@ -100,6 +102,7 @@ class QuestionAnswerConversation(
 }
 
 private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
+    knowledgeBase: KnowledgeBaseCard?,
     vetToolCalls: suspend (List<Message.Tool.Call>) -> List<Boolean>,
 ) = subgraph {
     val initialRequest by nodeLLMRequestMultiple()
@@ -108,7 +111,25 @@ private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
     val executeTools by nodeExecuteVettedToolCalls(parallelTools = true)
     val toolResultsRequest by nodeLLMSendMultipleToolResults()
 
-    edge(nodeStart forwardTo initialRequest)
+    if (knowledgeBase != null) {
+        val ragRetrieve by nodeNaiveRagRetrieve(
+            storage = knowledgeBase.getRankedDocumentStorage(),
+            count = 10,
+            similarityThreshold = 0.5,
+        )
+
+        val ragAugment by nodeNaiveRagAugmentQuery<MarkdownFragment>(
+            source = { it.path.toString() },
+            content = { it.content }
+        )
+
+        edge(nodeStart forwardTo ragRetrieve)
+        edge(ragRetrieve forwardTo ragAugment)
+        edge(ragAugment forwardTo initialRequest)
+    } else {
+        edge(nodeStart forwardTo initialRequest)
+    }
+
     edge(initialRequest forwardTo processResponses)
 
     edge(processResponses forwardTo vetToolCalls onAnyToolCalls { true })

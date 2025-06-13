@@ -39,6 +39,8 @@ slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 koog = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" }
+koogRagVectorStorage = { module = "ai.koog:vector-storage", version.ref = "koog" }
+
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
 xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
 
@@ -53,6 +55,7 @@ flexmarkHtmlMarkdownConverter = { module = "com.vladsch.flexmark:flexmark-html2m
 [bundles]
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines", "kotlinxIoCore"]
 ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiation", "ktorSerializationKotlinxJson"]
+koog = ["koog", "koogRagVectorStorage"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
