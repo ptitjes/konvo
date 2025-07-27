@@ -9,14 +9,15 @@ import ai.koog.agents.features.common.config.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
+import ai.koog.prompt.message.*
 
 class ChatAgent(
     private val initialPrompt: Prompt,
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
-    private val strategy: AIAgentStrategy,
-    private val initialToolRegistry: ToolRegistry = ToolRegistry.Companion.EMPTY,
+    private val strategy: AIAgentStrategy<Message.User, List<Message.Assistant>>,
+    private val initialToolRegistry: ToolRegistry = ToolRegistry.EMPTY,
     private val installFeatures: AIAgent.FeatureContext.() -> Unit = {}
 ) {
     var toolRegistry: ToolRegistry = initialToolRegistry
@@ -34,12 +35,12 @@ class ChatAgent(
         prompt = newPrompt
     }
 
-    suspend fun runAndGetResult(input: String): String? {
+    suspend fun run(input: Message.User): List<Message.Assistant> {
         val agent = buildAgent()
-        return agent.runAndGetResult(input)
+        return agent.run(input)
     }
 
-    private fun buildAgent(): AIAgent {
+    private fun buildAgent(): AIAgent<Message.User, List<Message.Assistant>> {
         val agentConfig = AIAgentConfig(
             prompt = prompt,
             model = model,
@@ -70,9 +71,10 @@ private class PromptCollector {
 
         override fun install(config: PromptCollectorConfig, pipeline: AIAgentPipeline) {
             val featureImpl = PromptCollector()
+            val interceptContext = InterceptContext(this, featureImpl)
 
-            pipeline.interceptAfterNode(this, featureImpl) { node, context, input, output ->
-                config.collectPrompt(context.llm.readSession { prompt })
+            pipeline.interceptAfterNode(interceptContext) { eventContext ->
+                config.collectPrompt(eventContext.context.llm.readSession { prompt })
             }
         }
     }

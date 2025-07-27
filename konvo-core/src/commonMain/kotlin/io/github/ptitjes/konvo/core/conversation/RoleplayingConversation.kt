@@ -18,16 +18,18 @@ class RoleplayingConversation(
         return ChatAgent(
             initialPrompt = prompt("roleplaying") {
                 system { +buildSystemPrompt() }
-                getInitialAssistantMessage()?.let { assistant { +it } }
+                getInitialAssistantMessage().let { assistant { +it } }
             },
             model = model.toLLModel(),
             maxAgentIterations = 50,
             promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),
             strategy = strategy("roleplaying") {
-                val request by nodeLLMRequest()
+                val dumpRequest by dumpToPrompt()
+                val request by requestLLM()
 
-                edge(nodeStart forwardTo request)
-                edge(request forwardTo nodeFinish transformed { it.content })
+                edge(nodeStart forwardTo dumpRequest)
+                edge(dumpRequest forwardTo request)
+                edge(request forwardTo nodeFinish onMultipleAssistantMessages { true })
             },
         )
     }
@@ -39,7 +41,7 @@ class RoleplayingConversation(
         return character.systemPrompt.replaceTags(userName, character.name)
     }
 
-    override fun getInitialAssistantMessage(): String? {
+    override fun getInitialAssistantMessage(): String {
         val greetings = character.greetings
         val greetingIndex = configuration.characterGreetingIndex ?: Random.Default.nextInt(0, greetings.size)
         val selectedGreeting = greetings[greetingIndex]

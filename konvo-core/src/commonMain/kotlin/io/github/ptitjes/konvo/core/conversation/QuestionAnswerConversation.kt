@@ -33,33 +33,33 @@ class QuestionAnswerConversation(
             initialToolRegistry = toolRegistry,
         ) {
             install(EventHandler) {
-                onToolValidationError { tool, toolArgs, value ->
-                    @Suppress("UNCHECKED_CAST") val broaderTool = tool as Tool<Tool.Args, ToolResult>
+                onToolValidationError { eventContext ->
+                    @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
                     sendAssistantEvent(
                         AssistantEvent.ToolUseResult(
-                            tool = tool.name,
-                            arguments = broaderTool.encodeArgs(toolArgs),
-                            result = ToolCallResult.ExecutionFailure(value),
+                            tool = broaderTool.name,
+                            arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                            result = ToolCallResult.ExecutionFailure(eventContext.error),
                         )
                     )
                 }
-                onToolCallResult { tool, toolArgs, result ->
-                    @Suppress("UNCHECKED_CAST") val broaderTool = tool as Tool<Tool.Args, ToolResult>
+                onToolCallResult { eventContext ->
+                    @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
                     sendAssistantEvent(
                         AssistantEvent.ToolUseResult(
-                            tool = tool.name,
-                            arguments = broaderTool.encodeArgs(toolArgs),
-                            result = ToolCallResult.Success(result?.toStringDefault() ?: "Tool succeeded"),
+                            tool = broaderTool.name,
+                            arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                            result = ToolCallResult.Success(eventContext.result?.toStringDefault() ?: "Tool succeeded"),
                         )
                     )
                 }
-                onToolCallFailure { tool, toolArgs, throwable ->
-                    @Suppress("UNCHECKED_CAST") val broaderTool = tool as Tool<Tool.Args, ToolResult>
+                onToolCallFailure { eventContext ->
+                    @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
                     sendAssistantEvent(
                         AssistantEvent.ToolUseResult(
-                            tool = tool.name,
-                            arguments = broaderTool.encodeArgs(toolArgs),
-                            result = ToolCallResult.ExecutionFailure(throwable.message ?: "Tool failed"),
+                            tool = broaderTool.name,
+                            arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                            result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
                         )
                     )
                 }
@@ -101,29 +101,22 @@ class QuestionAnswerConversation(
 
 private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
     vetToolCalls: suspend (List<Message.Tool.Call>) -> List<Boolean>,
-) = subgraph {
-    val initialRequest by nodeLLMRequestMultiple()
+) = subgraph<Message.User, List<Message.Assistant>> {
+    val dumpInitialRequest by dumpToPrompt()
+    val initialRequest by requestLLM()
     val processResponses by nodeDoNothing<List<Message.Response>>()
     val vetToolCalls by nodeVetToolCalls(vetToolCalls = vetToolCalls)
     val executeTools by nodeExecuteVettedToolCalls(parallelTools = true)
     val toolResultsRequest by nodeLLMSendMultipleToolResults()
 
-    edge(nodeStart forwardTo initialRequest)
+    edge(nodeStart forwardTo dumpInitialRequest)
+    edge(dumpInitialRequest forwardTo initialRequest)
     edge(initialRequest forwardTo processResponses)
 
-    edge(processResponses forwardTo vetToolCalls onAnyToolCalls { true })
-    edge(processResponses forwardTo nodeFinish transformed { it.first() } onAssistantMessage { true })
+    edge(processResponses forwardTo vetToolCalls onMultipleToolCalls { true })
+    edge(processResponses forwardTo nodeFinish onMultipleAssistantMessages { true })
 
     edge(vetToolCalls forwardTo executeTools)
     edge(executeTools forwardTo toolResultsRequest)
     edge(toolResultsRequest forwardTo processResponses)
-}
-
-infix fun <IncomingOutput, IntermediateOutput, OutgoingInput>
-        AIAgentEdgeBuilderIntermediate<IncomingOutput, IntermediateOutput, OutgoingInput>.onAnyToolCalls(
-    block: suspend (List<Message.Tool.Call>) -> Boolean
-): AIAgentEdgeBuilderIntermediate<IncomingOutput, List<Message.Tool.Call>, OutgoingInput> {
-    return onIsInstance(List::class)
-        .transformed { it.filterIsInstance<Message.Tool.Call>() }
-        .onCondition { toolCalls -> toolCalls.isNotEmpty() && block(toolCalls) }
 }

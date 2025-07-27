@@ -18,6 +18,9 @@ class CallFixingPromptExecutor(private val delegate: PromptExecutor) : PromptExe
 
     override suspend fun executeStreaming(prompt: Prompt, model: LLModel): Flow<String> =
         delegate.executeStreaming(prompt, model)
+
+    override suspend fun moderate(prompt: Prompt, model: LLModel): ModerationResult =
+        delegate.moderate(prompt, model)
 }
 
 /**

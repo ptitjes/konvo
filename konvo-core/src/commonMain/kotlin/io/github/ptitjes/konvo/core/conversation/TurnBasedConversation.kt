@@ -1,7 +1,9 @@
 package io.github.ptitjes.konvo.core.conversation
 
+import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlinx.coroutines.*
+import kotlinx.datetime.*
 
 abstract class TurnBasedConversation(
     coroutineScope: CoroutineScope,
@@ -13,6 +15,8 @@ abstract class TurnBasedConversation(
         startConversation()
     }
 
+    private val clock = Clock.System
+
     private fun startConversation() = launch {
         val agent = buildChatAgent()
 
@@ -23,8 +27,8 @@ abstract class TurnBasedConversation(
         while (isActive) {
             val userMessage = awaitUserEvent()
             sendAssistantEvent(AssistantEvent.Processing)
-            val result = agent.runAndGetResult(userMessage)
-            result?.let { sendAssistantEvent(AssistantEvent.Message(it)) }
+            val result = agent.run(Message.User(userMessage, metaInfo = RequestMetaInfo.create(clock)))
+            result.forEach { sendAssistantEvent(AssistantEvent.Message(it.content)) }
         }
     }
 }
