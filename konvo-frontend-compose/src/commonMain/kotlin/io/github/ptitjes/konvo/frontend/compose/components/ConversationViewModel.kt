@@ -27,6 +27,10 @@ class ConversationViewModel(
     private val _conversationEntries = mutableStateListOf<ConversationEntry>()
     val conversationEntries: List<ConversationEntry> = _conversationEntries
 
+    val assistantIsProcessing = conversationUiView.assistantEvents
+        .map { it is AssistantEvent.Processing || it is AssistantEvent.ToolUseResult }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     init {
         // Start collecting assistant events
         viewModelScope.launch {
