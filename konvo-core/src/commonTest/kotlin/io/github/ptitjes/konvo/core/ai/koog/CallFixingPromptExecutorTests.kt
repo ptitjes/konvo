@@ -6,38 +6,38 @@ import kotlinx.datetime.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
 
-class MaybeFixToolCallTests {
+class CallFixingPromptExecutorTests {
 
     @Test
-    fun testUnquotedName() {
+    fun `should fix unquoted tool name`() {
         testFixToolCalls("""{"name":wikipedia_search,"parameters":{"query":"test"}}""") {
             call("wikipedia_search", mapOf("query" to JsonPrimitive("test")))
         }
     }
 
     @Test
-    fun testUnwrappedParameters() {
+    fun `should fix unwrapped parameters`() {
         testFixToolCalls("""{"name":"wikipedia_search","query":"test"}""") {
             call("wikipedia_search", mapOf("query" to JsonPrimitive("test")))
         }
     }
 
     @Test
-    fun testBothUnquotedNameAndUnwrappedParameters() {
+    fun `should fix both unquoted name and unwrapped parameters`() {
         testFixToolCalls("""{"name":wikipedia_search,"query":"test"}""") {
             call("wikipedia_search", mapOf("query" to JsonPrimitive("test")))
         }
     }
 
     @Test
-    fun testPythonFormattedToolCall() {
+    fun `should fix Python formatted tool call`() {
         testFixToolCalls("""[wikipedia_search(query="test")]""") {
             call("wikipedia_search", mapOf("query" to JsonPrimitive("test")))
         }
     }
 
     @Test
-    fun testMultiplePythonFormattedToolCalls() {
+    fun `should fix multiple Python formatted tool calls`() {
         testFixToolCalls("""[web_fetch(url="https://en.wikipedia.org/wiki/Angelina_Jolie_filmography"), web_fetch(url="https://www.imdb.com/list/ls005528877/"), web_fetch(url="https://www.imdb.com/title/tt0944835/")]""") {
             call("web_fetch", mapOf("url" to JsonPrimitive("https://en.wikipedia.org/wiki/Angelina_Jolie_filmography")))
             call("web_fetch", mapOf("url" to JsonPrimitive("https://www.imdb.com/list/ls005528877/")))
