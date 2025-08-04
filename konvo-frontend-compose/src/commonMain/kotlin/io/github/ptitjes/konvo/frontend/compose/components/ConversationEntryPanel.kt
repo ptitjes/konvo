@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import com.mikepenz.markdown.m3.*
 
 @Composable
 fun ConversationEntryPanel(
@@ -31,13 +32,15 @@ fun ConversationEntryPanel(
                     is ConversationEntry.User -> MaterialTheme.colorScheme.primaryContainer
                 }
             ) {
-                Text(
-                    text = entry.content,
+                Markdown(
+                    content = entry.content,
                     modifier = Modifier.padding(12.dp),
-                    color = when (entry) {
-                        is ConversationEntry.Assistant -> MaterialTheme.colorScheme.onSurfaceVariant
-                        is ConversationEntry.User -> MaterialTheme.colorScheme.onPrimaryContainer
-                    }
+                    colors = markdownColor(
+                        text = when (entry) {
+                            is ConversationEntry.Assistant -> MaterialTheme.colorScheme.onSurfaceVariant
+                            is ConversationEntry.User -> MaterialTheme.colorScheme.onPrimaryContainer
+                        },
+                    ),
                 )
             }
         }

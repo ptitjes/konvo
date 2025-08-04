@@ -18,6 +18,8 @@ kotlin {
                 implementation(compose.preview)
 
                 implementation(libs.androidxLifecycleViewmodel)
+
+                implementation(libs.markdownRenderer)
             }
         }
 

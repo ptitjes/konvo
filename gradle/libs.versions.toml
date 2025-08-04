@@ -13,11 +13,15 @@ koog = "0.3.0"
 mcp = "0.6.0"
 xemanticJsonSchema = "1.1.2"
 
+# Compose Frontend
 compose = "1.8.2"
 composeHotReload = "1.0.0-beta04"
 
 androidxLifecycleViewmodel = "2.9.1"
 
+markdownRenderer = "0.35.0"
+
+# Discord Frontend
 kord = "feat-components-v2-didier-SNAPSHOT"
 
 # For tools
@@ -48,8 +52,12 @@ koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" 
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
 xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
 
+# Compose Frontend
 androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }
 
+markdownRenderer = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
+
+# Discord Frontend
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
 
 # For tools
@@ -65,6 +73,7 @@ ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiati
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
+# Compose Frontend
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 composeGradle = { id = "org.jetbrains.compose", version.ref = "compose" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
