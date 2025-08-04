@@ -30,7 +30,7 @@ data class QuestionAnswerModeBuilder(
     val model: ModelCard? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
-    override fun isValid(): Boolean = model != null
+    override fun isValid(): Boolean = prompt != null && model != null
 
     override fun build(): ConversationAgentConfiguration {
         if (prompt == null || model == null) error("Conversation configuration is incomplete")
