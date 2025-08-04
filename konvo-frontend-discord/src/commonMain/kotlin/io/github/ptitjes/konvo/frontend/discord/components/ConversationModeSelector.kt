@@ -26,9 +26,9 @@ enum class ConversationMode(
             is RoleplayingModeBuilder -> Roleplaying
         }
 
-        fun forConfiguration(configuration: ConversationModeConfiguration): ConversationMode = when (configuration) {
-            is QuestionAnswerModeConfiguration -> QuestionAnswer
-            is RoleplayingModeConfiguration -> Roleplaying
+        fun forConfiguration(configuration: ConversationAgentConfiguration): ConversationMode = when (configuration) {
+            is QuestionAnswerAgentConfiguration -> QuestionAnswer
+            is RoleplayingAgentConfiguration -> Roleplaying
         }
     }
 }

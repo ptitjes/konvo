@@ -14,14 +14,14 @@ data class ConversationBuilder(
     fun build(): ConversationConfiguration {
         if (mode == null) error("Conversation configuration is incomplete")
         return ConversationConfiguration(
-            mode = mode.build(),
+            agent = mode.build(),
         )
     }
 }
 
 sealed interface ConversationModeBuilder {
     fun isValid(): Boolean
-    fun build(): ConversationModeConfiguration
+    fun build(): ConversationAgentConfiguration
 }
 
 data class QuestionAnswerModeBuilder(
@@ -32,10 +32,10 @@ data class QuestionAnswerModeBuilder(
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean = model != null
 
-    override fun build(): ConversationModeConfiguration {
+    override fun build(): ConversationAgentConfiguration {
         if (prompt == null || model == null) error("Conversation configuration is incomplete")
 
-        return QuestionAnswerModeConfiguration(
+        return QuestionAnswerAgentConfiguration(
             prompt = prompt,
             tools = tools ?: emptyList(),
             model = model,
@@ -53,11 +53,11 @@ data class RoleplayingModeBuilder(
     override fun isValid(): Boolean =
         model != null && character != null && userName != null
 
-    override fun build(): ConversationModeConfiguration {
+    override fun build(): ConversationAgentConfiguration {
         if (character == null || userName == null || model == null)
             error("Conversation configuration is incomplete")
 
-        return RoleplayingModeConfiguration(
+        return RoleplayingAgentConfiguration(
             character = character,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,

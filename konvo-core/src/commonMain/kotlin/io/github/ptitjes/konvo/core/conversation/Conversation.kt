@@ -5,11 +5,10 @@ import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
-import kotlinx.datetime.*
 import kotlinx.serialization.json.*
 import kotlin.coroutines.*
 
-abstract class Conversation(
+class Conversation(
     coroutineScope: CoroutineScope,
 ) : CoroutineScope {
 
@@ -24,50 +23,18 @@ abstract class Conversation(
 
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + job + handler
 
-    abstract val configuration: ConversationModeConfiguration
-
-    protected val userEventsChannel = Channel<UserEvent>()
-    protected val assistantEventsChannel = Channel<AssistantEvent>()
+    private val userEventsChannel = Channel<UserEvent>()
+    private val assistantEventsChannel = Channel<AssistantEvent>()
 
     val userEvents: SendChannel<UserEvent> = userEventsChannel
     val assistantEvents: ReceiveChannel<AssistantEvent> = assistantEventsChannel
 
-    protected suspend fun awaitUserEvent(): UserEvent = userEventsChannel.receive()
-    protected suspend fun sendAssistantEvent(event: AssistantEvent) = assistantEventsChannel.send(event)
+    suspend fun awaitUserEvent(): UserEvent = userEventsChannel.receive()
+    suspend fun sendAssistantEvent(event: AssistantEvent) = assistantEventsChannel.send(event)
 
-    protected abstract suspend fun buildChatAgent(): ChatAgent
-    open fun getInitialAssistantMessage(): String? = null
-
-    private val clock = Clock.System
-
-    init {
-        startConversation()
+    fun addAgent(agent: ChatAgent) = launch {
+        agent.joinConversation(this@Conversation)
     }
-
-    private fun startConversation() = launch {
-        val agent = buildChatAgent()
-
-        getInitialAssistantMessage()?.let {
-            sendAssistantEvent(AssistantEvent.Message(it))
-        }
-
-        while (isActive) {
-            val userEvent = awaitUserEvent()
-            sendAssistantEvent(AssistantEvent.Processing)
-            when (userEvent) {
-                is UserEvent.Message -> {
-                    val result = agent.run(userEvent.toUserMessage())
-                    result.forEach { sendAssistantEvent(it.toAssistantEventMessage()) }
-                }
-            }
-        }
-    }
-
-    private fun UserEvent.Message.toUserMessage(): Message.User =
-        Message.User(content, attachments = attachments, metaInfo = RequestMetaInfo.create(clock))
-
-    private fun Message.Assistant.toAssistantEventMessage(): AssistantEvent.Message =
-        AssistantEvent.Message(content)
 
     fun terminate() {
         job.cancel()

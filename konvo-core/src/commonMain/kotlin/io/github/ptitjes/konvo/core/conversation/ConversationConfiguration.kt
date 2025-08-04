@@ -4,20 +4,20 @@ import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 
 data class ConversationConfiguration(
-    val mode: ConversationModeConfiguration,
+    val agent: ConversationAgentConfiguration,
 )
 
-sealed interface ConversationModeConfiguration
+sealed interface ConversationAgentConfiguration
 
-data class QuestionAnswerModeConfiguration(
+data class QuestionAnswerAgentConfiguration(
     val prompt: PromptCard,
     val tools: List<ToolCard>,
     val model: ModelCard,
-) : ConversationModeConfiguration
+) : ConversationAgentConfiguration
 
-data class RoleplayingModeConfiguration(
+data class RoleplayingAgentConfiguration(
     val character: Character,
     val characterGreetingIndex: Int?,
     val userName: String,
     val model: ModelCard,
-) : ConversationModeConfiguration
+) : ConversationAgentConfiguration

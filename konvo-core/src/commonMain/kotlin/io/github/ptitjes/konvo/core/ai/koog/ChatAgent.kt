@@ -10,21 +10,31 @@ import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
+import io.github.ptitjes.konvo.core.conversation.*
+import kotlinx.coroutines.*
+import kotlinx.datetime.*
 
 class ChatAgent(
-    private val initialPrompt: Prompt,
+    private val systemPrompt: Prompt,
+    private val initialAssistantMessage: String? = null,
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
-    private val strategy: AIAgentStrategy<Message.User, List<Message.Assistant>>,
+    private val strategy: (Conversation) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
     private val initialToolRegistry: ToolRegistry = ToolRegistry.EMPTY,
-    private val installFeatures: AIAgent.FeatureContext.() -> Unit = {}
+    private val installFeatures: AIAgent.FeatureContext.(Conversation) -> Unit = {}
 ) {
     var toolRegistry: ToolRegistry = initialToolRegistry
-    var prompt: Prompt = initialPrompt
+    var prompt: Prompt = buildInitialPrompt()
 
     fun resetPrompt() {
-        prompt = initialPrompt
+        prompt = buildInitialPrompt()
+    }
+
+    private fun buildInitialPrompt(): Prompt {
+        return prompt(systemPrompt) {
+            initialAssistantMessage?.let { assistant { text(it) } }
+        }
     }
 
     fun resetToolRegistry() {
@@ -35,12 +45,7 @@ class ChatAgent(
         prompt = newPrompt
     }
 
-    suspend fun run(input: Message.User): List<Message.Assistant> {
-        val agent = buildAgent()
-        return agent.run(input)
-    }
-
-    private fun buildAgent(): AIAgent<Message.User, List<Message.Assistant>> {
+    private fun buildAgent(conversation: Conversation): AIAgent<Message.User, List<Message.Assistant>> {
         val agentConfig = AIAgentConfig(
             prompt = prompt,
             model = model,
@@ -49,17 +54,43 @@ class ChatAgent(
 
         return AIAgent(
             promptExecutor = promptExecutor,
-            strategy = strategy,
+            strategy = strategy(conversation),
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,
             installFeatures = {
                 install(PromptCollector) {
                     collectPrompt = ::updatePrompt
                 }
-                installFeatures()
+                installFeatures(conversation)
             },
         )
     }
+
+    suspend fun joinConversation(conversation: Conversation) = coroutineScope {
+        initialAssistantMessage?.let {
+            conversation.sendAssistantEvent(AssistantEvent.Message(it))
+        }
+
+        while (isActive) {
+            val userEvent = conversation.awaitUserEvent()
+            conversation.sendAssistantEvent(AssistantEvent.Processing)
+            when (userEvent) {
+                is UserEvent.Message -> {
+                    val agent = buildAgent(conversation)
+                    val result = agent.run(userEvent.toUserMessage())
+                    result.forEach { conversation.sendAssistantEvent(it.toAssistantEventMessage()) }
+                }
+            }
+        }
+    }
+
+    private val clock = Clock.System
+
+    private fun UserEvent.Message.toUserMessage(): Message.User =
+        Message.User(content, attachments = attachments, metaInfo = RequestMetaInfo.create(clock))
+
+    private fun Message.Assistant.toAssistantEventMessage(): AssistantEvent.Message =
+        AssistantEvent.Message(content)
 }
 
 private class PromptCollector {

@@ -99,7 +99,10 @@ class KonvoBot(
             val conversation = initiateConversation(channel, configuration)
 
             return@conversationBuilderWizard {
-                conversationStartMessage(conversation = conversation)
+                conversationStartMessage(
+                    configuration = configuration,
+                    conversation = conversation,
+                )
             }
         }
     }
@@ -109,7 +112,7 @@ class KonvoBot(
         val response = deferEphemeralResponseUnsafe()
 
         response.conversationBuilderWizard(konvo, user) { configuration ->
-            val channelName = channel ?: newChannelName(configuration.mode)
+            val channelName = channel ?: newChannelName()
 
             val newChannel = guild.createTextChannel(channelName) {
                 nsfw = true
@@ -118,7 +121,11 @@ class KonvoBot(
             val conversation = initiateConversation(newChannel, configuration)
 
             return@conversationBuilderWizard {
-                conversationStartMessage(conversation = conversation, newChannel = newChannel)
+                conversationStartMessage(
+                    configuration = configuration,
+                    conversation = conversation,
+                    newChannel = newChannel,
+                )
             }
         }
     }
@@ -135,7 +142,11 @@ class KonvoBot(
 
         channel.createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }
-            conversationStartMessage(conversation = conversation, fullSizeCharacterAvatar = true)
+            conversationStartMessage(
+                configuration = configuration,
+                conversation = conversation,
+                fullSizeCharacterAvatar = true,
+            )
         }
 
         launch { channel.handleAssistantEvents(conversation) }
@@ -192,17 +203,15 @@ class KonvoBot(
 }
 
 @OptIn(ExperimentalUuidApi::class)
-private fun newChannelName(configuration: ConversationModeConfiguration): String = when (configuration) {
-    is RoleplayingModeConfiguration -> "cai-${configuration.character.name}-${Uuid.random()}"
-    else -> "ai-${Uuid.random()}"
-}
+private fun newChannelName(): String = "ai-${Uuid.random()}"
 
 private fun MessageBuilder.conversationStartMessage(
+    configuration: ConversationConfiguration,
     conversation: Conversation,
     newChannel: TextChannel? = null,
     fullSizeCharacterAvatar: Boolean = false,
 ) {
-    val configuration = conversation.configuration
+    val configuration = configuration.agent
 
     container {
         accentColor = DiscordConstants.KonvoColor
@@ -221,7 +230,7 @@ private fun MessageBuilder.conversationStartMessage(
         }
 
         when (configuration) {
-            is QuestionAnswerModeConfiguration -> {
+            is QuestionAnswerAgentConfiguration -> {
                 textDisplay {
                     content = markdown {
                         line { bold("Prompt:"); space(); text(configuration.prompt.name) }
@@ -234,7 +243,7 @@ private fun MessageBuilder.conversationStartMessage(
                 }
             }
 
-            is RoleplayingModeConfiguration -> {
+            is RoleplayingAgentConfiguration -> {
                 fun conversationDescriptionString(): String = markdown {
                     line { bold("Character:"); space(); text(configuration.character.name) }
                     if (configuration.character.greetings.isNotEmpty()) line {

@@ -94,15 +94,16 @@ class Konvo(
     val prompts: List<PromptCard> get() = _prompts
     val tools: List<ToolCard> get() = _tools
 
-    fun createConversation(configuration: ConversationConfiguration): Conversation = when (configuration.mode) {
-        is QuestionAnswerModeConfiguration -> QuestionAnswerConversation(
-            coroutineScope = this,
-            configuration = configuration.mode,
-        )
+    suspend fun createConversation(configuration: ConversationConfiguration): Conversation {
+        val agent = when (configuration.agent) {
+            is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(configuration.agent)
+            is RoleplayingAgentConfiguration -> buildRoleplayingAgent(configuration.agent)
+        }
 
-        is RoleplayingModeConfiguration -> RoleplayingConversation(
-            coroutineScope = this,
-            configuration = configuration.mode,
-        )
+        val conversation = Conversation(this)
+
+        conversation.addAgent(agent)
+
+        return conversation
     }
 }
