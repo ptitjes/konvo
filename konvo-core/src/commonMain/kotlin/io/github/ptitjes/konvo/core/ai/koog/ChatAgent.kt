@@ -11,7 +11,6 @@ import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.conversation.*
-import kotlinx.coroutines.*
 import kotlinx.datetime.*
 
 class ChatAgent(
@@ -20,9 +19,9 @@ class ChatAgent(
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
-    private val strategy: (Conversation) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
+    private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
     private val initialToolRegistry: ToolRegistry = ToolRegistry.EMPTY,
-    private val installFeatures: AIAgent.FeatureContext.(Conversation) -> Unit = {}
+    private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {}
 ) {
     var toolRegistry: ToolRegistry = initialToolRegistry
     var prompt: Prompt = buildInitialPrompt()
@@ -45,7 +44,7 @@ class ChatAgent(
         prompt = newPrompt
     }
 
-    private fun buildAgent(conversation: Conversation): AIAgent<Message.User, List<Message.Assistant>> {
+    private fun buildAgent(conversation: ConversationAgentView): AIAgent<Message.User, List<Message.Assistant>> {
         val agentConfig = AIAgentConfig(
             prompt = prompt,
             model = model,
@@ -66,13 +65,12 @@ class ChatAgent(
         )
     }
 
-    suspend fun joinConversation(conversation: Conversation) = coroutineScope {
+    suspend fun joinConversation(conversation: ConversationAgentView) {
         initialAssistantMessage?.let {
             conversation.sendAssistantEvent(AssistantEvent.Message(it))
         }
 
-        while (isActive) {
-            val userEvent = conversation.awaitUserEvent()
+        conversation.userEvents.collect { userEvent ->
             conversation.sendAssistantEvent(AssistantEvent.Processing)
             when (userEvent) {
                 is UserEvent.Message -> {

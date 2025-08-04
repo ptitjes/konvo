@@ -97,11 +97,12 @@ class KonvoBot(
 
         response.conversationBuilderWizard(konvo, user) { configuration ->
             val conversation = initiateConversation(channel, configuration)
+            val conversationView = conversation.newUiView()
 
             return@conversationBuilderWizard {
                 conversationStartMessage(
                     configuration = configuration,
-                    conversation = conversation,
+                    conversation = conversationView,
                 )
             }
         }
@@ -119,11 +120,12 @@ class KonvoBot(
             }
 
             val conversation = initiateConversation(newChannel, configuration)
+            val conversationView = conversation.newUiView()
 
             return@conversationBuilderWizard {
                 conversationStartMessage(
                     configuration = configuration,
-                    conversation = conversation,
+                    conversation = conversationView,
                     newChannel = newChannel,
                 )
             }
@@ -137,6 +139,7 @@ class KonvoBot(
         configuration: ConversationConfiguration,
     ): Conversation {
         val conversation = konvo.createConversation(configuration)
+        val conversationView = conversation.newUiView()
 
         perChannelConversation[channel.id] = conversation
 
@@ -144,12 +147,12 @@ class KonvoBot(
             messageFlags { +MessageFlag.IsComponentsV2 }
             conversationStartMessage(
                 configuration = configuration,
-                conversation = conversation,
+                conversation = conversationView,
                 fullSizeCharacterAvatar = true,
             )
         }
 
-        launch { channel.handleAssistantEvents(conversation) }
+        launch { channel.handleAssistantEvents(conversationView) }
 
         return conversation
     }
@@ -162,8 +165,9 @@ class KonvoBot(
         if (message.type != MessageType.Default) return@coroutineScope
 
         val httpClient = event.kord.resources.httpClient
+        val conversationView = conversation.newUiView()
 
-        conversation.userEvents.send(
+        conversationView.sendUserEvent(
             UserEvent.Message(
                 message.content,
                 attachments = message.attachments.map { attachment ->
@@ -207,7 +211,7 @@ private fun newChannelName(): String = "ai-${Uuid.random()}"
 
 private fun MessageBuilder.conversationStartMessage(
     configuration: ConversationConfiguration,
-    conversation: Conversation,
+    conversation: ConversationUiView,
     newChannel: TextChannel? = null,
     fullSizeCharacterAvatar: Boolean = false,
 ) {
@@ -284,10 +288,10 @@ private fun MessageBuilder.conversationStartMessage(
     }
 }
 
-private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: Conversation) = coroutineScope {
+private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: ConversationUiView): Nothing = coroutineScope {
     val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
-    for (event in conversation.assistantEvents) {
+    conversation.assistantEvents.collect { event ->
         when (event) {
             AssistantEvent.Processing -> assistantProcessing.start()
 

@@ -22,18 +22,18 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
         model = model.toLLModel(),
         maxAgentIterations = 50,
         promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
-        strategy = { conversation ->
+        strategy = { conversationView ->
             strategy("qa") {
-                val qa by qaWithTools { calls -> conversation.vetToolCalls(calls, tools) }
+                val qa by qaWithTools { calls -> conversationView.vetToolCalls(calls, tools) }
                 nodeStart then qa then nodeFinish
             }
         },
         initialToolRegistry = toolRegistry,
-    ) { conversation ->
+    ) { conversationView ->
         install(EventHandler) {
             onToolValidationError { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
-                conversation.sendAssistantEvent(
+                conversationView.sendAssistantEvent(
                     AssistantEvent.ToolUseResult(
                         tool = broaderTool.name,
                         arguments = broaderTool.encodeArgs(eventContext.toolArgs),
@@ -43,7 +43,7 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
             }
             onToolCallResult { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
-                conversation.sendAssistantEvent(
+                conversationView.sendAssistantEvent(
                     AssistantEvent.ToolUseResult(
                         tool = broaderTool.name,
                         arguments = broaderTool.encodeArgs(eventContext.toolArgs),
@@ -53,7 +53,7 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
             }
             onToolCallFailure { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
-                conversation.sendAssistantEvent(
+                conversationView.sendAssistantEvent(
                     AssistantEvent.ToolUseResult(
                         tool = broaderTool.name,
                         arguments = broaderTool.encodeArgs(eventContext.toolArgs),
@@ -65,7 +65,7 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
     }
 }
 
-private suspend fun Conversation.vetToolCalls(calls: List<Message.Tool.Call>, tools: List<ToolCard>): List<Boolean> {
+private suspend fun ConversationAgentView.vetToolCalls(calls: List<Message.Tool.Call>, tools: List<ToolCard>): List<Boolean> {
     val vettedCalls = calls.map { CompletableDeferred<Boolean>() }
 
     val (withVetting, withoutVetting) = calls.withIndex().partition { (_, call) ->

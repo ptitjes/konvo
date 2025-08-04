@@ -4,7 +4,7 @@ import ai.koog.prompt.message.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 import kotlin.coroutines.*
 
@@ -23,17 +23,23 @@ class Conversation(
 
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + job + handler
 
-    private val userEventsChannel = Channel<UserEvent>()
-    private val assistantEventsChannel = Channel<AssistantEvent>()
+    private val userEventsChannel = MutableSharedFlow<UserEvent>()
+    private val assistantEventsChannel = MutableSharedFlow<AssistantEvent>()
 
-    val userEvents: SendChannel<UserEvent> = userEventsChannel
-    val assistantEvents: ReceiveChannel<AssistantEvent> = assistantEventsChannel
+    private inner class AgentViewImpl : ConversationAgentView {
+        override val userEvents: SharedFlow<UserEvent> = userEventsChannel
+        override suspend fun sendAssistantEvent(event: AssistantEvent) = assistantEventsChannel.emit(event)
+    }
 
-    suspend fun awaitUserEvent(): UserEvent = userEventsChannel.receive()
-    suspend fun sendAssistantEvent(event: AssistantEvent) = assistantEventsChannel.send(event)
+    private inner class UiViewImpl : ConversationUiView {
+        override suspend fun sendUserEvent(event: UserEvent) = userEventsChannel.emit(event)
+        override val assistantEvents: SharedFlow<AssistantEvent> = assistantEventsChannel
+    }
+
+    fun newUiView(): ConversationUiView = UiViewImpl()
 
     fun addAgent(agent: ChatAgent) = launch {
-        agent.joinConversation(this@Conversation)
+        agent.joinConversation(AgentViewImpl())
     }
 
     fun terminate() {
