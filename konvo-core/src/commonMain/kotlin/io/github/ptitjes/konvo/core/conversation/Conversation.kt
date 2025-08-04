@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.core.conversation
 
+import ai.koog.prompt.message.*
 import io.github.oshai.kotlinlogging.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
@@ -23,18 +24,25 @@ abstract class Conversation(
 
     abstract val configuration: ConversationModeConfiguration
 
-    protected val userEventsChannel = Channel<String>()
+    protected val userEventsChannel = Channel<UserEvent>()
     protected val assistantEventsChannel = Channel<AssistantEvent>()
 
-    val userEvents: SendChannel<String> = userEventsChannel
+    val userEvents: SendChannel<UserEvent> = userEventsChannel
     val assistantEvents: ReceiveChannel<AssistantEvent> = assistantEventsChannel
 
-    protected suspend fun awaitUserEvent(): String = userEventsChannel.receive()
+    protected suspend fun awaitUserEvent(): UserEvent = userEventsChannel.receive()
     protected suspend fun sendAssistantEvent(event: AssistantEvent) = assistantEventsChannel.send(event)
 
     fun terminate() {
         job.cancel()
     }
+}
+
+sealed interface UserEvent {
+    data class Message(
+        val content: String,
+        val attachments: List<Attachment>,
+    ) : UserEvent
 }
 
 sealed interface AssistantEvent {

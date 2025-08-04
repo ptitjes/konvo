@@ -25,10 +25,20 @@ abstract class TurnBasedConversation(
         }
 
         while (isActive) {
-            val userMessage = awaitUserEvent()
+            val userEvent = awaitUserEvent()
             sendAssistantEvent(AssistantEvent.Processing)
-            val result = agent.run(Message.User(userMessage, metaInfo = RequestMetaInfo.create(clock)))
-            result.forEach { sendAssistantEvent(AssistantEvent.Message(it.content)) }
+            when (userEvent) {
+                is UserEvent.Message -> {
+                    val result = agent.run(userEvent.toUserMessage())
+                    result.forEach { sendAssistantEvent(it.toAssistantEventMessage()) }
+                }
+            }
         }
     }
+
+    private fun UserEvent.Message.toUserMessage(): Message.User =
+        Message.User(content, attachments = attachments, metaInfo = RequestMetaInfo.create(clock))
+
+    private fun Message.Assistant.toAssistantEventMessage(): AssistantEvent.Message =
+        AssistantEvent.Message(content)
 }
