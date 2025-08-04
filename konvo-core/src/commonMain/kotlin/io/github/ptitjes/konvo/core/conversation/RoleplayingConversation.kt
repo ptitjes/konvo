@@ -11,7 +11,7 @@ import kotlin.random.*
 class RoleplayingConversation(
     coroutineScope: CoroutineScope,
     override val configuration: RoleplayingModeConfiguration,
-) : TurnBasedConversation(coroutineScope) {
+) : Conversation(coroutineScope) {
     override suspend fun buildChatAgent(): ChatAgent {
         val model = configuration.model
 

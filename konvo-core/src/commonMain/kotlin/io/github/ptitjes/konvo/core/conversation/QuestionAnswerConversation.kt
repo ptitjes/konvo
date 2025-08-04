@@ -14,7 +14,7 @@ import kotlinx.serialization.json.*
 class QuestionAnswerConversation(
     coroutineScope: CoroutineScope,
     override val configuration: QuestionAnswerModeConfiguration,
-) : TurnBasedConversation(coroutineScope) {
+) : Conversation(coroutineScope) {
     override suspend fun buildChatAgent(): ChatAgent {
         val model = configuration.model
 
