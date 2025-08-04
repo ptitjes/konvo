@@ -10,9 +10,12 @@ Konvo is a Kotlin Multiplatform project with JVM as the primary target. The proj
 
 - `konvo-core`: Core functionality for conversations, AI integration, and tools
 - `konvo-frontend-discord`: Discord bot frontend implementation
+- `konvo-frontend-compose`: Compose UI frontend implementation
 - `konvo-mcp-prompt-collection`: MCP (Model Context Protocol) prompt collection
 - `konvo-mcp-web-tools`: Web tools for MCP
-- `app`: Sample application
+- `samples`: Sample applications
+  - `samples/discord-bot`: Discord bot sample application
+  - `samples/standalone-compose-app`: Standalone Compose UI application
 
 ### Build Setup
 
@@ -26,18 +29,27 @@ Konvo is a Kotlin Multiplatform project with JVM as the primary target. The proj
 
 ### Configuration
 
-1. Create a `data` directory with a `characters` subdirectory for character cards
-2. Create a `config/konvo.json5` file using `config/konvo.sample.json5` as a template
-3. Configure the following in your JSON5 file:
-   - `dataDirectory`: Path to the data directory
-   - `modelProviders`: Configuration for AI model providers (e.g., Ollama)
-   - `discord`: Discord bot token
-   - `mcp`: Model Context Protocol configuration
+Each sample application has its own configuration:
 
-4. Start the application with:
+1. For each sample application:
+   - Create a `data` directory with a `characters` subdirectory for character cards
+   - Create a `config/konvo.json5` file using `config/konvo.sample.json5` as a template
+   - Configure the following in your JSON5 file:
+     - `dataDirectory`: Path to the data directory
+     - `modelProviders`: Configuration for AI model providers (e.g., Ollama)
+     - `mcp`: Model Context Protocol configuration
+     - For Discord bot, also configure `discord.token` with your Discord bot token
+
+2. Start the Discord bot application with:
 
 ```bash
-./gradlew :app:run
+./gradlew :samples:discord-bot:run
+```
+
+3. Start the Compose UI application with:
+
+```bash
+./gradlew :samples:standalone-compose-app:run
 ```
 
 ## Testing Information
@@ -117,8 +129,8 @@ The project uses the Kord library for Discord integration:
 
 ### Debugging
 
-1. Enable more verbose logging by configuring the logger level in `app/src/main/resources/simplelogger.properties`
-2. Use the `--debug` flag with Gradle for build debugging: `./gradlew --debug :app:run`
+1. Enable more verbose logging by configuring the logger level in the sample application's `src/main/resources/simplelogger.properties`
+2. Use the `--debug` flag with Gradle for build debugging: `./gradlew --debug :samples:discord-bot:run` or `./gradlew --debug :samples:standalone-compose-app:run`
 
 ### Working with AI Models
 
@@ -138,4 +150,5 @@ Character cards are JSON files in the `data/characters` directory with the follo
 
 1. Core functionality should be added to the `konvo-core` module
 2. Discord-specific features should be added to the `konvo-frontend-discord` module
-3. New MCP tools should be added to the appropriate MCP module
+3. Compose UI-specific features should be added to the `konvo-frontend-compose` module
+4. New MCP tools should be added to the appropriate MCP module
