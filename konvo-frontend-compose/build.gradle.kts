@@ -2,7 +2,6 @@ plugins {
     id("buildsrc.convention.kotlin-multiplatform")
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeGradle)
-//    alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
