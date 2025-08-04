@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.discord
 
 import ai.koog.prompt.markdown.*
+import ai.koog.prompt.message.*
 import dev.kord.common.annotation.*
 import dev.kord.common.entity.*
 import dev.kord.core.*
@@ -20,6 +21,8 @@ import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.uuid.*
@@ -128,7 +131,7 @@ class KonvoBot(
     ): Conversation {
         val conversation = konvo.createConversation(configuration)
 
-        perChannelConversation.put(channel.id, conversation)
+        perChannelConversation[channel.id] = conversation
 
         channel.createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }
@@ -145,7 +148,46 @@ class KonvoBot(
         val channel = message.channel
         val conversation = perChannelConversation[channel.id] ?: return@coroutineScope
 
-        conversation.userEvents.send(message.content)
+        if (message.type != MessageType.Default) return@coroutineScope
+
+        val httpClient = event.kord.resources.httpClient
+
+        conversation.userEvents.send(
+            UserEvent.Message(
+                message.content,
+                attachments = message.attachments.map { attachment ->
+                    val contentType = attachment.contentType
+                    val fileName = attachment.filename
+                    val format = fileName.substringAfterLast('.')
+                    val isImage = attachment.isImage
+                    val isAudio = contentType?.startsWith("audio/") ?: false
+
+                    val bytes = httpClient.get(attachment.url).bodyAsBytes()
+
+                    when {
+                        isImage -> Attachment.Image(
+                            content = AttachmentContent.Binary.Bytes(bytes),
+                            format = format,
+                            mimeType = contentType ?: "image/$format",
+                            fileName = fileName,
+                        )
+
+                        isAudio -> Attachment.Audio(
+                            content = AttachmentContent.Binary.Bytes(bytes),
+                            format = format,
+                            mimeType = contentType,
+                            fileName = fileName,
+                        )
+
+                        else -> Attachment.File(
+                            content = AttachmentContent.Binary.Bytes(bytes),
+                            format = format,
+                            mimeType = contentType ?: "application/$format",
+                        )
+                    }
+                }
+            )
+        )
     }
 }
 
