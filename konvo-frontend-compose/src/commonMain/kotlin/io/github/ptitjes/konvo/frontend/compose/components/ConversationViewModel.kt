@@ -1,0 +1,94 @@
+package io.github.ptitjes.konvo.frontend.compose.components
+
+import androidx.compose.runtime.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import io.github.ptitjes.konvo.core.conversation.*
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+
+/**
+ * ViewModel for the conversation UI.
+ *
+ * This class encapsulates:
+ * - Listening to events from the ConversationUiView
+ * - Maintaining the conversation entries
+ * - Adding messages from the user and sending them to the ConversationUiView
+ *
+ * @param conversationUiView The view of the conversation to interact with
+ * @param coroutineScope The coroutine scope to use for launching coroutines
+ */
+class ConversationViewModel(
+    private val conversationUiView: ConversationUiView,
+) : ViewModel() {
+    // The list of conversation entries, exposed as an immutable list
+    private val _conversationEntries = mutableStateListOf<ConversationEntry>()
+    val conversationEntries: List<ConversationEntry> = _conversationEntries
+
+    init {
+        // Start collecting assistant events
+        viewModelScope.launch {
+            conversationUiView.assistantEvents.collectLatest { event ->
+                processAssistantEvent(event)
+            }
+        }
+    }
+
+    /**
+     * Process an assistant event and update the conversation entries accordingly.
+     */
+    private fun processAssistantEvent(event: AssistantEvent) {
+        when (event) {
+            is AssistantEvent.Message -> {
+                _conversationEntries.add(ConversationEntry.Assistant(event.content))
+            }
+
+            is AssistantEvent.Processing -> {
+                // Could show a loading indicator here
+            }
+
+            is AssistantEvent.ToolUseVetting, is AssistantEvent.ToolUseResult -> {
+                // Handle tool-related events if needed
+            }
+        }
+    }
+
+    /**
+     * Send a user message to the conversation.
+     *
+     * @param message The message content
+     */
+    fun sendUserMessage(message: String) {
+        if (message.isBlank()) return
+
+        // Add the user message to conversation entries
+        _conversationEntries.add(ConversationEntry.User(message))
+
+        // Send the message to the conversation UI view
+        viewModelScope.launch {
+            conversationUiView.sendUserEvent(
+                UserEvent.Message(
+                    content = message,
+                    attachments = emptyList()
+                )
+            )
+        }
+    }
+}
+
+/**
+ * Represents an entry in the conversation.
+ */
+sealed interface ConversationEntry {
+    val content: String
+
+    /**
+     * A message from the user.
+     */
+    data class User(override val content: String) : ConversationEntry
+
+    /**
+     * A message from the assistant.
+     */
+    data class Assistant(override val content: String) : ConversationEntry
+}

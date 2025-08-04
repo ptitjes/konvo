@@ -15,6 +15,9 @@ kotlin {
 
                 implementation(compose.material3)
                 implementation(compose.materialIconsExtended)
+                implementation(compose.preview)
+
+                implementation(libs.androidxLifecycleViewmodel)
             }
         }
 
@@ -27,6 +30,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(libs.kotlinxCoroutinesSwing)
             }
         }
     }

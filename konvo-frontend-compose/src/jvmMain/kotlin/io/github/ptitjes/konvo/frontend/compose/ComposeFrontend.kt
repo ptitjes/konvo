@@ -10,7 +10,7 @@ suspend fun Konvo.composeFrontend() = coroutineScope {
             title = "Konvo",
             onCloseRequest = ::exitApplication,
         ) {
-            App()
+            App(this@composeFrontend)
         }
     }
 }

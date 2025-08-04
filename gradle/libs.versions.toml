@@ -16,6 +16,8 @@ xemanticJsonSchema = "1.1.2"
 compose = "1.8.2"
 composeHotReload = "1.0.0-beta04"
 
+androidxLifecycleViewmodel = "2.9.1"
+
 kord = "feat-components-v2-didier-SNAPSHOT"
 
 # For tools
@@ -29,6 +31,7 @@ kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ver
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
 kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinxCoroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
 kotlinxIoCore = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinxIo" }
 
 ktorClientContentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
@@ -44,6 +47,8 @@ koog = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" }
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
 xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
+
+androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }
 
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
 
