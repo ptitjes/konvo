@@ -15,6 +15,6 @@ include(":konvo-core")
 include(":konvo-frontend-discord")
 include(":konvo-mcp-prompt-collection")
 include(":konvo-mcp-web-tools")
-include(":app")
+include(":samples:discord-bot")
 
 rootProject.name = "konvo"

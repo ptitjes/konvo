@@ -19,7 +19,7 @@
         transport: { type: "stdio" },
         process: {
           command: [
-            "java", "-jar", "../konvo-mcp-prompt-collection/build/libs/konvo-mcp-prompt-collection-all.jar", "--stdio"
+            "java", "-jar", "../../konvo-mcp-prompt-collection/build/libs/konvo-mcp-prompt-collection-all.jar", "--stdio"
           ]
         }
       },
@@ -27,7 +27,7 @@
         transport: { type: "stdio" },
         process: {
           command: [
-            "java", "-jar", "../konvo-mcp-web-tools/build/libs/konvo-mcp-web-tools-all.jar", "--stdio"
+            "java", "-jar", "../../konvo-mcp-web-tools/build/libs/konvo-mcp-web-tools-all.jar", "--stdio"
           ]
         }
       },
