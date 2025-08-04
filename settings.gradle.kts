@@ -2,6 +2,7 @@ dependencyResolutionManagement {
     @Suppress("UnstableApiUsage")
     repositories {
         mavenCentral()
+        google()
         mavenLocal()
         maven("https://repo.kord.dev/snapshots/")
     }
@@ -12,6 +13,7 @@ plugins {
 }
 
 include(":konvo-core")
+include(":konvo-frontend-compose")
 include(":konvo-frontend-discord")
 include(":konvo-mcp-prompt-collection")
 include(":konvo-mcp-web-tools")

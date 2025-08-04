@@ -13,6 +13,9 @@ koog = "0.3.0"
 mcp = "0.6.0"
 xemanticJsonSchema = "1.1.2"
 
+compose = "1.8.2"
+composeHotReload = "1.0.0-beta04"
+
 kord = "feat-components-v2-didier-SNAPSHOT"
 
 # For tools
@@ -56,6 +59,10 @@ ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiati
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+composeGradle = { id = "org.jetbrains.compose", version.ref = "compose" }
+composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 
 # For tools
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

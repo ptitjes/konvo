@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/konvo-core" />
+            <option value="$PROJECT_DIR$/konvo-frontend-compose" />
             <option value="$PROJECT_DIR$/konvo-frontend-discord" />
             <option value="$PROJECT_DIR$/konvo-mcp-prompt-collection" />
             <option value="$PROJECT_DIR$/konvo-mcp-web-tools" />
