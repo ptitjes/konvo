@@ -20,6 +20,8 @@ composeHotReload = "1.0.0-beta04"
 androidxLifecycleViewmodel = "2.9.1"
 
 markdownRenderer = "0.35.0"
+fileKit = "0.8.8"
+coil = "3.3.0"
 
 # Discord Frontend
 kord = "feat-components-v2-didier-SNAPSHOT"
@@ -56,6 +58,8 @@ xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", versi
 androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }
 
 markdownRenderer = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
+fileKit = { module = "io.github.vinceglb:filekit-compose", version.ref = "fileKit" }
+coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 
 # Discord Frontend
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }

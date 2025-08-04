@@ -14,7 +14,7 @@ fun ConversationEntryPanel(
 ) {
     val horizontalArrangement = when (entry) {
         is ConversationEntry.Assistant -> Arrangement.Start
-        is ConversationEntry.User -> Arrangement.End
+        is ConversationEntry.UserMessage -> Arrangement.End
     }
 
     Row(
@@ -29,19 +29,35 @@ fun ConversationEntryPanel(
                 shape = RoundedCornerShape(16.dp),
                 color = when (entry) {
                     is ConversationEntry.Assistant -> MaterialTheme.colorScheme.surfaceVariant
-                    is ConversationEntry.User -> MaterialTheme.colorScheme.primaryContainer
+                    is ConversationEntry.UserMessage -> MaterialTheme.colorScheme.primaryContainer
                 }
             ) {
-                Markdown(
-                    content = entry.content,
-                    modifier = Modifier.padding(12.dp),
-                    colors = markdownColor(
-                        text = when (entry) {
-                            is ConversationEntry.Assistant -> MaterialTheme.colorScheme.onSurfaceVariant
-                            is ConversationEntry.User -> MaterialTheme.colorScheme.onPrimaryContainer
-                        },
-                    ),
-                )
+                Column {
+                    val content = when (entry) {
+                        is ConversationEntry.Assistant, is ConversationEntry.UserMessage -> entry.content
+                    }
+
+                    Markdown(
+                        content = content,
+                        modifier = Modifier.padding(12.dp),
+                        colors = markdownColor(
+                            text = when (entry) {
+                                is ConversationEntry.Assistant -> MaterialTheme.colorScheme.onSurfaceVariant
+                                is ConversationEntry.UserMessage -> MaterialTheme.colorScheme.onPrimaryContainer
+                            },
+                        ),
+                    )
+
+                    when (entry) {
+                        is ConversationEntry.UserMessage -> {
+                            entry.attachments.forEach { attachment ->
+                                AttachmentView(attachment)
+                            }
+                        }
+
+                        else -> {}
+                    }
+                }
             }
         }
     }

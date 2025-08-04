@@ -4,6 +4,8 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.frontend.compose.attachments.*
+import io.github.vinceglb.filekit.core.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -56,20 +58,28 @@ class ConversationViewModel(
     /**
      * Send a user message to the conversation.
      *
-     * @param message The message content
+     * @param message The message to send
      */
-    fun sendUserMessage(message: String) {
-        if (message.isBlank()) return
+    fun sendUserMessage(
+        content: String,
+        attachments: List<PlatformFile>,
+    ) {
+        if (content.isBlank()) error("Invalid blank message")
 
         // Add the user message to conversation entries
-        _conversationEntries.add(ConversationEntry.User(message))
+        _conversationEntries.add(
+            ConversationEntry.UserMessage(
+                content = content,
+                attachments = attachments,
+            )
+        )
 
         // Send the message to the conversation UI view
         viewModelScope.launch {
             conversationUiView.sendUserEvent(
                 UserEvent.Message(
-                    content = message,
-                    attachments = emptyList()
+                    content = content,
+                    attachments = attachments.map { it.createFileAttachement() },
                 )
             )
         }
@@ -85,7 +95,10 @@ sealed interface ConversationEntry {
     /**
      * A message from the user.
      */
-    data class User(override val content: String) : ConversationEntry
+    data class UserMessage(
+        override val content: String,
+        val attachments: List<PlatformFile>,
+    ) : ConversationEntry
 
     /**
      * A message from the assistant.

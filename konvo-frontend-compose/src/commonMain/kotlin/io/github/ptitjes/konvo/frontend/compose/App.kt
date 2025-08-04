@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 
@@ -42,8 +43,10 @@ fun App(
 
 private suspend fun Konvo.createDummyConversation(): Conversation {
     val prompt = prompts.first { it.name == "question-and-answer" }
-    val tools = tools.filter { it.name.startsWith("web_") }
-    val model = models.first { it.name.contains("ToolACE-2") }
+//    val tools = tools.filter { it.name.startsWith("web_") }
+//    val model = models.first { it.name.contains("ToolACE-2") }
+    val tools = emptyList<ToolCard>()
+    val model = models.first { it.name.contains("granite3.2-vision") }
 
     return createConversation(
         configuration = ConversationConfiguration(
