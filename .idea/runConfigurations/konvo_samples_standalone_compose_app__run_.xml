@@ -10,8 +10,8 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":konvo-mcp-prompt-collection:installJvmDist" />
-          <option value=":konvo-mcp-web-tools:installJvmDist" />
+          <option value=":konvo-mcp-prompt-collection:shadowJar" />
+          <option value=":konvo-mcp-web-tools:shadowJar" />
           <option value=":samples:standalone-compose-app:run" />
         </list>
       </option>
