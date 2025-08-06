@@ -90,6 +90,13 @@ Run a specific test class:
 
 ## Code Style and Development Practices
 
+### Kotlin Code Formatting
+
+The project uses the Kotlin code style, with the following exceptions:
+- Line length is 120 characters
+- Always add parameter names to multi-line function calls
+- Always use trailing commas in multi-line parameter lists
+
 ### Kotlin Idioms
 
 The project follows standard Kotlin idioms and best practices:
@@ -124,6 +131,16 @@ The project uses the Kord library for Discord integration:
 1. Commands are registered using the Discord slash command system
 2. Interactions are handled through event listeners
 3. Messages use Discord's component system for rich UI
+
+### Compose UI
+
+The project uses Jetpack Compose for UI development:
+- Compose UI is used for the Compose UI frontend
+- Compose Material 3 is used for UI components
+- Compose Navigation is used for navigation between screens
+- Compose Animation is used for animations
+- Compose Foundation is used for layout components
+- Compose Tooling is used for debugging
 
 ## Additional Development Information
 
