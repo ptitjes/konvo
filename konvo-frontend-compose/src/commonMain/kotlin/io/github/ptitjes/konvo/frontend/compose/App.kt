@@ -5,9 +5,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.frontend.compose.components.*
+import io.github.ptitjes.konvo.frontend.compose.screens.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationViewModel
 
 @Composable
 fun App(
@@ -20,41 +20,39 @@ fun App(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            var conversation by remember { mutableStateOf<Conversation?>(null) }
+            var currentScreen by remember { mutableStateOf<Screen>(Screen.NewConversation) }
 
-            LaunchedEffect(Unit) {
-                conversation = konvo.createDummyConversation()
-            }
+            when (val screen = currentScreen) {
+                Screen.NewConversation -> {
+                    NewConversationScreen(
+                        konvo = konvo,
+                        onConversationCreated = { newConversation ->
+                            currentScreen = Screen.InConversation(newConversation)
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
 
-            val conversationView = remember(conversation) { conversation?.newUiView() }
-            val viewModel = remember(conversationView) {
-                conversationView?.let { ConversationViewModel(it) }
-            }
-
-            if (viewModel != null) {
-                ConversationPane(
-                    viewModel = viewModel,
-                    modifier = Modifier.fillMaxSize()
-                )
+                is Screen.InConversation -> {
+                    val viewModel = remember(screen.conversation) {
+                        val conversationView = screen.conversation.newUiView()
+                        ConversationViewModel(conversationView)
+                    }
+                    ConversationScreen(
+                        viewModel = viewModel,
+                        onBackClick = { currentScreen = Screen.NewConversation },
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
     }
 }
 
-private suspend fun Konvo.createDummyConversation(): Conversation {
-    val prompt = prompts.first { it.name == "question-and-answer" }
-//    val tools = tools.filter { it.name.startsWith("web_") }
-//    val model = models.first { it.name.contains("ToolACE-2") }
-    val tools = emptyList<ToolCard>()
-    val model = models.first { it.name.contains("granite3.2-vision") }
+private sealed class Screen {
+    data object NewConversation : Screen()
 
-    return createConversation(
-        configuration = ConversationConfiguration(
-            agent = QuestionAnswerAgentConfiguration(
-                prompt = prompt,
-                tools = tools,
-                model = model,
-            )
-        )
-    )
+    data class InConversation(
+        val conversation: Conversation,
+    ) : Screen()
 }

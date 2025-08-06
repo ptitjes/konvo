@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationViewModel
 
 /**
  * A component that displays a conversation with a text entry box.
@@ -50,6 +51,10 @@ fun ConversationPane(
             }
         }
 
-        UserInputBox(viewModel)
+        UserInputBox(
+            onSendMessage = { content, attachments ->
+                viewModel.sendUserMessage(content, attachments)
+            }
+        )
     }
 }

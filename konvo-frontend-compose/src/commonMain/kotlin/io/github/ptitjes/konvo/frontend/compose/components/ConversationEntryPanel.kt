@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationEntry
 
 @Composable
 fun ConversationEntryPanel(

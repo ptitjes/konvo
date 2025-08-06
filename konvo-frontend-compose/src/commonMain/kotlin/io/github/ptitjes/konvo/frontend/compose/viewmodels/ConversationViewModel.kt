@@ -1,13 +1,12 @@
-package io.github.ptitjes.konvo.frontend.compose.components
+package io.github.ptitjes.konvo.frontend.compose.viewmodels
 
 import androidx.compose.runtime.*
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.compose.attachments.*
 import io.github.vinceglb.filekit.core.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 
 /**
  * ViewModel for the conversation UI.
@@ -18,7 +17,6 @@ import kotlinx.coroutines.launch
  * - Adding messages from the user and sending them to the ConversationUiView
  *
  * @param conversationUiView The view of the conversation to interact with
- * @param coroutineScope The coroutine scope to use for launching coroutines
  */
 class ConversationViewModel(
     private val conversationUiView: ConversationUiView,

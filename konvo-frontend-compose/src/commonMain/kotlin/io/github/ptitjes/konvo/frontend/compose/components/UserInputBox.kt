@@ -12,17 +12,16 @@ import androidx.compose.ui.unit.*
 import io.github.vinceglb.filekit.core.*
 
 @Composable
-fun UserInputBox(viewModel: ConversationViewModel) {
+fun UserInputBox(
+    onSendMessage: (content: String, attachments: List<PlatformFile>) -> Unit,
+) {
     var textInput by remember { mutableStateOf("") }
     val attachments = remember { mutableStateListOf<PlatformFile>() }
 
     val canSendMessage: Boolean = textInput.isNotBlank()
 
     fun sendMessage() {
-        viewModel.sendUserMessage(
-            content = textInput.trim(),
-            attachments = attachments.toList(),
-        )
+        onSendMessage(textInput.trim(), attachments.toList())
 
         textInput = ""
         attachments.clear()
