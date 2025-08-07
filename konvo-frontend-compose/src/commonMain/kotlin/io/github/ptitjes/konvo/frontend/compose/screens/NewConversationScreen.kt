@@ -116,17 +116,19 @@ private fun QuestionAnswerConfigurationForm(
     onPromptSelected: (PromptCard) -> Unit,
     selectedTools: List<ToolCard>,
     onToolsSelected: (List<ToolCard>) -> Unit,
-    selectedModel: ModelCard?,
+    selectedModel: ModelCard,
     onModelSelected: (ModelCard) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        PromptSelector(
-            selectedPrompt = selectedPrompt,
-            onPromptSelected = onPromptSelected,
-            prompts = prompts
-        )
+        if (prompts.isNotEmpty() && selectedPrompt != null) {
+            PromptSelector(
+                selectedPrompt = selectedPrompt,
+                onPromptSelected = onPromptSelected,
+                prompts = prompts
+            )
+        }
 
         ToolSelector(
             selectedTools = selectedTools,
@@ -146,13 +148,13 @@ private fun QuestionAnswerConfigurationForm(
 private fun RoleplayingConfigurationForm(
     characters: List<Character>,
     models: List<ModelCard>,
-    selectedCharacter: Character?,
+    selectedCharacter: Character,
     onCharacterSelected: (Character) -> Unit,
     selectedGreetingIndex: Int?,
     onGreetingIndexSelected: (Int?) -> Unit,
     userName: String,
     onUserNameChanged: (String) -> Unit,
-    selectedModel: ModelCard?,
+    selectedModel: ModelCard,
     onModelSelected: (ModelCard) -> Unit,
 ) {
     Column(
@@ -169,23 +171,21 @@ private fun RoleplayingConfigurationForm(
         )
 
         // Greeting Selection (only if the character has greetings)
-        selectedCharacter?.let { character ->
-            if (character.greetings.isNotEmpty()) {
-                CharacterGreetingSelector(
-                    selectedGreetingIndex = selectedGreetingIndex,
-                    onGreetingIndexSelected = onGreetingIndexSelected,
-                    character = character
-                )
-            }
+        if (selectedCharacter.greetings.isNotEmpty()) {
+            CharacterGreetingSelector(
+                selectedGreetingIndex = selectedGreetingIndex,
+                onGreetingIndexSelected = onGreetingIndexSelected,
+                character = selectedCharacter
+            )
         }
 
-        // User Name
-        Text(
-            text = "Your Name",
-            style = MaterialTheme.typography.titleSmall
-        )
-
-        TextField(
+        OutlinedTextField(
+            label = {
+                Text(
+                    text = "Your Persona",
+                    style = MaterialTheme.typography.titleSmall
+                )
+            },
             value = userName,
             onValueChange = onUserNameChanged,
             modifier = Modifier.fillMaxWidth()

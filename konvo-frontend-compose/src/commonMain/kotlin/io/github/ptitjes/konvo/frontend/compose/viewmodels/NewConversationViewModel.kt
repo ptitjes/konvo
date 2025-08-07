@@ -29,28 +29,28 @@ class NewConversationViewModel(
         private set
 
     // Question Answer configuration
-    var selectedPrompt by mutableStateOf(prompts.firstOrNull())
+    var selectedPrompt by mutableStateOf(prompts.first())
         private set
     var selectedTools by mutableStateOf<List<ToolCard>>(emptyList())
         private set
-    var selectedQAModel by mutableStateOf(models.firstOrNull())
+    var selectedQAModel by mutableStateOf(models.first())
         private set
 
     // Roleplaying configuration
-    var selectedCharacter by mutableStateOf(characters.firstOrNull())
+    var selectedCharacter by mutableStateOf(characters.first())
         private set
     var selectedGreetingIndex by mutableStateOf<Int?>(null)
         private set
     var userName by mutableStateOf("User")
         private set
-    var selectedRPModel by mutableStateOf(models.firstOrNull())
+    var selectedRPModel by mutableStateOf(models.first())
         private set
 
     // Computed properties
     val isCreateEnabled: Boolean
         get() = when (selectedAgentType) {
-            AgentType.QuestionAnswer -> selectedPrompt != null && selectedQAModel != null
-            AgentType.Roleplaying -> selectedCharacter != null && selectedRPModel != null && userName.isNotBlank()
+            AgentType.QuestionAnswer -> true
+            AgentType.Roleplaying -> userName.isNotBlank()
         }
 
     // Event handlers
@@ -64,8 +64,8 @@ class NewConversationViewModel(
 
     fun onToolsSelected(tools: List<ToolCard>) {
         selectedTools = tools
-        if (selectedTools.isNotEmpty() && selectedQAModel?.supportsTools == false) {
-            selectedQAModel = models.firstOrNull { it.supportsTools }
+        if (selectedTools.isNotEmpty() && !selectedQAModel.supportsTools) {
+            selectedQAModel = models.first { it.supportsTools }
         }
     }
 
