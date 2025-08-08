@@ -26,7 +26,7 @@ kotlin {
                 implementation(libs.mcp)
                 implementation(libs.xemanticJsonSchema)
 
-                implementation(libs.slf4jNop)
+                implementation(libs.slf4jSimple)
                 implementation(libs.koogPromptMarkdown)
             }
         }

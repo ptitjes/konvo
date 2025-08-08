@@ -1,2 +1,3 @@
 /config/konvo.json5
 /data
+*.log

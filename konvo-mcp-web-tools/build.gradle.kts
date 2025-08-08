@@ -29,7 +29,7 @@ kotlin {
                 implementation(libs.bundles.ktorClient)
                 implementation(libs.ktorClientCio)
 
-                implementation(libs.slf4jNop)
+                implementation(libs.slf4jSimple)
                 implementation(libs.ksoup)
                 implementation(libs.flexmarkHtmlMarkdownConverter)
             }
