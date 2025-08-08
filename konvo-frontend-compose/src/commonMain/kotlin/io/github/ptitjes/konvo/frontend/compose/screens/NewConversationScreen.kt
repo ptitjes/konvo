@@ -25,7 +25,7 @@ import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 @Composable
 fun NewConversationScreen(
     konvo: Konvo,
-    onConversationCreated: (Conversation) -> Unit,
+    onConversationCreated: (ActiveConversation) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel = remember { NewConversationViewModel(konvo) }

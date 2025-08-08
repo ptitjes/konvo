@@ -7,15 +7,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationEntry
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationUiEntry
 
 @Composable
 fun ConversationEntryPanel(
-    entry: ConversationEntry,
+    entry: ConversationUiEntry,
 ) {
     val horizontalArrangement = when (entry) {
-        is ConversationEntry.Assistant -> Arrangement.Start
-        is ConversationEntry.UserMessage -> Arrangement.End
+        is ConversationUiEntry.Assistant -> Arrangement.Start
+        is ConversationUiEntry.UserMessage -> Arrangement.End
     }
 
     Row(
@@ -29,13 +29,13 @@ fun ConversationEntryPanel(
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = when (entry) {
-                    is ConversationEntry.Assistant -> MaterialTheme.colorScheme.surfaceVariant
-                    is ConversationEntry.UserMessage -> MaterialTheme.colorScheme.primaryContainer
+                    is ConversationUiEntry.Assistant -> MaterialTheme.colorScheme.surfaceVariant
+                    is ConversationUiEntry.UserMessage -> MaterialTheme.colorScheme.primaryContainer
                 }
             ) {
                 Column {
                     val content = when (entry) {
-                        is ConversationEntry.Assistant, is ConversationEntry.UserMessage -> entry.content
+                        is ConversationUiEntry.Assistant, is ConversationUiEntry.UserMessage -> entry.content
                     }
 
                     Markdown(
@@ -43,14 +43,14 @@ fun ConversationEntryPanel(
                         modifier = Modifier.padding(12.dp),
                         colors = markdownColor(
                             text = when (entry) {
-                                is ConversationEntry.Assistant -> MaterialTheme.colorScheme.onSurfaceVariant
-                                is ConversationEntry.UserMessage -> MaterialTheme.colorScheme.onPrimaryContainer
+                                is ConversationUiEntry.Assistant -> MaterialTheme.colorScheme.onSurfaceVariant
+                                is ConversationUiEntry.UserMessage -> MaterialTheme.colorScheme.onPrimaryContainer
                             },
                         ),
                     )
 
                     when (entry) {
-                        is ConversationEntry.UserMessage -> {
+                        is ConversationUiEntry.UserMessage -> {
                             entry.attachments.forEach { attachment ->
                                 AttachmentView(attachment)
                             }

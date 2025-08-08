@@ -1,17 +1,13 @@
 package io.github.ptitjes.konvo.frontend.compose.attachments
 
-import ai.koog.prompt.message.*
+import io.github.ptitjes.konvo.core.conversation.*
 import io.github.vinceglb.filekit.core.*
 
-actual fun PlatformFile.createFileAttachement(): Attachment {
-    val fileName = file.name
-    val format = fileName.substringAfterLast('.')
-
-    val bytes = file.readBytes()
-
-    return Attachment.Image(
-        content = AttachmentContent.Binary.Bytes(bytes),
-        fileName = fileName,
-        format = format,
+actual fun PlatformFile.createImageAttachement(): Attachment {
+    return Attachment(
+        type = Attachment.Type.Image,
+        url = file.toURI().toString(),
+        name = name,
+        mimeType = "image/$extension",
     )
 }

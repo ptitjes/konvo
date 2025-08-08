@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.frontend.discord
 
 import ai.koog.prompt.markdown.*
-import ai.koog.prompt.message.*
 import dev.kord.common.annotation.*
 import dev.kord.common.entity.*
 import dev.kord.core.*
@@ -21,8 +20,6 @@ import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.uuid.*
@@ -132,12 +129,12 @@ class KonvoBot(
         }
     }
 
-    val perChannelConversation = mutableMapOf<Snowflake, Conversation>()
+    val perChannelConversation = mutableMapOf<Snowflake, ActiveConversation>()
 
     private suspend fun initiateConversation(
         channel: MessageChannelBehavior,
         configuration: ConversationConfiguration,
-    ): Conversation {
+    ): ActiveConversation {
         val conversation = konvo.createConversation(configuration)
         val conversationView = conversation.newUiView()
 
@@ -164,44 +161,31 @@ class KonvoBot(
 
         if (message.type != MessageType.Default) return@coroutineScope
 
-        val httpClient = event.kord.resources.httpClient
         val conversationView = conversation.newUiView()
 
-        conversationView.sendUserEvent(
-            UserEvent.Message(
-                message.content,
-                attachments = message.attachments.map { attachment ->
-                    val contentType = attachment.contentType
-                    val fileName = attachment.filename
-                    val format = fileName.substringAfterLast('.')
-                    val isImage = attachment.isImage
-                    val isAudio = contentType?.startsWith("audio/") ?: false
+        conversationView.sendMessage(
+            content = message.content,
+            attachments = message.attachments.map { attachment ->
+                val fileName = attachment.filename
+                val format = fileName.substringAfterLast('.')
+                val isImage = attachment.isImage
+                val contentType = attachment.contentType
+                val isAudio = contentType?.startsWith("audio/") ?: false
 
-                    val bytes = httpClient.get(attachment.url).bodyAsBytes()
-
-                    when {
-                        isImage -> Attachment.Image(
-                            content = AttachmentContent.Binary.Bytes(bytes),
-                            format = format,
-                            mimeType = contentType ?: "image/$format",
-                            fileName = fileName,
-                        )
-
-                        isAudio -> Attachment.Audio(
-                            content = AttachmentContent.Binary.Bytes(bytes),
-                            format = format,
-                            mimeType = contentType,
-                            fileName = fileName,
-                        )
-
-                        else -> Attachment.File(
-                            content = AttachmentContent.Binary.Bytes(bytes),
-                            format = format,
-                            mimeType = contentType ?: "application/$format",
-                        )
-                    }
-                }
-            )
+                Attachment(
+                    type = when {
+                        isImage -> Attachment.Type.Image
+                        isAudio -> Attachment.Type.Audio
+                        else -> Attachment.Type.Document
+                    },
+                    url = attachment.url,
+                    name = fileName,
+                    mimeType = contentType ?: when {
+                        isImage -> "image/$format"
+                        else -> "application/$format"
+                    },
+                )
+            }
         )
     }
 }
@@ -211,7 +195,7 @@ private fun newChannelName(): String = "ai-${Uuid.random()}"
 
 private fun MessageBuilder.conversationStartMessage(
     configuration: ConversationConfiguration,
-    conversation: ConversationUiView,
+    conversation: ConversationUserView,
     newChannel: TextChannel? = null,
     fullSizeCharacterAvatar: Boolean = false,
 ) {
@@ -288,35 +272,37 @@ private fun MessageBuilder.conversationStartMessage(
     }
 }
 
-private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: ConversationUiView): Nothing = coroutineScope {
-    val assistantProcessing = typingToggler(this@handleAssistantEvents)
+private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: ConversationUserView): Nothing =
+    coroutineScope {
+        val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
-    conversation.assistantEvents.collect { event ->
-        when (event) {
-            AssistantEvent.Processing -> assistantProcessing.start()
+        conversation.events.collect { event ->
+            when (event) {
+                is ConversationEvent.AssistantProcessing -> assistantProcessing.start()
 
-            is AssistantEvent.Message -> {
-                assistantProcessing.stop()
-                val content = event.content.maybeSplitDiscordContent()
-                content.forEach { createMessage(it) }
-            }
+                is ConversationEvent.AssistantMessage -> {
+                    assistantProcessing.stop()
+                    val content = event.content.maybeSplitDiscordContent()
+                    content.forEach { createMessage(it) }
+                }
 
-            is AssistantEvent.ToolUseVetting -> {
-                assistantProcessing.stop()
-                askForToolUse(event)
-                assistantProcessing.start()
-            }
+                is ConversationEvent.AssistantToolUseVetting -> {
+                    assistantProcessing.stop()
+                    askForToolUse(event)
+                    assistantProcessing.start()
+                }
 
-            is AssistantEvent.ToolUseResult -> {
-                assistantProcessing.stop()
-                notifyToolUse(event)
-                assistantProcessing.start()
+                is ConversationEvent.AssistantToolUseResult -> {
+                    assistantProcessing.stop()
+                    notifyToolUse(event)
+                    assistantProcessing.start()
+                }
+                else -> {}
             }
         }
     }
-}
 
-private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.ToolUseVetting) {
+private suspend fun MessageChannelBehavior.askForToolUse(event: ConversationEvent.AssistantToolUseVetting) {
     val done = CompletableDeferred<Unit>()
     val callsToCheck = event.calls.toMutableList()
 
@@ -369,7 +355,7 @@ private suspend fun MessageChannelBehavior.askForToolUse(event: AssistantEvent.T
     done.await()
 }
 
-private suspend fun MessageChannelBehavior.notifyToolUse(event: AssistantEvent.ToolUseResult) {
+private suspend fun MessageChannelBehavior.notifyToolUse(event: ConversationEvent.AssistantToolUseResult) {
     if (event.result is ToolCallResult.Success) {
         createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }

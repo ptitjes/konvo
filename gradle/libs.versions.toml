@@ -12,6 +12,7 @@ slf4j = "2.0.17"
 koog = "0.3.0"
 mcp = "0.6.0"
 xemanticJsonSchema = "1.1.2"
+uriKmp = "0.0.20"
 
 # Compose Frontend
 compose = "1.8.2"
@@ -53,6 +54,7 @@ koog = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" }
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
 xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
+uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uriKmp" }
 
 # Compose Frontend
 androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }

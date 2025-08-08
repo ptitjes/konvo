@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation
 
 import kotlinx.coroutines.flow.*
+import kotlinx.serialization.json.JsonElement
 
 /**
  * Provides a view of the conversation for AI agents.
@@ -10,12 +11,14 @@ interface ConversationAgentView {
     /**
      * Flow of user events from the conversation.
      */
-    val userEvents: SharedFlow<UserEvent>
+    val events: SharedFlow<ConversationEvent>
 
-    /**
-     * Sends an assistant event to the conversation.
-     *
-     * @param event The assistant event to send
-     */
-    suspend fun sendAssistantEvent(event: AssistantEvent)
+    suspend fun sendProcessing()
+    suspend fun sendMessage(content: String)
+    suspend fun sendToolUseVetting(calls: List<VetoableToolCall>)
+    suspend fun sendToolUseResult(
+        tool: String,
+        arguments: Map<String, JsonElement>,
+        result: ToolCallResult,
+    )
 }

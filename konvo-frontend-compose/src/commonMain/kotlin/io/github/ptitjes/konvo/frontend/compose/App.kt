@@ -53,6 +53,6 @@ private sealed class Screen {
     data object NewConversation : Screen()
 
     data class InConversation(
-        val conversation: Conversation,
+        val conversation: ActiveConversation,
     ) : Screen()
 }

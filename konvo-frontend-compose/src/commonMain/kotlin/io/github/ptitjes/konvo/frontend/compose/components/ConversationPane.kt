@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationViewModel
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 /**
  * A component that displays a conversation with a text entry box.

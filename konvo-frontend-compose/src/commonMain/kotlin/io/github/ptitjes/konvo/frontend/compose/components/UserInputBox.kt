@@ -9,14 +9,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
-import io.github.vinceglb.filekit.core.*
+import io.github.ptitjes.konvo.core.conversation.*
 
 @Composable
 fun UserInputBox(
-    onSendMessage: (content: String, attachments: List<PlatformFile>) -> Unit,
+    onSendMessage: (content: String, attachments: List<Attachment>) -> Unit,
 ) {
     var textInput by remember { mutableStateOf("") }
-    val attachments = remember { mutableStateListOf<PlatformFile>() }
+    val attachments = remember { mutableStateListOf<Attachment>() }
 
     val canSendMessage: Boolean = textInput.isNotBlank()
 

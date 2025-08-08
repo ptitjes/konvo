@@ -91,7 +91,7 @@ class NewConversationViewModel(
         selectedRPModel = model
     }
 
-    fun createConversation(onConversationCreated: (Conversation) -> Unit) {
+    fun createConversation(onConversationCreated: (ActiveConversation) -> Unit) {
         val configuration = when (selectedAgentType) {
             AgentType.QuestionAnswer -> {
                 selectedPrompt?.let { prompt ->

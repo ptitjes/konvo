@@ -17,6 +17,7 @@ kotlin {
                 implementation(libs.mcp)
                 implementation(libs.bundles.ktorClient)
                 implementation(libs.ktorClientCio)
+                implementation(libs.uriKmp)
             }
         }
 

@@ -10,8 +10,19 @@ import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
+import com.eygraber.uri.*
+import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.Attachment
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
+import kotlinx.io.files.*
+import ai.koog.prompt.message.Attachment as KoogAttachment
 
 class ChatAgent(
     private val systemPrompt: Prompt,
@@ -21,7 +32,7 @@ class ChatAgent(
     val promptExecutor: PromptExecutor,
     private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
     private val initialToolRegistry: ToolRegistry = ToolRegistry.EMPTY,
-    private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {}
+    private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
 ) {
     var toolRegistry: ToolRegistry = initialToolRegistry
     var prompt: Prompt = buildInitialPrompt()
@@ -67,28 +78,81 @@ class ChatAgent(
 
     suspend fun joinConversation(conversation: ConversationAgentView) {
         initialAssistantMessage?.let {
-            conversation.sendAssistantEvent(AssistantEvent.Message(it))
+            conversation.sendMessage(it)
         }
 
-        conversation.userEvents.collect { userEvent ->
-            conversation.sendAssistantEvent(AssistantEvent.Processing)
-            when (userEvent) {
-                is UserEvent.Message -> {
+        conversation.events.buffer(Channel.UNLIMITED).collect { event ->
+            conversation.sendProcessing()
+            when (event) {
+                is ConversationEvent.UserMessage -> {
                     val agent = buildAgent(conversation)
-                    val result = agent.run(userEvent.toUserMessage())
-                    result.forEach { conversation.sendAssistantEvent(it.toAssistantEventMessage()) }
+                    val result = agent.run(event.toUserMessage())
+                    result.forEach { conversation.sendMessage(it.content) }
                 }
+
+                else -> {}
             }
         }
     }
 
     private val clock = Clock.System
 
-    private fun UserEvent.Message.toUserMessage(): Message.User =
-        Message.User(content, attachments = attachments, metaInfo = RequestMetaInfo.create(clock))
+    private suspend fun ConversationEvent.UserMessage.toUserMessage(): Message.User =
+        Message.User(
+            content = content,
+            attachments = attachments.map { it.toKoogAttachment() },
+            metaInfo = RequestMetaInfo.create(clock),
+        )
 
-    private fun Message.Assistant.toAssistantEventMessage(): AssistantEvent.Message =
-        AssistantEvent.Message(content)
+    private val httpClient = HttpClient(CIO)
+
+    private suspend fun Attachment.loadContent(): ByteArray {
+        val uri = Uri.parse(url)
+
+        return when {
+            uri.scheme == "file" -> {
+                val path = Path(uri.path ?: error("Invalid file path: $url"))
+                SystemFileSystem.readBytes(path).toByteArray()
+            }
+
+            else -> httpClient.get(url).bodyAsBytes()
+        }
+    }
+
+    private suspend fun Attachment.toKoogAttachment(): KoogAttachment {
+        val bytes = loadContent()
+        val content = AttachmentContent.Binary.Bytes(bytes)
+
+        return when (type) {
+            Attachment.Type.Audio -> KoogAttachment.Audio(
+                content = content,
+                format = name.substringAfterLast('.'),
+                mimeType = mimeType,
+                fileName = name,
+            )
+
+            Attachment.Type.Image -> KoogAttachment.Image(
+                content = content,
+                format = name.substringAfterLast('.'),
+                mimeType = mimeType,
+                fileName = name,
+            )
+
+            Attachment.Type.Video -> KoogAttachment.Video(
+                content = content,
+                format = name.substringAfterLast('.'),
+                mimeType = mimeType,
+                fileName = name,
+            )
+
+            Attachment.Type.Document -> KoogAttachment.File(
+                content = content,
+                format = name.substringAfterLast('.'),
+                mimeType = mimeType,
+                fileName = name,
+            )
+        }
+    }
 }
 
 private class PromptCollector {

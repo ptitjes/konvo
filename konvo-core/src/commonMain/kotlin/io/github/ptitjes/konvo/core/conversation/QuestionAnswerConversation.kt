@@ -33,32 +33,26 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
         install(EventHandler) {
             onToolValidationError { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
-                conversationView.sendAssistantEvent(
-                    AssistantEvent.ToolUseResult(
-                        tool = broaderTool.name,
-                        arguments = broaderTool.encodeArgs(eventContext.toolArgs),
-                        result = ToolCallResult.ExecutionFailure(eventContext.error),
-                    )
+                conversationView.sendToolUseResult(
+                    tool = broaderTool.name,
+                    arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                    result = ToolCallResult.ExecutionFailure(eventContext.error),
                 )
             }
             onToolCallResult { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
-                conversationView.sendAssistantEvent(
-                    AssistantEvent.ToolUseResult(
-                        tool = broaderTool.name,
-                        arguments = broaderTool.encodeArgs(eventContext.toolArgs),
-                        result = ToolCallResult.Success(eventContext.result?.toStringDefault() ?: "Tool succeeded"),
-                    )
+                conversationView.sendToolUseResult(
+                    tool = broaderTool.name,
+                    arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                    result = ToolCallResult.Success(eventContext.result?.toStringDefault() ?: "Tool succeeded"),
                 )
             }
             onToolCallFailure { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
-                conversationView.sendAssistantEvent(
-                    AssistantEvent.ToolUseResult(
-                        tool = broaderTool.name,
-                        arguments = broaderTool.encodeArgs(eventContext.toolArgs),
-                        result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
-                    )
+                conversationView.sendToolUseResult(
+                    tool = broaderTool.name,
+                    arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                    result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
                 )
             }
         }
@@ -90,7 +84,7 @@ private suspend fun ConversationAgentView.vetToolCalls(calls: List<Message.Tool.
     }
 
     if (vetoableToolCalls.isNotEmpty()) {
-        sendAssistantEvent(AssistantEvent.ToolUseVetting(vetoableToolCalls))
+        sendToolUseVetting(vetoableToolCalls)
     }
 
     return vettedCalls.awaitAll()

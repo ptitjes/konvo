@@ -7,10 +7,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.core.conversation.Attachment
 import io.github.vinceglb.filekit.core.*
 
 @Composable
-fun SelectedAttachementsView(attachments: List<PlatformFile>) {
+fun SelectedAttachementsView(attachments: List<Attachment>) {
     Row(
         modifier = Modifier.padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
