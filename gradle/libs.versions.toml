@@ -1,8 +1,8 @@
 [versions]
-kotlin = "2.1.20"
-kotlinxDatetime = "0.6.1"
-kotlinxSerializationJSON = "1.7.3"
-kotlinxCoroutines = "1.9.0"
+kotlin = "2.1.21"
+kotlinxDatetime = "0.6.2"
+kotlinxSerializationJSON = "1.8.1"
+kotlinxCoroutines = "1.10.2"
 kotlinxIo = "0.7.0"
 ktor = "3.1.3"
 
