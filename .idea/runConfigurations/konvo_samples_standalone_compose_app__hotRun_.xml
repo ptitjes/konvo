@@ -13,6 +13,7 @@
           <option value=":konvo-mcp-prompt-collection:shadowJar" />
           <option value=":konvo-mcp-web-tools:shadowJar" />
           <option value=":samples:standalone-compose-app:hotRun" />
+          <option value="--auto" />
         </list>
       </option>
       <option name="vmOptions" />
