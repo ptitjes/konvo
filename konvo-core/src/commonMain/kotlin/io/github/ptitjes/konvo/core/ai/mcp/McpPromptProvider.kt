@@ -46,7 +46,7 @@ class McpPromptProvider(
                             when (content) {
                                 is TextContent -> content.text?.let { text(it) }
                                 is ImageContent -> TODO()
-                                is AudioContent -> TODO()
+//                                is AudioContent -> TODO()
                                 is EmbeddedResource -> TODO()
                                 is UnknownContent -> error("Unsupported content")
                             }
