@@ -10,8 +10,6 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":konvo-mcp-prompt-collection:shadowJar" />
-          <option value=":konvo-mcp-web-tools:shadowJar" />
           <option value=":samples:discord-bot:run" />
         </list>
       </option>
@@ -21,6 +19,9 @@
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
     <DebugAllEnabled>false</DebugAllEnabled>
     <RunAsTest>false</RunAsTest>
-    <method v="2" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="konvo:konvo-mcp-prompt-collection [shadowJar]" run_configuration_type="GradleRunConfiguration" />
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="konvo:konvo-mcp-web-tools [shadowJar]" run_configuration_type="GradleRunConfiguration" />
+    </method>
   </configuration>
 </component>
