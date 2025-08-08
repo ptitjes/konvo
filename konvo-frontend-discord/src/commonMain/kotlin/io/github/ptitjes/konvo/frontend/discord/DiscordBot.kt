@@ -288,7 +288,7 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
 
                 is ConversationEvent.AssistantToolUseVetting -> {
                     assistantProcessing.stop()
-                    askForToolUse(event)
+                    askForToolUse(conversation, event)
                     assistantProcessing.start()
                 }
 
@@ -297,24 +297,34 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
                     notifyToolUse(event)
                     assistantProcessing.start()
                 }
+
                 else -> {}
             }
         }
     }
 
-private suspend fun MessageChannelBehavior.askForToolUse(event: ConversationEvent.AssistantToolUseVetting) {
+private suspend fun MessageChannelBehavior.askForToolUse(
+    conversation: ConversationUserView,
+    event: ConversationEvent.AssistantToolUseVetting,
+) {
     val done = CompletableDeferred<Unit>()
     val callsToCheck = event.calls.toMutableList()
+    val approvals = mutableMapOf<ToolCall, Boolean>()
 
     createEphemeralMessage {
         suspend fun finished() {
+            // Send approvals and close the ephemeral message
+            conversation.sendToolUseApproval(
+                vetting = event,
+                approvals = approvals.toMap(),
+            )
             delete()
             done.complete(Unit)
         }
 
-        suspend fun HandlerScope<*>.allowToolCall(call: VetoableToolCall, allowed: Boolean) {
+        suspend fun HandlerScope<*>.recordApproval(call: ToolCall, allowed: Boolean) {
             acknowledge()
-            if (allowed) call.allow() else call.reject()
+            approvals[call] = allowed
             callsToCheck.remove(call)
             if (callsToCheck.isEmpty()) finished() else update()
         }
@@ -336,14 +346,14 @@ private suspend fun MessageChannelBehavior.askForToolUse(event: ConversationEven
 
                 actionRow {
                     interactionButton(
-                        style = ButtonStyle.Danger,
-                        onClick = { allowToolCall(call, true) }
+                        style = ButtonStyle.Success,
+                        onClick = { recordApproval(call, true) }
                     ) {
                         label = "Allow"
                     }
                     interactionButton(
-                        style = ButtonStyle.Success,
-                        onClick = { allowToolCall(call, false) }
+                        style = ButtonStyle.Danger,
+                        onClick = { recordApproval(call, false) }
                     ) {
                         label = "Reject"
                     }
@@ -365,9 +375,12 @@ private suspend fun MessageChannelBehavior.notifyToolUse(event: ConversationEven
 
                 textDisplay {
                     content = markdown {
-                        subscript { text("Agent called tool"); space(); bold(event.tool) }
-                        if (event.arguments.isNotEmpty()) blockquote {
-                            event.arguments.forEach { (name, value) ->
+                        val tool = event.call.tool
+                        val arguments = event.call.arguments
+
+                        subscript { text("Agent called tool"); space(); bold(tool) }
+                        if (arguments.isNotEmpty()) blockquote {
+                            arguments.forEach { (name, value) ->
                                 subscript { bold(name); space(); text(value.toString()) }
                             }
                         }

@@ -1,7 +1,10 @@
+@file:OptIn(ExperimentalUuidApi::class)
+
 package io.github.ptitjes.konvo.core.conversation
 
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.*
+import kotlin.uuid.*
 
 /**
  * Provides a view of the conversation for AI agents.
@@ -14,11 +17,15 @@ interface ConversationAgentView {
     val events: SharedFlow<ConversationEvent>
 
     suspend fun sendProcessing()
+
     suspend fun sendMessage(content: String)
-    suspend fun sendToolUseVetting(calls: List<VetoableToolCall>)
+
+    suspend fun sendToolUseVetting(
+        calls: List<ToolCall>,
+    ): ConversationEvent.AssistantToolUseVetting
+
     suspend fun sendToolUseResult(
-        tool: String,
-        arguments: Map<String, JsonElement>,
+        call: ToolCall,
         result: ToolCallResult,
     )
 }

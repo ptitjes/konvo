@@ -1,6 +1,8 @@
+@file:OptIn(ExperimentalUuidApi::class)
 package io.github.ptitjes.konvo.core.conversation
 
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharedFlow
+import kotlin.uuid.*
 
 /**
  * Provides a view of the conversation for UI components.
@@ -15,5 +17,10 @@ interface ConversationUserView {
     suspend fun sendMessage(
         content: String,
         attachments: List<Attachment> = emptyList(),
+    )
+
+    suspend fun sendToolUseApproval(
+        vetting: ConversationEvent.AssistantToolUseVetting,
+        approvals: Map<ToolCall, Boolean>,
     )
 }

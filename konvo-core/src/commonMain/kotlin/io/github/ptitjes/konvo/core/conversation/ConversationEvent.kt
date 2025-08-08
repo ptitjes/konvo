@@ -1,58 +1,98 @@
-@file:OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
 package io.github.ptitjes.konvo.core.conversation
 
 import kotlinx.serialization.json.*
 import kotlin.time.*
-import kotlin.uuid.*
 
-@OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
-sealed interface ConversationEvent {
-    val id: Uuid
-    val timestamp: Instant
-    val source: ConversationMember
+/**
+ * Base class for uniquely identified entities: equals/hashCode are based on id only.
+ */
+abstract class Unique(
+    open val id: String,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other::class != this::class) return false
+        other as Unique
+        return id == other.id
+    }
 
-    // Marker interfaces
-    interface UserEvent : ConversationEvent
-    interface AssistantEvent : ConversationEvent
+    override fun hashCode(): Int = id.hashCode()
+}
+
+@OptIn(ExperimentalTime::class)
+sealed class ConversationEvent(
+    override val id: String,
+    open val timestamp: Instant,
+    open val source: ConversationMember,
+) : Unique(id) {
+
+    // Marker interfaces (do not extend ConversationEvent to allow flexible use)
+    interface UserEvent
+    interface AssistantEvent
 
     // User events
-    data class UserMessage(
-        override val id: Uuid,
+    class UserMessage(
+        id: String,
         override val timestamp: Instant,
         override val source: ConversationMember,
         val content: String,
         val attachments: List<Attachment>,
-    ) : UserEvent
+    ) : ConversationEvent(id, timestamp, source), UserEvent {
+        override fun toString(): String =
+            "UserMessage(id=$id, timestamp=$timestamp, source=$source, content=$content, attachments=$attachments)"
+    }
 
-    // Assistant events
-    data class AssistantProcessing(
-        override val id: Uuid,
+    class ToolUseApproval(
+        id: String,
         override val timestamp: Instant,
         override val source: ConversationMember,
-    ) : AssistantEvent
+        val vetting: AssistantToolUseVetting,
+        val approvals: Map<ToolCall, Boolean>,
+    ) : ConversationEvent(id, timestamp, source), UserEvent {
+        override fun toString(): String =
+            "ToolUseApproval(id=$id, timestamp=$timestamp, source=$source, vetting=${vetting.id}, approvals=$approvals)"
+    }
 
-    data class AssistantMessage(
-        override val id: Uuid,
+    // Assistant events
+    class AssistantProcessing(
+        id: String,
+        override val timestamp: Instant,
+        override val source: ConversationMember,
+    ) : ConversationEvent(id, timestamp, source), AssistantEvent {
+        override fun toString(): String =
+            "AssistantProcessing(id=$id, timestamp=$timestamp, source=$source)"
+    }
+
+    class AssistantMessage(
+        id: String,
         override val timestamp: Instant,
         override val source: ConversationMember,
         val content: String,
-    ) : AssistantEvent
+    ) : ConversationEvent(id, timestamp, source), AssistantEvent {
+        override fun toString(): String =
+            "AssistantMessage(id=$id, timestamp=$timestamp, source=$source, content=$content)"
+    }
 
-    data class AssistantToolUseVetting(
-        override val id: Uuid,
+    class AssistantToolUseVetting(
+        id: String,
         override val timestamp: Instant,
         override val source: ConversationMember,
-        val calls: List<VetoableToolCall>,
-    ) : AssistantEvent
+        val calls: List<ToolCall>,
+    ) : ConversationEvent(id, timestamp, source), AssistantEvent {
+        override fun toString(): String =
+            "AssistantToolUseVetting(id=$id, timestamp=$timestamp, source=$source, calls=$calls)"
+    }
 
-    data class AssistantToolUseResult(
-        override val id: Uuid,
+    class AssistantToolUseResult(
+        id: String,
         override val timestamp: Instant,
         override val source: ConversationMember,
-        val tool: String,
-        val arguments: Map<String, JsonElement>,
+        val call: ToolCall,
         val result: ToolCallResult,
-    ) : AssistantEvent
+    ) : ConversationEvent(id, timestamp, source), AssistantEvent {
+        override fun toString(): String =
+            "AssistantToolUseResult(id=$id, timestamp=$timestamp, source=$source, call=$call, result=$result)"
+    }
 }
 
 data class Attachment(
@@ -66,12 +106,13 @@ data class Attachment(
     }
 }
 
-interface VetoableToolCall {
-    val tool: String
-    val arguments: Map<String, JsonElement>
-
-    fun allow()
-    fun reject()
+class ToolCall(
+    override val id: String,
+    val tool: String,
+    val arguments: Map<String, JsonElement>,
+) : Unique(id) {
+    override fun toString(): String =
+        "VetoableToolCall(id=$id, tool=$tool, arguments=$arguments)"
 }
 
 sealed interface ToolCallResult {

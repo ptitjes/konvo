@@ -9,7 +9,8 @@ import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.*
+import kotlinx.coroutines.flow.*
+import kotlin.uuid.*
 
 suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfiguration): ChatAgent {
     val model = configuration.model
@@ -34,24 +35,33 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
             onToolValidationError { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
                 conversationView.sendToolUseResult(
-                    tool = broaderTool.name,
-                    arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                    call = ToolCall(
+                        id = eventContext.toolCallId ?: newUniqueId(),
+                        tool = broaderTool.name,
+                        arguments = broaderTool.encodeArgs(eventContext.toolArgs)
+                    ),
                     result = ToolCallResult.ExecutionFailure(eventContext.error),
                 )
             }
             onToolCallResult { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
                 conversationView.sendToolUseResult(
-                    tool = broaderTool.name,
-                    arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                    call = ToolCall(
+                        id = eventContext.toolCallId ?: newUniqueId(),
+                        tool = broaderTool.name,
+                        arguments = broaderTool.encodeArgs(eventContext.toolArgs)
+                    ),
                     result = ToolCallResult.Success(eventContext.result?.toStringDefault() ?: "Tool succeeded"),
                 )
             }
             onToolCallFailure { eventContext ->
                 @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
                 conversationView.sendToolUseResult(
-                    tool = broaderTool.name,
-                    arguments = broaderTool.encodeArgs(eventContext.toolArgs),
+                    call = ToolCall(
+                        id = eventContext.toolCallId ?: newUniqueId(),
+                        tool = broaderTool.name,
+                        arguments = broaderTool.encodeArgs(eventContext.toolArgs)
+                    ),
                     result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
                 )
             }
@@ -59,7 +69,11 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
     }
 }
 
-private suspend fun ConversationAgentView.vetToolCalls(calls: List<Message.Tool.Call>, tools: List<ToolCard>): List<Boolean> {
+
+private suspend fun ConversationAgentView.vetToolCalls(
+    calls: List<Message.Tool.Call>,
+    tools: List<ToolCard>,
+): List<Boolean> {
     val vettedCalls = calls.map { CompletableDeferred<Boolean>() }
 
     val (withVetting, withoutVetting) = calls.withIndex().partition { (_, call) ->
@@ -69,22 +83,22 @@ private suspend fun ConversationAgentView.vetToolCalls(calls: List<Message.Tool.
     withoutVetting.forEach { (index, _) -> vettedCalls[index].complete(true) }
 
     val vetoableToolCalls = withVetting.map { (index, call) ->
-        object : VetoableToolCall {
-            override val tool: String get() = call.tool
-            override val arguments: Map<String, JsonElement> = call.contentJson
-
-            override fun allow() {
-                vettedCalls[index].complete(true)
-            }
-
-            override fun reject() {
-                vettedCalls[index].complete(false)
-            }
-        }
+        index to ToolCall(
+            id = call.id ?: newUniqueId(),
+            tool = call.tool,
+            arguments = call.contentJson,
+        )
     }
 
     if (vetoableToolCalls.isNotEmpty()) {
-        sendToolUseVetting(vetoableToolCalls)
+        val vettingEvent = sendToolUseVetting(vetoableToolCalls.map { it.second })
+        // Wait for user approvals corresponding to this vetting event
+        val approvalsEvent = events.filterIsInstance<ConversationEvent.ToolUseApproval>()
+            .first { it.vetting == vettingEvent }
+        val approvalsByCall = approvalsEvent.approvals
+        vetoableToolCalls.forEach { (index, call) ->
+            vettedCalls[index].complete(approvalsByCall[call] == true)
+        }
     }
 
     return vettedCalls.awaitAll()
@@ -111,3 +125,6 @@ private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
     edge(executeTools forwardTo toolResultsRequest)
     edge(toolResultsRequest forwardTo processResponses)
 }
+
+@OptIn(ExperimentalUuidApi::class)
+private fun newUniqueId(): String = Uuid.random().toString()

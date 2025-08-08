@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalUuidApi::class, ExperimentalTime::class)
+@file:OptIn(ExperimentalTime::class)
 
 package io.github.ptitjes.konvo.core.conversation
 
@@ -6,7 +6,6 @@ import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.*
 import kotlin.coroutines.*
 import kotlin.time.*
 import kotlin.uuid.*
@@ -26,13 +25,17 @@ class ActiveConversation(
 
     override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + job + handler
 
+    private val clock = Clock.System
+
+    private fun newTimestamp(): Instant = clock.now()
+
     private val userMember = ConversationMember.User(
-        id = newEventId(),
+        id = newUniqueId(),
         name = "user"
     )
 
     private val agentMember = ConversationMember.Agent(
-        id = newEventId(),
+        id = newUniqueId(),
         name = "user"
     )
 
@@ -47,12 +50,6 @@ class ActiveConversation(
         events.emit(event)
     }
 
-    private val clock = Clock.System
-
-    private fun newTimestamp(): Instant = clock.now()
-
-    private fun newEventId(): Uuid = Uuid.random()
-
     private inner class AgentViewImpl(
         val conversationMember: ConversationMember,
     ) : ConversationAgentView {
@@ -61,7 +58,7 @@ class ActiveConversation(
         override suspend fun sendProcessing() {
             emitEvent(
                 ConversationEvent.AssistantProcessing(
-                    id = newEventId(),
+                    id = newUniqueId(),
                     timestamp = newTimestamp(),
                     source = conversationMember
                 )
@@ -71,7 +68,7 @@ class ActiveConversation(
         override suspend fun sendMessage(content: String) {
             emitEvent(
                 ConversationEvent.AssistantMessage(
-                    id = newEventId(),
+                    id = newUniqueId(),
                     timestamp = newTimestamp(),
                     source = conversationMember,
                     content = content
@@ -79,29 +76,27 @@ class ActiveConversation(
             )
         }
 
-        override suspend fun sendToolUseVetting(calls: List<VetoableToolCall>) {
-            emitEvent(
-                ConversationEvent.AssistantToolUseVetting(
-                    id = newEventId(),
-                    timestamp = newTimestamp(),
-                    source = conversationMember,
-                    calls = calls
-                )
+        override suspend fun sendToolUseVetting(calls: List<ToolCall>): ConversationEvent.AssistantToolUseVetting {
+            val event = ConversationEvent.AssistantToolUseVetting(
+                id = newUniqueId(),
+                timestamp = newTimestamp(),
+                source = conversationMember,
+                calls = calls
             )
+            emitEvent(event)
+            return event
         }
 
         override suspend fun sendToolUseResult(
-            tool: String,
-            arguments: Map<String, JsonElement>,
+            call: ToolCall,
             result: ToolCallResult,
         ) {
             emitEvent(
                 ConversationEvent.AssistantToolUseResult(
-                    id = newEventId(),
+                    id = newUniqueId(),
                     timestamp = newTimestamp(),
                     source = conversationMember,
-                    tool = tool,
-                    arguments = arguments,
+                    call = call,
                     result = result
                 )
             )
@@ -119,11 +114,26 @@ class ActiveConversation(
         ) {
             emitEvent(
                 ConversationEvent.UserMessage(
-                    id = newEventId(),
+                    id = newUniqueId(),
                     timestamp = newTimestamp(),
                     source = conversationMember,
                     content = content,
                     attachments = attachments
+                )
+            )
+        }
+
+        override suspend fun sendToolUseApproval(
+            vetting: ConversationEvent.AssistantToolUseVetting,
+            approvals: Map<ToolCall, Boolean>,
+        ) {
+            emitEvent(
+                ConversationEvent.ToolUseApproval(
+                    id = newUniqueId(),
+                    timestamp = newTimestamp(),
+                    source = conversationMember,
+                    vetting = vetting,
+                    approvals = approvals,
                 )
             )
         }
@@ -139,3 +149,6 @@ class ActiveConversation(
         job.cancel()
     }
 }
+
+@OptIn(ExperimentalUuidApi::class)
+private fun newUniqueId(): String = Uuid.random().toString()
