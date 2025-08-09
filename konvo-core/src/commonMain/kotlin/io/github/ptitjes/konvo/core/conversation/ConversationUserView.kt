@@ -1,18 +1,17 @@
 @file:OptIn(ExperimentalUuidApi::class)
 package io.github.ptitjes.konvo.core.conversation
 
-import kotlinx.coroutines.flow.SharedFlow
 import kotlin.uuid.*
 
 /**
  * Provides a view of the conversation for UI components.
- * This interface allows UI components to send user events and receive assistant events.
+ * This interface allows UI components to send user events into a conversation.
  */
 interface ConversationUserView {
     /**
-     * Flow of assistant events from the conversation.
+     * Reference to the parent conversation.
      */
-    val events: SharedFlow<ConversationEvent>
+    val conversation: ActiveConversation
 
     suspend fun sendMessage(
         content: String,

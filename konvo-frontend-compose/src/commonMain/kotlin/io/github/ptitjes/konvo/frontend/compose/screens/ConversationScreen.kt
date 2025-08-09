@@ -3,6 +3,8 @@ package io.github.ptitjes.konvo.frontend.compose.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.filled.ModelTraining
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -29,11 +31,7 @@ fun ConversationScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = "Conversation",
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Text(text = "Conversation")
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -43,6 +41,14 @@ fun ConversationScreen(
                         )
                     }
                 },
+                actions = {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->

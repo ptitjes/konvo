@@ -8,6 +8,7 @@ import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.modelcontextprotocol.kotlin.sdk.TextContent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.uuid.*
@@ -51,7 +52,7 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
                         tool = broaderTool.name,
                         arguments = broaderTool.encodeArgs(eventContext.toolArgs)
                     ),
-                    result = ToolCallResult.Success(eventContext.result?.toStringDefault() ?: "Tool succeeded"),
+                    result = ToolCallResult.Success(eventContext.result.toResultText()),
                 )
             }
             onToolCallFailure { eventContext ->
@@ -69,6 +70,11 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
     }
 }
 
+private fun ToolResult?.toResultText(): String = when (this) {
+    is ToolResult.Text -> this.text
+    is ToolResult.JSONSerializable<*> -> this.toStringDefault()
+    else -> "Tool succeeded"
+}
 
 private suspend fun ConversationAgentView.vetToolCalls(
     calls: List<Message.Tool.Call>,
@@ -93,7 +99,7 @@ private suspend fun ConversationAgentView.vetToolCalls(
     if (vetoableToolCalls.isNotEmpty()) {
         val vettingEvent = sendToolUseVetting(vetoableToolCalls.map { it.second })
         // Wait for user approvals corresponding to this vetting event
-        val approvalsEvent = events.filterIsInstance<ConversationEvent.ToolUseApproval>()
+        val approvalsEvent = conversation.events.filterIsInstance<ConversationEvent.ToolUseApproval>()
             .first { it.vetting == vettingEvent }
         val approvalsByCall = approvalsEvent.approvals
         vetoableToolCalls.forEach { (index, call) ->

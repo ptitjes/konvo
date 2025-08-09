@@ -2,18 +2,17 @@
 
 package io.github.ptitjes.konvo.core.conversation
 
-import kotlinx.coroutines.flow.*
 import kotlin.uuid.*
 
 /**
  * Provides a view of the conversation for AI agents.
- * This interface allows agents to receive user events and send assistant events.
+ * This interface allows agents to send assistant events into a conversation.
  */
 interface ConversationAgentView {
     /**
-     * Flow of user events from the conversation.
+     * Reference to the parent conversation.
      */
-    val events: SharedFlow<ConversationEvent>
+    val conversation: ActiveConversation
 
     suspend fun sendProcessing()
 

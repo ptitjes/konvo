@@ -33,7 +33,7 @@ fun UserInputBox(
     Surface(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = MaterialTheme.colorScheme.primaryContainer,
         tonalElevation = 2.dp,
     ) {
         Column {
@@ -58,11 +58,11 @@ fun UserInputBox(
                         },
                     placeholder = { Text("Type a message") },
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
                     ),
                     maxLines = 5,
                 )

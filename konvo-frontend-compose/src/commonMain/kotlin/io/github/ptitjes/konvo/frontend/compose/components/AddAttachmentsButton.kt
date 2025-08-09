@@ -20,7 +20,7 @@ fun AddAttachmentsButton(
 
     IconButton(onClick = { launcher.launch() }) {
         Icon(
-            imageVector = Icons.Rounded.Add,
+            imageVector = Icons.Rounded.AttachFile,
             contentDescription = "Add an attachment",
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

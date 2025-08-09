@@ -81,7 +81,7 @@ class ChatAgent(
             conversation.sendMessage(it)
         }
 
-        conversation.events.buffer(Channel.UNLIMITED).collect { event ->
+        conversation.conversation.events.buffer(Channel.UNLIMITED).collect { event ->
             when (event) {
                 is ConversationEvent.UserMessage -> {
                     conversation.sendProcessing()

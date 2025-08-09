@@ -43,16 +43,20 @@ class ActiveConversation(
 
     )
 
-    private val events = MutableSharedFlow<ConversationEvent>()
+    val transcript = ConversationTranscript()
+
+    private val _events = MutableSharedFlow<ConversationEvent>()
+    val events: SharedFlow<ConversationEvent> = _events
 
     private suspend fun emitEvent(event: ConversationEvent) {
-        events.emit(event)
+        transcript.append(event)
+        _events.emit(event)
     }
 
     private inner class AgentViewImpl(
         val conversationMember: ConversationMember,
     ) : ConversationAgentView {
-        override val events: SharedFlow<ConversationEvent> = this@ActiveConversation.events
+        override val conversation: ActiveConversation = this@ActiveConversation
 
         override suspend fun sendProcessing() {
             emitEvent(
@@ -105,7 +109,7 @@ class ActiveConversation(
     private inner class UserViewImpl(
         val conversationMember: ConversationMember,
     ) : ConversationUserView {
-        override val events: SharedFlow<ConversationEvent> = this@ActiveConversation.events
+        override val conversation: ActiveConversation = this@ActiveConversation
 
         override suspend fun sendMessage(
             content: String,
