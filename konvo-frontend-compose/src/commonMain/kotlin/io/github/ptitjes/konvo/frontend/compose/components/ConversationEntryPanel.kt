@@ -42,12 +42,10 @@ fun ConversationUserMessagePanel(
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
                 Column {
-                    Markdown(
+                    MarkdownContent(
                         content = event.content,
+                        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        colors = markdownColor(
-                            text = MaterialTheme.colorScheme.onPrimaryContainer,
-                        ),
                     )
 
                     event.attachments.forEach { attachment ->
@@ -68,11 +66,9 @@ fun ConversationAgentMessagePanel(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = horizontalArrangement,
     ) {
-        Markdown(
+        MarkdownContent(
             content = event.content,
-            colors = markdownColor(
-                text = MaterialTheme.colorScheme.onBackground,
-            ),
+            textColor = MaterialTheme.colorScheme.onBackground,
         )
     }
 }

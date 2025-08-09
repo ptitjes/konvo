@@ -61,8 +61,11 @@ uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uriKmp" }
 androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }
 
 markdownRenderer = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
+markdownRendererCoil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdownRenderer" }
+markdownRendererCode = { module = "com.mikepenz:multiplatform-markdown-renderer-code", version.ref = "markdownRenderer" }
 fileKit = { module = "io.github.vinceglb:filekit-compose", version.ref = "fileKit" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coilKtor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 
 # Discord Frontend
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }

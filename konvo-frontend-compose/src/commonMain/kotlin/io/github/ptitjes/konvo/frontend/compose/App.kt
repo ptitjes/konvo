@@ -7,15 +7,14 @@ import androidx.compose.ui.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.compose.screens.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationViewModel
+import io.github.ptitjes.konvo.frontend.compose.theme.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 @Composable
 fun App(
     konvo: Konvo,
 ) {
-    MaterialTheme(
-        colorScheme = darkColorScheme(),
-    ) {
+    KonvoTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

@@ -15,14 +15,15 @@ fun buildRoleplayingAgent(configuration: RoleplayingAgentConfiguration): ChatAge
 
     val greetings = character.greetings
     val greetingIndex = configuration.characterGreetingIndex ?: Random.nextInt(0, greetings.size)
-    val selectedGreeting = greetings[greetingIndex]
-    val initialAssistantMessage = selectedGreeting.replaceTags(userName, character.name)
+    val initialAssistantMessage = greetings[greetingIndex].replaceTags(userName, character.name)
+
+    val welcomeMessage = "![${character.name}](${character.avatarUrl})\n\n$initialAssistantMessage"
 
     return ChatAgent(
         systemPrompt = prompt("roleplaying") {
             system { +character.systemPrompt.replaceTags(userName, character.name) }
         },
-        initialAssistantMessage = initialAssistantMessage,
+        initialAssistantMessage = welcomeMessage,
         model = model.toLLModel(),
         maxAgentIterations = 50,
         promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),

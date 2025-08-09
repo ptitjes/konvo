@@ -22,8 +22,11 @@ kotlin {
                 implementation(libs.androidxLifecycleViewmodel)
 
                 implementation(libs.markdownRenderer)
+                implementation(libs.markdownRendererCoil)
+                implementation(libs.markdownRendererCode)
                 implementation(libs.fileKit)
                 implementation(libs.coil)
+                implementation(libs.coilKtor)
             }
         }
 
