@@ -1,8 +1,4 @@
-@file:OptIn(ExperimentalUuidApi::class)
-
 package io.github.ptitjes.konvo.core.conversation
-
-import kotlin.uuid.*
 
 /**
  * Provides a view of the conversation for AI agents.
