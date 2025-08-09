@@ -90,6 +90,13 @@ Run a specific test class:
 
 ## Code Style and Development Practices
 
+### Code Style
+
+- Only use inline comments when essential and make code self-explanatory through naming conventions
+- Add documentation comments for all public APIs (using KDoc syntax)
+- When a method is too long, break it down into smaller methods
+- Use descriptive variable, method, class, property, parameter names, etc.
+
 ### Kotlin Code Formatting
 
 The project uses the Kotlin code style, with the following exceptions:
