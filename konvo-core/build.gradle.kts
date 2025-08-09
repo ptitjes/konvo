@@ -1,5 +1,6 @@
 plugins {
     id("buildsrc.convention.kotlin-multiplatform")
+    alias(libs.plugins.kotlinPluginAtomicfu)
     alias(libs.plugins.kotlinPluginSerialization)
 }
 
@@ -25,6 +26,9 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
             }
+        }
+        all {
+            languageSettings.enableLanguageFeature("WhenGuards")
         }
     }
 }

@@ -18,7 +18,7 @@ suspend fun main() = coroutineScope {
     try {
         mcpServersManager.startAndConnectServers()
 
-        val konvo = startKonvo {
+        val konvo = Konvo {
             dataDirectory = configuration.dataDirectory
 
             configuration.modelProviders.forEach { (name, configuration) ->
@@ -42,6 +42,8 @@ suspend fun main() = coroutineScope {
                 )
             )
         }
+
+        konvo.init()
 
         konvo.discordBot(configuration.discord.token)
     } finally {

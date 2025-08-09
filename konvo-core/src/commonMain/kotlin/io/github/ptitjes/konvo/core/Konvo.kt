@@ -21,7 +21,78 @@ data class KonvoConfiguration(
     val toolProviders: List<ToolProvider>,
 )
 
-suspend fun startKonvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo = coroutineScope {
+fun CoroutineScope.Konvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo {
+    val configuration = buildKonvoConfiguration(configure)
+    return Konvo(coroutineContext + Dispatchers.Default, configuration)
+}
+
+class Konvo(
+    coroutineContext: CoroutineContext,
+    private val configuration: KonvoConfiguration,
+) : CoroutineScope {
+
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+    }
+
+    private val job = SupervisorJob(coroutineContext[Job])
+    private val handler = CoroutineExceptionHandler { _, exception ->
+        logger.error(exception) { "Exception caught in Konvo" }
+    }
+
+    override val coroutineContext: CoroutineContext = coroutineContext + Dispatchers.Default + job + handler
+
+    private lateinit var _models: List<ModelCard>;
+    private lateinit var _prompts: List<PromptCard>;
+    private lateinit var _tools: List<ToolCard>;
+    private lateinit var _characters: List<Character>;
+
+    suspend fun init() {
+        logger.info { "Initializing Konvo" }
+
+        _models = configuration.modelProviders.flatMap { it.queryModelCards() }.also {
+            logger.info { "Loaded ${it.size} model cards" }
+        }
+
+        _prompts = configuration.promptProviders.flatMap { it.queryPrompts() }.also {
+            logger.info { "Loaded ${it.size} prompt cards" }
+        }
+
+        _tools = configuration.toolProviders.flatMap { it.queryTools() }.also {
+            logger.info { "Loaded ${it.size} tool cards" }
+        }
+
+        _characters = loadCharacters().also {
+            logger.info { "Loaded ${it.size} character cards" }
+        }
+
+        logger.info { "Initialized Konvo" }
+    }
+
+    private fun loadCharacters(): List<Character> {
+        return Character.loadCharacters(Path(configuration.dataDirectory, "characters"))
+    }
+
+    val models: List<ModelCard> get() = _models
+    val characters: List<Character> get() = _characters
+    val prompts: List<PromptCard> get() = _prompts
+    val tools: List<ToolCard> get() = _tools
+
+    suspend fun createConversation(configuration: ConversationConfiguration): ActiveConversation {
+        val agent = when (configuration.agent) {
+            is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(configuration.agent)
+            is RoleplayingAgentConfiguration -> buildRoleplayingAgent(configuration.agent)
+        }
+
+        val conversation = ActiveConversation(this)
+
+        conversation.addAgent(agent)
+
+        return conversation
+    }
+}
+
+private fun buildKonvoConfiguration(configure: KonvoConfigurationBuilder.() -> Unit): KonvoConfiguration {
     class ConfigurationBuilder : KonvoConfigurationBuilder {
         override var dataDirectory: String = "./data"
         private val modelProviders = mutableListOf<ModelProvider>()
@@ -52,58 +123,6 @@ suspend fun startKonvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo =
 
     val scope = ConfigurationBuilder()
     scope.configure()
-
-    val konvo = Konvo(this, scope.build())
-    konvo.init()
-
-    return@coroutineScope konvo
-}
-
-class Konvo(
-    coroutineScope: CoroutineScope,
-    private val configuration: KonvoConfiguration,
-) : CoroutineScope {
-
-    private companion object {
-        private val logger = KotlinLogging.logger {}
-    }
-
-    private val handler = CoroutineExceptionHandler { _, exception ->
-        logger.error(exception) { "Exception caught in Konvo" }
-    }
-    override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + handler
-
-    private lateinit var _models: List<ModelCard>;
-    private lateinit var _prompts: List<PromptCard>;
-    private lateinit var _tools: List<ToolCard>;
-    private lateinit var _characters: List<Character>;
-
-    suspend fun init() {
-        _models = configuration.modelProviders.flatMap { it.queryModelCards() }
-        _prompts = configuration.promptProviders.flatMap { it.queryPrompts() }
-        _tools = configuration.toolProviders.flatMap { it.queryTools() }
-        _characters = loadCharacters()
-    }
-
-    private fun loadCharacters(): List<Character> {
-        return Character.loadCharacters(Path(configuration.dataDirectory, "characters"))
-    }
-
-    val models: List<ModelCard> get() = _models
-    val characters: List<Character> get() = _characters
-    val prompts: List<PromptCard> get() = _prompts
-    val tools: List<ToolCard> get() = _tools
-
-    suspend fun createConversation(configuration: ConversationConfiguration): ActiveConversation {
-        val agent = when (configuration.agent) {
-            is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(configuration.agent)
-            is RoleplayingAgentConfiguration -> buildRoleplayingAgent(configuration.agent)
-        }
-
-        val conversation = ActiveConversation(this)
-
-        conversation.addAgent(agent)
-
-        return conversation
-    }
+    val configuration = scope.build()
+    return configuration
 }

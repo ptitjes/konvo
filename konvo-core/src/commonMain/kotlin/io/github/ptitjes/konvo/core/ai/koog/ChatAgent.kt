@@ -82,9 +82,9 @@ class ChatAgent(
         }
 
         conversation.events.buffer(Channel.UNLIMITED).collect { event ->
-            conversation.sendProcessing()
             when (event) {
                 is ConversationEvent.UserMessage -> {
+                    conversation.sendProcessing()
                     val agent = buildAgent(conversation)
                     val result = agent.run(event.toUserMessage())
                     result.forEach { conversation.sendMessage(it.content) }

@@ -30,7 +30,7 @@ class ConversationViewModel(
     init {
         // Start collecting assistant events
         viewModelScope.launch {
-            conversationUiView.events.collectLatest { event ->
+            conversationUiView.events.collect { event ->
                 if (event.source is ConversationMember.Agent && event is ConversationEvent.AssistantEvent) {
                     processAssistantEvent(event)
                 }
@@ -48,10 +48,12 @@ class ConversationViewModel(
             }
 
             is ConversationEvent.AssistantProcessing -> {
+                println(event)
                 // Could show a loading indicator here
             }
 
             is ConversationEvent.AssistantToolUseVetting, is ConversationEvent.AssistantToolUseResult -> {
+                println(event)
                 // Handle tool-related events if needed
             }
         }

@@ -36,7 +36,7 @@ class ActiveConversation(
 
     private val agentMember = ConversationMember.Agent(
         id = newUniqueId(),
-        name = "user"
+        name = "agent"
     )
 
     private val members = listOf<ConversationMember>(
@@ -44,7 +44,6 @@ class ActiveConversation(
     )
 
     private val events = MutableSharedFlow<ConversationEvent>()
-
 
     private suspend fun emitEvent(event: ConversationEvent) {
         events.emit(event)

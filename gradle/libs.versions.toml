@@ -3,6 +3,7 @@ kotlin = "2.1.21"
 kotlinxDatetime = "0.6.2"
 kotlinxSerializationJSON = "1.8.1"
 kotlinxCoroutines = "1.10.2"
+kotlinxAtomicfu = "0.29.0"
 kotlinxIo = "0.7.0"
 ktor = "3.1.3"
 
@@ -78,6 +79,7 @@ ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiati
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlinPluginAtomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlinxAtomicfu" }
 
 # Compose Frontend
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
