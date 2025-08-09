@@ -21,7 +21,10 @@ fun UserInputBox(
     val canSendMessage: Boolean = textInput.isNotBlank()
 
     fun sendMessage() {
-        onSendMessage(textInput.trim(), attachments.toList())
+        val content = textInput.trim()
+        if (content.isBlank()) return
+
+        onSendMessage(content, attachments.toList())
 
         textInput = ""
         attachments.clear()
@@ -48,8 +51,8 @@ fun UserInputBox(
                     modifier = Modifier
                         .weight(1f)
                         .onPreviewKeyEvent {
-                            if (it.key == Key.Enter && !it.isShiftPressed && canSendMessage) {
-                                sendMessage()
+                            if (it.key == Key.Enter && !it.isShiftPressed) {
+                                if (canSendMessage) sendMessage()
                                 true
                             } else false
                         },

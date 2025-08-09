@@ -3,7 +3,6 @@
 package io.github.ptitjes.konvo.core.conversation
 
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.*
 import kotlin.uuid.*
 
 /**
