@@ -1,9 +1,10 @@
-package io.github.ptitjes.konvo.core
+package io.github.ptitjes.konvo.core.ai.spi
 
+import io.github.ptitjes.konvo.core.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
 
-data class Character(
+data class CharacterCard(
     val name: String,
     val avatarUrl: String? = null,
     val description: String,
@@ -25,19 +26,19 @@ data class Character(
     companion object
 }
 
-fun Character.Companion.loadCharacters(charactersDirectory: Path): List<Character> {
+fun CharacterCard.Companion.loadCharacters(charactersDirectory: Path): List<CharacterCard> {
     return defaultFileSystem.list(charactersDirectory).mapNotNull { characterPath ->
         runCatching { loadCharacter(characterPath) }.getOrNull()
     }.sortedBy { it.name }
 }
 
-fun Character.Companion.loadCharacter(path: Path): Character = defaultFileSystem.readJsonCharacter(path)
+fun CharacterCard.Companion.loadCharacter(path: Path): CharacterCard = defaultFileSystem.readJsonCharacter(path)
 
-private fun FileSystem.readJsonCharacter(path: Path): Character {
-    return Character.fromJson(readJson(path))
+private fun FileSystem.readJsonCharacter(path: Path): CharacterCard {
+    return CharacterCard.fromJson(readJson(path))
 }
 
-fun Character.Companion.fromJson(json: JsonObject): Character {
+fun CharacterCard.Companion.fromJson(json: JsonObject): CharacterCard {
     val spec = json["spec"]?.jsonPrimitive?.content
 
     if (spec != null && spec != "chara_card_v2") error("Unknown character format")
@@ -57,7 +58,7 @@ fun Character.Companion.fromJson(json: JsonObject): Character {
         if (spec == null) listOf()
         else (data["alternate_greetings"]!!.jsonArray.map { it.jsonPrimitive.content })
 
-    return Character(
+    return CharacterCard(
         name = name,
         avatarUrl = avatar,
         description = description,

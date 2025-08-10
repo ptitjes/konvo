@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.core.conversation
 
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 
 data class ConversationConfiguration(
@@ -16,7 +15,7 @@ data class QuestionAnswerAgentConfiguration(
 ) : ConversationAgentConfiguration
 
 data class RoleplayingAgentConfiguration(
-    val character: Character,
+    val character: CharacterCard,
     val characterGreetingIndex: Int?,
     val userName: String,
     val model: ModelCard,

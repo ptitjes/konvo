@@ -146,10 +146,10 @@ private fun QuestionAnswerConfigurationForm(
 
 @Composable
 private fun RoleplayingConfigurationForm(
-    characters: List<Character>,
+    characters: List<CharacterCard>,
     models: List<ModelCard>,
-    selectedCharacter: Character,
-    onCharacterSelected: (Character) -> Unit,
+    selectedCharacter: CharacterCard,
+    onCharacterSelected: (CharacterCard) -> Unit,
     selectedGreetingIndex: Int?,
     onGreetingIndexSelected: (Int?) -> Unit,
     userName: String,

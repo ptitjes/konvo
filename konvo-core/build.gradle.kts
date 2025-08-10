@@ -13,6 +13,7 @@ kotlin {
                 api(libs.bundles.kotlinxEcosystem)
                 api(libs.koog)
                 api(libs.xemanticJsonSchema)
+                api(libs.kodein)
 
                 implementation(libs.kotlinLogging)
                 implementation(libs.mcp)

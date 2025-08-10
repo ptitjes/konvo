@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.frontend.discord
 
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
@@ -44,7 +43,7 @@ data class QuestionAnswerModeBuilder(
 }
 
 data class RoleplayingModeBuilder(
-    val character: Character? = null,
+    val character: CharacterCard? = null,
     val characterGreetingIndex: Int? = null,
     val userName: String? = null,
     val model: ModelCard? = null,

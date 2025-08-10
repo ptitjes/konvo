@@ -2,12 +2,12 @@ package io.github.ptitjes.konvo.frontend.discord.components
 
 import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.spi.CharacterCard
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 fun EphemeralComponentContainerBuilder.characterGreetingsSelector(
-    character: Character,
+    character: CharacterCard,
     selectedGreetingIndex: Int?,
     onSelectGreeting: suspend (Int?) -> Unit,
 ) {

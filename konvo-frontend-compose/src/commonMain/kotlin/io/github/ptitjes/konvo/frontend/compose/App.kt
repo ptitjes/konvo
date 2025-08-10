@@ -9,11 +9,12 @@ import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.frontend.compose.screens.*
 import io.github.ptitjes.konvo.frontend.compose.theme.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
+import org.kodein.di.compose.*
 
 @Composable
-fun App(
-    konvo: Konvo,
-) {
+fun App() {
+    val konvo by rememberInstance<Konvo>()
+
     KonvoTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),

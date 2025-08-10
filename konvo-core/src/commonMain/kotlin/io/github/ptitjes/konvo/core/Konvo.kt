@@ -4,7 +4,7 @@ import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import kotlinx.coroutines.*
-import kotlinx.io.files.*
+import org.kodein.di.*
 import kotlin.coroutines.*
 
 interface KonvoConfigurationBuilder {
@@ -21,15 +21,15 @@ data class KonvoConfiguration(
     val toolProviders: List<ToolProvider>,
 )
 
-fun CoroutineScope.Konvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo {
-    val configuration = buildKonvoConfiguration(configure)
-    return Konvo(coroutineContext + Dispatchers.Default, configuration)
-}
+//fun CoroutineScope.Konvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo {
+//    val configuration = buildKonvoConfiguration(configure)
+//    return Konvo(coroutineContext + Dispatchers.Default, configuration)
+//}
 
 class Konvo(
     coroutineContext: CoroutineContext,
-    private val configuration: KonvoConfiguration,
-) : CoroutineScope {
+    override val di: DI,
+) : CoroutineScope, DIAware {
 
     private companion object {
         private val logger = KotlinLogging.logger {}
@@ -42,39 +42,40 @@ class Konvo(
 
     override val coroutineContext: CoroutineContext = coroutineContext + Dispatchers.Default + job + handler
 
+    private val modelProviders: Set<ModelProvider> by instance()
+    private val promptProviders: Set<PromptProvider> by instance()
+    private val toolProviders: Set<ToolProvider> by instance()
+    private val characterProviders: Set<CharacterProvider> by instance()
+
     private lateinit var _models: List<ModelCard>;
     private lateinit var _prompts: List<PromptCard>;
     private lateinit var _tools: List<ToolCard>;
-    private lateinit var _characters: List<Character>;
+    private lateinit var _characters: List<CharacterCard>;
 
     suspend fun init() {
         logger.info { "Initializing Konvo" }
 
-        _models = configuration.modelProviders.flatMap { it.queryModelCards() }.also {
+        _models = modelProviders.flatMap { it.queryModelCards() }.also {
             logger.info { "Loaded ${it.size} model cards" }
         }
 
-        _prompts = configuration.promptProviders.flatMap { it.queryPrompts() }.also {
+        _prompts = promptProviders.flatMap { it.queryPrompts() }.also {
             logger.info { "Loaded ${it.size} prompt cards" }
         }
 
-        _tools = configuration.toolProviders.flatMap { it.queryTools() }.also {
+        _tools = toolProviders.flatMap { it.queryTools() }.also {
             logger.info { "Loaded ${it.size} tool cards" }
         }
 
-        _characters = loadCharacters().also {
+        _characters = characterProviders.flatMap { it.queryCharacters() }.also {
             logger.info { "Loaded ${it.size} character cards" }
         }
 
         logger.info { "Initialized Konvo" }
     }
 
-    private fun loadCharacters(): List<Character> {
-        return Character.loadCharacters(Path(configuration.dataDirectory, "characters"))
-    }
-
     val models: List<ModelCard> get() = _models
-    val characters: List<Character> get() = _characters
+    val characters: List<CharacterCard> get() = _characters
     val prompts: List<PromptCard> get() = _prompts
     val tools: List<ToolCard> get() = _tools
 

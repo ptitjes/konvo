@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.spi.CharacterCard
 
 /**
  * A selector for characters.
@@ -14,9 +14,9 @@ import io.github.ptitjes.konvo.core.*
  */
 @Composable
 fun CharacterSelector(
-    selectedCharacter: Character,
-    onCharacterSelected: (Character) -> Unit,
-    characters: List<Character>,
+    selectedCharacter: CharacterCard,
+    onCharacterSelected: (CharacterCard) -> Unit,
+    characters: List<CharacterCard>,
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(

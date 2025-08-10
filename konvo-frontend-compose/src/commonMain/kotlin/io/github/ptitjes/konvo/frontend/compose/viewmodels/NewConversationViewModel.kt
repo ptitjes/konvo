@@ -73,7 +73,7 @@ class NewConversationViewModel(
         selectedQAModel = model
     }
 
-    fun onCharacterSelected(character: Character) {
+    fun onCharacterSelected(character: CharacterCard) {
         selectedCharacter = character
         // Reset greeting index when the character changes
         selectedGreetingIndex = null

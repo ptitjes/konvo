@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.spi.CharacterCard
 
 /**
  * A selector for character greetings.
@@ -16,7 +16,7 @@ import io.github.ptitjes.konvo.core.*
 fun CharacterGreetingSelector(
     selectedGreetingIndex: Int?,
     onGreetingIndexSelected: (Int?) -> Unit,
-    character: Character,
+    character: CharacterCard,
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(
