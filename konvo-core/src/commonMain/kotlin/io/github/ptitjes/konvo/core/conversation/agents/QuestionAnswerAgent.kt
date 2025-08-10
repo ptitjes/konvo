@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.conversation
+package io.github.ptitjes.konvo.core.conversation.agents
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
@@ -8,7 +8,8 @@ import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.modelcontextprotocol.kotlin.sdk.TextContent
+import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.uuid.*
@@ -96,18 +97,22 @@ private suspend fun ConversationAgentView.vetToolCalls(
         )
     }
 
-    if (vetoableToolCalls.isNotEmpty()) {
-        val vettingEvent = sendToolUseVetting(vetoableToolCalls.map { it.second })
-        // Wait for user approvals corresponding to this vetting event
-        val approvalsEvent = conversation.events.filterIsInstance<ConversationEvent.ToolUseApproval>()
-            .first { it.vetting == vettingEvent }
-        val approvalsByCall = approvalsEvent.approvals
-        vetoableToolCalls.forEach { (index, call) ->
-            vettedCalls[index].complete(approvalsByCall[call] == true)
-        }
+    if (vetoableToolCalls.isEmpty()) return vettedCalls.awaitAll()
+
+    val vettingEvent = sendToolUseVetting(vetoableToolCalls.map { it.second })
+
+    sendProcessing(false)
+
+    val approvalsEvent = events.filterIsInstance<Event.ToolUseApproval>().first { it.vetting == vettingEvent }
+    val approvalsByCall = approvalsEvent.approvals
+
+    vetoableToolCalls.forEach { (index, call) ->
+        vettedCalls[index].complete(approvalsByCall[call] == true)
     }
 
-    return vettedCalls.awaitAll()
+    return vettedCalls.awaitAll().also {
+        sendProcessing(true)
+    }
 }
 
 private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(

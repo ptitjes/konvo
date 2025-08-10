@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
-import ai.koog.prompt.markdown.markdown
+import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.frontend.discord.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
@@ -26,7 +26,7 @@ enum class ConversationMode(
             is RoleplayingModeBuilder -> Roleplaying
         }
 
-        fun forConfiguration(configuration: ConversationAgentConfiguration): ConversationMode = when (configuration) {
+        fun forConfiguration(configuration: AgentConfiguration): ConversationMode = when (configuration) {
             is QuestionAnswerAgentConfiguration -> QuestionAnswer
             is RoleplayingAgentConfiguration -> Roleplaying
         }

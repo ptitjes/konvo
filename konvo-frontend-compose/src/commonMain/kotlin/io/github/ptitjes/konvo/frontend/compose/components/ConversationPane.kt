@@ -18,18 +18,17 @@ fun ConversationPane(
     viewModel: ConversationViewModel,
     modifier: Modifier = Modifier,
 ) {
-    val events by viewModel.events.collectAsState()
+    val viewedItems by viewModel.viewItems.collectAsState()
     val isProcessing by viewModel.assistantIsProcessing.collectAsState()
 
     Column(modifier = modifier.fillMaxSize()) {
         val listState = rememberLazyListState()
 
         // Auto-scroll to the bottom when new entries are added
-        LaunchedEffect(events.size, isProcessing) {
-            if (events.isNotEmpty()) {
-                listState.animateScrollToItem(
-                    events.lastIndex + (if (isProcessing) 1 else 0),
-                )
+        LaunchedEffect(viewedItems.size, isProcessing) {
+            if (viewedItems.isNotEmpty()) {
+                val index = viewedItems.lastIndex + (if (isProcessing) 1 else 0)
+                listState.animateScrollToItem(index)
             }
         }
 
@@ -39,14 +38,12 @@ fun ConversationPane(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            items(events) { event ->
-                key(event.id) {
-                    ConversationEventPanel(event)
-                }
+            items(viewedItems, key = { it.id }) { viewedItem ->
+                ConversationEventPanel(viewedItem)
             }
 
             if (isProcessing) {
-                item {
+                item("__processing__") {
                     ConversationProcessingIndicator()
                 }
             }

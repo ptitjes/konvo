@@ -2,6 +2,7 @@ package io.github.ptitjes.konvo.frontend.discord
 
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 data class ConversationBuilder(
@@ -20,7 +21,7 @@ data class ConversationBuilder(
 
 sealed interface ConversationModeBuilder {
     fun isValid(): Boolean
-    fun build(): ConversationAgentConfiguration
+    fun build(): AgentConfiguration
 }
 
 data class QuestionAnswerModeBuilder(
@@ -31,7 +32,7 @@ data class QuestionAnswerModeBuilder(
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean = prompt != null && model != null
 
-    override fun build(): ConversationAgentConfiguration {
+    override fun build(): AgentConfiguration {
         if (prompt == null || model == null) error("Conversation configuration is incomplete")
 
         return QuestionAnswerAgentConfiguration(
@@ -52,7 +53,7 @@ data class RoleplayingModeBuilder(
     override fun isValid(): Boolean =
         model != null && character != null && userName != null
 
-    override fun build(): ConversationAgentConfiguration {
+    override fun build(): AgentConfiguration {
         if (character == null || userName == null || model == null)
             error("Conversation configuration is incomplete")
 

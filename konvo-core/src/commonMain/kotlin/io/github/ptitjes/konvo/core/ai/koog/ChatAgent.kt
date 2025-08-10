@@ -13,12 +13,13 @@ import ai.koog.prompt.message.*
 import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.Attachment
+import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversation.model.Attachment
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.io.files.*
@@ -81,13 +82,14 @@ class ChatAgent(
             conversation.sendMessage(it)
         }
 
-        conversation.conversation.events.buffer(Channel.UNLIMITED).collect { event ->
+        conversation.events.buffer(Channel.UNLIMITED).collect { event ->
             when (event) {
-                is ConversationEvent.UserMessage -> {
-                    conversation.sendProcessing()
+                is Event.UserMessage -> {
+                    conversation.sendProcessing(true)
                     val agent = buildAgent(conversation)
                     val result = agent.run(event.toUserMessage())
                     result.forEach { conversation.sendMessage(it.content) }
+                    conversation.sendProcessing(false)
                 }
 
                 else -> {}
@@ -97,7 +99,7 @@ class ChatAgent(
 
     private val clock = Clock.System
 
-    private suspend fun ConversationEvent.UserMessage.toUserMessage(): Message.User =
+    private suspend fun Event.UserMessage.toUserMessage(): Message.User =
         Message.User(
             content = content,
             attachments = attachments.map { it.toKoogAttachment() },

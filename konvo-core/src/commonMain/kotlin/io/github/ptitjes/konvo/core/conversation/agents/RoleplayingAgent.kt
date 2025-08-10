@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.conversation
+package io.github.ptitjes.konvo.core.conversation.agents
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*

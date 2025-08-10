@@ -17,6 +17,9 @@ import dev.kord.rest.builder.interaction.*
 import dev.kord.rest.builder.message.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.agents.*
+import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversation.model.Event
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
@@ -199,7 +202,7 @@ private fun MessageBuilder.conversationStartMessage(
     newChannel: TextChannel? = null,
     fullSizeCharacterAvatar: Boolean = false,
 ) {
-    val configuration = configuration.agent
+    val configuration: AgentConfiguration = configuration.agent
 
     container {
         accentColor = DiscordConstants.KonvoColor
@@ -276,26 +279,26 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
     coroutineScope {
         val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
-        conversation.conversation.events.collect { event ->
+        conversation.events.collect { event ->
             when (event) {
-                is ConversationEvent.AssistantProcessing -> assistantProcessing.start()
+                is Event.AssistantProcessing ->
+                    if (event.isProcessing) assistantProcessing.start()
+                    else assistantProcessing.stop()
 
-                is ConversationEvent.AssistantMessage -> {
-                    assistantProcessing.stop()
+                is Event.AssistantMessage -> {
                     val content = event.content.maybeSplitDiscordContent()
                     content.forEach { createMessage(it) }
+                    assistantProcessing.maybeRestart()
                 }
 
-                is ConversationEvent.AssistantToolUseVetting -> {
-                    assistantProcessing.stop()
+                is Event.ToolUseVetting -> {
                     askForToolUse(conversation, event)
-                    assistantProcessing.start()
+                    assistantProcessing.maybeRestart()
                 }
 
-                is ConversationEvent.AssistantToolUseResult -> {
-                    assistantProcessing.stop()
+                is Event.ToolUseNotification -> {
                     notifyToolUse(event)
-                    assistantProcessing.start()
+                    assistantProcessing.maybeRestart()
                 }
 
                 else -> {}
@@ -305,7 +308,7 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
 
 private suspend fun MessageChannelBehavior.askForToolUse(
     conversation: ConversationUserView,
-    event: ConversationEvent.AssistantToolUseVetting,
+    event: Event.ToolUseVetting,
 ) {
     val done = CompletableDeferred<Unit>()
     val callsToCheck = event.calls.toMutableList()
@@ -365,7 +368,7 @@ private suspend fun MessageChannelBehavior.askForToolUse(
     done.await()
 }
 
-private suspend fun MessageChannelBehavior.notifyToolUse(event: ConversationEvent.AssistantToolUseResult) {
+private suspend fun MessageChannelBehavior.notifyToolUse(event: Event.ToolUseNotification) {
     if (event.result is ToolCallResult.Success) {
         createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }

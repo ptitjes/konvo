@@ -11,12 +11,16 @@ val TextChannel.url: String get() = "https://discord.com/channels/${guildId}/${i
 interface TypingToggler {
     suspend fun start()
     suspend fun stop()
+    suspend fun maybeRestart()
 }
 
 fun CoroutineScope.typingToggler(channel: MessageChannelBehavior): TypingToggler = object : TypingToggler {
+    private var isTyping = false
     private var typingJob: Job? = null
 
     override suspend fun start() {
+        isTyping = true
+
         if (typingJob == null) {
             channel.type()
             typingJob = launch {
@@ -35,5 +39,10 @@ fun CoroutineScope.typingToggler(channel: MessageChannelBehavior): TypingToggler
     override suspend fun stop() {
         typingJob?.cancel()
         typingJob = null
+        isTyping = false
+    }
+
+    override suspend fun maybeRestart() {
+        if (isTyping) start()
     }
 }

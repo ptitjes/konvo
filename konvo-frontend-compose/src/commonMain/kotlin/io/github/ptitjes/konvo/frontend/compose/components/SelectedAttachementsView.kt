@@ -1,14 +1,12 @@
 package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
+import androidx.compose.foundation.shape.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.conversation.Attachment
-import io.github.vinceglb.filekit.core.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 
 @Composable
 fun SelectedAttachementsView(attachments: List<Attachment>) {

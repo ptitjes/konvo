@@ -4,6 +4,7 @@ package io.github.ptitjes.konvo.core.conversation
 
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
@@ -29,61 +30,66 @@ class ActiveConversation(
 
     private fun newTimestamp(): Instant = clock.now()
 
-    private val userMember = ConversationMember.User(
+    private val userMember = Participant.User(
         id = newUniqueId(),
         name = "user"
     )
 
-    private val agentMember = ConversationMember.Agent(
+    private val agentMember = Participant.Agent(
         id = newUniqueId(),
         name = "agent"
     )
 
-    private val members = listOf<ConversationMember>(
+    val participants = listOf(userMember, agentMember)
 
-    )
+    val transcript = Transcript()
 
-    val transcript = ConversationTranscript()
+    private val _events = MutableSharedFlow<Event>()
+    val events: SharedFlow<Event> = _events
 
-    private val _events = MutableSharedFlow<ConversationEvent>()
-    val events: SharedFlow<ConversationEvent> = _events
-
-    private suspend fun emitEvent(event: ConversationEvent) {
+    private suspend fun emitEvent(event: Event) {
         transcript.append(event)
         _events.emit(event)
     }
 
     private inner class AgentViewImpl(
-        val conversationMember: ConversationMember,
+        val participant: Participant,
     ) : ConversationAgentView {
         override val conversation: ActiveConversation = this@ActiveConversation
 
-        override suspend fun sendProcessing() {
+        override val transcript: Transcript
+            get() = conversation.transcript
+
+        override val events: SharedFlow<Event>
+            get() = conversation.events
+
+        override suspend fun sendProcessing(isProcessing: Boolean) {
             emitEvent(
-                ConversationEvent.AssistantProcessing(
+                Event.AssistantProcessing(
                     id = newUniqueId(),
                     timestamp = newTimestamp(),
-                    source = conversationMember
+                    source = participant,
+                    isProcessing = isProcessing,
                 )
             )
         }
 
         override suspend fun sendMessage(content: String) {
             emitEvent(
-                ConversationEvent.AssistantMessage(
+                Event.AssistantMessage(
                     id = newUniqueId(),
                     timestamp = newTimestamp(),
-                    source = conversationMember,
+                    source = participant,
                     content = content
                 )
             )
         }
 
-        override suspend fun sendToolUseVetting(calls: List<ToolCall>): ConversationEvent.AssistantToolUseVetting {
-            val event = ConversationEvent.AssistantToolUseVetting(
+        override suspend fun sendToolUseVetting(calls: List<ToolCall>): Event.ToolUseVetting {
+            val event = Event.ToolUseVetting(
                 id = newUniqueId(),
                 timestamp = newTimestamp(),
-                source = conversationMember,
+                source = participant,
                 calls = calls
             )
             emitEvent(event)
@@ -95,10 +101,10 @@ class ActiveConversation(
             result: ToolCallResult,
         ) {
             emitEvent(
-                ConversationEvent.AssistantToolUseResult(
+                Event.ToolUseNotification(
                     id = newUniqueId(),
                     timestamp = newTimestamp(),
-                    source = conversationMember,
+                    source = participant,
                     call = call,
                     result = result
                 )
@@ -107,19 +113,25 @@ class ActiveConversation(
     }
 
     private inner class UserViewImpl(
-        val conversationMember: ConversationMember,
+        val participant: Participant,
     ) : ConversationUserView {
         override val conversation: ActiveConversation = this@ActiveConversation
+
+        override val transcript: Transcript
+            get() = conversation.transcript
+
+        override val events: SharedFlow<Event>
+            get() = conversation.events
 
         override suspend fun sendMessage(
             content: String,
             attachments: List<Attachment>,
         ) {
             emitEvent(
-                ConversationEvent.UserMessage(
+                Event.UserMessage(
                     id = newUniqueId(),
                     timestamp = newTimestamp(),
-                    source = conversationMember,
+                    source = participant,
                     content = content,
                     attachments = attachments
                 )
@@ -127,14 +139,14 @@ class ActiveConversation(
         }
 
         override suspend fun sendToolUseApproval(
-            vetting: ConversationEvent.AssistantToolUseVetting,
+            vetting: Event.ToolUseVetting,
             approvals: Map<ToolCall, Boolean>,
         ) {
             emitEvent(
-                ConversationEvent.ToolUseApproval(
+                Event.ToolUseApproval(
                     id = newUniqueId(),
                     timestamp = newTimestamp(),
-                    source = conversationMember,
+                    source = participant,
                     vetting = vetting,
                     approvals = approvals,
                 )

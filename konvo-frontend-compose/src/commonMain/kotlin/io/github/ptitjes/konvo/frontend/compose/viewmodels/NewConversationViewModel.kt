@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import kotlinx.coroutines.*
 

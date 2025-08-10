@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.agents.*
 import kotlinx.coroutines.*
 import org.kodein.di.*
 import kotlin.coroutines.*
@@ -80,50 +81,8 @@ class Konvo(
     val tools: List<ToolCard> get() = _tools
 
     suspend fun createConversation(configuration: ConversationConfiguration): ActiveConversation {
-        val agent = when (configuration.agent) {
-            is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(configuration.agent)
-            is RoleplayingAgentConfiguration -> buildRoleplayingAgent(configuration.agent)
-        }
-
         val conversation = ActiveConversation(this)
-
-        conversation.addAgent(agent)
-
+        conversation.addAgent(configuration.buildAgent())
         return conversation
     }
-}
-
-private fun buildKonvoConfiguration(configure: KonvoConfigurationBuilder.() -> Unit): KonvoConfiguration {
-    class ConfigurationBuilder : KonvoConfigurationBuilder {
-        override var dataDirectory: String = "./data"
-        private val modelProviders = mutableListOf<ModelProvider>()
-        private val promptProviders = mutableListOf<PromptProvider>()
-        private val toolProviders = mutableListOf<ToolProvider>()
-
-        override fun installModels(provider: ModelProvider) {
-            modelProviders.add(provider)
-        }
-
-        override fun installPrompts(provider: PromptProvider) {
-            promptProviders.add(provider)
-        }
-
-        override fun installTools(provider: ToolProvider) {
-            toolProviders.add(provider)
-        }
-
-        fun build(): KonvoConfiguration {
-            return KonvoConfiguration(
-                dataDirectory = dataDirectory,
-                modelProviders = modelProviders.toList(),
-                promptProviders = promptProviders.toList(),
-                toolProviders = toolProviders.toList(),
-            )
-        }
-    }
-
-    val scope = ConfigurationBuilder()
-    scope.configure()
-    val configuration = scope.build()
-    return configuration
 }

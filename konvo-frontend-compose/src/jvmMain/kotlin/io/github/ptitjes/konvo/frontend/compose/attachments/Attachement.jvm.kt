@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.attachments
 
-import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.vinceglb.filekit.core.*
 
 actual fun PlatformFile.createImageAttachement(): Attachment {

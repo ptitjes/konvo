@@ -12,22 +12,21 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
-import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 import kotlinx.serialization.json.*
 
 @Composable
-fun ConversationEventPanel(event: ConversationEvent) = when (event) {
-    is ConversationEvent.UserMessage -> ConversationUserMessagePanel(event)
-    is ConversationEvent.AssistantMessage -> ConversationAgentMessagePanel(event)
-    is ConversationEvent.AssistantProcessing -> {}
-    is ConversationEvent.AssistantToolUseResult -> ConversationAssistantToolUseResultPanel(event)
-    is ConversationEvent.AssistantToolUseVetting -> ConversationAssistantToolUseVettingPanel(event)
-    is ConversationEvent.ToolUseApproval -> {}
+fun ConversationEventPanel(event: Event) = when (event) {
+    is Event.UserMessage -> ConversationUserMessagePanel(event)
+    is Event.AssistantMessage -> ConversationAgentMessagePanel(event)
+    is Event.ToolUseNotification -> ConversationAssistantToolUseResultPanel(event)
+    is Event.ToolUseVetting -> ConversationAssistantToolUseVettingPanel(event)
+    else -> {}
 }
 
 @Composable
 fun ConversationUserMessagePanel(
-    event: ConversationEvent.UserMessage,
+    event: Event.UserMessage,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -59,7 +58,7 @@ fun ConversationUserMessagePanel(
 
 @Composable
 fun ConversationAgentMessagePanel(
-    event: ConversationEvent.AssistantMessage,
+    event: Event.AssistantMessage,
 ) {
     val horizontalArrangement = Arrangement.Start
     Row(
@@ -75,7 +74,7 @@ fun ConversationAgentMessagePanel(
 
 @Composable
 fun ConversationAssistantToolUseVettingPanel(
-    event: ConversationEvent.AssistantToolUseVetting,
+    event: Event.ToolUseVetting,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -117,7 +116,7 @@ fun ConversationAssistantToolUseVettingPanel(
 
 @Composable
 fun ConversationAssistantToolUseResultPanel(
-    event: ConversationEvent.AssistantToolUseResult,
+    event: Event.ToolUseNotification,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
