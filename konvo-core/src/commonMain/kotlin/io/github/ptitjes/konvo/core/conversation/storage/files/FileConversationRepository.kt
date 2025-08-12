@@ -30,6 +30,9 @@ class FileConversationRepository(
 
     private val json = Json { ignoreUnknownKeys = true }
 
+    private val changesFlow = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 64)
+    override fun changes(): kotlinx.coroutines.flow.Flow<Unit> = changesFlow
+
     private val conversationsDir: Path get() = Path(rootPath, FilesLayout.CONVERSATIONS_DIR)
     private fun conversationDir(id: String): Path = Path(conversationsDir, id)
     private fun metaPath(id: String): Path = Path(conversationDir(id), FilesLayout.META_FILE)
@@ -111,6 +114,7 @@ class FileConversationRepository(
         )
         val newIdx = existing.copy(conversations = (existing.conversations.filter { it.id != initial.id } + entry))
         saveIndex(newIdx)
+        changesFlow.tryEmit(Unit)
         return initial
     }
 
@@ -206,6 +210,7 @@ class FileConversationRepository(
             messageCount = updated.messageCount,
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
+        changesFlow.tryEmit(Unit)
         return updated
     }
 
@@ -233,6 +238,7 @@ class FileConversationRepository(
             messageCount = updated.messageCount,
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
+        changesFlow.tryEmit(Unit)
         return updated
     }
 
@@ -246,6 +252,7 @@ class FileConversationRepository(
         }
         val idx = loadIndex() ?: ConversationIndexDto(conversations = emptyList())
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != id }))
+        changesFlow.tryEmit(Unit)
     }
 
     override suspend fun deleteAll() {
@@ -261,6 +268,7 @@ class FileConversationRepository(
             // Remove index last
             if (fileSystem.exists(indexPath)) try { fileSystem.delete(indexPath) } catch (_: Throwable) {}
         }
+        changesFlow.tryEmit(Unit)
     }
 
     override suspend fun listEvents(conversationId: String, from: Int, limit: Int?): List<Event> {

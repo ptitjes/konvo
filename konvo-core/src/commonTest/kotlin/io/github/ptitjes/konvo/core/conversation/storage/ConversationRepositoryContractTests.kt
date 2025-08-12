@@ -3,7 +3,10 @@ package io.github.ptitjes.konvo.core.conversation.storage
 import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.inmemory.*
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.*
+import kotlinx.coroutines.yield
 import kotlin.test.*
 import kotlin.time.*
 
@@ -195,5 +198,32 @@ abstract class ConversationRepositoryContractTests {
 
         val sliceTail = repo.listEvents("c1", from = 4, limit = 10)
         assertEquals(listOf("e5"), sliceTail.map { it.id })
+    }
+
+    @Test
+    fun `changes flow emits on create, append, update, delete and deleteAll`() = runTest {
+        val repo = createRepository()
+        var emissions = 0
+        val job = launch {
+            repo.changes().take(5).collect { emissions += 1 }
+        }
+        // Ensure the collector is started before we emit changes
+        yield()
+
+        val conv = newConversation("c1", title = "Title")
+        // 1: create
+        repo.createConversation(conv)
+        // 2: append
+        repo.appendEvent("c1", userMessage("e1", "hello"))
+        // 3: update title
+        val updated = repo.getConversation("c1")!!.copy(title = "New Title")
+        repo.updateConversation(updated)
+        // 4: delete one
+        repo.deleteConversation("c1")
+        // 5: delete all (should still emit)
+        repo.deleteAll()
+
+        job.join()
+        assertEquals(5, emissions)
     }
 }
