@@ -52,7 +52,8 @@ class FileConversationRepositoryPartialFilesTests {
         val repo = FileConversationRepository(root)
 
         // Create conversation and append two valid events
-        val conv = repo.createConversation(newConversation("c1"))
+        val conv = newConversation("c1")
+        repo.createConversation(conv)
         repo.appendEvent(conv.id, userMessage("e1", "Hello"))
         repo.appendEvent(conv.id, userMessage("e2", "World"))
 

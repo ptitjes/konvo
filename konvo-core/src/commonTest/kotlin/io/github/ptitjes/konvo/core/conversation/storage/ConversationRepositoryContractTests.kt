@@ -80,7 +80,8 @@ abstract class ConversationRepositoryContractTests {
             content = "Hello world",
             attachments = emptyList()
         )
-        val updated = repo.appendEvent(conv.id, event)
+        repo.appendEvent(conv.id, event)
+        val updated = repo.getConversation(conv.id).first()
         assertEquals(1, updated.messageCount)
         assertEquals("Hello world", updated.lastMessagePreview)
         val events = repo.getEvents(conv.id).first()
@@ -91,7 +92,8 @@ abstract class ConversationRepositoryContractTests {
     fun `CRUD basics and timestamps`() = runTest {
         val repo = createRepository()
         val c1 = newConversation("c1", title = "First")
-        val created = repo.createConversation(c1)
+        repo.createConversation(c1)
+        val created = repo.getConversation(c1.id).first()
         assertEquals(c1.id, created.id)
         assertEquals(c1.createdAt, created.createdAt)
         assertEquals(c1.updatedAt, created.updatedAt)
@@ -104,18 +106,21 @@ abstract class ConversationRepositoryContractTests {
     @Test
     fun `append updates updatedAt, lastMessagePreview and messageCount`() = runTest {
         val repo = createRepository()
-        val c = repo.createConversation(newConversation("c1"))
+        val c = newConversation("c1")
+        repo.createConversation(c)
         val beforeUpdatedAt = c.updatedAt
         val u1 = userMessage("e1", "Hello world")
-        val updated1 = repo.appendEvent("c1", u1)
-        assertEquals(1, updated1.messageCount)
-        assertEquals("Hello world", updated1.lastMessagePreview)
-        assertTrue(updated1.updatedAt >= beforeUpdatedAt)
+        repo.appendEvent("c1", u1)
+        val after1 = repo.getConversation("c1").first()
+        assertEquals(1, after1.messageCount)
+        assertEquals("Hello world", after1.lastMessagePreview)
+        assertTrue(after1.updatedAt >= beforeUpdatedAt)
 
         val a1 = assistantMessage("e2", "Hi!")
-        val updated2 = repo.appendEvent("c1", a1)
-        assertEquals(2, updated2.messageCount)
-        assertEquals("Hi!", updated2.lastMessagePreview)
+        repo.appendEvent("c1", a1)
+        val after2 = repo.getConversation("c1").first()
+        assertEquals(2, after2.messageCount)
+        assertEquals("Hi!", after2.lastMessagePreview)
     }
 
     @Test
@@ -136,7 +141,8 @@ abstract class ConversationRepositoryContractTests {
         val repo = createRepository()
         repo.createConversation(newConversation("c1", "Old"))
         val before = repo.getConversation("c1").first().updatedAt
-        val changed = repo.updateConversation(repo.getConversation("c1").first().copy(title = "New"))
+        repo.updateConversation(repo.getConversation("c1").first().copy(title = "New"))
+        val changed = repo.getConversation("c1").first()
         assertEquals("New", changed.title)
         assertTrue(changed.updatedAt >= before)
     }

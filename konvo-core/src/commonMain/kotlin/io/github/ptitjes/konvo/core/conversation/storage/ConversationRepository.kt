@@ -15,7 +15,7 @@ import kotlin.time.*
 interface ConversationRepository {
 
     /** Create a new conversation. The [initial] fields id/createdAt/updatedAt must be set by the caller. */
-    suspend fun createConversation(initial: Conversation): Conversation
+    suspend fun createConversation(initial: Conversation)
 
     /** Stream a conversation by id; completes if the conversation is deleted. */
     fun getConversation(id: String): Flow<Conversation>
@@ -26,10 +26,10 @@ interface ConversationRepository {
     fun getConversations(sort: Sort = Sort.UpdatedDesc): Flow<List<Conversation>>
 
     /** Append an [event] to the conversation identified by [conversationId], updating its metadata accordingly. */
-    suspend fun appendEvent(conversationId: String, event: Event): Conversation
+    suspend fun appendEvent(conversationId: String, event: Event)
 
     /** Update a conversation's metadata such as title; [updatedAt] must be updated by implementation. */
-    suspend fun updateConversation(conversation: Conversation): Conversation
+    suspend fun updateConversation(conversation: Conversation)
 
     /** Delete a conversation and its events. */
     suspend fun deleteConversation(id: String)

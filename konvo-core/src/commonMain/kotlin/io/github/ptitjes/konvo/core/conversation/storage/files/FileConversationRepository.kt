@@ -87,7 +87,7 @@ class FileConversationRepository(
         return idx
     }
 
-    override suspend fun createConversation(initial: Conversation): Conversation {
+    override suspend fun createConversation(initial: Conversation) {
         // Create directories
         FileIo.ensureDirectoryExists(conversationsDir, fileSystem)
         val dir = conversationDir(initial.id)
@@ -115,7 +115,6 @@ class FileConversationRepository(
         val newIdx = existing.copy(conversations = (existing.conversations.filter { it.id != initial.id } + entry))
         saveIndex(newIdx)
         changeTicker.value = changeTicker.value + 1
-        return initial
     }
 
     private fun readConversation(id: String): Conversation? {
@@ -168,7 +167,7 @@ class FileConversationRepository(
     override fun getConversations(sort: Sort): Flow<List<Conversation>> =
         changeTicker.map { readConversations(sort) }.onStart { emit(readConversations(sort)) }.distinctUntilChanged()
 
-    override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
+    override suspend fun appendEvent(conversationId: String, event: Event) {
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
         // Append event to NDJSON by reading current content and rewriting (for portability)
@@ -211,10 +210,9 @@ class FileConversationRepository(
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
         changeTicker.value = changeTicker.value + 1
-        return updated
     }
 
-    override suspend fun updateConversation(conversation: Conversation): Conversation {
+    override suspend fun updateConversation(conversation: Conversation) {
         val existing = readConversation(conversation.id) ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
         val updated = conversation.copy(
             createdAt = existing.createdAt,
@@ -239,7 +237,6 @@ class FileConversationRepository(
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
         changeTicker.value = changeTicker.value + 1
-        return updated
     }
 
     override suspend fun deleteConversation(id: String) {

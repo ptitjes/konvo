@@ -25,7 +25,7 @@ class InMemoryConversationRepository(
     private val conversationsState = MutableStateFlow<Map<String, Conversation>>(emptyMap())
     private val eventsState = MutableStateFlow<Map<String, List<Event>>>(emptyMap())
 
-    override suspend fun createConversation(initial: Conversation): Conversation {
+    override suspend fun createConversation(initial: Conversation) {
         val newConversations = conversations.updateAndGet { prev ->
             if (prev.containsKey(initial.id)) {
                 throw IllegalStateException("Conversation already exists: ${initial.id}")
@@ -36,7 +36,6 @@ class InMemoryConversationRepository(
         // Initialize empty events list
         val newEvents = events.updateAndGet { prev -> prev + (initial.id to emptyList()) }
         eventsState.value = newEvents
-        return initial
     }
 
     override fun getConversation(id: String): Flow<Conversation> =
@@ -54,7 +53,7 @@ class InMemoryConversationRepository(
             }
         }.distinctUntilChanged()
 
-    override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
+    override suspend fun appendEvent(conversationId: String, event: Event) {
         // Append event first
         val updatedEvents = events.updateAndGet { prev ->
             val current = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
@@ -79,10 +78,9 @@ class InMemoryConversationRepository(
             prev + (conversationId to changed)
         }[conversationId]!!
         conversationsState.value = conversations.value
-        return updated
     }
 
-    override suspend fun updateConversation(conversation: Conversation): Conversation {
+    override suspend fun updateConversation(conversation: Conversation) {
         val updated = conversations.updateAndGet { prev ->
             val existing = prev[conversation.id] ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
             val now = timeProvider.now()
@@ -95,7 +93,6 @@ class InMemoryConversationRepository(
             prev + (conversation.id to changed)
         }[conversation.id]!!
         conversationsState.value = conversations.value
-        return updated
     }
 
     override suspend fun deleteConversation(id: String) {

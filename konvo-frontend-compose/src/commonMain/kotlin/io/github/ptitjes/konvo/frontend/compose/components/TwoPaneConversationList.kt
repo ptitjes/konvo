@@ -8,6 +8,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.conversation.storage.inmemory.InMemoryConversationRepository
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 import kotlinx.coroutines.flow.*
@@ -35,48 +36,39 @@ fun TwoPaneConversationList(
     )
 }
 
-// --- Previews ---
 @Preview
 @Composable
 @OptIn(ExperimentalTime::class)
 private fun TwoPaneConversationListPreview() {
-    val fakeRepo = object : ConversationRepository {
-        override suspend fun createConversation(initial: Conversation): Conversation = initial
-        override fun getConversation(id: String): Flow<Conversation> = emptyFlow()
-        override fun getConversations(sort: Sort): Flow<List<Conversation>> = flowOf(
-            listOf(
-                Conversation(
-                    id = "1",
-                    title = "First",
-                    createdAt = Instant.fromEpochMilliseconds(0),
-                    updatedAt = Instant.fromEpochMilliseconds(0),
-                    participants = emptyList(),
-                    lastMessagePreview = "Hello world",
-                    messageCount = 1,
-                ),
-                Conversation(
-                    id = "2",
-                    title = "Second",
-                    createdAt = Instant.fromEpochMilliseconds(0),
-                    updatedAt = Instant.fromEpochMilliseconds(0),
-                    participants = emptyList(),
-                    lastMessagePreview = "Another message",
-                    messageCount = 3,
-                ),
+    val repo = remember { InMemoryConversationRepository() }
+
+    // Seed preview data
+    LaunchedEffect(Unit) {
+        repo.createConversation(
+            Conversation(
+                id = "1",
+                title = "First",
+                createdAt = Instant.fromEpochMilliseconds(0),
+                updatedAt = Instant.fromEpochMilliseconds(0),
+                participants = emptyList(),
+                lastMessagePreview = "Hello world",
+                messageCount = 1,
             )
         )
-
-        override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
-            throw UnsupportedOperationException()
-        }
-
-        override suspend fun updateConversation(conversation: Conversation): Conversation = conversation
-        override suspend fun deleteConversation(id: String) {}
-        override suspend fun deleteAll() {}
-        override fun getEvents(conversationId: String): Flow<List<Event>> = flowOf(emptyList())
+        repo.createConversation(
+            Conversation(
+                id = "2",
+                title = "Second",
+                createdAt = Instant.fromEpochMilliseconds(0),
+                updatedAt = Instant.fromEpochMilliseconds(0),
+                participants = emptyList(),
+                lastMessagePreview = "Another message",
+                messageCount = 3,
+            )
+        )
     }
 
-    val vm = remember { ConversationListViewModel(fakeRepo) }
+    val vm = remember { ConversationListViewModel(repo) }
 
     TwoPaneConversationList(viewModel = vm) {
         Box(Modifier.fillMaxSize())
