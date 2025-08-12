@@ -1,7 +1,7 @@
 [versions]
-kotlin = "2.1.21"
-kotlinxDatetime = "0.6.2"
-kotlinxSerializationJSON = "1.8.1"
+kotlin = "2.2.20-Beta2"
+kotlinxDatetime = "0.7.1-0.6.x-compat"
+kotlinxSerialization = "1.9.0"
 kotlinxCoroutines = "1.10.2"
 kotlinxAtomicfu = "0.29.0"
 kotlinxIo = "0.7.0"
@@ -38,8 +38,9 @@ flexmark = "0.64.8"
 [libraries]
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
+kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinxCoroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinxCoroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
 kotlinxIoCore = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinxIo" }
 
