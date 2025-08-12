@@ -1,58 +1,95 @@
 package io.github.ptitjes.konvo.frontend.compose
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.adaptive.*
+import androidx.compose.material3.adaptive.navigationsuite.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.conversation.*
+import androidx.window.core.layout.*
+import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.screens.*
 import io.github.ptitjes.konvo.frontend.compose.theme.*
+import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
-import org.kodein.di.compose.*
 
 @Composable
 fun App() {
-    val konvo by rememberInstance<Konvo>()
+    val adaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo()
 
     KonvoTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+        NavigationSuiteScaffold(
+            layoutType = suiteTypeFromAdaptiveInfo(adaptiveInfo),
+            navigationSuiteItems = {
+                item(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(imageVector = Icons.AutoMirrored.Default.Chat, contentDescription = null) },
+                    badge = {},
+                )
+            },
         ) {
-            var currentScreen by remember { mutableStateOf<Screen>(Screen.NewConversation) }
+            val viewModel: ConversationListViewModel = viewModel()
+            val selectedConversation by viewModel.selectedConversation.collectAsState()
 
-            when (val screen = currentScreen) {
-                Screen.NewConversation -> {
-                    NewConversationScreen(
-                        konvo = konvo,
-                        onConversationCreated = { newConversation ->
-                            currentScreen = Screen.InConversation(newConversation)
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+            val paneType = drawerValueFromAdaptiveInfo(
+                adaptiveInfo = adaptiveInfo,
+                detailSelected = selectedConversation != null,
+            )
 
-                is Screen.InConversation -> {
-                    val viewModel = remember(screen.conversation) {
-                        val conversationView = screen.conversation.newUiView()
-                        ConversationViewModel(conversationView)
-                    }
-                    ConversationScreen(
-                        viewModel = viewModel,
-                        onBackClick = { currentScreen = Screen.NewConversation },
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+            Surface(
+                color = MaterialTheme.colorScheme.background,
+            ) {
+                ListDetailPane(
+                    paneType = paneType,
+                    list = {
+                        ConversationListPanel()
+                    },
+                    detail = {
+                        when (val conversation = selectedConversation) {
+                            null -> {
+                                NewConversationScreen(
+                                    onConversationCreated = { viewModel.select(it) },
+                                )
+                            }
+
+                            else -> {
+                                ConversationScreen(
+                                    conversation = conversation,
+                                    onBackClick = { viewModel.select(null) },
+                                )
+                            }
+                        }
+                    },
+                )
             }
         }
     }
 }
 
-private sealed class Screen {
-    data object NewConversation : Screen()
+private fun suiteTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): NavigationSuiteType {
+    return with(adaptiveInfo) {
+        if (windowPosture.isTabletop || windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) {
+            NavigationSuiteType.NavigationBar
+        } else if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED ||
+            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.MEDIUM
+        ) {
+            NavigationSuiteType.NavigationRail
+        } else {
+            NavigationSuiteType.NavigationBar
+        }
+    }
+}
 
-    data class InConversation(
-        val conversation: ActiveConversation,
-    ) : Screen()
+private fun drawerValueFromAdaptiveInfo(
+    adaptiveInfo: WindowAdaptiveInfo,
+    detailSelected: Boolean,
+): ListDetailPaneType {
+    return with(adaptiveInfo) {
+        when {
+            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED -> ListDetailPaneType.Both
+            detailSelected -> ListDetailPaneType.Detail
+            else -> ListDetailPaneType.List
+        }
+    }
 }

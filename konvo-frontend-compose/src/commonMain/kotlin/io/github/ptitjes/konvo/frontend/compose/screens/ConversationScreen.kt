@@ -3,14 +3,14 @@ package io.github.ptitjes.konvo.frontend.compose.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.ModelTraining
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.text.style.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationViewModel
+import io.github.ptitjes.konvo.frontend.compose.util.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 /**
  * A screen that displays a conversation with a top app bar.
@@ -22,16 +22,19 @@ import io.github.ptitjes.konvo.frontend.compose.viewmodels.ConversationViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationScreen(
-    viewModel: ConversationViewModel,
+    conversation: Conversation,
+    viewModel: ConversationViewModel = viewModel(conversation),
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val state by viewModel.state.collectAsState()
+
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Conversation")
+                    Text(text = conversation.title)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -53,8 +56,9 @@ fun ConversationScreen(
         }
     ) { paddingValues ->
         ConversationPane(
-            viewModel = viewModel,
+            state = state,
             modifier = Modifier.fillMaxSize().padding(paddingValues),
+            onSendMessage = viewModel::sendUserMessage,
         )
     }
 }

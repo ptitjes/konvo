@@ -4,24 +4,27 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.agents.*
+import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import kotlinx.coroutines.*
+import kotlin.time.*
 
 /**
  * ViewModel for the NewConversationScreen that encapsulates all the mutable state.
  */
 class NewConversationViewModel(
     private val konvo: Konvo,
+    private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
     val prompts get() = konvo.prompts
     val tools get() = konvo.tools
     val characters get() = konvo.characters
     val models
         get() = konvo.models.let { models ->
-            if (selectedAgentType == AgentType.QuestionAnswer && selectedTools.isNotEmpty())
-                models.filter { it.supportsTools }
+            if (selectedAgentType == AgentType.QuestionAnswer && selectedTools.isNotEmpty()) models.filter { it.supportsTools }
             else models
         }
 
@@ -37,7 +40,7 @@ class NewConversationViewModel(
     var selectedQAModel by mutableStateOf(models.first())
         private set
 
-    // Roleplaying configuration
+    // Role-play configuration
     var selectedCharacter by mutableStateOf(characters.first())
         private set
     var selectedGreetingIndex by mutableStateOf<Int?>(null)
@@ -51,7 +54,7 @@ class NewConversationViewModel(
     val isCreateEnabled: Boolean
         get() = when (selectedAgentType) {
             AgentType.QuestionAnswer -> true
-            AgentType.Roleplaying -> userName.isNotBlank()
+            AgentType.Roleplay -> userName.isNotBlank()
         }
 
     // Event handlers
@@ -92,43 +95,44 @@ class NewConversationViewModel(
         selectedRPModel = model
     }
 
-    fun createConversation(onConversationCreated: (ActiveConversation) -> Unit) {
-        val configuration = when (selectedAgentType) {
-            AgentType.QuestionAnswer -> {
-                selectedPrompt?.let { prompt ->
-                    selectedQAModel?.let { model ->
-                        ConversationConfiguration(
-                            agent = QuestionAnswerAgentConfiguration(
-                                prompt = prompt,
-                                tools = selectedTools,
-                                model = model,
-                            )
-                        )
-                    }
-                }
-            }
+    @OptIn(ExperimentalTime::class)
+    fun createConversation(onConversationCreated: (Conversation) -> Unit) = viewModelScope.launch {
+        val agentConfiguration = createAgentConfiguration()
 
-            AgentType.Roleplaying -> {
-                selectedCharacter?.let { character ->
-                    selectedRPModel?.let { model ->
-                        ConversationConfiguration(
-                            agent = RoleplayingAgentConfiguration(
-                                character = character,
-                                characterGreetingIndex = selectedGreetingIndex,
-                                userName = userName,
-                                model = model,
-                            )
-                        )
-                    }
-                }
-            }
+        val now = SystemTimeProvider.now()
+
+        val conversation = Conversation(
+            id = UuidIdGenerator.newId(),
+            title = "Untitled conversation",
+            createdAt = now,
+            updatedAt = now,
+            participants = listOf(),
+            lastMessagePreview = null,
+            messageCount = 0,
+            agentConfiguration = agentConfiguration,
+        )
+
+        conversationRepository.createConversation(conversation)
+
+        onConversationCreated(conversation)
+    }
+
+    private fun createAgentConfiguration(): AgentConfiguration = when (selectedAgentType) {
+        AgentType.QuestionAnswer -> {
+            QuestionAnswerAgentConfiguration(
+                prompt = selectedPrompt,
+                tools = selectedTools,
+                model = selectedQAModel,
+            )
         }
 
-        configuration?.let { config ->
-            viewModelScope.launch {
-                val conversation = konvo.createConversation(config)
-                onConversationCreated(conversation)
-            }
+        AgentType.Roleplay -> {
+            RoleplayAgentConfiguration(
+                character = selectedCharacter,
+                characterGreetingIndex = selectedGreetingIndex,
+                userName = userName,
+                model = selectedRPModel,
+            )
         }
     }
 }

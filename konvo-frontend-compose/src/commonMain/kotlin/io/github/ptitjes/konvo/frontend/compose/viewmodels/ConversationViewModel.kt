@@ -17,35 +17,52 @@ import kotlinx.coroutines.flow.*
  * @param conversationUserView The view of the conversation to interact with
  */
 class ConversationViewModel(
-    private val conversationUserView: ConversationUserView,
+    liveConversationsManager: LiveConversationsManager,
+    conversation: Conversation,
 ) : ViewModel() {
+    private val liveConversation = liveConversationsManager.getLiveConversation(conversation.id)
+    private val conversationUserView = liveConversation.newUserView()
 
-    private val _viewItems = MutableStateFlow(initialItems())
-    val viewItems: StateFlow<List<Event>> = _viewItems
-
-    private fun initialItems(): List<Event> =
-        conversationUserView.transcript.events.filter {
-            it.isViewItem()
-        }
-
-    private fun Event.isViewItem(): Boolean =
-        this !is Event.AssistantProcessing && this !is Event.ToolUseApproval
+    private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
+    val state: StateFlow<ConversationViewState> = _state
 
     init {
         viewModelScope.launch {
-            conversationUserView.events.filter {
-                it.isViewItem()
-            }.collect { event ->
-                _viewItems.update { it + event }
+            liveConversation.awaitLoaded()
+
+            val initialItems = conversationUserView.transcript.events.filter { it.isViewItem() }
+
+            _state.emit(
+                ConversationViewState.Loaded(
+                    items = initialItems,
+                    isProcessing = false,
+                )
+            )
+
+            launch {
+                conversationUserView.events.collect { event ->
+                    _state.update { previousState ->
+                        check(previousState is ConversationViewState.Loaded) { "Invalid state" }
+
+                        when {
+                            event.isViewItem() -> previousState.copy(
+                                items = previousState.items + event,
+                            )
+
+                            event is Event.AssistantProcessing -> previousState.copy(
+                                isProcessing = event.isProcessing,
+                            )
+
+                            else -> previousState
+                        }
+                    }
+                }
             }
         }
     }
 
-    val assistantIsProcessing =
-        conversationUserView.events
-            .filterIsInstance<Event.AssistantProcessing>()
-            .map { it.isProcessing }
-            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+    private fun Event.isViewItem(): Boolean =
+        this !is Event.AssistantProcessing && this !is Event.ToolUseApproval
 
     /**
      * Send a user message to the conversation.
@@ -65,4 +82,12 @@ class ConversationViewModel(
             )
         }
     }
+}
+
+sealed interface ConversationViewState {
+    data object Loading : ConversationViewState
+    data class Loaded(
+        val items: List<Event>,
+        val isProcessing: Boolean,
+    ) : ConversationViewState
 }

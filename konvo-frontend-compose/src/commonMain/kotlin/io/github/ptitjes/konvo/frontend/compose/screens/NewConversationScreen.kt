@@ -8,10 +8,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
+import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 /**
@@ -24,12 +24,10 @@ import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewConversationScreen(
-    konvo: Konvo,
-    onConversationCreated: (ActiveConversation) -> Unit,
+    viewModel: NewConversationViewModel = viewModel(),
+    onConversationCreated: (Conversation) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel = remember { NewConversationViewModel(konvo) }
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -59,48 +57,55 @@ fun NewConversationScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxSize()
+                .widthIn(max = 800.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            AgentTypeSelector(
-                selectedAgentType = viewModel.selectedAgentType,
-                onAgentTypeSelected = { viewModel.onAgentTypeSelected(it) },
-                agentTypes = AgentType.entries
-            )
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 800.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                AgentTypeSelector(
+                    selectedAgentType = viewModel.selectedAgentType,
+                    onAgentTypeSelected = { viewModel.onAgentTypeSelected(it) },
+                    agentTypes = AgentType.entries
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            // Agent Configuration Form
-            when (viewModel.selectedAgentType) {
-                AgentType.QuestionAnswer -> {
-                    QuestionAnswerConfigurationForm(
-                        prompts = viewModel.prompts,
-                        tools = viewModel.tools,
-                        models = viewModel.models,
-                        selectedPrompt = viewModel.selectedPrompt,
-                        onPromptSelected = { viewModel.onPromptSelected(it) },
-                        selectedTools = viewModel.selectedTools,
-                        onToolsSelected = { viewModel.onToolsSelected(it) },
-                        selectedModel = viewModel.selectedQAModel,
-                        onModelSelected = { viewModel.onQAModelSelected(it) }
-                    )
-                }
+                // Agent Configuration Form
+                when (viewModel.selectedAgentType) {
+                    AgentType.QuestionAnswer -> {
+                        QuestionAnswerConfigurationForm(
+                            prompts = viewModel.prompts,
+                            tools = viewModel.tools,
+                            models = viewModel.models,
+                            selectedPrompt = viewModel.selectedPrompt,
+                            onPromptSelected = { viewModel.onPromptSelected(it) },
+                            selectedTools = viewModel.selectedTools,
+                            onToolsSelected = { viewModel.onToolsSelected(it) },
+                            selectedModel = viewModel.selectedQAModel,
+                            onModelSelected = { viewModel.onQAModelSelected(it) }
+                        )
+                    }
 
-                AgentType.Roleplaying -> {
-                    RoleplayingConfigurationForm(
-                        characters = viewModel.characters,
-                        models = viewModel.models,
-                        selectedCharacter = viewModel.selectedCharacter,
-                        onCharacterSelected = { viewModel.onCharacterSelected(it) },
-                        selectedGreetingIndex = viewModel.selectedGreetingIndex,
-                        onGreetingIndexSelected = { viewModel.onGreetingIndexSelected(it) },
-                        userName = viewModel.userName,
-                        onUserNameChanged = { viewModel.onUserNameChanged(it) },
-                        selectedModel = viewModel.selectedRPModel,
-                        onModelSelected = { viewModel.onRPModelSelected(it) }
-                    )
+                    AgentType.Roleplay -> {
+                        RoleplayConfigurationForm(
+                            characters = viewModel.characters,
+                            models = viewModel.models,
+                            selectedCharacter = viewModel.selectedCharacter,
+                            onCharacterSelected = { viewModel.onCharacterSelected(it) },
+                            selectedGreetingIndex = viewModel.selectedGreetingIndex,
+                            onGreetingIndexSelected = { viewModel.onGreetingIndexSelected(it) },
+                            userName = viewModel.userName,
+                            onUserNameChanged = { viewModel.onUserNameChanged(it) },
+                            selectedModel = viewModel.selectedRPModel,
+                            onModelSelected = { viewModel.onRPModelSelected(it) }
+                        )
+                    }
                 }
             }
         }
@@ -145,7 +150,7 @@ private fun QuestionAnswerConfigurationForm(
 }
 
 @Composable
-private fun RoleplayingConfigurationForm(
+private fun RoleplayConfigurationForm(
     characters: List<CharacterCard>,
     models: List<ModelCard>,
     selectedCharacter: CharacterCard,

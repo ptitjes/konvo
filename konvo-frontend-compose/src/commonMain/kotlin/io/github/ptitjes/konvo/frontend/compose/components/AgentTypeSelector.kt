@@ -44,5 +44,5 @@ fun AgentTypeSelector(
 
 enum class AgentType(val displayName: String) {
     QuestionAnswer("Question & Answer"),
-    Roleplaying("Roleplaying")
+    Roleplay("Role-play")
 }

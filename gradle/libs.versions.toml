@@ -20,6 +20,7 @@ kodein = "7.25.0"
 compose = "1.8.2"
 composeHotReload = "1.0.0-beta04"
 
+material3Adaptive = "1.1.2"
 androidxLifecycleViewmodel = "2.9.1"
 
 markdownRenderer = "0.35.0"
@@ -61,6 +62,8 @@ uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uriKmp" }
 kodein = { module = "org.kodein.di:kodein-di", version.ref = "kodein" }
 
 # Compose Frontend
+
+material3Adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "material3Adaptive" }
 androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }
 kodeinCompose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
 

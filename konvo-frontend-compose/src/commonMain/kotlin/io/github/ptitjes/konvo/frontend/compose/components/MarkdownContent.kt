@@ -7,6 +7,7 @@ import com.mikepenz.markdown.coil3.*
 import com.mikepenz.markdown.compose.components.*
 import com.mikepenz.markdown.compose.elements.*
 import com.mikepenz.markdown.m3.*
+import com.mikepenz.markdown.model.*
 import dev.snipme.highlights.*
 import dev.snipme.highlights.model.*
 import io.github.ptitjes.konvo.frontend.compose.theme.*
@@ -22,10 +23,16 @@ fun MarkdownContent(
         Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDark))
     }
 
+    // TODO move the parsing to the view model
+    val state = rememberMarkdownState(content, immediate = true)
+
     Markdown(
-        content = content,
+        markdownState = state,
         colors = markdownColor(
             text = textColor,
+        ),
+        animations = markdownAnimations(
+            animateTextSize = { this }
         ),
         imageTransformer = Coil3ImageTransformerImpl,
         components = markdownComponents(

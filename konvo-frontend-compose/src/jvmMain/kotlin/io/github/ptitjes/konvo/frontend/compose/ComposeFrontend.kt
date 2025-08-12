@@ -7,6 +7,11 @@ import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.conversation.storage.files.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*
@@ -45,6 +50,22 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     import(configurationProviders(configuration))
 
     bindSingleton<Konvo> { Konvo(coroutineContext, di) }
+
+//    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
+    bindSingleton<ConversationRepository> {
+        FileConversationRepository(
+            rootPath = Path(configuration.dataDirectory, "conversations"),
+            konvo = instance(),
+        )
+    }
+
+    bindSingleton { LiveConversationsManager(coroutineContext, instance()) }
+
+    bindSingletonOf(::ConversationListViewModel)
+    bindSingletonOf(::NewConversationViewModel)
+    bindFactory { conversation: Conversation ->
+        ConversationViewModel(instance(), conversation)
+    }
 }
 
 fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {

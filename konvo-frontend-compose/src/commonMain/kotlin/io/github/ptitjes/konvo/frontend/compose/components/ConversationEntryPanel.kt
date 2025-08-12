@@ -38,7 +38,7 @@ fun ConversationUserMessagePanel(
         ) {
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
                 Column {
                     MarkdownContent(
