@@ -43,7 +43,7 @@ data class QuestionAnswerModeBuilder(
     }
 }
 
-data class RoleplayingModeBuilder(
+data class RoleplayModeBuilder(
     val character: CharacterCard? = null,
     val characterGreetingIndex: Int? = null,
     val userName: String? = null,
@@ -57,7 +57,7 @@ data class RoleplayingModeBuilder(
         if (character == null || userName == null || model == null)
             error("Conversation configuration is incomplete")
 
-        return RoleplayingAgentConfiguration(
+        return RoleplayAgentConfiguration(
             character = character,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,

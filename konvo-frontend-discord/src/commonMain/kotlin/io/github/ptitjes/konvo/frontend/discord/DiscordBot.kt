@@ -20,23 +20,31 @@ import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.model.Event
+import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
 import kotlinx.coroutines.*
+import org.kodein.di.*
 import kotlin.coroutines.*
+import kotlin.time.*
 import kotlin.uuid.*
 
-suspend fun Konvo.discordBot(token: String) {
-    KonvoBot(this, token).start()
+suspend fun CoroutineScope.discordBot(konvo: Konvo, token: String) {
+    KonvoBot(coroutineContext, konvo, token).start()
 }
 
 class KonvoBot(
+    parentCoroutineContext: CoroutineContext,
     private val konvo: Konvo,
     private val token: String,
-) : CoroutineScope {
-    val job = SupervisorJob()
-    override val coroutineContext: CoroutineContext = konvo.coroutineContext + job
+) : CoroutineScope, DIAware {
+
+    private val job = SupervisorJob()
+    override val coroutineContext: CoroutineContext = parentCoroutineContext + Dispatchers.Default + job
+
+    override val di: DI by lazy { konvo.di }
 
     suspend fun start() {
         val kord = Kord(token)
@@ -97,7 +105,7 @@ class KonvoBot(
 
         response.conversationBuilderWizard(konvo, user) { configuration ->
             val conversation = initiateConversation(channel, configuration)
-            val conversationView = conversation.newUiView()
+            val conversationView = conversation.newUserView()
 
             return@conversationBuilderWizard {
                 conversationStartMessage(
@@ -120,7 +128,7 @@ class KonvoBot(
             }
 
             val conversation = initiateConversation(newChannel, configuration)
-            val conversationView = conversation.newUiView()
+            val conversationView = conversation.newUserView()
 
             return@conversationBuilderWizard {
                 conversationStartMessage(
@@ -132,16 +140,34 @@ class KonvoBot(
         }
     }
 
-    val perChannelConversation = mutableMapOf<Snowflake, ActiveConversation>()
+    val conversationRepository: ConversationRepository by instance()
+    val liveConversationsManager: LiveConversationsManager by instance()
+    val perChannelConversation = mutableMapOf<Snowflake, LiveConversation>()
 
+    @OptIn(ExperimentalTime::class)
     private suspend fun initiateConversation(
         channel: MessageChannelBehavior,
         configuration: ConversationConfiguration,
-    ): ActiveConversation {
-        val conversation = konvo.createConversation(configuration)
-        val conversationView = conversation.newUiView()
+    ): LiveConversation {
+        val now = SystemTimeProvider.now()
 
-        perChannelConversation[channel.id] = conversation
+        val conversation = Conversation(
+            id = channel.id.toString(),
+            title = "Conversation on ${channel.id}",
+            createdAt = now,
+            updatedAt = now,
+            participants = listOf(),
+            lastMessagePreview = null,
+            messageCount = 0,
+            agentConfiguration = configuration.agent,
+        )
+
+        conversationRepository.createConversation(conversation)
+
+        val liveConversation = liveConversationsManager.getLiveConversation(conversation.id)
+        val conversationView = liveConversation.newUserView()
+
+        perChannelConversation[channel.id] = liveConversation
 
         channel.createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }
@@ -154,7 +180,7 @@ class KonvoBot(
 
         launch { channel.handleAssistantEvents(conversationView) }
 
-        return conversation
+        return liveConversation
     }
 
     private suspend fun handleConversationMessage(event: MessageCreateEvent) = coroutineScope {
@@ -164,7 +190,7 @@ class KonvoBot(
 
         if (message.type != MessageType.Default) return@coroutineScope
 
-        val conversationView = conversation.newUiView()
+        val conversationView = conversation.newUserView()
 
         conversationView.sendMessage(
             content = message.content,
@@ -234,7 +260,7 @@ private fun MessageBuilder.conversationStartMessage(
                 }
             }
 
-            is RoleplayingAgentConfiguration -> {
+            is RoleplayAgentConfiguration -> {
                 fun conversationDescriptionString(): String = markdown {
                     line { bold("Character:"); space(); text(configuration.character.name) }
                     if (configuration.character.greetings.isNotEmpty()) line {
@@ -271,6 +297,8 @@ private fun MessageBuilder.conversationStartMessage(
                     }
                 }
             }
+
+            NoAgentConfiguration -> error("No agent configuration provided.")
         }
     }
 }

@@ -5,6 +5,9 @@ import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.conversation.LiveConversationsManager
+import io.github.ptitjes.konvo.core.conversation.storage.ConversationRepository
+import io.github.ptitjes.konvo.core.conversation.storage.files.FileConversationRepository
 import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
@@ -22,7 +25,7 @@ suspend fun main() = coroutineScope {
         mcpServersManager.startAndConnectServers()
         konvo.init()
 
-        konvo.discordBot(configuration.discord.token)
+        discordBot(konvo, configuration.discord.token)
     } finally {
         mcpServersManager.disconnectAndStopServers()
     }
@@ -37,6 +40,16 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     import(configurationProviders(configuration))
 
     bindSingleton<Konvo> { Konvo(coroutineContext, di) }
+
+//    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
+    bindSingleton<ConversationRepository> {
+        FileConversationRepository(
+            rootPath = Path(configuration.dataDirectory, "conversations"),
+            konvo = instance(),
+        )
+    }
+
+    bindSingleton { LiveConversationsManager(coroutineContext, instance()) }
 }
 
 fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {
@@ -63,9 +76,8 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
     }
 }
 
-private fun ModelProviderConfiguration.buildModelProvider(name: String): OllamaModelProvider =
-    when (this) {
-        is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, this.baseUrl)
-    }
+private fun ModelProviderConfiguration.buildModelProvider(name: String): OllamaModelProvider = when (this) {
+    is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, this.baseUrl)
+}
 
 object DataDirectory

@@ -10,12 +10,12 @@ enum class ConversationMode(
     val label: String,
 ) {
     QuestionAnswer("Question/Answer"),
-    Roleplaying("Roleplaying"),
+    Roleplay("Role-play"),
     ;
 
     fun createBuilder(): ConversationModeBuilder = when (this) {
         QuestionAnswer -> QuestionAnswerModeBuilder()
-        Roleplaying -> RoleplayingModeBuilder()
+        Roleplay -> RoleplayModeBuilder()
     }
 
     companion object {
@@ -23,12 +23,13 @@ enum class ConversationMode(
 
         fun forBuilder(modeBuilder: ConversationModeBuilder): ConversationMode = when (modeBuilder) {
             is QuestionAnswerModeBuilder -> QuestionAnswer
-            is RoleplayingModeBuilder -> Roleplaying
+            is RoleplayModeBuilder -> Roleplay
         }
 
         fun forConfiguration(configuration: AgentConfiguration): ConversationMode = when (configuration) {
             is QuestionAnswerAgentConfiguration -> QuestionAnswer
-            is RoleplayingAgentConfiguration -> Roleplaying
+            is RoleplayAgentConfiguration -> Roleplay
+            is NoAgentConfiguration -> error("No agent configuration provided")
         }
     }
 }

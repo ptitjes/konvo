@@ -39,7 +39,7 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                 this@ephemeralWizard.updateState(
                     state.copy(
                         mode = it.createBuilder().let { mode ->
-                            if (mode is RoleplayingModeBuilder) {
+                            if (mode is RoleplayModeBuilder) {
                                 mode.copy(userName = member.asMember().effectiveName)
                             } else mode
                         },
@@ -77,7 +77,7 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
                     }
                 }
 
-                is RoleplayingModeBuilder -> {
+                is RoleplayModeBuilder -> {
                     characterSelector(konvo.characters, mode.character) {
                         updateMode(mode.copy(character = it, characterGreetingIndex = null))
                     }
