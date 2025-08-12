@@ -7,7 +7,7 @@ import ai.koog.prompt.executor.llms.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import kotlin.random.*
 
-fun buildRoleplayingAgent(configuration: RoleplayingAgentConfiguration): ChatAgent {
+fun buildRoleplayAgent(configuration: RoleplayAgentConfiguration): ChatAgent {
     val model = configuration.model
 
     val character = configuration.character
@@ -20,15 +20,15 @@ fun buildRoleplayingAgent(configuration: RoleplayingAgentConfiguration): ChatAge
     val welcomeMessage = "![${character.name}](${character.avatarUrl})\n\n$initialAssistantMessage"
 
     return ChatAgent(
-        systemPrompt = prompt("roleplaying") {
+        systemPrompt = prompt("role-play") {
             system { +character.systemPrompt.replaceTags(userName, character.name) }
         },
-        initialAssistantMessage = welcomeMessage,
+        welcomeMessage = welcomeMessage,
         model = model.toLLModel(),
         maxAgentIterations = 50,
         promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),
         strategy = {
-            strategy("roleplaying") {
+            strategy("role-play") {
                 val dumpRequest by dumpToPrompt()
                 val request by requestLLM()
 

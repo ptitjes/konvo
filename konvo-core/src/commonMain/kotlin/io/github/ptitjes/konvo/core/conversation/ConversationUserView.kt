@@ -11,7 +11,7 @@ interface ConversationUserView {
     /**
      * Reference to the parent conversation.
      */
-    val conversation: ActiveConversation
+    val conversation: LiveConversation
 
     val transcript: Transcript
 

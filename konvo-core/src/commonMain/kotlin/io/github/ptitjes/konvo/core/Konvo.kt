@@ -2,35 +2,14 @@ package io.github.ptitjes.konvo.core
 
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.agents.*
 import kotlinx.coroutines.*
 import org.kodein.di.*
 import kotlin.coroutines.*
 
-interface KonvoConfigurationBuilder {
-    var dataDirectory: String
-    fun installModels(provider: ModelProvider)
-    fun installPrompts(provider: PromptProvider)
-    fun installTools(provider: ToolProvider)
-}
-
-data class KonvoConfiguration(
-    val dataDirectory: String,
-    val modelProviders: List<ModelProvider>,
-    val promptProviders: List<PromptProvider>,
-    val toolProviders: List<ToolProvider>,
-)
-
-//fun CoroutineScope.Konvo(configure: KonvoConfigurationBuilder.() -> Unit): Konvo {
-//    val configuration = buildKonvoConfiguration(configure)
-//    return Konvo(coroutineContext + Dispatchers.Default, configuration)
-//}
-
 class Konvo(
     coroutineContext: CoroutineContext,
     override val di: DI,
-) : CoroutineScope, DIAware {
+) : DIAware {
 
     private companion object {
         private val logger = KotlinLogging.logger {}
@@ -41,7 +20,7 @@ class Konvo(
         logger.error(exception) { "Exception caught in Konvo" }
     }
 
-    override val coroutineContext: CoroutineContext = coroutineContext + Dispatchers.Default + job + handler
+    private val coroutineScope = CoroutineScope(coroutineContext + Dispatchers.Default + job + handler)
 
     private val modelProviders: Set<ModelProvider> by instance()
     private val promptProviders: Set<PromptProvider> by instance()
@@ -79,10 +58,4 @@ class Konvo(
     val characters: List<CharacterCard> get() = _characters
     val prompts: List<PromptCard> get() = _prompts
     val tools: List<ToolCard> get() = _tools
-
-    suspend fun createConversation(configuration: ConversationConfiguration): ActiveConversation {
-        val conversation = ActiveConversation(this)
-        conversation.addAgent(configuration.buildAgent())
-        return conversation
-    }
 }

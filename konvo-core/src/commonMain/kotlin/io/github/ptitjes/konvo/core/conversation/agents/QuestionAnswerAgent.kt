@@ -31,7 +31,7 @@ suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfigura
                 nodeStart then qa then nodeFinish
             }
         },
-        initialToolRegistry = toolRegistry,
+        toolRegistry = toolRegistry,
     ) { conversationView ->
         install(EventHandler) {
             onToolValidationError { eventContext ->

@@ -3,17 +3,22 @@
 package io.github.ptitjes.konvo.core.conversation
 
 import io.github.oshai.kotlinlogging.*
-import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 import kotlin.time.*
-import kotlin.uuid.*
 
-class ActiveConversation(
-    coroutineScope: CoroutineScope,
-) : CoroutineScope {
+class LiveConversation(
+    coroutineContext: CoroutineContext,
+    private val conversationId: String,
+    private val repository: ConversationRepository,
+    private val timeProvider: TimeProvider = SystemTimeProvider,
+    private val idGenerator: IdGenerator = UuidIdGenerator,
+) : AutoCloseable {
 
     private companion object {
         private val logger = KotlinLogging.logger {}
@@ -24,22 +29,52 @@ class ActiveConversation(
         logger.error(exception) { "Exception caught in conversation" }
     }
 
-    override val coroutineContext: CoroutineContext = coroutineScope.coroutineContext + job + handler
+    private val coroutineScope = CoroutineScope(coroutineContext + job + handler)
 
-    private val clock = Clock.System
+    private val loaded = CompletableDeferred<Unit>()
+    suspend fun awaitLoaded() = loaded.await()
 
-    private fun newTimestamp(): Instant = clock.now()
+    init {
+        coroutineScope.launch {
+            val conversation = repository.getConversation(conversationId) ?: error("Invalid state")
+            val events = repository.listEvents(conversationId)
 
-    private val userMember = Participant.User(
-        id = newUniqueId(),
-        name = "user"
-    )
+            // Restore transcript
+            this@LiveConversation.transcript.clear()
+            events.forEach { event ->
+                this@LiveConversation.transcript.append(event)
+            }
 
-    private val agentMember = Participant.Agent(
-        id = newUniqueId(),
-        name = "agent"
-    )
+            // Persist new events
+            launch {
+                this@LiveConversation.events.collect { event ->
+                    this@LiveConversation.transcript.append(event)
+                    repository.appendEvent(conversationId, event)
+                }
+            }
 
+            // Restore agent
+            val agentConfiguration = conversation.agentConfiguration
+            val agent = agentConfiguration.buildAgent()
+            agent.restorePrompt(events)
+
+            launch {
+                agent.joinConversation(newAgentView())
+            }
+
+            loaded.complete(Unit)
+        }
+    }
+
+    override fun close() {
+        job.cancel()
+    }
+
+    private fun newId(): String = idGenerator.newId()
+    private fun newTimestamp(): Instant = timeProvider.now()
+
+    private val userMember = Participant.User(id = newId(), name = "user")
+    private val agentMember = Participant.Agent(id = newId(), name = "agent")
     val participants = listOf(userMember, agentMember)
 
     val transcript = Transcript()
@@ -48,14 +83,16 @@ class ActiveConversation(
     val events: SharedFlow<Event> = _events
 
     private suspend fun emitEvent(event: Event) {
-        transcript.append(event)
         _events.emit(event)
     }
+
+    fun newUserView(): ConversationUserView = UserViewImpl(userMember)
+    private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
 
     private inner class AgentViewImpl(
         val participant: Participant,
     ) : ConversationAgentView {
-        override val conversation: ActiveConversation = this@ActiveConversation
+        override val conversation: LiveConversation = this@LiveConversation
 
         override val transcript: Transcript
             get() = conversation.transcript
@@ -66,7 +103,7 @@ class ActiveConversation(
         override suspend fun sendProcessing(isProcessing: Boolean) {
             emitEvent(
                 Event.AssistantProcessing(
-                    id = newUniqueId(),
+                    id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
                     isProcessing = isProcessing,
@@ -77,7 +114,7 @@ class ActiveConversation(
         override suspend fun sendMessage(content: String) {
             emitEvent(
                 Event.AssistantMessage(
-                    id = newUniqueId(),
+                    id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
                     content = content
@@ -87,7 +124,7 @@ class ActiveConversation(
 
         override suspend fun sendToolUseVetting(calls: List<ToolCall>): Event.ToolUseVetting {
             val event = Event.ToolUseVetting(
-                id = newUniqueId(),
+                id = newId(),
                 timestamp = newTimestamp(),
                 source = participant,
                 calls = calls
@@ -102,7 +139,7 @@ class ActiveConversation(
         ) {
             emitEvent(
                 Event.ToolUseNotification(
-                    id = newUniqueId(),
+                    id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
                     call = call,
@@ -115,7 +152,7 @@ class ActiveConversation(
     private inner class UserViewImpl(
         val participant: Participant,
     ) : ConversationUserView {
-        override val conversation: ActiveConversation = this@ActiveConversation
+        override val conversation: LiveConversation = this@LiveConversation
 
         override val transcript: Transcript
             get() = conversation.transcript
@@ -129,7 +166,7 @@ class ActiveConversation(
         ) {
             emitEvent(
                 Event.UserMessage(
-                    id = newUniqueId(),
+                    id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
                     content = content,
@@ -144,7 +181,7 @@ class ActiveConversation(
         ) {
             emitEvent(
                 Event.ToolUseApproval(
-                    id = newUniqueId(),
+                    id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
                     vetting = vetting,
@@ -153,17 +190,4 @@ class ActiveConversation(
             )
         }
     }
-
-    fun newUiView(): ConversationUserView = UserViewImpl(userMember)
-
-    fun addAgent(agent: ChatAgent) = launch {
-        agent.joinConversation(AgentViewImpl(agentMember))
-    }
-
-    fun terminate() {
-        job.cancel()
-    }
 }
-
-@OptIn(ExperimentalUuidApi::class)
-private fun newUniqueId(): String = Uuid.random().toString()

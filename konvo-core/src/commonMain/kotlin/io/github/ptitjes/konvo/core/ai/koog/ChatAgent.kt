@@ -23,38 +23,21 @@ import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.io.files.*
+import kotlin.time.*
+import kotlin.time.Clock
 import ai.koog.prompt.message.Attachment as KoogAttachment
 
 class ChatAgent(
     private val systemPrompt: Prompt,
-    private val initialAssistantMessage: String? = null,
+    private val welcomeMessage: String? = null,
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
     private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
-    private val initialToolRegistry: ToolRegistry = ToolRegistry.EMPTY,
+    private val toolRegistry: ToolRegistry = ToolRegistry.EMPTY,
     private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
 ) {
-    var toolRegistry: ToolRegistry = initialToolRegistry
-    var prompt: Prompt = buildInitialPrompt()
-
-    fun resetPrompt() {
-        prompt = buildInitialPrompt()
-    }
-
-    private fun buildInitialPrompt(): Prompt {
-        return prompt(systemPrompt) {
-            initialAssistantMessage?.let { assistant { text(it) } }
-        }
-    }
-
-    fun resetToolRegistry() {
-        toolRegistry = initialToolRegistry
-    }
-
-    fun updatePrompt(newPrompt: Prompt) {
-        prompt = newPrompt
-    }
+    private var prompt: Prompt = systemPrompt
 
     private fun buildAgent(conversation: ConversationAgentView): AIAgent<Message.User, List<Message.Assistant>> {
         val agentConfig = AIAgentConfig(
@@ -70,16 +53,43 @@ class ChatAgent(
             toolRegistry = toolRegistry,
             installFeatures = {
                 install(PromptCollector) {
-                    collectPrompt = ::updatePrompt
+                    collectPrompt = { newPrompt ->
+                        prompt = newPrompt
+                    }
                 }
                 installFeatures(conversation)
             },
         )
     }
 
+    suspend fun restorePrompt(events: List<Event>) {
+        val messages = events.mapNotNull { event ->
+            when (event) {
+                is Event.UserMessage -> event.toUserMessage()
+                is Event.AssistantMessage -> event.toAssistantMessage()
+                else -> null
+            }
+        }
+
+        prompt = prompt(systemPrompt) {
+            messages(messages)
+        }
+    }
+
+    @OptIn(ExperimentalTime::class)
     suspend fun joinConversation(conversation: ConversationAgentView) {
-        initialAssistantMessage?.let {
-            conversation.sendMessage(it)
+        if (conversation.transcript.events.isEmpty()) {
+            welcomeMessage?.let { content ->
+                conversation.sendMessage(content)
+                prompt = prompt(prompt) {
+                    message(
+                        Message.Assistant(
+                            content = content,
+                            metaInfo = ResponseMetaInfo(timestamp = Clock.System.now().toDeprecatedInstant())
+                        )
+                    )
+                }
+            }
         }
 
         conversation.events.buffer(Channel.UNLIMITED).collect { event ->
@@ -97,13 +107,23 @@ class ChatAgent(
         }
     }
 
-    private val clock = Clock.System
-
+    @OptIn(ExperimentalTime::class)
     private suspend fun Event.UserMessage.toUserMessage(): Message.User =
         Message.User(
             content = content,
             attachments = attachments.map { it.toKoogAttachment() },
-            metaInfo = RequestMetaInfo.create(clock),
+            metaInfo = RequestMetaInfo(
+                timestamp = timestamp.toDeprecatedInstant(),
+            ),
+        )
+
+    @OptIn(ExperimentalTime::class)
+    private fun Event.AssistantMessage.toAssistantMessage(): Message.Assistant =
+        Message.Assistant(
+            content = content,
+            metaInfo = ResponseMetaInfo(
+                timestamp = timestamp.toDeprecatedInstant(),
+            ),
         )
 
     private val httpClient = HttpClient(CIO)

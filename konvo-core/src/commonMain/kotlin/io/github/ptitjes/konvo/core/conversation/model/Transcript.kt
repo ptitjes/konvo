@@ -12,4 +12,8 @@ class Transcript {
     fun append(event: Event) {
         _events.update { it + event }
     }
+
+    fun clear() {
+        _events.update { emptyList() }
+    }
 }
