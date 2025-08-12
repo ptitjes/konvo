@@ -31,37 +31,45 @@ fun App() {
         ) {
             val viewModel: ConversationListViewModel = viewModel()
             val selectedConversation by viewModel.selectedConversation.collectAsState()
+            val newConversation by viewModel.newConversation.collectAsState()
 
             val paneType = drawerValueFromAdaptiveInfo(
                 adaptiveInfo = adaptiveInfo,
                 detailSelected = selectedConversation != null,
+                newConversation = newConversation,
             )
 
-            Surface(
-                color = MaterialTheme.colorScheme.background,
-            ) {
-                ListDetailPane(
-                    paneType = paneType,
-                    list = {
-                        ConversationListPanel()
-                    },
-                    detail = {
-                        when (val conversation = selectedConversation) {
-                            null -> {
-                                NewConversationScreen(
-                                    onConversationCreated = { viewModel.select(it) },
-                                )
+            CompositionLocalProvider(LocalListDetailPaneType provides paneType) {
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                ) {
+                    ListDetailPane(
+                        paneType = paneType,
+                        list = {
+                            ConversationListPanel {
+                                viewModel.createNewConversation()
                             }
+                        },
+                        detail = {
+                            val conversation = selectedConversation
+                            when {
+                                conversation == null || newConversation -> {
+                                    NewConversationScreen(
+                                        onConversationCreated = { viewModel.select(it) },
+                                        onBackClick = { viewModel.cancelNewConversation() },
+                                    )
+                                }
 
-                            else -> {
-                                ConversationScreen(
-                                    initialConversation = conversation,
-                                    onBackClick = { viewModel.select(null) },
-                                )
+                                else -> {
+                                    ConversationScreen(
+                                        initialConversation = conversation,
+                                        onBackClick = { viewModel.select(null) },
+                                    )
+                                }
                             }
-                        }
-                    },
-                )
+                        },
+                    )
+                }
             }
         }
     }
@@ -84,11 +92,12 @@ private fun suiteTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): Navigat
 private fun drawerValueFromAdaptiveInfo(
     adaptiveInfo: WindowAdaptiveInfo,
     detailSelected: Boolean,
+    newConversation: Boolean,
 ): ListDetailPaneType {
     return with(adaptiveInfo) {
         when {
             windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED -> ListDetailPaneType.Both
-            detailSelected -> ListDetailPaneType.Detail
+            detailSelected || newConversation -> ListDetailPaneType.Detail
             else -> ListDetailPaneType.List
         }
     }

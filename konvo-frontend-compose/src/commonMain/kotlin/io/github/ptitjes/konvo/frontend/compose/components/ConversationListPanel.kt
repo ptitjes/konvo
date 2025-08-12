@@ -3,6 +3,8 @@ package io.github.ptitjes.konvo.frontend.compose.components
 import androidx.compose.desktop.ui.tooling.preview.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.material.icons.*
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -20,6 +22,7 @@ import kotlin.time.*
 fun ConversationListPanel(
     viewModel: ConversationListViewModel = viewModel(),
     modifier: Modifier = Modifier,
+    onCreateConversation: () -> Unit,
 ) {
     val conversations by viewModel.conversations.collectAsState()
     val selectedConversation by viewModel.selectedConversation.collectAsState()
@@ -46,32 +49,44 @@ fun ConversationListPanel(
             }
 
             conversations.isEmpty() -> EmptyConversationListPanel(
-                onNewClick = {
-                    /* Hooked up later in integration step */
-                },
+                onNewClick = onCreateConversation,
             )
 
             else ->
-                Column(Modifier.fillMaxSize()) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
-                        text = "Conversations",
-                        style = MaterialTheme.typography.titleLarge,
-                    )
+                Box(Modifier.fillMaxSize()) {
+                    Column(Modifier.fillMaxSize()) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
+                            text = "Conversations",
+                            style = MaterialTheme.typography.titleLarge,
+                        )
 
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        items(conversations, key = { it.id }) { conversation ->
-                            ConversationListItem(
-                                conversation = conversation,
-                                selected = conversation.id == selectedConversation?.id,
-                                onClick = { viewModel.select(conversation) },
-                                onDelete = { viewModel.delete(conversation) },
-                            )
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            items(conversations, key = { it.id }) { conversation ->
+                                ConversationListItem(
+                                    conversation = conversation,
+                                    selected = conversation.id == selectedConversation?.id,
+                                    onClick = { viewModel.select(conversation) },
+                                    onDelete = { viewModel.delete(conversation) },
+                                )
+                            }
                         }
+                    }
+
+                    FloatingActionButton(
+                        onClick = onCreateConversation,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Create,
+                            contentDescription = "New conversation",
+                        )
                     }
                 }
         }
@@ -117,5 +132,5 @@ private fun ConversationListPanelPreview() {
     ConversationListPanel(
         viewModel = vm,
         modifier = Modifier.fillMaxSize(),
-    )
+    ) { }
 }

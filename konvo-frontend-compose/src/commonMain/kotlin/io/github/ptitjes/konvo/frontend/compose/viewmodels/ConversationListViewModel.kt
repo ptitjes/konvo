@@ -21,7 +21,10 @@ class ConversationListViewModel(
     private val _selectedConversation = MutableStateFlow<Conversation?>(null)
     val selectedConversation: StateFlow<Conversation?> = _selectedConversation.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
+    private val _newConversation = MutableStateFlow(false)
+    val newConversation: StateFlow<Boolean> = _newConversation.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
@@ -37,10 +40,6 @@ class ConversationListViewModel(
                 .catch { e -> _error.value = e.message ?: "Failed to load conversations" }
                 .onEach { list ->
                     _conversations.value = list
-                    // Keep selection only if it still exists
-                    _selectedConversation.value = _selectedConversation.value?.takeIf { conversation ->
-                        list.any { it.id == conversation.id }
-                    }
                     _isLoading.value = false
                 }
                 .collect()
@@ -49,6 +48,7 @@ class ConversationListViewModel(
 
     fun select(conversation: Conversation?) {
         _selectedConversation.value = conversation
+        _newConversation.value = false
     }
 
     fun delete(conversation: Conversation) {
@@ -66,5 +66,14 @@ class ConversationListViewModel(
                 _isLoading.value = false
             }
         }
+    }
+
+    fun createNewConversation() {
+        _newConversation.value = true
+        _selectedConversation.value = null
+    }
+
+    fun cancelNewConversation() {
+        _newConversation.value = false
     }
 }

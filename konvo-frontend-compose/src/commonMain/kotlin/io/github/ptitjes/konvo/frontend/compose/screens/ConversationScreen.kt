@@ -11,6 +11,7 @@ import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.input.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
@@ -32,6 +33,8 @@ fun ConversationScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val conversation by viewModel.conversation.collectAsState()
+
+    val paneType = LocalListDetailPaneType.current
 
     Scaffold(
         modifier = modifier,
@@ -70,9 +73,16 @@ fun ConversationScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    if (paneType != ListDetailPaneType.Both) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = "Back"
+                            )
+                        }
+                    } else {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            imageVector = Icons.Default.ChatBubbleOutline,
                             contentDescription = "Back"
                         )
                     }

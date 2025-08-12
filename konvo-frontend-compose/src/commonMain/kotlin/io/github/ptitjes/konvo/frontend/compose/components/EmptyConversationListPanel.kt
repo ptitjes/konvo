@@ -26,6 +26,6 @@ fun EmptyConversationListPanel(onNewClick: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedButton(onClick = onNewClick) { Text("Start new conversation") }
+        NewConversationButton(onNewClick)
     }
 }

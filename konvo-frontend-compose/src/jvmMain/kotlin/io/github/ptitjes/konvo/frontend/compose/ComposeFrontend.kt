@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.characters.*
@@ -33,6 +34,7 @@ fun runComposeFrontend() = application {
         withDI(it) {
             Window(
                 title = "Konvo",
+                state = rememberWindowState(width = 1280.dp, height = 720.dp),
                 onCloseRequest = ::exitApplication,
             ) {
                 App()
