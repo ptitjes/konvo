@@ -87,11 +87,14 @@ Run a specific test class:
 2. Import the Kotlin test framework: `import kotlin.test.*`
 3. Use the `@Test` annotation for test methods
 4. Use assertion methods like `assertEquals`, `assertTrue`, etc.
+5. For coroutines tests, use `runTest` from the Kotlinx Coroutines Test library, instead of `runBlocking`
 
 ## Code Style and Development Practices
 
 ### Code Style
 
+- Always use import statements, and avoid fully qualified names in the code at all costs
+- If necessary, use `import` ... `as` statements to rename imports
 - Only use inline comments when essential and make code self-explanatory through naming conventions
 - Add documentation comments for all public APIs (using KDoc syntax)
 - When a method is too long, break it down into smaller methods
