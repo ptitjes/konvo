@@ -88,6 +88,7 @@ Run a specific test class:
 3. Use the `@Test` annotation for test methods
 4. Use assertion methods like `assertEquals`, `assertTrue`, etc.
 5. For coroutines tests, use `runTest` from the Kotlinx Coroutines Test library, instead of `runBlocking`
+6. When there is a Contract abstract test class for a feature, use it to add new tests on this feature
 
 ## Code Style and Development Practices
 
