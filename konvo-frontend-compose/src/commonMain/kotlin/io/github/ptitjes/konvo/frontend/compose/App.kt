@@ -7,11 +7,8 @@ import androidx.compose.material3.adaptive.*
 import androidx.compose.material3.adaptive.navigationsuite.*
 import androidx.compose.runtime.*
 import androidx.window.core.layout.*
-import io.github.ptitjes.konvo.frontend.compose.components.*
-import io.github.ptitjes.konvo.frontend.compose.screens.*
+import io.github.ptitjes.konvo.frontend.compose.components.ConversationsListDetailPane
 import io.github.ptitjes.konvo.frontend.compose.theme.*
-import io.github.ptitjes.konvo.frontend.compose.util.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 @Composable
 fun App() {
@@ -29,48 +26,7 @@ fun App() {
                 )
             },
         ) {
-            val viewModel: ConversationListViewModel = viewModel()
-            val selectedConversation by viewModel.selectedConversation.collectAsState()
-            val newConversation by viewModel.newConversation.collectAsState()
-
-            val paneType = drawerValueFromAdaptiveInfo(
-                adaptiveInfo = adaptiveInfo,
-                detailSelected = selectedConversation != null,
-                newConversation = newConversation,
-            )
-
-            CompositionLocalProvider(LocalListDetailPaneType provides paneType) {
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
-                ) {
-                    ListDetailPane(
-                        paneType = paneType,
-                        list = {
-                            ConversationListPanel {
-                                viewModel.createNewConversation()
-                            }
-                        },
-                        detail = {
-                            val conversation = selectedConversation
-                            when {
-                                conversation == null || newConversation -> {
-                                    NewConversationScreen(
-                                        onConversationCreated = { viewModel.select(it) },
-                                        onBackClick = { viewModel.cancelNewConversation() },
-                                    )
-                                }
-
-                                else -> {
-                                    ConversationScreen(
-                                        initialConversation = conversation,
-                                        onBackClick = { viewModel.select(null) },
-                                    )
-                                }
-                            }
-                        },
-                    )
-                }
-            }
+            ConversationsListDetailPane(adaptiveInfo)
         }
     }
 }
@@ -85,20 +41,6 @@ private fun suiteTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): Navigat
             NavigationSuiteType.NavigationRail
         } else {
             NavigationSuiteType.NavigationBar
-        }
-    }
-}
-
-private fun drawerValueFromAdaptiveInfo(
-    adaptiveInfo: WindowAdaptiveInfo,
-    detailSelected: Boolean,
-    newConversation: Boolean,
-): ListDetailPaneType {
-    return with(adaptiveInfo) {
-        when {
-            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED -> ListDetailPaneType.Both
-            detailSelected || newConversation -> ListDetailPaneType.Detail
-            else -> ListDetailPaneType.List
         }
     }
 }
