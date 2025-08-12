@@ -22,12 +22,13 @@ import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationScreen(
-    conversation: Conversation,
-    viewModel: ConversationViewModel = viewModel(conversation),
+    initialConversation: Conversation,
+    viewModel: ConversationViewModel = viewModel(initialConversation),
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
+    val conversation by viewModel.conversation.collectAsState()
 
     Scaffold(
         modifier = modifier,

@@ -55,7 +55,7 @@ fun App() {
 
                             else -> {
                                 ConversationScreen(
-                                    conversation = conversation,
+                                    initialConversation = conversation,
                                     onBackClick = { viewModel.select(null) },
                                 )
                             }

@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversation.storage.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
@@ -18,9 +19,19 @@ import kotlinx.coroutines.flow.*
  */
 class ConversationViewModel(
     liveConversationsManager: LiveConversationsManager,
-    conversation: Conversation,
+    conversationRepository: ConversationRepository,
+    initialConversation: Conversation,
 ) : ViewModel() {
-    private val liveConversation = liveConversationsManager.getLiveConversation(conversation.id)
+    // Expose a flow of the conversation that updates with repository changes
+    val conversation: StateFlow<Conversation> = conversationRepository
+        .getConversation(initialConversation.id)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = initialConversation,
+        )
+
+    private val liveConversation = liveConversationsManager.getLiveConversation(initialConversation.id)
     private val conversationUserView = liveConversation.newUserView()
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)

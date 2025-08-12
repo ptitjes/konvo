@@ -63,8 +63,8 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     bindSingletonOf(::ConversationListViewModel)
     bindSingletonOf(::NewConversationViewModel)
-    bindFactory { conversation: Conversation ->
-        ConversationViewModel(instance(), conversation)
+    bindFactory { initialConversation: Conversation ->
+        ConversationViewModel(instance(), instance(), initialConversation)
     }
 }
 
