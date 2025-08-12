@@ -13,20 +13,20 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 import kotlinx.serialization.json.*
 
 @Composable
-fun ConversationEventPanel(event: Event) = when (event) {
-    is Event.UserMessage -> ConversationUserMessagePanel(event)
-    is Event.AssistantMessage -> ConversationAgentMessagePanel(event)
-    is Event.ToolUseNotification -> ConversationAssistantToolUseResultPanel(event)
-    is Event.ToolUseVetting -> ConversationAssistantToolUseVettingPanel(event)
-    else -> {}
+fun ConversationEventPanel(eventViewState: EventViewState) = when (eventViewState) {
+    is EventViewState.UserMessage -> ConversationUserMessagePanel(eventViewState)
+    is EventViewState.AssistantMessage -> ConversationAgentMessagePanel(eventViewState)
+    is EventViewState.ToolUseNotification -> ConversationAssistantToolUseResultPanel(eventViewState.event)
+    is EventViewState.ToolUseVetting -> ConversationAssistantToolUseVettingPanel(eventViewState.event)
 }
 
 @Composable
 fun ConversationUserMessagePanel(
-    event: Event.UserMessage,
+    eventViewState: EventViewState.UserMessage,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -42,12 +42,12 @@ fun ConversationUserMessagePanel(
             ) {
                 Column {
                     MarkdownContent(
-                        content = event.content,
+                        state = eventViewState.markdownState,
                         textColor = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     )
 
-                    event.attachments.forEach { attachment ->
+                    eventViewState.event.attachments.forEach { attachment ->
                         AttachmentView(attachment)
                     }
                 }
@@ -58,7 +58,7 @@ fun ConversationUserMessagePanel(
 
 @Composable
 fun ConversationAgentMessagePanel(
-    event: Event.AssistantMessage,
+    eventViewState: EventViewState.AssistantMessage,
 ) {
     val horizontalArrangement = Arrangement.Start
     Row(
@@ -66,7 +66,7 @@ fun ConversationAgentMessagePanel(
         horizontalArrangement = horizontalArrangement,
     ) {
         MarkdownContent(
-            content = event.content,
+            state = eventViewState.markdownState,
             textColor = MaterialTheme.colorScheme.onBackground,
         )
     }

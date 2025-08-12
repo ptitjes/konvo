@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.viewmodels
 
 import androidx.lifecycle.*
+import com.mikepenz.markdown.model.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
@@ -8,6 +9,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.time.*
 import kotlin.time.Duration.Companion.milliseconds
+import com.mikepenz.markdown.model.State as MarkdownViewState
 
 /**
  * ViewModel for the conversation UI.
@@ -47,7 +49,12 @@ class ConversationViewModel(
         viewModelScope.launch {
             liveConversation.awaitLoaded()
 
-            val initialItems = conversationUserView.transcript.events.filter { it.isViewItem() }
+            val initialItems = mutableListOf<EventViewState>()
+            for (event in conversationUserView.transcript.events) {
+                if (event.isViewItem()) {
+                    initialItems += event.toEventViewState()
+                }
+            }
 
             _state.emit(
                 ConversationViewState.Loaded(
@@ -58,20 +65,24 @@ class ConversationViewModel(
 
             launch {
                 conversationUserView.events.collect { event ->
-                    _state.update { previousState ->
-                        check(previousState is ConversationViewState.Loaded) { "Invalid state" }
-
-                        when {
-                            event.isViewItem() -> previousState.copy(
-                                items = previousState.items + event,
-                            )
-
-                            event is Event.AssistantProcessing -> previousState.copy(
-                                isProcessing = event.isProcessing,
-                            )
-
-                            else -> previousState
+                    when {
+                        event is Event.AssistantProcessing -> {
+                            _state.update { previousState ->
+                                check(previousState is ConversationViewState.Loaded) { "Invalid state" }
+                                previousState.copy(isProcessing = event.isProcessing)
+                            }
                         }
+
+                        event.isViewItem() -> {
+                            val eventViewState = event.toEventViewState()
+
+                            _state.update { previousState ->
+                                check(previousState is ConversationViewState.Loaded) { "Invalid state" }
+                                previousState.copy(items = previousState.items + eventViewState)
+                            }
+                        }
+
+                        else -> {}
                     }
                 }
             }
@@ -93,6 +104,22 @@ class ConversationViewModel(
 
     private fun Event.isViewItem(): Boolean =
         this !is Event.AssistantProcessing && this !is Event.ToolUseApproval
+
+    private suspend fun Event.toEventViewState(): EventViewState = when (this) {
+        is Event.UserMessage -> EventViewState.UserMessage(
+            event = this,
+            markdownState = parseMarkdown(content),
+        )
+
+        is Event.AssistantMessage -> EventViewState.AssistantMessage(
+            event = this,
+            markdownState = parseMarkdown(content),
+        )
+
+        is Event.ToolUseVetting -> EventViewState.ToolUseVetting(this)
+        is Event.ToolUseNotification -> EventViewState.ToolUseNotification(this)
+        else -> error("Not a view item: $this")
+    }
 
     /**
      * Send a user message to the conversation.
@@ -128,7 +155,33 @@ class ConversationViewModel(
 sealed interface ConversationViewState {
     data object Loading : ConversationViewState
     data class Loaded(
-        val items: List<Event>,
+        val items: List<EventViewState>,
         val isProcessing: Boolean,
     ) : ConversationViewState
 }
+
+sealed interface EventViewState {
+    val event: Event
+    val id: String get() = event.id
+
+    data class UserMessage(
+        override val event: Event.UserMessage,
+        val markdownState: MarkdownViewState,
+    ) : EventViewState
+
+    data class AssistantMessage(
+        override val event: Event.AssistantMessage,
+        val markdownState: MarkdownViewState,
+    ) : EventViewState
+
+    data class ToolUseVetting(
+        override val event: Event.ToolUseVetting,
+    ) : EventViewState
+
+    data class ToolUseNotification(
+        override val event: Event.ToolUseNotification,
+    ) : EventViewState
+}
+
+private suspend fun parseMarkdown(content: String): MarkdownViewState =
+    parseMarkdownFlow(content).first { it is MarkdownViewState.Success || it is MarkdownViewState.Error }

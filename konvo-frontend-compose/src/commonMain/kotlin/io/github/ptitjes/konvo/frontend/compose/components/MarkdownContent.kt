@@ -11,10 +11,11 @@ import com.mikepenz.markdown.model.*
 import dev.snipme.highlights.*
 import dev.snipme.highlights.model.*
 import io.github.ptitjes.konvo.frontend.compose.theme.*
+import com.mikepenz.markdown.model.State as MarkdownViewState
 
 @Composable
 fun MarkdownContent(
-    content: String,
+    state: MarkdownViewState,
     textColor: Color,
     modifier: Modifier = Modifier,
 ) {
@@ -23,11 +24,8 @@ fun MarkdownContent(
         Highlights.Builder().theme(SyntaxThemes.atom(darkMode = isDark))
     }
 
-    // TODO move the parsing to the view model
-    val state = rememberMarkdownState(content, immediate = true)
-
     Markdown(
-        markdownState = state,
+        state = state,
         colors = markdownColor(
             text = textColor,
         ),
@@ -54,3 +52,4 @@ fun MarkdownContent(
         modifier = modifier,
     )
 }
+
