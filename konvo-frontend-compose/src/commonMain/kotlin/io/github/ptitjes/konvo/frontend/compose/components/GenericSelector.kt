@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.text.style.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,12 +27,13 @@ fun <T> GenericSelector(
             label = {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
                 )
             },
             value = itemLabeler(selectedItem),
             onValueChange = {},
             readOnly = true,
+            maxLines = 1,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -44,7 +46,13 @@ fun <T> GenericSelector(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(itemLabeler(option)) },
+                    text = {
+                        Text(
+                            text = itemLabeler(option),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
                     onClick = {
                         onSelectItem(option)
                         expanded = false

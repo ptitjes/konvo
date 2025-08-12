@@ -88,8 +88,6 @@ fun NewConversationScreen(
                     agentTypes = AgentType.entries
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
                 // Agent Configuration Form
                 when (viewModel.selectedAgentType) {
                     AgentType.QuestionAnswer -> {
@@ -179,18 +177,18 @@ private fun RoleplayConfigurationForm(
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        CharacterSelector(
+        CharacterGridSelector(
+            modifier = Modifier.weight(1f),
             selectedCharacter = selectedCharacter,
             onCharacterSelected = { character ->
                 onCharacterSelected(character)
                 // Reset greeting index when the character changes
                 onGreetingIndexSelected(null)
             },
-            characters = characters
+            characters = characters,
         )
 
-        // Greeting Selection (only if the character has greetings)
-        if (selectedCharacter.greetings.isNotEmpty()) {
+        if (selectedCharacter.greetings.size > 1) {
             CharacterGreetingSelector(
                 selectedGreetingIndex = selectedGreetingIndex,
                 onGreetingIndexSelected = onGreetingIndexSelected,
