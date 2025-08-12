@@ -10,7 +10,6 @@ import kotlinx.io.files.*
 import kotlinx.io.readString
 import kotlinx.io.writeString
 import kotlinx.serialization.json.Json
-import kotlin.math.min
 import kotlin.time.*
 
 /**
@@ -139,11 +138,9 @@ class FileConversationRepository(
 
     override suspend fun listConversations(
         sort: Sort,
-        limit: Int?,
-        offset: Int,
     ): List<Conversation> {
         val idx = loadIndex() ?: rebuildIndex()
-        var list = idx.conversations.map { e ->
+        val list = idx.conversations.map { e ->
             // Participants are not part of index; load minimal Conversation without participants
             Conversation(
                 id = e.id,
@@ -155,17 +152,13 @@ class FileConversationRepository(
                 messageCount = e.messageCount,
             )
         }
-        list = when (sort) {
+        return when (sort) {
             is Sort.UpdatedDesc -> list.sortedByDescending { it.updatedAt }
             is Sort.UpdatedAsc -> list.sortedBy { it.updatedAt }
             is Sort.CreatedDesc -> list.sortedByDescending { it.createdAt }
             is Sort.CreatedAsc -> list.sortedBy { it.createdAt }
             is Sort.TitleAsc -> list.sortedWith(compareBy(nullsLast(String.CASE_INSENSITIVE_ORDER)) { it.title })
         }
-        val from = offset.coerceAtLeast(0)
-        if (from >= list.size) return emptyList()
-        val to = if (limit == null) list.size else min(list.size, from + limit)
-        return list.subList(from, to)
     }
 
     override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
@@ -271,12 +264,10 @@ class FileConversationRepository(
         changesFlow.tryEmit(Unit)
     }
 
-    override suspend fun listEvents(conversationId: String, from: Int, limit: Int?): List<Event> {
+    override suspend fun listEvents(conversationId: String): List<Event> {
         val path = eventsPath(conversationId)
         if (!fileSystem.exists(path)) return emptyList()
         val result = mutableListOf<Event>()
-        var skipped = 0
-        var remaining = limit ?: Int.MAX_VALUE
         fileSystem.source(path).buffered().use { src ->
             val content = src.readString()
             if (content.isEmpty()) return emptyList()
@@ -289,13 +280,7 @@ class FileConversationRepository(
                 } catch (_: Throwable) {
                     continue // skip corrupt line
                 }
-                if (skipped < from) {
-                    skipped += 1
-                    continue
-                }
                 result.add(evt)
-                remaining -= 1
-                if (remaining <= 0) break
             }
         }
         return result

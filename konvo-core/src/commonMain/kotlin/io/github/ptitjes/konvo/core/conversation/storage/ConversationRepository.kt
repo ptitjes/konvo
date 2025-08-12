@@ -21,13 +21,10 @@ interface ConversationRepository {
     suspend fun getConversation(id: String): Conversation?
 
     /**
-     * List conversations ordered by [sort].
-     * Supports optional [limit] and [offset] for pagination.
+     * List all conversations ordered by [sort].
      */
     suspend fun listConversations(
         sort: Sort = Sort.UpdatedDesc,
-        limit: Int? = null,
-        offset: Int = 0,
     ): List<Conversation>
 
     /** Append an [event] to the conversation identified by [conversationId], updating its metadata accordingly. */
@@ -43,10 +40,9 @@ interface ConversationRepository {
     suspend fun deleteAll()
 
     /**
-     * List events for a conversation, starting at [from] index (0-based), limiting to [limit] if provided.
-     * Implementations should avoid loading the entire event file into memory when possible.
+     * List all events for a conversation, in chronological order.
      */
-    suspend fun listEvents(conversationId: String, from: Int = 0, limit: Int? = null): List<Event>
+    suspend fun listEvents(conversationId: String): List<Event>
 
     /** Optional stream to observe repository changes for UI refresh. */
     fun changes(): Flow<Unit> = emptyFlow()

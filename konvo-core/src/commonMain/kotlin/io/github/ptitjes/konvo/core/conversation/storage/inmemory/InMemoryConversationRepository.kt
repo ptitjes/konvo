@@ -42,21 +42,15 @@ class InMemoryConversationRepository(
 
     override suspend fun listConversations(
         sort: Sort,
-        limit: Int?,
-        offset: Int,
     ): List<Conversation> {
-        var list = conversations.value.values.toList()
-        list = when (sort) {
+        val list = conversations.value.values.toList()
+        return when (sort) {
             is Sort.UpdatedDesc -> list.sortedByDescending { it.updatedAt }
             is Sort.UpdatedAsc -> list.sortedBy { it.updatedAt }
             is Sort.CreatedDesc -> list.sortedByDescending { it.createdAt }
             is Sort.CreatedAsc -> list.sortedBy { it.createdAt }
             is Sort.TitleAsc -> list.sortedWith(compareBy(nullsLast(String.CASE_INSENSITIVE_ORDER)) { it.title })
         }
-        val from = offset.coerceAtLeast(0)
-        val to = if (limit == null) list.size else (from + limit).coerceAtMost(list.size)
-        if (from >= list.size) return emptyList()
-        return list.subList(from, to)
     }
 
     override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
@@ -115,10 +109,7 @@ class InMemoryConversationRepository(
         changesFlow.tryEmit(Unit)
     }
 
-    override suspend fun listEvents(conversationId: String, from: Int, limit: Int?): List<Event> {
-        val all = events.value[conversationId] ?: return emptyList()
-        val start = from.coerceAtLeast(0).coerceAtMost(all.size)
-        val end = if (limit == null) all.size else (start + limit).coerceAtMost(all.size)
-        return all.subList(start, end)
+    override suspend fun listEvents(conversationId: String): List<Event> {
+        return events.value[conversationId] ?: emptyList()
     }
 }

@@ -125,21 +125,16 @@ abstract class ConversationRepositoryContractTests {
     }
 
     @Test
-    fun `listConversations default is UpdatedDesc and supports pagination`() = runTest {
+    fun `listConversations default is UpdatedDesc`() = runTest {
         val repo = createRepository()
-        val c1 = repo.createConversation(newConversation("c1", "A"))
+        repo.createConversation(newConversation("c1", "A"))
         // ensure different updatedAt by appending to c2 later
-        val  c2 = repo.createConversation(newConversation("c2", "B"))
+        repo.createConversation(newConversation("c2", "B"))
         // append to c2 to bump updatedAt
         repo.appendEvent("c2", userMessage("e1", "msg"))
 
         val listed = repo.listConversations()
         assertEquals(listOf("c2", "c1"), listed.map { it.id })
-
-        val page1 = repo.listConversations(limit = 1, offset = 0)
-        val page2 = repo.listConversations(limit = 1, offset = 1)
-        assertEquals(listOf("c2"), page1.map { it.id })
-        assertEquals(listOf("c1"), page2.map { it.id })
     }
 
     @Test
@@ -177,7 +172,7 @@ abstract class ConversationRepositoryContractTests {
     }
 
     @Test
-    fun `transcript reader returns slices with from and limit`() = runTest {
+    fun `transcript reader returns all events in order`() = runTest {
         val repo = InMemoryConversationRepository()
         val c = newConversation("c1")
         repo.createConversation(c)
@@ -190,14 +185,7 @@ abstract class ConversationRepositoryContractTests {
 
         val all = repo.listEvents("c1")
         assertEquals(5, all.size)
-
-        val slice1 = repo.listEvents("c1", from = 1, limit = 2)
-        assertEquals(2, slice1.size)
-        // expect e2, e3 by order
-        assertEquals(listOf("e2", "e3"), slice1.map { it.id })
-
-        val sliceTail = repo.listEvents("c1", from = 4, limit = 10)
-        assertEquals(listOf("e5"), sliceTail.map { it.id })
+        assertEquals(listOf("e1","e2","e3","e4","e5"), all.map { it.id })
     }
 
     @Test

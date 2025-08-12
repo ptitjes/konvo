@@ -14,12 +14,12 @@ class ConversationListViewModelTests {
         private val changesFlow = MutableSharedFlow<Unit>(replay = 1)
         override suspend fun createConversation(initial: Conversation): Conversation = initial
         override suspend fun getConversation(id: String): Conversation? = list.find { it.id == id }
-        override suspend fun listConversations(sort: Sort, limit: Int?, offset: Int): List<Conversation> = list
+        override suspend fun listConversations(sort: Sort): List<Conversation> = list
         override suspend fun appendEvent(conversationId: String, event: Event): Conversation = throw UnsupportedOperationException()
         override suspend fun updateConversation(conversation: Conversation): Conversation = conversation
         override suspend fun deleteConversation(id: String) {}
         override suspend fun deleteAll() {}
-        override suspend fun listEvents(conversationId: String, from: Int, limit: Int?): List<Event> = emptyList()
+        override suspend fun listEvents(conversationId: String): List<Event> = emptyList()
         override fun changes(): Flow<Unit> = changesFlow
         fun emitChange() { runBlocking { changesFlow.emit(Unit) } }
     }
