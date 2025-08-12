@@ -7,6 +7,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.focus.*
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.text.input.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
@@ -35,7 +38,36 @@ fun ConversationScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = conversation.title)
+                    var isFocused by remember { mutableStateOf(false) }
+
+                    var titleField by remember(conversation.id) {
+                        mutableStateOf(TextFieldValue(conversation.title))
+                    }
+
+                    // Keep local text in sync with repository updates when not focused
+                    LaunchedEffect(conversation.title, isFocused) {
+                        if (!isFocused && titleField.text != conversation.title) {
+                            titleField = TextFieldValue(conversation.title)
+                        }
+                    }
+
+                    TextField(
+                        value = titleField,
+                        onValueChange = { value ->
+                            titleField = value
+                            viewModel.updateTitle(value.text)
+                        },
+                        singleLine = true,
+                        modifier = Modifier.onFocusChanged { focusState ->
+                            isFocused = focusState.isFocused
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        )
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {

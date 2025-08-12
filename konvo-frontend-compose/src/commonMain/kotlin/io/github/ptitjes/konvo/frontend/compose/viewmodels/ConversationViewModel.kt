@@ -6,6 +6,8 @@ import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.time.*
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * ViewModel for the conversation UI.
@@ -17,9 +19,10 @@ import kotlinx.coroutines.flow.*
  *
  * @param conversationUserView The view of the conversation to interact with
  */
+@OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
     liveConversationsManager: LiveConversationsManager,
-    conversationRepository: ConversationRepository,
+    private val conversationRepository: ConversationRepository,
     initialConversation: Conversation,
 ) : ViewModel() {
     // Expose a flow of the conversation that updates with repository changes
@@ -36,6 +39,9 @@ class ConversationViewModel(
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
     val state: StateFlow<ConversationViewState> = _state
+
+    // Debounced title changes to avoid hammering the repository while typing
+    private val _pendingUpdatedTitle = MutableSharedFlow<String>(extraBufferCapacity = 64)
 
     init {
         viewModelScope.launch {
@@ -70,6 +76,19 @@ class ConversationViewModel(
                 }
             }
         }
+
+        // Collect pending title updates with debounce
+        viewModelScope.launch {
+            _pendingUpdatedTitle
+                .debounce(500.milliseconds)
+                .distinctUntilChanged()
+                .collect { newTitle ->
+                    val current = conversation.value
+                    if (current.title != newTitle) {
+                        conversationRepository.updateConversation(current.copy(title = newTitle))
+                    }
+                }
+        }
     }
 
     private fun Event.isViewItem(): Boolean =
@@ -92,6 +111,17 @@ class ConversationViewModel(
                 attachments = attachments,
             )
         }
+    }
+
+    /**
+     * Update the conversation title.
+     *
+     * @param newTitle The new title to set on the conversation
+     */
+    @OptIn(ExperimentalTime::class)
+    fun updateTitle(newTitle: String) {
+        // Emit changes to a debounced flow to avoid persisting on every keystroke
+        _pendingUpdatedTitle.tryEmit(newTitle)
     }
 }
 
