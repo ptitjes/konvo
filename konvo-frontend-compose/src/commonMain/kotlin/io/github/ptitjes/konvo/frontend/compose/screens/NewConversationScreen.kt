@@ -2,17 +2,15 @@ package io.github.ptitjes.konvo.frontend.compose.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import androidx.window.core.layout.WindowWidthSizeClass
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.frontend.compose.ListDetailPaneType
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*

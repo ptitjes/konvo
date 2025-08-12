@@ -11,7 +11,6 @@ import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.input.*
 import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*

@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose
 
 import androidx.compose.runtime.*
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.characters.*
@@ -65,6 +65,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     bindSingletonOf(::ConversationListViewModel)
     bindSingletonOf(::NewConversationViewModel)
+    bindSingletonOf(::AppViewModel)
     bindFactory { initialConversation: Conversation ->
         ConversationViewModel(instance(), instance(), initialConversation)
     }

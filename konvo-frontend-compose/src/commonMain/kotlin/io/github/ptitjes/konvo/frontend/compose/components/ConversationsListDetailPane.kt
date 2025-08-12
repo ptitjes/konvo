@@ -4,8 +4,6 @@ import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.runtime.*
 import androidx.window.core.layout.*
-import io.github.ptitjes.konvo.frontend.compose.ListDetailPane
-import io.github.ptitjes.konvo.frontend.compose.ListDetailPaneType
 import io.github.ptitjes.konvo.frontend.compose.screens.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
