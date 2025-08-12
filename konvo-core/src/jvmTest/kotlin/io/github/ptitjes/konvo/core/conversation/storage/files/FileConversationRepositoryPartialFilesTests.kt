@@ -7,6 +7,7 @@ import io.github.ptitjes.konvo.core.conversation.model.Event
 import io.github.ptitjes.konvo.core.conversation.model.Participant
 import io.github.ptitjes.konvo.core.defaultFileSystem
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.flow.first
 import kotlinx.io.Source
 import kotlinx.io.buffered
 import kotlinx.io.files.FileSystem
@@ -56,7 +57,7 @@ class FileConversationRepositoryPartialFilesTests {
         repo.appendEvent(conv.id, userMessage("e2", "World"))
 
         // Sanity: we should have two events
-        val before = repo.listEvents(conv.id)
+        val before = repo.getEvents(conv.id).first()
         assertEquals(2, before.size)
 
         // Corrupt the events file by appending a truncated JSON line (no newline)
@@ -77,7 +78,7 @@ class FileConversationRepositoryPartialFilesTests {
         }
 
         // Act: list events should skip the bad line and still return the two valid ones
-        val events = repo.listEvents(conv.id)
+        val events = repo.getEvents(conv.id).first()
 
         // Assert
         assertEquals(2, events.size)

@@ -11,17 +11,15 @@ class ConversationListViewModelTests {
     @OptIn(kotlin.time.ExperimentalTime::class)
 
     private class FakeRepo(private val list: List<Conversation>) : ConversationRepository {
-        private val changesFlow = MutableSharedFlow<Unit>(replay = 1)
+        private val conversations = MutableStateFlow(list)
         override suspend fun createConversation(initial: Conversation): Conversation = initial
-        override suspend fun getConversation(id: String): Conversation? = list.find { it.id == id }
-        override suspend fun listConversations(sort: Sort): List<Conversation> = list
+        override fun getConversation(id: String): Flow<Conversation> = conversations.map { l -> l.first { it.id == id } }
+        override fun getConversations(sort: Sort): Flow<List<Conversation>> = conversations
         override suspend fun appendEvent(conversationId: String, event: Event): Conversation = throw UnsupportedOperationException()
         override suspend fun updateConversation(conversation: Conversation): Conversation = conversation
         override suspend fun deleteConversation(id: String) {}
         override suspend fun deleteAll() {}
-        override suspend fun listEvents(conversationId: String): List<Event> = emptyList()
-        override fun changes(): Flow<Unit> = changesFlow
-        fun emitChange() { runBlocking { changesFlow.emit(Unit) } }
+        override fun getEvents(conversationId: String): Flow<List<Event>> = MutableStateFlow(emptyList())
     }
 
     @Test
@@ -49,8 +47,6 @@ class ConversationListViewModelTests {
         )
         val repo = FakeRepo(conversations)
         val vm = ConversationListViewModel(repo)
-        // Trigger initial load
-        repo.emitChange()
         val loaded = vm.conversations.first { it.isNotEmpty() }
         assertEquals(conversations, loaded)
     }

@@ -4,6 +4,7 @@ import io.github.ptitjes.konvo.core.Konvo
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.defaultFileSystem
+import kotlinx.coroutines.flow.*
 import kotlinx.io.Source
 import kotlinx.io.buffered
 import kotlinx.io.files.*
@@ -29,8 +30,8 @@ class FileConversationRepository(
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    private val changesFlow = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 64)
-    override fun changes(): kotlinx.coroutines.flow.Flow<Unit> = changesFlow
+    // Internal ticker to drive flows on local mutations
+    private val changeTicker = kotlinx.coroutines.flow.MutableStateFlow(0L)
 
     private val conversationsDir: Path get() = Path(rootPath, FilesLayout.CONVERSATIONS_DIR)
     private fun conversationDir(id: String): Path = Path(conversationsDir, id)
@@ -113,11 +114,11 @@ class FileConversationRepository(
         )
         val newIdx = existing.copy(conversations = (existing.conversations.filter { it.id != initial.id } + entry))
         saveIndex(newIdx)
-        changesFlow.tryEmit(Unit)
+        changeTicker.value = changeTicker.value + 1
         return initial
     }
 
-    override suspend fun getConversation(id: String): Conversation? {
+    private fun readConversation(id: String): Conversation? {
         val meta = metaPath(id)
         if (!fileSystem.exists(meta)) return null
         return try {
@@ -136,7 +137,10 @@ class FileConversationRepository(
         }
     }
 
-    override suspend fun listConversations(
+    override fun getConversation(id: String): Flow<Conversation> =
+        changeTicker.map { readConversation(id) }.onStart { emit(readConversation(id)) }.filterNotNull().distinctUntilChanged()
+
+    private fun readConversations(
         sort: Sort,
     ): List<Conversation> {
         val idx = loadIndex() ?: rebuildIndex()
@@ -161,6 +165,9 @@ class FileConversationRepository(
         }
     }
 
+    override fun getConversations(sort: Sort): Flow<List<Conversation>> =
+        changeTicker.map { readConversations(sort) }.onStart { emit(readConversations(sort)) }.distinctUntilChanged()
+
     override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
@@ -175,7 +182,7 @@ class FileConversationRepository(
             sink.writeString(newLine)
         }
         // Update meta and index
-        val current = getConversation(conversationId)!!
+        val current = readConversation(conversationId) ?: throw NoSuchElementException("Unknown conversation: $conversationId")
         val now = Clock.System.now()
         val (preview, delta) = when (event) {
             is Event.UserMessage -> event.content to 1
@@ -203,12 +210,12 @@ class FileConversationRepository(
             messageCount = updated.messageCount,
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
-        changesFlow.tryEmit(Unit)
+        changeTicker.value = changeTicker.value + 1
         return updated
     }
 
     override suspend fun updateConversation(conversation: Conversation): Conversation {
-        val existing = getConversation(conversation.id) ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
+        val existing = readConversation(conversation.id) ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
         val updated = conversation.copy(
             createdAt = existing.createdAt,
             messageCount = existing.messageCount,
@@ -231,7 +238,7 @@ class FileConversationRepository(
             messageCount = updated.messageCount,
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
-        changesFlow.tryEmit(Unit)
+        changeTicker.value = changeTicker.value + 1
         return updated
     }
 
@@ -245,7 +252,7 @@ class FileConversationRepository(
         }
         val idx = loadIndex() ?: ConversationIndexDto(conversations = emptyList())
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != id }))
-        changesFlow.tryEmit(Unit)
+        changeTicker.value = changeTicker.value + 1
     }
 
     override suspend fun deleteAll() {
@@ -261,10 +268,10 @@ class FileConversationRepository(
             // Remove index last
             if (fileSystem.exists(indexPath)) try { fileSystem.delete(indexPath) } catch (_: Throwable) {}
         }
-        changesFlow.tryEmit(Unit)
+        changeTicker.value = changeTicker.value + 1
     }
 
-    override suspend fun listEvents(conversationId: String): List<Event> {
+    private fun readEvents(conversationId: String): List<Event> {
         val path = eventsPath(conversationId)
         if (!fileSystem.exists(path)) return emptyList()
         val result = mutableListOf<Event>()
@@ -285,4 +292,7 @@ class FileConversationRepository(
         }
         return result
     }
+
+    override fun getEvents(conversationId: String): Flow<List<Event>> =
+        changeTicker.map { readEvents(conversationId) }.onStart { emit(readEvents(conversationId)) }.distinctUntilChanged()
 }

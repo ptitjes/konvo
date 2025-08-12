@@ -36,8 +36,8 @@ class LiveConversation(
 
     init {
         coroutineScope.launch {
-            val conversation = repository.getConversation(conversationId) ?: error("Invalid state")
-            val events = repository.listEvents(conversationId)
+            val conversation = repository.getConversation(conversationId).firstOrNull() ?: error("Invalid state")
+            val events = repository.getEvents(conversationId).first()
 
             // Restore transcript
             this@LiveConversation.transcript.clear()

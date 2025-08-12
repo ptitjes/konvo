@@ -42,26 +42,28 @@ fun TwoPaneConversationList(
 private fun TwoPaneConversationListPreview() {
     val fakeRepo = object : ConversationRepository {
         override suspend fun createConversation(initial: Conversation): Conversation = initial
-        override suspend fun getConversation(id: String): Conversation? = null
-        override suspend fun listConversations(sort: Sort): List<Conversation> = listOf(
-            Conversation(
-                id = "1",
-                title = "First",
-                createdAt = Instant.fromEpochMilliseconds(0),
-                updatedAt = Instant.fromEpochMilliseconds(0),
-                participants = emptyList(),
-                lastMessagePreview = "Hello world",
-                messageCount = 1,
-            ),
-            Conversation(
-                id = "2",
-                title = "Second",
-                createdAt = Instant.fromEpochMilliseconds(0),
-                updatedAt = Instant.fromEpochMilliseconds(0),
-                participants = emptyList(),
-                lastMessagePreview = "Another message",
-                messageCount = 3,
-            ),
+        override fun getConversation(id: String): Flow<Conversation> = emptyFlow()
+        override fun getConversations(sort: Sort): Flow<List<Conversation>> = flowOf(
+            listOf(
+                Conversation(
+                    id = "1",
+                    title = "First",
+                    createdAt = Instant.fromEpochMilliseconds(0),
+                    updatedAt = Instant.fromEpochMilliseconds(0),
+                    participants = emptyList(),
+                    lastMessagePreview = "Hello world",
+                    messageCount = 1,
+                ),
+                Conversation(
+                    id = "2",
+                    title = "Second",
+                    createdAt = Instant.fromEpochMilliseconds(0),
+                    updatedAt = Instant.fromEpochMilliseconds(0),
+                    participants = emptyList(),
+                    lastMessagePreview = "Another message",
+                    messageCount = 3,
+                ),
+            )
         )
 
         override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
@@ -71,8 +73,7 @@ private fun TwoPaneConversationListPreview() {
         override suspend fun updateConversation(conversation: Conversation): Conversation = conversation
         override suspend fun deleteConversation(id: String) {}
         override suspend fun deleteAll() {}
-        override suspend fun listEvents(conversationId: String): List<Event> = emptyList()
-        override fun changes(): Flow<Unit> = flowOf(Unit)
+        override fun getEvents(conversationId: String): Flow<List<Event>> = flowOf(emptyList())
     }
 
     val vm = remember { ConversationListViewModel(fakeRepo) }

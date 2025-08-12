@@ -17,15 +17,13 @@ interface ConversationRepository {
     /** Create a new conversation. The [initial] fields id/createdAt/updatedAt must be set by the caller. */
     suspend fun createConversation(initial: Conversation): Conversation
 
-    /** Get a conversation by id or null if missing. */
-    suspend fun getConversation(id: String): Conversation?
+    /** Stream a conversation by id; completes if the conversation is deleted. */
+    fun getConversation(id: String): Flow<Conversation>
 
     /**
-     * List all conversations ordered by [sort].
+     * Stream all conversations ordered by [sort].
      */
-    suspend fun listConversations(
-        sort: Sort = Sort.UpdatedDesc,
-    ): List<Conversation>
+    fun getConversations(sort: Sort = Sort.UpdatedDesc): Flow<List<Conversation>>
 
     /** Append an [event] to the conversation identified by [conversationId], updating its metadata accordingly. */
     suspend fun appendEvent(conversationId: String, event: Event): Conversation
@@ -40,12 +38,9 @@ interface ConversationRepository {
     suspend fun deleteAll()
 
     /**
-     * List all events for a conversation, in chronological order.
+     * Stream all events for a conversation, in chronological order.
      */
-    suspend fun listEvents(conversationId: String): List<Event>
-
-    /** Optional stream to observe repository changes for UI refresh. */
-    fun changes(): Flow<Unit> = emptyFlow()
+    fun getEvents(conversationId: String): Flow<List<Event>>
 }
 
 /** Sorting options for listing conversations. */

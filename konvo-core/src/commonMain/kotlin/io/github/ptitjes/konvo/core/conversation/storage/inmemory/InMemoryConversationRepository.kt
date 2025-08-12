@@ -15,43 +15,44 @@ class InMemoryConversationRepository(
     private val timeProvider: TimeProvider = SystemTimeProvider,
 ) : ConversationRepository {
 
-    private val changesFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 64)
-
     // Conversation id -> Conversation
     private val conversations = atomic<Map<String, Conversation>>(emptyMap())
 
     // Conversation id -> Events list
     private val events = atomic<Map<String, List<Event>>>(emptyMap())
 
-    override fun changes(): Flow<Unit> = changesFlow.asSharedFlow()
+    // Reactive state
+    private val conversationsState = MutableStateFlow<Map<String, Conversation>>(emptyMap())
+    private val eventsState = MutableStateFlow<Map<String, List<Event>>>(emptyMap())
 
     override suspend fun createConversation(initial: Conversation): Conversation {
-        conversations.update { prev ->
+        val newConversations = conversations.updateAndGet { prev ->
             if (prev.containsKey(initial.id)) {
                 throw IllegalStateException("Conversation already exists: ${initial.id}")
             }
             prev + (initial.id to initial)
         }
+        conversationsState.value = newConversations
         // Initialize empty events list
-        events.update { prev -> prev + (initial.id to emptyList()) }
-        changesFlow.tryEmit(Unit)
+        val newEvents = events.updateAndGet { prev -> prev + (initial.id to emptyList()) }
+        eventsState.value = newEvents
         return initial
     }
 
-    override suspend fun getConversation(id: String): Conversation? = conversations.value[id]
+    override fun getConversation(id: String): Flow<Conversation> =
+        conversationsState.map { it[id] }.filterNotNull().distinctUntilChanged()
 
-    override suspend fun listConversations(
-        sort: Sort,
-    ): List<Conversation> {
-        val list = conversations.value.values.toList()
-        return when (sort) {
-            is Sort.UpdatedDesc -> list.sortedByDescending { it.updatedAt }
-            is Sort.UpdatedAsc -> list.sortedBy { it.updatedAt }
-            is Sort.CreatedDesc -> list.sortedByDescending { it.createdAt }
-            is Sort.CreatedAsc -> list.sortedBy { it.createdAt }
-            is Sort.TitleAsc -> list.sortedWith(compareBy(nullsLast(String.CASE_INSENSITIVE_ORDER)) { it.title })
-        }
-    }
+    override fun getConversations(sort: Sort): Flow<List<Conversation>> =
+        conversationsState.map { map ->
+            val list = map.values.toList()
+            when (sort) {
+                is Sort.UpdatedDesc -> list.sortedByDescending { it.updatedAt }
+                is Sort.UpdatedAsc -> list.sortedBy { it.updatedAt }
+                is Sort.CreatedDesc -> list.sortedByDescending { it.createdAt }
+                is Sort.CreatedAsc -> list.sortedBy { it.createdAt }
+                is Sort.TitleAsc -> list.sortedWith(compareBy(nullsLast(String.CASE_INSENSITIVE_ORDER)) { it.title })
+            }
+        }.distinctUntilChanged()
 
     override suspend fun appendEvent(conversationId: String, event: Event): Conversation {
         // Append event first
@@ -59,6 +60,7 @@ class InMemoryConversationRepository(
             val current = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
             prev + (conversationId to (current + event))
         }[conversationId]!!
+        eventsState.value = events.value
 
         // Update conversation metadata
         val updated = conversations.updateAndGet { prev ->
@@ -76,8 +78,7 @@ class InMemoryConversationRepository(
             )
             prev + (conversationId to changed)
         }[conversationId]!!
-
-        changesFlow.tryEmit(Unit)
+        conversationsState.value = conversations.value
         return updated
     }
 
@@ -93,23 +94,24 @@ class InMemoryConversationRepository(
             )
             prev + (conversation.id to changed)
         }[conversation.id]!!
-        changesFlow.tryEmit(Unit)
+        conversationsState.value = conversations.value
         return updated
     }
 
     override suspend fun deleteConversation(id: String) {
-        conversations.update { it - id }
-        events.update { it - id }
-        changesFlow.tryEmit(Unit)
+        conversations.value = conversations.value - id
+        events.value = events.value - id
+        conversationsState.value = conversations.value
+        eventsState.value = events.value
     }
 
     override suspend fun deleteAll() {
         conversations.value = emptyMap()
         events.value = emptyMap()
-        changesFlow.tryEmit(Unit)
+        conversationsState.value = conversations.value
+        eventsState.value = events.value
     }
 
-    override suspend fun listEvents(conversationId: String): List<Event> {
-        return events.value[conversationId] ?: emptyList()
-    }
+    override fun getEvents(conversationId: String): Flow<List<Event>> =
+        eventsState.map { it[conversationId] ?: emptyList() }.distinctUntilChanged()
 }

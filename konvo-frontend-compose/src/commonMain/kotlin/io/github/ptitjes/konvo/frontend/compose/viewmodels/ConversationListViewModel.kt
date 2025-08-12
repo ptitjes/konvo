@@ -28,31 +28,22 @@ class ConversationListViewModel(
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        // Subscribe to repository changes if available, and perform an initial refresh
-        viewModelScope.launch {
-            repository
-                .changes()
-                .onStart { emit(Unit) }
-                .collect { refresh() }
-        }
-    }
-
-    fun refresh() {
+        // Subscribe to repository conversations stream
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            try {
-                val list = repository.listConversations(sort = Sort.UpdatedDesc)
-                _conversations.value = list
-                // Keep selection only if it still exists
-                _selectedConversation.value = _selectedConversation.value?.takeIf { conversation ->
-                    list.any { it.id == conversation.id }
+            repository
+                .getConversations(sort = Sort.UpdatedDesc)
+                .catch { e -> _error.value = e.message ?: "Failed to load conversations" }
+                .onEach { list ->
+                    _conversations.value = list
+                    // Keep selection only if it still exists
+                    _selectedConversation.value = _selectedConversation.value?.takeIf { conversation ->
+                        list.any { it.id == conversation.id }
+                    }
+                    _isLoading.value = false
                 }
-            } catch (e: Throwable) {
-                _error.value = e.message ?: "Failed to load conversations"
-            } finally {
-                _isLoading.value = false
-            }
+                .collect()
         }
     }
 
@@ -69,7 +60,6 @@ class ConversationListViewModel(
                 if (_selectedConversation.value?.id == conversation.id) {
                     _selectedConversation.value = null
                 }
-                refresh()
             } catch (e: Throwable) {
                 _error.value = e.message ?: "Failed to delete conversation"
             } finally {

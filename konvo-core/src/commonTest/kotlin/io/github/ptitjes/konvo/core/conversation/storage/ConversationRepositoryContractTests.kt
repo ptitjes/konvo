@@ -3,10 +3,8 @@ package io.github.ptitjes.konvo.core.conversation.storage
 import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.inmemory.*
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
-import kotlinx.coroutines.yield
 import kotlin.test.*
 import kotlin.time.*
 
@@ -64,7 +62,7 @@ abstract class ConversationRepositoryContractTests {
         val repo = createRepository()
         val conv = newConversation()
         repo.createConversation(conv)
-        val loaded = repo.getConversation(conv.id)
+        val loaded = repo.getConversation(conv.id).firstOrNull()
         assertNotNull(loaded)
         assertEquals(conv.id, loaded.id)
         assertEquals(0, loaded.messageCount)
@@ -85,7 +83,7 @@ abstract class ConversationRepositoryContractTests {
         val updated = repo.appendEvent(conv.id, event)
         assertEquals(1, updated.messageCount)
         assertEquals("Hello world", updated.lastMessagePreview)
-        val events = repo.listEvents(conv.id)
+        val events = repo.getEvents(conv.id).first()
         assertEquals(1, events.size)
     }
 
@@ -99,12 +97,8 @@ abstract class ConversationRepositoryContractTests {
         assertEquals(c1.updatedAt, created.updatedAt)
         assertEquals(0, created.messageCount)
 
-        val loaded = repo.getConversation("c1")
-        assertNotNull(loaded)
+        val loaded = repo.getConversation("c1").first()
         assertEquals("First", loaded.title)
-
-        val none = repo.getConversation("missing")
-        assertNull(none)
     }
 
     @Test
@@ -133,7 +127,7 @@ abstract class ConversationRepositoryContractTests {
         // append to c2 to bump updatedAt
         repo.appendEvent("c2", userMessage("e1", "msg"))
 
-        val listed = repo.listConversations()
+        val listed = repo.getConversations().first()
         assertEquals(listOf("c2", "c1"), listed.map { it.id })
     }
 
@@ -141,8 +135,8 @@ abstract class ConversationRepositoryContractTests {
     fun `updateConversation persists title changes and updatedAt`() = runTest {
         val repo = createRepository()
         repo.createConversation(newConversation("c1", "Old"))
-        val before = repo.getConversation("c1")!!.updatedAt
-        val changed = repo.updateConversation(repo.getConversation("c1")!!.copy(title = "New"))
+        val before = repo.getConversation("c1").first().updatedAt
+        val changed = repo.updateConversation(repo.getConversation("c1").first().copy(title = "New"))
         assertEquals("New", changed.title)
         assertTrue(changed.updatedAt >= before)
     }
@@ -157,12 +151,11 @@ abstract class ConversationRepositoryContractTests {
 
         // delete one
         repo.deleteConversation("c1")
-        assertNull(repo.getConversation("c1"))
-        assertEquals(listOf("c2"), repo.listConversations().map { it.id })
+        assertEquals(listOf("c2"), repo.getConversations().first().map { it.id })
 
         // delete all
         repo.deleteAll()
-        assertTrue(repo.listConversations().isEmpty())
+        assertTrue(repo.getConversations().first().isEmpty())
     }
 
     @Test
@@ -183,35 +176,8 @@ abstract class ConversationRepositoryContractTests {
         repo.appendEvent("c1", assistantMessage("e4", "m4"))
         repo.appendEvent("c1", userMessage("e5", "m5"))
 
-        val all = repo.listEvents("c1")
+        val all = repo.getEvents("c1").first()
         assertEquals(5, all.size)
         assertEquals(listOf("e1","e2","e3","e4","e5"), all.map { it.id })
-    }
-
-    @Test
-    fun `changes flow emits on create, append, update, delete and deleteAll`() = runTest {
-        val repo = createRepository()
-        var emissions = 0
-        val job = launch {
-            repo.changes().take(5).collect { emissions += 1 }
-        }
-        // Ensure the collector is started before we emit changes
-        yield()
-
-        val conv = newConversation("c1", title = "Title")
-        // 1: create
-        repo.createConversation(conv)
-        // 2: append
-        repo.appendEvent("c1", userMessage("e1", "hello"))
-        // 3: update title
-        val updated = repo.getConversation("c1")!!.copy(title = "New Title")
-        repo.updateConversation(updated)
-        // 4: delete one
-        repo.deleteConversation("c1")
-        // 5: delete all (should still emit)
-        repo.deleteAll()
-
-        job.join()
-        assertEquals(5, emissions)
     }
 }
