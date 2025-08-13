@@ -48,7 +48,7 @@ fun ConversationPane(
                 }
 
                 LazyColumn(
-                    modifier = Modifier.weight(1f).padding(horizontal = 16.dp),
+                    modifier = Modifier.weight(1f).padding(horizontal = 32.dp),
                     state = listState,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)

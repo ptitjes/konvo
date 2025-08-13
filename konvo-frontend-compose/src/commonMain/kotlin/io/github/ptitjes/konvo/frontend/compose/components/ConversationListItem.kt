@@ -2,11 +2,13 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.*
@@ -49,17 +51,20 @@ fun ConversationListItem(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
+                    modifier = Modifier.weight(1f),
                     text = conversation.title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = TextFormatters.formatTimestampRelative(conversation.updatedAt),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 IconButton(onClick = { showConfirm = true }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete conversation")
