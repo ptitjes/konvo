@@ -17,6 +17,18 @@ interface ConversationUserView {
 
     val events: SharedFlow<Event>
 
+    /**
+     * The index of the last read message in the current UI transcript, or -1 if none read.
+     * This is a live state that can be observed to update UI markers.
+     */
+    val lastReadMessageIndex: StateFlow<Int>
+
+    /**
+     * Update the last read message index.
+     * Implementations should clamp the value to the current bounds and ignore decreases that are out of range.
+     */
+    suspend fun updateLastReadMessageIndex(index: Int)
+
     suspend fun sendMessage(
         content: String,
         attachments: List<Attachment> = emptyList(),

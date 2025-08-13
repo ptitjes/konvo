@@ -60,8 +60,18 @@ class ConversationViewModel(
                 ConversationViewState.Loaded(
                     items = initialItems,
                     isProcessing = false,
+                    lastReadMessageIndex = conversationUserView.lastReadMessageIndex.value,
                 )
             )
+
+            launch {
+                conversationUserView.lastReadMessageIndex.collect { index ->
+                    _state.update { prev ->
+                        check(prev is ConversationViewState.Loaded) { "Invalid state" }
+                        prev.copy(lastReadMessageIndex = index)
+                    }
+                }
+            }
 
             launch {
                 conversationUserView.events.collect { event ->
@@ -78,7 +88,15 @@ class ConversationViewModel(
 
                             _state.update { previousState ->
                                 check(previousState is ConversationViewState.Loaded) { "Invalid state" }
-                                previousState.copy(items = previousState.items + eventViewState)
+                                val prevItemsSize = previousState.items.size
+                                val newState = previousState.copy(items = previousState.items + eventViewState)
+                                // If it's a user message, mark it (and thus all previous) as read
+                                if (event is Event.UserMessage) {
+                                    viewModelScope.launch {
+                                        conversationUserView.updateLastReadMessageIndex(prevItemsSize)
+                                    }
+                                }
+                                newState
                             }
                         }
 
@@ -140,6 +158,13 @@ class ConversationViewModel(
         }
     }
 
+    /** Update last read message index, clamped to current items. */
+    fun updateLastReadMessageIndex(index: Int) {
+        viewModelScope.launch {
+            conversationUserView.updateLastReadMessageIndex(index)
+        }
+    }
+
     /**
      * Update the conversation title.
      *
@@ -157,6 +182,7 @@ sealed interface ConversationViewState {
     data class Loaded(
         val items: List<EventViewState>,
         val isProcessing: Boolean,
+        val lastReadMessageIndex: Int,
     ) : ConversationViewState
 }
 

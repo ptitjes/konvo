@@ -79,6 +79,10 @@ class LiveConversation(
 
     val transcript = Transcript()
 
+    // Last read message index, -1 means nothing has been read yet
+    private val _lastReadMessageIndex = MutableStateFlow(-1)
+    val lastReadMessageIndex: StateFlow<Int> = _lastReadMessageIndex
+
     private val _events = MutableSharedFlow<Event>()
     val events: SharedFlow<Event> = _events
 
@@ -159,6 +163,16 @@ class LiveConversation(
 
         override val events: SharedFlow<Event>
             get() = conversation.events
+
+        override val lastReadMessageIndex: StateFlow<Int>
+            get() = conversation.lastReadMessageIndex
+
+        override suspend fun updateLastReadMessageIndex(index: Int) {
+            val clamped = index.coerceIn(-1, transcript.events.size - 1)
+            if (clamped > _lastReadMessageIndex.value) {
+                _lastReadMessageIndex.emit(clamped)
+            }
+        }
 
         override suspend fun sendMessage(
             content: String,
