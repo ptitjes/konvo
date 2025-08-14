@@ -27,6 +27,7 @@ data class CharacterCard(
 }
 
 fun CharacterCard.Companion.loadCharacters(charactersDirectory: Path): List<CharacterCard> {
+    if (!defaultFileSystem.exists(charactersDirectory)) return listOf()
     return defaultFileSystem.list(charactersDirectory).mapNotNull { characterPath ->
         runCatching { loadCharacter(characterPath) }.getOrNull()
     }.sortedBy { it.name }
