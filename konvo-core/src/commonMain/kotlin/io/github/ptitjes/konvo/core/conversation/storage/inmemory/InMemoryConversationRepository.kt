@@ -65,15 +65,16 @@ class InMemoryConversationRepository(
         val updated = conversations.updateAndGet { prev ->
             val existing = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
             val now = timeProvider.now()
-            val (newPreview, deltaCount) = when (event) {
-                is Event.UserMessage -> ConversationUtils.computeLastMessagePreview(updatedEvents) to 1
-                is Event.AssistantMessage -> ConversationUtils.computeLastMessagePreview(updatedEvents) to 1
-                else -> existing.lastMessagePreview to 0
+            val (newPreview, deltaCount, deltaUnread) = when (event) {
+                is Event.UserMessage -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
+                is Event.AssistantMessage -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
+                else -> Triple(existing.lastMessagePreview, 0, 0)
             }
             val changed = existing.copy(
                 updatedAt = now,
                 lastMessagePreview = newPreview,
                 messageCount = existing.messageCount + deltaCount,
+                unreadMessageCount = existing.unreadMessageCount + deltaUnread,
             )
             prev + (conversationId to changed)
         }[conversationId]!!

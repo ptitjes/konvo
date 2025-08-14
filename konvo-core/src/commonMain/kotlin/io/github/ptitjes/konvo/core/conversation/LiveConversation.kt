@@ -44,12 +44,42 @@ class LiveConversation(
             events.forEach { event ->
                 this@LiveConversation.transcript.append(event)
             }
+            _lastReadMessageIndex.value = conversation.lastReadMessageIndex
+            _unreadMessageCount.value = conversation.unreadMessageCount
 
             // Persist new events
             launch {
                 this@LiveConversation.events.collect { event ->
                     this@LiveConversation.transcript.append(event)
                     repository.appendEvent(conversationId, event)
+                }
+            }
+
+            // Recompute unread count when the last read index changes and persist to repository
+            launch {
+                this@LiveConversation.lastReadMessageIndex.collect { lastReadMessageIndex ->
+                    val lastViewItemIndex = transcript.events.count { it.isViewItem() } - 1
+                    val unread = (lastViewItemIndex - lastReadMessageIndex).coerceAtLeast(0)
+                    _unreadMessageCount.emit(unread)
+                    // Persist last read index and unread count in conversation metadata
+                    val current = repository.getConversation(conversationId).first()
+                    if (current.lastReadMessageIndex != lastReadMessageIndex || current.unreadMessageCount != unread) {
+                        repository.updateConversation(
+                            current.copy(
+                                lastReadMessageIndex = lastReadMessageIndex,
+                                unreadMessageCount = unread,
+                            )
+                        )
+                    }
+                }
+            }
+
+            // Also recompute unread count when new events are added
+            launch {
+                this@LiveConversation.events.collect {
+                    val lastViewItemIndex = transcript.events.count { it.isViewItem() } - 1
+                    val unread = (lastViewItemIndex - _lastReadMessageIndex.value).coerceAtLeast(0)
+                    _unreadMessageCount.emit(unread)
                 }
             }
 
@@ -83,12 +113,19 @@ class LiveConversation(
     private val _lastReadMessageIndex = MutableStateFlow(-1)
     val lastReadMessageIndex: StateFlow<Int> = _lastReadMessageIndex
 
+    // Unread message count (only counting view items). Updated whenever read index or events change.
+    private val _unreadMessageCount = MutableStateFlow(0)
+    val unreadMessageCount: StateFlow<Int> = _unreadMessageCount.asStateFlow()
+
     private val _events = MutableSharedFlow<Event>()
     val events: SharedFlow<Event> = _events
 
     private suspend fun emitEvent(event: Event) {
         _events.emit(event)
     }
+
+    private fun Event.isViewItem(): Boolean =
+        this !is Event.AssistantProcessing && this !is Event.ToolUseApproval
 
     fun newUserView(): ConversationUserView = UserViewImpl(userMember)
     private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)

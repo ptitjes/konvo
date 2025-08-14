@@ -1,16 +1,12 @@
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
-import io.github.ptitjes.konvo.core.Konvo
+import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
-import io.github.ptitjes.konvo.core.defaultFileSystem
 import kotlinx.coroutines.flow.*
-import kotlinx.io.Source
-import kotlinx.io.buffered
+import kotlinx.io.*
 import kotlinx.io.files.*
-import kotlinx.io.readString
-import kotlinx.io.writeString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 import kotlin.time.*
 
 /**
@@ -68,13 +64,15 @@ class FileConversationRepository(
                         fileSystem.source(meta).buffered().use { src ->
                             val dto = json.decodeFromString(ConversationDto.serializer(), src.readString())
                             entries += ConversationIndexEntryDto(
-                                id = dto.id,
-                                title = dto.title,
-                                createdAt = dto.createdAt,
-                                updatedAt = dto.updatedAt,
-                                lastMessagePreview = dto.lastMessagePreview,
-                                messageCount = dto.messageCount,
-                            )
+                            id = dto.id,
+                            title = dto.title,
+                            createdAt = dto.createdAt,
+                            updatedAt = dto.updatedAt,
+                            lastMessagePreview = dto.lastMessagePreview,
+                            messageCount = dto.messageCount,
+                            lastReadMessageIndex = dto.lastReadMessageIndex,
+                            unreadMessageCount = dto.unreadMessageCount,
+                        )
                         }
                     } catch (_: Throwable) {
                         // skip broken conversation
@@ -111,6 +109,8 @@ class FileConversationRepository(
             updatedAt = initial.updatedAt,
             lastMessagePreview = initial.lastMessagePreview,
             messageCount = initial.messageCount,
+            lastReadMessageIndex = initial.lastReadMessageIndex,
+            unreadMessageCount = initial.unreadMessageCount,
         )
         val newIdx = existing.copy(conversations = (existing.conversations.filter { it.id != initial.id } + entry))
         saveIndex(newIdx)
@@ -153,6 +153,8 @@ class FileConversationRepository(
                 participants = emptyList(),
                 lastMessagePreview = e.lastMessagePreview,
                 messageCount = e.messageCount,
+                lastReadMessageIndex = e.lastReadMessageIndex,
+                unreadMessageCount = e.unreadMessageCount,
             )
         }
         return when (sort) {
@@ -183,15 +185,16 @@ class FileConversationRepository(
         // Update meta and index
         val current = readConversation(conversationId) ?: throw NoSuchElementException("Unknown conversation: $conversationId")
         val now = Clock.System.now()
-        val (preview, delta) = when (event) {
-            is Event.UserMessage -> event.content to 1
-            is Event.AssistantMessage -> event.content to 1
-            else -> current.lastMessagePreview to 0
+        val (preview, delta, deltaUnread) = when (event) {
+            is Event.UserMessage -> Triple(event.content, 1, 1)
+            is Event.AssistantMessage -> Triple(event.content, 1, 1)
+            else -> Triple(current.lastMessagePreview, 0, 0)
         }
         val updated = current.copy(
             updatedAt = now,
             lastMessagePreview = preview,
             messageCount = current.messageCount + delta,
+            unreadMessageCount = current.unreadMessageCount + deltaUnread,
         )
         // Write meta
         FileIo.atomicWrite(metaFile, fileSystem) { sink ->
@@ -207,6 +210,8 @@ class FileConversationRepository(
             updatedAt = updated.updatedAt,
             lastMessagePreview = updated.lastMessagePreview,
             messageCount = updated.messageCount,
+            lastReadMessageIndex = updated.lastReadMessageIndex,
+            unreadMessageCount = updated.unreadMessageCount,
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
         changeTicker.value = changeTicker.value + 1
@@ -234,6 +239,8 @@ class FileConversationRepository(
             updatedAt = updated.updatedAt,
             lastMessagePreview = updated.lastMessagePreview,
             messageCount = updated.messageCount,
+            lastReadMessageIndex = updated.lastReadMessageIndex,
+            unreadMessageCount = updated.unreadMessageCount,
         )
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
         changeTicker.value = changeTicker.value + 1

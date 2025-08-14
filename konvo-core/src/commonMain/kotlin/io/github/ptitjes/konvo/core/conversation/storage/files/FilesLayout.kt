@@ -2,8 +2,7 @@
 
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Contextual
+import kotlinx.serialization.*
 import kotlin.time.*
 
 /**
@@ -21,7 +20,7 @@ object FilesLayout {
  */
 @Serializable
 internal data class ConversationIndexDto(
-    val schemaVersion: Int = 1,
+    val schemaVersion: Int = 2,
     val conversations: List<ConversationIndexEntryDto>,
 )
 
@@ -36,4 +35,6 @@ internal data class ConversationIndexEntryDto(
     @Contextual val updatedAt: Instant,
     val lastMessagePreview: String?,
     val messageCount: Int,
+    val lastReadMessageIndex: Int = -1,
+    val unreadMessageCount: Int = 0,
 )

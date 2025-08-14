@@ -2,13 +2,11 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.*
@@ -45,10 +43,22 @@ fun ConversationListItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(
-                    imageVector = Icons.Default.ChatBubbleOutline,
-                    contentDescription = "Conversation",
-                )
+                BadgedBox(
+                    badge = {
+                        val unreadMessageCount = conversation.unreadMessageCount
+                        if (unreadMessageCount > 0) {
+                            Badge(containerColor = MaterialTheme.colorScheme.error) {
+                                Text(unreadMessageCount.toString())
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ChatBubbleOutline,
+                        contentDescription = "Conversation",
+                    )
+                }
+
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),

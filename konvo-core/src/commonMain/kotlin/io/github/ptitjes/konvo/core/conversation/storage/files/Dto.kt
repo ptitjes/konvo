@@ -17,8 +17,10 @@ internal data class ConversationDto(
     val participants: List<ParticipantDto>,
     val lastMessagePreview: String? = null,
     val messageCount: Int = 0,
+    val lastReadMessageIndex: Int = -1,
+    val unreadMessageCount: Int = 0,
     val agent: AgentConfigurationDto = AgentConfigurationDto.None,
-    val schemaVersion: Int = 2,
+    val schemaVersion: Int = 3,
 )
 
 @Serializable
@@ -139,6 +141,8 @@ internal object DtoMappers {
         participants = conv.participants.map { toDto(it) },
         lastMessagePreview = conv.lastMessagePreview,
         messageCount = conv.messageCount,
+        lastReadMessageIndex = conv.lastReadMessageIndex,
+        unreadMessageCount = conv.unreadMessageCount,
         agent = when (val a = conv.agentConfiguration) {
             is NoAgentConfiguration -> AgentConfigurationDto.None
             is QuestionAnswerAgentConfiguration -> AgentConfigurationDto.QuestionAnswer(
@@ -163,6 +167,8 @@ internal object DtoMappers {
         participants = dto.participants.map { fromDto(it) },
         lastMessagePreview = dto.lastMessagePreview,
         messageCount = dto.messageCount,
+        lastReadMessageIndex = dto.lastReadMessageIndex,
+        unreadMessageCount = dto.unreadMessageCount,
         agentConfiguration = when (val a = dto.agent) {
             is AgentConfigurationDto.None -> NoAgentConfiguration
             is AgentConfigurationDto.QuestionAnswer -> {

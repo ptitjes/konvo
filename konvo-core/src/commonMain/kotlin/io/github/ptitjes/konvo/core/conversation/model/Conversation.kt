@@ -18,5 +18,7 @@ data class Conversation(
     val participants: List<Participant>,
     val lastMessagePreview: String?,
     val messageCount: Int,
+    val lastReadMessageIndex: Int = -1,
+    val unreadMessageCount: Int = 0,
     val agentConfiguration: AgentConfiguration = NoAgentConfiguration,
 )
