@@ -14,10 +14,12 @@ import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 @Composable
-fun App() {
+fun App(
+    appViewModel: AppViewModel = viewModel(),
+) {
     val adaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo()
 
-    val appViewModel: AppViewModel = viewModel()
+    CoilImageLoader()
 
     KonvoTheme {
         NavigationSuiteScaffold(

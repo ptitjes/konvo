@@ -13,6 +13,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.bundles.kotlinxEcosystem)
+                implementation(libs.kotlinxIoOkio)
                 implementation(project(":konvo-core"))
 
                 implementation(compose.material3)
