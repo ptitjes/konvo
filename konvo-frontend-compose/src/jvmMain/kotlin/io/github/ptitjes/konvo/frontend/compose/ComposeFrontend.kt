@@ -8,6 +8,7 @@ import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.base.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
@@ -94,7 +95,7 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
     }
 
     inBindSet<CharacterProvider> {
-        add { singleton { FileSystemCharacterProvider(instance(tag = DataDirectory)) } }
+        add { singleton { FileSystemCharacterProvider(instance()) } }
     }
 }
 

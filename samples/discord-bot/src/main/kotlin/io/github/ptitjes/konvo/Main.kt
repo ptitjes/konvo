@@ -5,14 +5,14 @@ import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.conversation.LiveConversationsManager
-import io.github.ptitjes.konvo.core.conversation.storage.ConversationRepository
-import io.github.ptitjes.konvo.core.conversation.storage.files.FileConversationRepository
+import io.github.ptitjes.konvo.core.base.*
+import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.conversation.storage.files.*
 import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*
-import io.github.ptitjes.konvo.core.base.*
 
 suspend fun main() = coroutineScope {
     val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json5"))
@@ -75,7 +75,7 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
     }
 
     inBindSet<CharacterProvider> {
-        add { singleton { FileSystemCharacterProvider(instance(tag = DataDirectory)) } }
+        add { singleton { FileSystemCharacterProvider(instance()) } }
     }
 }
 
