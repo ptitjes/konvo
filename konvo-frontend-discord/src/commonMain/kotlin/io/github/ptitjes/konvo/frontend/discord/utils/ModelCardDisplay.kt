@@ -5,7 +5,7 @@ import kotlin.math.*
 
 val ModelCard.shortName: String get() = name.removeSuffix(":latest")
 
-val ModelCard.sizeString: String get() = size.humanReadableSize(1000) + "B"
+val ModelCard.sizeString: String get() = size?.let { it.humanReadableSize(1000) + "B" } ?: "unknown"
 val ModelCard.parameterCountString: String? get() = parameterCount?.humanReadableSize(1000)
 val ModelCard.contextLengthString: String? get() = contextLength?.humanReadableSize(1024, 0)
 

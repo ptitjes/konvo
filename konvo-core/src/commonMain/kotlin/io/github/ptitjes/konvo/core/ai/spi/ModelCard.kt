@@ -6,7 +6,7 @@ import ai.koog.prompt.llm.LLModel
 interface ModelCard {
     val provider: ModelProvider
     val name: String
-    val size: Long
+    val size: Long?
     val parameterCount: Long?
     val contextLength: Long?
     val quantizationLevel: String?
