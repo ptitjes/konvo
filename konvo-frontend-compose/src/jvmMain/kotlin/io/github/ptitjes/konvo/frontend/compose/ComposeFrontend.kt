@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.*
@@ -18,7 +19,6 @@ import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*
 import org.kodein.di.compose.*
-import io.github.ptitjes.konvo.core.base.*
 
 fun runComposeFrontend() = application {
     var di by remember { mutableStateOf<DI?>(null) }
@@ -38,6 +38,14 @@ fun runComposeFrontend() = application {
                 title = "Konvo",
                 state = rememberWindowState(width = 1280.dp, height = 720.dp),
                 onCloseRequest = ::exitApplication,
+                onKeyEvent = { event ->
+                    if (event.type == KeyEventType.KeyUp && event.isCtrlPressed && event.key == Key.Q) {
+                        exitApplication()
+                        true
+                    } else {
+                        false
+                    }
+                },
             ) {
                 App()
             }
