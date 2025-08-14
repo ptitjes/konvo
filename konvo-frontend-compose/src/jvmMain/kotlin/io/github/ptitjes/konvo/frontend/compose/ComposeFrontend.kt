@@ -17,6 +17,7 @@ import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*
 import org.kodein.di.compose.*
+import io.github.ptitjes.konvo.core.base.*
 
 fun runComposeFrontend() = application {
     var di by remember { mutableStateOf<DI?>(null) }
@@ -48,6 +49,8 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<PromptProvider>()
     bindSet<ToolProvider>()
     bindSet<CharacterProvider>()
+
+    bindSingleton<StoragePaths> { LinuxXdgHomeStoragePaths() }
 
     import(configurationProviders(configuration))
 

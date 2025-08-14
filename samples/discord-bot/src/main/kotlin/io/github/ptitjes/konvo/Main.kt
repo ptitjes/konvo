@@ -12,6 +12,7 @@ import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*
+import io.github.ptitjes.konvo.core.base.*
 
 suspend fun main() = coroutineScope {
     val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json5"))
@@ -36,6 +37,8 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<PromptProvider>()
     bindSet<ToolProvider>()
     bindSet<CharacterProvider>()
+
+    bindSingleton<StoragePaths> { LinuxXdgServerStoragePaths() }
 
     import(configurationProviders(configuration))
 
