@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.base.StoragePaths
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import kotlinx.coroutines.flow.*
@@ -23,6 +24,16 @@ class FileConversationRepository(
     private val fileSystem: FileSystem = defaultFileSystem,
     private val konvo: Konvo? = null,
 ) : ConversationRepository {
+
+    constructor(
+        storagePaths: StoragePaths,
+        fileSystem: FileSystem = defaultFileSystem,
+        konvo: Konvo? = null,
+    ) : this(
+        rootPath = Path(storagePaths.dataDirectory, FilesLayout.CONVERSATIONS_DIR),
+        fileSystem = fileSystem,
+        konvo = konvo,
+    )
 
     private val json = Json { ignoreUnknownKeys = true }
 

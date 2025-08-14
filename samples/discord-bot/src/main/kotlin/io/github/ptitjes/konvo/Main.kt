@@ -47,7 +47,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
     bindSingleton<ConversationRepository> {
         FileConversationRepository(
-            rootPath = Path(configuration.dataDirectory, "conversations"),
+            storagePaths = instance(),
             konvo = instance(),
         )
     }
