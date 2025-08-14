@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo
 
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
@@ -24,7 +25,10 @@ suspend fun main() = coroutineScope {
 
     try {
         mcpServersManager.startAndConnectServers()
-        konvo.init()
+        di.direct.instance<ProviderManager<ModelCard>>().init()
+        di.direct.instance<ProviderManager<PromptCard>>().init()
+        di.direct.instance<ProviderManager<ToolCard>>().init()
+        di.direct.instance<ProviderManager<CharacterCard>>().init()
 
         discordBot(konvo, configuration.discord.token)
     } finally {
@@ -33,16 +37,21 @@ suspend fun main() = coroutineScope {
 }
 
 fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
-    bindSet<ModelProvider>()
-    bindSet<PromptProvider>()
-    bindSet<ToolProvider>()
-    bindSet<CharacterProvider>()
+    bindSet<Provider<ModelCard>>()
+    bindSet<Provider<PromptCard>>()
+    bindSet<Provider<ToolCard>>()
+    bindSet<Provider<CharacterCard>>()
 
     bindSingleton<StoragePaths> { LinuxXdgServerStoragePaths() }
 
     import(configurationProviders(configuration))
 
-    bindSingleton<Konvo> { Konvo(coroutineContext, di) }
+    bind<ProviderManager<ModelCard>> { singleton { DiProviderManager(instance()) } }
+    bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
+    bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
+    bind<ProviderManager<CharacterCard>> { singleton { DiProviderManager(instance()) } }
+
+    bindSingleton<Konvo> { Konvo(di) }
 
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
     bindSingleton<ConversationRepository> {
@@ -58,7 +67,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {
     bindConstant(tag = DataDirectory) { configuration.dataDirectory }
 
-    inBindSet<ModelProvider> {
+    inBindSet<Provider<ModelCard>> {
         configuration.modelProviders.forEach { (name, configuration) ->
             add { singleton { configuration.buildModelProvider(name) } }
         }
@@ -66,20 +75,20 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
 
     bind { singleton { McpServersManager(coroutineContext, configuration.mcp.servers) } }
 
-    inBindSet<PromptProvider> {
+    inBindSet<Provider<PromptCard>> {
         add { singleton { McpPromptProvider(instance()) } }
     }
 
-    inBindSet<ToolProvider> {
+    inBindSet<Provider<ToolCard>> {
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 
-    inBindSet<CharacterProvider> {
+    inBindSet<Provider<CharacterCard>> {
         add { singleton { FileSystemCharacterProvider(instance()) } }
     }
 }
 
-private fun ModelProviderConfiguration.buildModelProvider(name: String): OllamaModelProvider = when (this) {
+private fun ModelProviderConfiguration.buildModelProvider(name: String): Provider<ModelCard> = when (this) {
     is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, this.baseUrl)
 }
 

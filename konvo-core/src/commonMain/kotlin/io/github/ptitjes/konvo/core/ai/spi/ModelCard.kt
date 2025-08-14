@@ -1,10 +1,10 @@
 package io.github.ptitjes.konvo.core.ai.spi
 
-import ai.koog.prompt.executor.clients.LLMClient
-import ai.koog.prompt.llm.LLModel
+import ai.koog.prompt.executor.clients.*
+import ai.koog.prompt.llm.*
 
 interface ModelCard {
-    val provider: ModelProvider
+    val provider: Provider<ModelCard>
     val name: String
     val size: Long?
     val parameterCount: Long?

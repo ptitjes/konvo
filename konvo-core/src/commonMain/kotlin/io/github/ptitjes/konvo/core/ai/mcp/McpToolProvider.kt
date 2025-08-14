@@ -11,8 +11,10 @@ import io.modelcontextprotocol.kotlin.sdk.Tool as McpTool
 class McpToolProvider(
     private val serversManager: McpServersManager,
     private val permissions: ToolPermissions?,
-) : ToolProvider {
-    override suspend fun queryTools(): List<ToolCard> {
+) : Provider<ToolCard> {
+    override val name: String = "MCP"
+
+    override suspend fun query(): List<ToolCard> {
         return serversManager.clients.flatMap { (clientName, client) ->
             val serverCapabilities = client.serverCapabilities
             if (serverCapabilities == null || serverCapabilities.tools == null) return@flatMap emptyList()

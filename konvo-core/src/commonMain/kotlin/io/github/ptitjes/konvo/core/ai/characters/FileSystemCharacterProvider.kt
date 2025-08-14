@@ -6,11 +6,12 @@ import kotlinx.io.files.*
 
 class FileSystemCharacterProvider(
     storagePaths: StoragePaths,
-) : CharacterProvider {
+) : Provider<CharacterCard> {
+    override val name: String? = null
 
     private val characterDirectoryPath = Path(storagePaths.dataDirectory, "characters")
 
-    override fun queryCharacters(): List<CharacterCard> {
+    override suspend fun query(): List<CharacterCard> {
         return CharacterCard.loadCharacters(characterDirectoryPath)
     }
 }

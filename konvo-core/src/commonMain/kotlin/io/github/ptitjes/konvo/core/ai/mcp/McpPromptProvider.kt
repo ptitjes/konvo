@@ -9,8 +9,10 @@ import io.modelcontextprotocol.kotlin.sdk.Prompt as McpPrompt
 
 class McpPromptProvider(
     private val serversManager: McpServersManager,
-) : PromptProvider {
-    override suspend fun queryPrompts(): List<PromptCard> {
+) : Provider<PromptCard> {
+    override val name: String = "MCP"
+
+    override suspend fun query(): List<PromptCard> {
         return serversManager.clients.flatMap { (clientName, client) ->
             val serverCapabilities = client.serverCapabilities
             if (serverCapabilities == null || serverCapabilities.prompts == null) return@flatMap emptyList()

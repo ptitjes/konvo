@@ -34,4 +34,8 @@ sealed interface ModelProviderConfiguration {
     @Serializable
     @SerialName(value = "ollama")
     data class Ollama(val baseUrl: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName(value = "anthropic")
+    data class Anthropic(val apiKey: String) : ModelProviderConfiguration
 }
