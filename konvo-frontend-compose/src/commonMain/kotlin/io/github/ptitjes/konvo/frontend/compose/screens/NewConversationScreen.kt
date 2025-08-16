@@ -192,7 +192,8 @@ private fun RoleplayConfigurationForm(
             CharacterGreetingSelector(
                 selectedGreetingIndex = selectedGreetingIndex,
                 onGreetingIndexSelected = onGreetingIndexSelected,
-                character = selectedCharacter
+                character = selectedCharacter,
+                userName = userName,
             )
         }
 

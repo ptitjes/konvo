@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.components
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.core.ai.spi.CharacterCard
+import io.github.ptitjes.konvo.core.conversation.agents.replaceTags
 
 /**
  * A selector for character greetings.
@@ -18,18 +19,19 @@ fun CharacterGreetingSelector(
     onGreetingIndexSelected: (Int?) -> Unit,
     character: CharacterCard,
     modifier: Modifier = Modifier,
+    userName: String,
 ) {
     GenericSelector(
         label = "Greeting",
         selectedItem = selectedGreetingIndex,
         onSelectItem = onGreetingIndexSelected,
-        options = listOf<Int?>(null) + character.greetings.indices.toList<Int>(),
+        options = listOf<Int?>(null) + character.greetings.indices.toList(),
         itemLabeler = { indexOrNull ->
             if (indexOrNull == null) {
                 "Random Greeting"
             } else {
-                val greeting = character.greetings[indexOrNull]
-                val preview = if (greeting.length > 30) greeting.take(30) + "..." else greeting
+                val greeting = character.greetings[indexOrNull].replaceTags(userName, character.name)
+                val preview = if (greeting.length > 100) greeting.take(100) + "..." else greeting
                 "Greeting ${indexOrNull + 1}: $preview"
             }
         },
