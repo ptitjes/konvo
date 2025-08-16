@@ -72,7 +72,7 @@ fun ConversationScreen(
                     )
                 },
                 navigationIcon = {
-                    if (paneType != ListDetailPaneType.Both) {
+                    if (paneType == ListDetailPaneType.OnePane) {
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,

@@ -2,6 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
+import androidx.compose.material3.adaptive.WindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
@@ -9,34 +10,57 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.util.*
+import androidx.window.core.layout.WindowWidthSizeClass
+import io.github.ptitjes.konvo.frontend.compose.util.LocalListDetailPaneType
+
+enum class ListDetailPaneType {
+    OnePane,
+    TwoPane,
+}
+
+enum class ListDetailPaneChoice {
+    List,
+    Detail,
+}
 
 @Composable
 fun ListDetailPane(
-    paneType: ListDetailPaneType,
+    adaptiveInfo: WindowAdaptiveInfo,
+    paneType: ListDetailPaneType = paneTypeFromAdaptiveInfo(adaptiveInfo),
+    paneChoice: ListDetailPaneChoice,
     list: @Composable () -> Unit,
     detail: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentColor: Color = MaterialTheme.colorScheme.onBackground,
 ) {
-    Surface(modifier = modifier, color = containerColor, contentColor = contentColor) {
-        ListDetailLayout(
-            paneType = paneType,
-            list = list,
-            detail = detail,
-        )
+    CompositionLocalProvider(LocalListDetailPaneType provides paneType) {
+        Surface(modifier = modifier, color = containerColor, contentColor = contentColor) {
+            ListDetailLayout(
+                paneType = paneType,
+                paneChoice = paneChoice,
+                list = list,
+                detail = detail,
+            )
+        }
     }
 }
 
-enum class ListDetailPaneType {
-    List,
-    Detail,
-    Both,
+private fun paneTypeFromAdaptiveInfo(
+    adaptiveInfo: WindowAdaptiveInfo,
+): ListDetailPaneType {
+    return with(adaptiveInfo) {
+        when {
+            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED -> ListDetailPaneType.TwoPane
+            else -> ListDetailPaneType.OnePane
+        }
+    }
 }
 
 @Composable
 private fun ListDetailLayout(
     paneType: ListDetailPaneType,
+    paneChoice: ListDetailPaneChoice,
     list: @Composable () -> Unit,
     detail: @Composable () -> Unit,
 ) {
@@ -59,8 +83,8 @@ private fun ListDetailLayout(
         val layoutWidth = constraints.maxWidth
 
         val listPlaceable = listMeasurable.measure(
-            when (paneType) {
-                ListDetailPaneType.Both -> {
+            when {
+                paneType == ListDetailPaneType.TwoPane -> {
                     val goldenSmallWidth = layoutWidth * 1000 / 2618
                     constraints.copy(
                         minWidth = goldenSmallWidth,
@@ -68,8 +92,10 @@ private fun ListDetailLayout(
                     )
                 }
 
-                ListDetailPaneType.List -> constraints
-                ListDetailPaneType.Detail -> constraints.copy(maxWidth = 0)
+                paneChoice == ListDetailPaneChoice.List -> constraints
+                paneChoice == ListDetailPaneChoice.Detail -> constraints.copy(maxWidth = 0)
+
+                else -> error("Invalid pane type and choice: paneType=$paneType; paneChoice=$paneChoice")
             }
         )
 

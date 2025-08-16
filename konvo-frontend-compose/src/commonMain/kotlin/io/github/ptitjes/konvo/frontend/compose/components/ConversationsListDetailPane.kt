@@ -1,9 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.components
 
-import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.runtime.*
-import androidx.window.core.layout.*
 import io.github.ptitjes.konvo.frontend.compose.screens.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
@@ -16,56 +14,41 @@ fun ConversationsListDetailPane(
     val selectedConversation by viewModel.selectedConversation.collectAsState()
     val newConversation by viewModel.newConversation.collectAsState()
 
-    val paneType = drawerValueFromAdaptiveInfo(
+    ListDetailPane(
         adaptiveInfo = adaptiveInfo,
-        detailSelected = selectedConversation != null,
-        newConversation = newConversation,
+        paneChoice = paneChoiceFromState(
+            detailSelected = selectedConversation != null,
+            newConversation = newConversation,
+        ),
+        list = {
+            ConversationListPanel {
+                viewModel.createNewConversation()
+            }
+        },
+        detail = {
+            val conversation = selectedConversation
+            when {
+                conversation == null || newConversation -> {
+                    NewConversationScreen(
+                        onConversationCreated = { viewModel.select(it) },
+                        onBackClick = { viewModel.cancelNewConversation() },
+                    )
+                }
+
+                else -> {
+                    ConversationScreen(
+                        initialConversation = conversation,
+                        onBackClick = { viewModel.select(null) },
+                    )
+                }
+            }
+        },
     )
-
-    CompositionLocalProvider(LocalListDetailPaneType provides paneType) {
-        Surface(
-            color = MaterialTheme.colorScheme.background,
-        ) {
-            ListDetailPane(
-                paneType = paneType,
-                list = {
-                    ConversationListPanel {
-                        viewModel.createNewConversation()
-                    }
-                },
-                detail = {
-                    val conversation = selectedConversation
-                    when {
-                        conversation == null || newConversation -> {
-                            NewConversationScreen(
-                                onConversationCreated = { viewModel.select(it) },
-                                onBackClick = { viewModel.cancelNewConversation() },
-                            )
-                        }
-
-                        else -> {
-                            ConversationScreen(
-                                initialConversation = conversation,
-                                onBackClick = { viewModel.select(null) },
-                            )
-                        }
-                    }
-                },
-            )
-        }
-    }
 }
 
-private fun drawerValueFromAdaptiveInfo(
-    adaptiveInfo: WindowAdaptiveInfo,
-    detailSelected: Boolean,
-    newConversation: Boolean,
-): ListDetailPaneType {
-    return with(adaptiveInfo) {
-        when {
-            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.Companion.EXPANDED -> ListDetailPaneType.Both
-            detailSelected || newConversation -> ListDetailPaneType.Detail
-            else -> ListDetailPaneType.List
-        }
+private fun paneChoiceFromState(detailSelected: Boolean, newConversation: Boolean): ListDetailPaneChoice {
+    return when {
+        detailSelected || newConversation -> ListDetailPaneChoice.Detail
+        else -> ListDetailPaneChoice.List
     }
 }
