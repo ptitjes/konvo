@@ -16,6 +16,14 @@ sealed interface ModelProviderConfiguration {
     @Serializable
     @SerialName("anthropic")
     data class Anthropic(val apiKey: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName("openai")
+    data class OpenAI(val apiKey: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName("google")
+    data class Google(val apiKey: String) : ModelProviderConfiguration
 }
 
 @Serializable

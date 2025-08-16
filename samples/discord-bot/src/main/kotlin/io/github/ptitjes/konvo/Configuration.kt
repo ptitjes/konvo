@@ -35,6 +35,18 @@ sealed interface ModelProviderConfiguration {
     @Serializable
     @SerialName(value = "ollama")
     data class Ollama(val baseUrl: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName(value = "anthropic")
+    data class Anthropic(val apiKey: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName(value = "openai")
+    data class OpenAI(val apiKey: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName(value = "google")
+    data class Google(val apiKey: String) : ModelProviderConfiguration
 }
 
 @Serializable

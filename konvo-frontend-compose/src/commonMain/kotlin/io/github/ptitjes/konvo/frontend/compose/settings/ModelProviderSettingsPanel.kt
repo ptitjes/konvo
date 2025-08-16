@@ -13,7 +13,7 @@ import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*
 
-private enum class ProviderType { Ollama, Anthropic }
+private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
 
 @Composable
 fun ModelProviderSettingsPanel(
@@ -139,6 +139,28 @@ private fun ProviderEditor(
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
+
+            is ModelProviderConfiguration.OpenAI -> {
+                OutlinedTextField(
+                    value = conf.apiKey,
+                    onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
+                    label = { Text("OpenAI API key") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            is ModelProviderConfiguration.Google -> {
+                OutlinedTextField(
+                    value = conf.apiKey,
+                    onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
+                    label = { Text("Google API key") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
 
         // Optional helper text for name validity
@@ -171,6 +193,16 @@ private fun buildNewConfiguration(
         is ModelProviderConfiguration.Anthropic -> configuration
         else -> ModelProviderConfiguration.Anthropic(apiKey = "")
     }
+
+    ProviderType.OpenAI -> when (val configuration = provider.configuration) {
+        is ModelProviderConfiguration.OpenAI -> configuration
+        else -> ModelProviderConfiguration.OpenAI(apiKey = "")
+    }
+
+    ProviderType.Google -> when (val configuration = provider.configuration) {
+        is ModelProviderConfiguration.Google -> configuration
+        else -> ModelProviderConfiguration.Google(apiKey = "")
+    }
 }
 
 @Composable
@@ -182,10 +214,14 @@ private fun AddProviderBox(
     var type by remember { mutableStateOf(ProviderType.Ollama) }
     var ollamaUrl by remember { mutableStateOf(DEFAULT_OLLAMA_URL) }
     var anthropicKey by remember { mutableStateOf("") }
+    var openAIKey by remember { mutableStateOf("") }
+    var googleKey by remember { mutableStateOf("") }
 
     fun isValid(): Boolean = name.isNotBlank() && !existingNames.contains(name) && when (type) {
         ProviderType.Ollama -> ollamaUrl.isNotBlank()
         ProviderType.Anthropic -> anthropicKey.isNotBlank()
+        ProviderType.OpenAI -> openAIKey.isNotBlank()
+        ProviderType.Google -> googleKey.isNotBlank()
     }
 
     SettingsBox(
@@ -223,6 +259,8 @@ private fun AddProviderBox(
                         val configuration: ModelProviderConfiguration = when (type) {
                             ProviderType.Ollama -> ModelProviderConfiguration.Ollama(url = ollamaUrl)
                             ProviderType.Anthropic -> ModelProviderConfiguration.Anthropic(apiKey = anthropicKey)
+                            ProviderType.OpenAI -> ModelProviderConfiguration.OpenAI(apiKey = openAIKey)
+                            ProviderType.Google -> ModelProviderConfiguration.Google(apiKey = googleKey)
                         }
                         onAdd(NamedModelProvider(name = name, configuration = configuration))
 
@@ -259,6 +297,28 @@ private fun AddProviderBox(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+
+                ProviderType.OpenAI -> {
+                    OutlinedTextField(
+                        value = openAIKey,
+                        onValueChange = { openAIKey = it },
+                        label = { Text("OpenAI API key") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                ProviderType.Google -> {
+                    OutlinedTextField(
+                        value = googleKey,
+                        onValueChange = { googleKey = it },
+                        label = { Text("Google API key") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
 
             if (name.isBlank()) {
@@ -281,4 +341,6 @@ private fun AddProviderBox(
 private fun ModelProviderConfiguration.toType(): ProviderType = when (this) {
     is ModelProviderConfiguration.Ollama -> ProviderType.Ollama
     is ModelProviderConfiguration.Anthropic -> ProviderType.Anthropic
+    is ModelProviderConfiguration.OpenAI -> ProviderType.OpenAI
+    is ModelProviderConfiguration.Google -> ProviderType.Google
 }

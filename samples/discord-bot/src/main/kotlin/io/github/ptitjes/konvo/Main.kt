@@ -90,6 +90,9 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
 
 private fun ModelProviderConfiguration.buildModelProvider(name: String): Provider<ModelCard> = when (this) {
     is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, this.baseUrl)
+    is ModelProviderConfiguration.Anthropic -> AnthropicModelProvider(name, this.apiKey)
+    is ModelProviderConfiguration.OpenAI -> OpenAIModelProvider(name, this.apiKey)
+    is ModelProviderConfiguration.Google -> GoogleModelProvider(name, this.apiKey)
 }
 
 object DataDirectory

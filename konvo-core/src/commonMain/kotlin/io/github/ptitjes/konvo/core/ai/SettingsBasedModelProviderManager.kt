@@ -27,6 +27,16 @@ class SettingsBasedModelProviderManager(
                     name = providerSettings.name,
                     baseUrl = providerSettings.configuration.url,
                 )
+
+                is ModelProviderConfiguration.OpenAI -> OpenAIModelProvider(
+                    name = providerSettings.name,
+                    apiKey = providerSettings.configuration.apiKey,
+                )
+
+                is ModelProviderConfiguration.Google -> GoogleModelProvider(
+                    name = providerSettings.name,
+                    apiKey = providerSettings.configuration.apiKey,
+                )
             }
         }
 
