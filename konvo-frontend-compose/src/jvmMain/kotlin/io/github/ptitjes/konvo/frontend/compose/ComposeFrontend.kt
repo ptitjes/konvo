@@ -7,7 +7,6 @@ import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.characters.*
-import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.base.*
@@ -59,7 +58,6 @@ fun runComposeFrontend() = application {
 }
 
 fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
-    bindSet<Provider<ModelCard>>()
     bindSet<Provider<PromptCard>>()
     bindSet<Provider<ToolCard>>()
     bindSet<Provider<CharacterCard>>()
@@ -68,7 +66,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     import(configurationProviders(configuration))
 
-    bind<ProviderManager<ModelCard>> { singleton { DiProviderManager(instance()) } }
+    bind<ProviderManager<ModelCard>> { singleton { SettingsBasedModelProviderManager(instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<CharacterCard>> { singleton { DiProviderManager(instance()) } }
@@ -101,12 +99,6 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {
     bindConstant(tag = DataDirectory) { configuration.dataDirectory }
 
-    inBindSet<Provider<ModelCard>> {
-        configuration.modelProviders.forEach { (name, configuration) ->
-            add { singleton { configuration.buildModelProvider(name) } }
-        }
-    }
-
     bind { singleton { McpServersManager(coroutineContext, configuration.mcp.servers) } }
 
     inBindSet<Provider<PromptCard>> {
@@ -120,11 +112,6 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
     inBindSet<Provider<CharacterCard>> {
         add { singleton { FileSystemCharacterProvider(instance()) } }
     }
-}
-
-private fun ModelProviderConfiguration.buildModelProvider(name: String): Provider<ModelCard> = when (this) {
-    is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, this.baseUrl)
-    is ModelProviderConfiguration.Anthropic -> AnthropicModelProvider(name, this.apiKey)
 }
 
 object DataDirectory

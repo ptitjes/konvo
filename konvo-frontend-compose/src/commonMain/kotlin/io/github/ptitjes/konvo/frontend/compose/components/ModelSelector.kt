@@ -1,7 +1,11 @@
 package io.github.ptitjes.konvo.frontend.compose.components
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.text.style.*
+import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 
 /**
@@ -25,6 +29,26 @@ fun ModelSelector(
         onSelectItem = onModelSelected,
         options = models,
         itemLabeler = { it.name },
+        itemOption = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                it.provider.name?.let { providerName ->
+                    FilterChip(
+                        label = { Text(providerName) },
+                        onClick = {},
+                        selected = false,
+                        enabled = false,
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
+                }
+                Text(
+                    text = it.name,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        },
         modifier = modifier,
     )
 }

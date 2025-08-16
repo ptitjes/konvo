@@ -2,11 +2,6 @@
   // Data directory path
   // Konvo will read/write Character cards and other data from that directory
   dataDirectory: "./data",
-  // Available model providers
-  modelProviders: {
-    // You can define multiple providers here
-    "my-model-provider": { type: "ollama", baseUrl: "http://localhost:11434" }
-  },
   // Model Context Protocol configuration
   mcp: {
     // Available MCP servers

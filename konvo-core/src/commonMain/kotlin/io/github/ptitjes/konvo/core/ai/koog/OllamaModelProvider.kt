@@ -4,10 +4,9 @@ import ai.koog.prompt.executor.clients.*
 import ai.koog.prompt.executor.ollama.client.*
 import ai.koog.prompt.llm.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import kotlinx.serialization.*
 import ai.koog.prompt.executor.ollama.client.OllamaModelCard as KoogOllamaModelCard
 
-private const val DEFAULT_OLLAMA_URL = "http://localhost:11434"
+const val DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 class OllamaModelProvider(
     override val name: String,

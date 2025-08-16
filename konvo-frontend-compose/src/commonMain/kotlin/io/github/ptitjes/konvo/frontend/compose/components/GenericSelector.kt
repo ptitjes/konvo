@@ -14,6 +14,7 @@ fun <T> GenericSelector(
     onSelectItem: (T) -> Unit,
     options: List<T>,
     itemLabeler: (T) -> String,
+    itemOption: @Composable (T) -> Unit = { option -> DefaultItemOption(itemLabeler, option) },
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
@@ -48,13 +49,7 @@ fun <T> GenericSelector(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = itemLabeler(option),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    },
+                    text = { itemOption(option) },
                     onClick = {
                         onSelectItem(option)
                         expanded = false
@@ -63,4 +58,13 @@ fun <T> GenericSelector(
             }
         }
     }
+}
+
+@Composable
+private fun <T> DefaultItemOption(itemLabeler: (T) -> String, option: T) {
+    Text(
+        text = itemLabeler(option),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+    )
 }

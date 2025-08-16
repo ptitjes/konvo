@@ -10,7 +10,6 @@ import kotlinx.serialization.json.*
 @Serializable
 data class KonvoAppConfiguration(
     val dataDirectory: String,
-    val modelProviders: Map<String, ModelProviderConfiguration>,
     val mcp: McpConfiguration,
 ) {
     companion object {
@@ -26,16 +25,4 @@ data class KonvoAppConfiguration(
             allowTrailingComma = true
         }
     }
-}
-
-@Serializable
-sealed interface ModelProviderConfiguration {
-
-    @Serializable
-    @SerialName(value = "ollama")
-    data class Ollama(val baseUrl: String) : ModelProviderConfiguration
-
-    @Serializable
-    @SerialName(value = "anthropic")
-    data class Anthropic(val apiKey: String) : ModelProviderConfiguration
 }

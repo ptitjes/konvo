@@ -3,6 +3,8 @@ package io.github.ptitjes.konvo.frontend.compose.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
@@ -31,11 +33,13 @@ fun SettingsListDetailPane(
         detail = {
             val section = selectedSection
             if (section != null) {
-                SettingsScreen(
-                    title = section.title,
-                    onBackClick = { viewModel.unselectSection() },
-                ) {
-                    SettingsPanel(section)
+                key(section.title) {
+                    SettingsScreen(
+                        title = section.title,
+                        onBackClick = { viewModel.unselectSection() },
+                    ) {
+                        SettingsPanel(section)
+                    }
                 }
             }
         },
@@ -55,7 +59,9 @@ fun <T> SettingsPanel(
 
     when (val settings = settings) {
         is SettingsViewState.Loading -> FullSizeProgressIndicator()
-        is SettingsViewState.Loaded<T> -> Column {
+        is SettingsViewState.Loaded<T> -> Column(
+            modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 16.dp),
+        ) {
             section.panel(settings.value) { block ->
                 updateSettings(block)
             }

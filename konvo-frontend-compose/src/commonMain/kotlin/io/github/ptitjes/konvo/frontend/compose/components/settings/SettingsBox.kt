@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.unit.*
 
 enum class SettingsBoxOrientation {
     Vertical, Horizontal
@@ -20,8 +21,9 @@ fun SettingsBox(
     when (orientation) {
         SettingsBoxOrientation.Horizontal -> {
             Row(
-                modifier = modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth().padding(bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
@@ -38,13 +40,17 @@ fun SettingsBox(
         }
 
         SettingsBoxOrientation.Vertical -> Column(
-            modifier = modifier.fillMaxWidth(),
+            modifier = modifier.fillMaxWidth().padding(bottom = 8.dp),
         ) {
-            Text(text = title)
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-            )
+            Column(
+                modifier = Modifier.padding(bottom = 8.dp),
+            ) {
+                Text(text = title)
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
 
             content()
         }
