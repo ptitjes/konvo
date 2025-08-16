@@ -26,7 +26,7 @@ fun ConversationListItem(
     var showConfirm by remember { mutableStateOf(false) }
 
     Surface(
-        color = if (selected) MaterialTheme.colorScheme.surfaceContainerHigh else Color.Transparent,
+        color = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
         shape = MaterialTheme.shapes.extraSmall,
     ) {
         val hasLastMessagePreview = !conversation.lastMessagePreview.isNullOrBlank()
