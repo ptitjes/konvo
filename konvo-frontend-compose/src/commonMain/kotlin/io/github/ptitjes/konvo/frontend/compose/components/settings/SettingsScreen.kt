@@ -60,6 +60,7 @@ fun SettingsScreen(
                     .widthIn(max = 800.dp)
                     .padding(horizontal = 32.dp)
                     .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 content()
             }

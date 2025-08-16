@@ -14,4 +14,9 @@ val defaultSettingsSections = listOf(
         title = "Model providers",
         panel = ::ModelProviderSettingsPanel,
     ),
+    SettingsSection(
+        key = McpSettingsKey,
+        title = "MCP",
+        panel = ::McpSettingsPanel,
+    ),
 )
