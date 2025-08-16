@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.components
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
@@ -28,6 +29,14 @@ fun MarkdownContent(
         state = state,
         colors = markdownColor(
             text = textColor,
+        ),
+        typography = markdownTypography(
+            h1 = MaterialTheme.typography.headlineLarge,
+            h2 = MaterialTheme.typography.headlineMedium,
+            h3 = MaterialTheme.typography.headlineSmall,
+            h4 = MaterialTheme.typography.titleLarge,
+            h5 = MaterialTheme.typography.titleMedium,
+            h6 = MaterialTheme.typography.titleSmall,
         ),
         animations = markdownAnimations(
             animateTextSize = { this }
