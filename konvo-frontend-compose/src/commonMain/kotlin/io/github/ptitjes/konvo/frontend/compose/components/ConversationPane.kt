@@ -47,11 +47,15 @@ fun ConversationPane(
                 val lastListIndex = state.items.lastIndex + (if (state.isProcessing) 1 else 0)
 
                 // Determine the initial first visible index: first unread if any, else bottom
-                val initialFirstIndex = if (firstUnreadIndex != -1) firstUnreadIndex else lastListIndex
+                val initialFirstIndex =
+                    (if (firstUnreadIndex != -1) firstUnreadIndex else lastListIndex)
+                        .coerceAtLeast(0)
+                val initialFirstScrollOffset =
+                    if (firstUnreadIndex != -1) 0 else Int.MAX_VALUE
 
                 val listState = rememberLazyListState(
                     initialFirstVisibleItemIndex = initialFirstIndex,
-                    initialFirstVisibleItemScrollOffset = Int.MAX_VALUE,
+                    initialFirstVisibleItemScrollOffset = initialFirstScrollOffset,
                 )
 
                 // Auto-scroll to bottom only if all previous messages were read
@@ -67,9 +71,7 @@ fun ConversationPane(
                             else -> false
                         }
 
-                        if (shouldScroll) {
-                            listState.animateScrollToItem(lastListIndex, scrollOffset = Int.MAX_VALUE)
-                        }
+                        if (shouldScroll) listState.animateScrollToItem(lastListIndex)
                     }
                 }
 
