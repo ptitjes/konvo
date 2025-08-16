@@ -38,4 +38,8 @@ enum class AppState(
         icon = Icons.Filled.Dataset,
         contentDescription = "Knowledge Bases",
     ),
+    Settings(
+        icon = Icons.Filled.Settings,
+        contentDescription = "Settings",
+    ),
 }

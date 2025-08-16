@@ -2,7 +2,6 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
@@ -28,14 +27,7 @@ fun ConversationPane(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         when (val state = state) {
-            is ConversationViewState.Loading -> Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                CircularProgressIndicator()
-            }
-
+            is ConversationViewState.Loading -> FullSizeProgressIndicator()
             is ConversationViewState.Loaded -> Column(
                 modifier = Modifier.widthIn(max = 800.dp),
             ) {

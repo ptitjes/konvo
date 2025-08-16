@@ -15,6 +15,7 @@ import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.conversation.storage.files.*
+import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
@@ -73,6 +74,11 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind<ProviderManager<CharacterCard>> { singleton { DiProviderManager(instance()) } }
 
     bindSingleton<Konvo> { Konvo(di) }
+
+    bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
+
+    bind { singleton { SettingsListViewModel() } }
+    bind { singleton { SettingsViewModel(instance()) } }
 
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
     bindSingleton<ConversationRepository> {

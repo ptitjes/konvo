@@ -56,6 +56,10 @@ fun App(
                     text = "Knowledge Bases",
                     style = MaterialTheme.typography.titleLarge,
                 )
+
+                AppState.Settings -> SettingsListDetailPane(
+                    adaptiveInfo = adaptiveInfo,
+                )
             }
         }
     }

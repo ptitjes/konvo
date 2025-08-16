@@ -9,7 +9,7 @@ import androidx.compose.ui.text.style.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun <T> GenericSelector(
-    label: String,
+    label: String? = null,
     selectedItem: T,
     onSelectItem: (T) -> Unit,
     options: List<T>,
@@ -25,10 +25,12 @@ fun <T> GenericSelector(
     ) {
         OutlinedTextField(
             label = {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.titleSmall,
-                )
+                if (label != null) {
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                }
             },
             value = itemLabeler(selectedItem),
             onValueChange = {},

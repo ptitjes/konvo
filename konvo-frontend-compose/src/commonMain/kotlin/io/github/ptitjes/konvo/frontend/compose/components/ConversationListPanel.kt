@@ -40,14 +40,7 @@ fun ConversationListPanel(
         modifier = modifier.fillMaxSize().padding(horizontal = 8.dp),
     ) {
         when {
-            isLoading -> Row(
-                modifier = Modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                CircularProgressIndicator()
-            }
-
+            isLoading -> FullSizeProgressIndicator()
             conversations.isEmpty() -> EmptyConversationListPanel(
                 onNewClick = onCreateConversation,
             )

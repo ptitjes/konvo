@@ -16,10 +16,10 @@ fun ConversationsListDetailPane(
 
     ListDetailPane(
         adaptiveInfo = adaptiveInfo,
-        paneChoice = paneChoiceFromState(
-            detailSelected = selectedConversation != null,
-            newConversation = newConversation,
-        ),
+        paneChoice = when {
+            selectedConversation != null || newConversation -> ListDetailPaneChoice.Detail
+            else -> ListDetailPaneChoice.List
+        },
         list = {
             ConversationListPanel {
                 viewModel.createNewConversation()
@@ -44,11 +44,4 @@ fun ConversationsListDetailPane(
             }
         },
     )
-}
-
-private fun paneChoiceFromState(detailSelected: Boolean, newConversation: Boolean): ListDetailPaneChoice {
-    return when {
-        detailSelected || newConversation -> ListDetailPaneChoice.Detail
-        else -> ListDetailPaneChoice.List
-    }
 }
