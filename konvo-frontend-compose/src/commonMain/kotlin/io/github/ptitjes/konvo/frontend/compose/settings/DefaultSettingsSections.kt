@@ -16,7 +16,7 @@ val defaultSettingsSections = listOf(
     ),
     SettingsSection(
         key = McpSettingsKey,
-        title = "MCP",
+        title = "MCP servers",
         panel = ::McpSettingsPanel,
     ),
 )

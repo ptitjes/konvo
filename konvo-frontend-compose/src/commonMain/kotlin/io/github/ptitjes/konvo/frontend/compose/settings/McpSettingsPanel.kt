@@ -18,26 +18,29 @@ private enum class McpTransportType { Stdio, Sse }
 @Composable
 fun McpSettingsPanel(
     settings: McpSettings,
-    updateSettings: ((McpSettings) -> McpSettings) -> Unit,
+    updateSettings: (updater: (previous: McpSettings) -> McpSettings) -> Unit,
 ) {
+    fun addServer(newName: String, newSpec: ServerSpecification) {
+        updateSettings { previous -> previous.copy(servers = previous.servers + (newName to newSpec)) }
+    }
+
     fun updateServer(name: String, transform: (ServerSpecification) -> ServerSpecification) {
-        updateSettings { prev ->
-            val current = prev.servers[name] ?: return@updateSettings prev
-            prev.copy(servers = prev.servers + (name to transform(current)))
+        updateSettings { previous ->
+            val current = previous.servers[name] ?: return@updateSettings previous
+            previous.copy(servers = previous.servers + (name to transform(current)))
         }
     }
 
     fun renameServer(oldName: String, newName: String) {
         if (newName.isBlank() || oldName == newName) return
-        updateSettings { prev ->
-            val spec = prev.servers[oldName] ?: return@updateSettings prev
-            val filtered = prev.servers - oldName
-            prev.copy(servers = filtered + (newName to spec))
+        updateSettings { previous ->
+            val spec = previous.servers[oldName] ?: return@updateSettings previous
+            previous.copy(servers = previous.servers - oldName + (newName to spec))
         }
     }
 
     fun removeServer(name: String) {
-        updateSettings { prev -> prev.copy(servers = prev.servers - name) }
+        updateSettings { previous -> previous.copy(servers = previous.servers - name) }
     }
 
     Column(
@@ -77,9 +80,7 @@ fun McpSettingsPanel(
 
         AddServerBox(
             existingNames = settings.servers.keys,
-            onAdd = { newName, newSpec ->
-                updateSettings { prev -> prev.copy(servers = prev.servers + (newName to newSpec)) }
-            }
+            onAdd = { newName, newSpec -> addServer(newName, newSpec) }
         )
     }
 }

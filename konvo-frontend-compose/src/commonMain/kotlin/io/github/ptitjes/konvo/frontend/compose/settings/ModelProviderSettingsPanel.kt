@@ -18,20 +18,23 @@ private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
 @Composable
 fun ModelProviderSettingsPanel(
     settings: ModelProviderSettings,
-    updateSettings: ((ModelProviderSettings) -> ModelProviderSettings) -> Unit,
+    updateSettings: (updater: (previous: ModelProviderSettings) -> ModelProviderSettings) -> Unit,
 ) {
-    // Helper to update a provider at a specific index
-    fun updateProvider(index: Int, transform: (NamedModelProvider) -> NamedModelProvider) {
-        updateSettings { prev ->
-            val list = prev.providers.toMutableList()
-            list[index] = transform(list[index])
-            prev.copy(providers = list)
+    fun addProvider(newProvider: NamedModelProvider) {
+        updateSettings { previous -> previous.copy(providers = previous.providers + newProvider) }
+    }
+
+    fun updateProvider(index: Int, transform: (previous: NamedModelProvider) -> NamedModelProvider) {
+        updateSettings { previous ->
+            previous.copy(providers = previous.providers.mapIndexed { i, provider ->
+                if (i == index) transform(provider) else provider
+            })
         }
     }
 
     fun removeProvider(index: Int) {
-        updateSettings { prev ->
-            prev.copy(providers = prev.providers.filterIndexed { i, _ -> i != index })
+        updateSettings { previous ->
+            previous.copy(providers = previous.providers.filterIndexed { i, _ -> i != index })
         }
     }
 
@@ -68,9 +71,7 @@ fun ModelProviderSettingsPanel(
 
         AddProviderBox(
             existingNames = settings.providers.map { it.name }.toSet(),
-            onAdd = { newProvider ->
-                updateSettings { prev -> prev.copy(providers = prev.providers + newProvider) }
-            }
+            onAdd = { newProvider -> addProvider(newProvider) }
         )
     }
 }
