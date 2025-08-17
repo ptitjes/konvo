@@ -4,7 +4,9 @@ import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.features.eventHandler.feature.*
+import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
+import ai.koog.prompt.markdown.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
 import io.github.ptitjes.konvo.core.ai.spi.*
@@ -13,17 +15,20 @@ import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.models.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.datetime.*
+import kotlinx.datetime.format.*
+import kotlin.time.*
+import kotlin.time.Clock
 import kotlin.uuid.*
 
 suspend fun buildQuestionAnswerAgent(
     model: Model,
-    prompt: PromptCard,
     tools: List<ToolCard>,
 ): Agent {
     val toolRegistry = tools.map { it.toTool() }.let { ToolRegistry { tools(it) } }
 
     return DefaultAgent(
-        systemPrompt = prompt.toPrompt(),
+        systemPrompt = buildSystemPrompt(),
         model = model.toLLModel(),
         maxAgentIterations = 50,
         promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
@@ -71,6 +76,38 @@ suspend fun buildQuestionAnswerAgent(
             }
         }
     }
+}
+
+@OptIn(ExperimentalTime::class)
+private fun buildSystemPrompt(): Prompt {
+    val dateString = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.format(dateFormat)
+
+    return prompt("qa") {
+        system {
+            markdown {
+                +"You are a helpful assistant, that thrives at answering the user's questions."
+                br()
+
+                h1("Output Format")
+                bulleted {
+                    item("Use formal language.")
+                    item("Keep responses concise and engaging unless the situation demands elaboration.")
+                    item("If you use Markdown syntax, ensure the syntax is valid.")
+                }
+                br()
+
+                +"Today Date: $dateString"
+            }
+        }
+    }
+}
+
+private val dateFormat = LocalDate.Format {
+    day()
+    char(' ')
+    monthName(MonthNames.ENGLISH_FULL)
+    char(' ')
+    year()
 }
 
 private fun ToolResult?.toResultText(): String = when (this) {

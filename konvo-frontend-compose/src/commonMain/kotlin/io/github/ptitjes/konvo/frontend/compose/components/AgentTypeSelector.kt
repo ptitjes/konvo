@@ -10,14 +10,14 @@ import androidx.compose.ui.unit.*
  * A selector for agent types.
  *
  * @param selectedAgentType The currently selected agent type
- * @param onAgentTypeSelected Callback for when an agent type is selected
+ * @param onSelectAgentType Callback for when an agent type is selected
  * @param agentTypes List of available agent types
  * @param modifier The modifier to apply to this component
  */
 @Composable
 fun AgentTypeSelector(
     selectedAgentType: AgentType,
-    onAgentTypeSelected: (AgentType) -> Unit,
+    onSelectAgentType: (AgentType) -> Unit,
     agentTypes: List<AgentType>,
     modifier: Modifier = Modifier,
 ) {
@@ -34,7 +34,7 @@ fun AgentTypeSelector(
             agentTypes.forEach { agentType ->
                 FilterChip(
                     selected = selectedAgentType == agentType,
-                    onClick = { onAgentTypeSelected(agentType) },
+                    onClick = { onSelectAgentType(agentType) },
                     label = { Text(agentType.displayName) }
                 )
             }

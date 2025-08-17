@@ -23,6 +23,7 @@ import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*
 import org.kodein.di.compose.*
+import kotlin.coroutines.*
 
 fun runComposeFrontend() = application {
     var di by remember { mutableStateOf<DI?>(null) }
@@ -73,6 +74,10 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
     bind<CharacterCardManager> { singleton { DiCharacterCardManager(instance()) } }
+
+    bindFactory { coroutineContext: CoroutineContext ->
+        McpSession(coroutineContext, instance())
+    }
 
     bindSingleton<Konvo> { Konvo(di) }
 

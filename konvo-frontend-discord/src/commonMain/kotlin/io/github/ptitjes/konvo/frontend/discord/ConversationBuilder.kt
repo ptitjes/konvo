@@ -38,7 +38,6 @@ data class QuestionAnswerModeBuilder(
         if (prompt == null || model == null) error("Conversation configuration is incomplete")
 
         return QuestionAnswerAgentConfiguration(
-            promptName = prompt.name,
             toolNames = tools?.map { it.name } ?: emptyList(),
             modelName = model.name,
         )

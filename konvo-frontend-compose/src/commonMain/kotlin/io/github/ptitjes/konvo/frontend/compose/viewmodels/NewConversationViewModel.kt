@@ -2,8 +2,8 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.agents.*
+import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
@@ -12,90 +12,148 @@ import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import kotlin.time.*
 
 /**
  * ViewModel for the NewConversationScreen that encapsulates all the mutable state.
  */
 class NewConversationViewModel(
-    private val konvo: Konvo,
+    private val modelManager: ModelManager,
+    private val characterCardManager: CharacterCardManager,
+    private val mcpToolManager: ProviderManager<ToolCard>,
     private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
-    val prompts get() = konvo.prompts
-    val tools get() = konvo.tools
-    val characters get() = konvo.characters
-    val models
-        get() = konvo.models.let { models ->
-            if (selectedAgentType == AgentType.QuestionAnswer && selectedTools.isNotEmpty()) models.filter { it.supportsTools }
-            else models
+
+    var selectedAgentType: AgentType by mutableStateOf(AgentType.QuestionAnswer)
+        private set
+
+    private val _questionAnswer = MutableStateFlow<NewQuestionAnswerState>(NewQuestionAnswerState.Loading)
+    val questionAnswer = _questionAnswer.asStateFlow()
+
+    private val _roleplay = MutableStateFlow<NewRoleplayState>(NewRoleplayState.Loading)
+    val roleplay = _roleplay.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val availableModels = modelManager.elements
+            val availableTools = mcpToolManager.elements
+            val availableCharacters = characterCardManager.elements
+
+            _questionAnswer.update { previous ->
+                when {
+                    availableModels.isEmpty() -> NewQuestionAnswerState.Unavailable(
+                        noAvailableModels = true,
+                    )
+
+                    previous is NewQuestionAnswerState.Available -> {
+                        val noTools = previous.selectedTools.isEmpty()
+                        val availableModels =
+                            if (noTools) availableModels else availableModels.filter { it.supportsTools }
+
+                        previous.copy(
+                            availableModels = availableModels,
+                            selectedModel = availableModels.first(),
+                        )
+                    }
+
+                    else -> NewQuestionAnswerState.Available(
+                        availableModels = availableModels,
+                        availableTools = availableTools,
+                        selectedModel = availableModels.first(),
+                        selectedTools = emptyList(),
+                    )
+                }
+            }
+
+            _roleplay.update { previous ->
+                when {
+                    availableCharacters.isEmpty() || availableModels.isEmpty() -> NewRoleplayState.Unavailable(
+                        noAvailableCharacters = availableModels.isEmpty(),
+                        noAvailableModels = availableCharacters.isEmpty(),
+                    )
+
+                    previous is NewRoleplayState.Available -> {
+                        previous.copy(
+                            availableModels = availableModels,
+                            selectedModel = availableModels.first(),
+                        )
+                    }
+
+                    else -> NewRoleplayState.Available(
+                        availableModels = availableModels,
+                        availableCharacters = availableCharacters,
+                        selectedCharacter = availableCharacters.first(),
+                        selectedGreetingIndex = null,
+                        userName = "User",
+                        selectedModel = availableModels.first(),
+                    )
+                }
+            }
         }
+    }
 
-    // Agent type selection
-    var selectedAgentType by mutableStateOf(AgentType.QuestionAnswer)
-        private set
-
-    // Question Answer configuration
-    var selectedPrompt by mutableStateOf(prompts.first())
-        private set
-    var selectedTools by mutableStateOf<List<ToolCard>>(emptyList())
-        private set
-    var selectedQAModel by mutableStateOf(models.first())
-        private set
-
-    // Role-play configuration
-    var selectedCharacter by mutableStateOf(characters.first())
-        private set
-    var selectedGreetingIndex by mutableStateOf<Int?>(null)
-        private set
-    var userName by mutableStateOf("User")
-        private set
-    var selectedRPModel by mutableStateOf(models.first())
-        private set
-
-    // Computed properties
-    val isCreateEnabled: Boolean
-        get() = when (selectedAgentType) {
-            AgentType.QuestionAnswer -> true
-            AgentType.Roleplay -> userName.isNotBlank()
-        }
-
-    // Event handlers
-    fun onAgentTypeSelected(agentType: AgentType) {
+    fun selectAgentType(agentType: AgentType) {
         selectedAgentType = agentType
     }
 
-    fun onPromptSelected(prompt: PromptCard) {
-        selectedPrompt = prompt
-    }
-
-    fun onToolsSelected(tools: List<ToolCard>) {
-        selectedTools = tools
-        if (selectedTools.isNotEmpty() && !selectedQAModel.supportsTools) {
-            selectedQAModel = models.first { it.supportsTools }
+    private fun updateQuestionAnswerState(
+        updater: (previous: NewQuestionAnswerState.Available) -> NewQuestionAnswerState,
+    ) {
+        _questionAnswer.update { currentState ->
+            check(currentState is NewQuestionAnswerState.Available)
+            updater(currentState)
         }
     }
 
-    fun onQAModelSelected(model: Model) {
-        selectedQAModel = model
+    private fun updateRoleplayState(
+        updater: (previous: NewRoleplayState.Available) -> NewRoleplayState,
+    ) {
+        _roleplay.update { currentState ->
+            check(currentState is NewRoleplayState.Available)
+            updater(currentState)
+        }
     }
 
-    fun onCharacterSelected(character: CharacterCard) {
-        selectedCharacter = character
-        // Reset greeting index when the character changes
-        selectedGreetingIndex = null
+    fun selectQuestionAnswerTools(tools: List<ToolCard>) = updateQuestionAnswerState { state ->
+        state.copy(
+            selectedTools = tools,
+            selectedModel =
+                if (tools.isEmpty() || state.selectedModel.supportsTools) state.selectedModel
+                else state.availableModels.first { it.supportsTools },
+        )
     }
 
-    fun onGreetingIndexSelected(index: Int?) {
-        selectedGreetingIndex = index
+    fun selectQuestionAnswerModel(model: Model) = updateQuestionAnswerState {
+        it.copy(selectedModel = model)
     }
 
-    fun onUserNameChanged(name: String) {
-        userName = name
+    fun selectRoleplayCharacter(character: CharacterCard) = updateRoleplayState {
+        it.copy(
+            selectedCharacter = character,
+            selectedGreetingIndex = null,
+        )
     }
 
-    fun onRPModelSelected(model: Model) {
-        selectedRPModel = model
+    fun selectRoleplayGreetingIndex(index: Int?) = updateRoleplayState {
+        it.copy(selectedGreetingIndex = index)
     }
+
+    fun changeRoleplayUserName(userName: String) = updateRoleplayState {
+        it.copy(userName = userName)
+    }
+
+    fun selectRoleplayModel(model: Model) = updateRoleplayState {
+        it.copy(selectedModel = model)
+    }
+
+    val isCreateEnabled: Boolean
+        get() {
+            return when (selectedAgentType) {
+                AgentType.QuestionAnswer -> questionAnswer.value.canCreate
+                AgentType.Roleplay -> roleplay.value.canCreate
+            }
+        }
 
     @OptIn(ExperimentalTime::class)
     fun createConversation(onConversationCreated: (Conversation) -> Unit) = viewModelScope.launch {
@@ -119,22 +177,80 @@ class NewConversationViewModel(
         onConversationCreated(conversation)
     }
 
-    private fun createAgentConfiguration(): AgentConfiguration = when (selectedAgentType) {
-        AgentType.QuestionAnswer -> {
-            QuestionAnswerAgentConfiguration(
-                promptName = selectedPrompt.name,
-                toolNames = selectedTools.map { it.name },
-                modelName = selectedQAModel.name,
-            )
-        }
-
-        AgentType.Roleplay -> {
-            RoleplayAgentConfiguration(
-                characterName = selectedCharacter.name,
-                characterGreetingIndex = selectedGreetingIndex,
-                userName = userName,
-                modelName = selectedRPModel.name,
-            )
+    private fun createAgentConfiguration(): AgentConfiguration {
+        return when (selectedAgentType) {
+            AgentType.QuestionAnswer -> questionAnswer.value.createConfiguration()
+            AgentType.Roleplay -> roleplay.value.createConfiguration()
         }
     }
 }
+
+sealed interface NewQuestionAnswerState {
+    data object Loading : NewQuestionAnswerState
+    data class Unavailable(
+        val noAvailableModels: Boolean,
+    ) : NewQuestionAnswerState
+
+    data class Available(
+        val availableModels: List<Model>,
+        val availableTools: List<ToolCard>,
+        val selectedModel: Model,
+        val selectedTools: List<ToolCard>,
+    ) : NewQuestionAnswerState
+}
+
+val NewQuestionAnswerState.Available.selectableModels: List<Model>
+    get() =
+        if (selectedTools.isEmpty()) availableModels
+        else availableModels.filter { it.supportsTools }
+
+val NewQuestionAnswerState.canCreate: Boolean
+    get() = when (this) {
+        is NewQuestionAnswerState.Available -> true
+        else -> false
+    }
+
+fun NewQuestionAnswerState.createConfiguration(): QuestionAnswerAgentConfiguration =
+    when (this) {
+        is NewQuestionAnswerState.Available -> QuestionAnswerAgentConfiguration(
+            toolNames = selectedTools.map { it.name },
+            modelName = selectedModel.name,
+        )
+
+        else -> error("Invalid state: $this")
+    }
+
+sealed interface NewRoleplayState {
+    data object Loading : NewRoleplayState
+    data class Unavailable(
+        val noAvailableCharacters: Boolean,
+        val noAvailableModels: Boolean,
+    ) : NewRoleplayState
+
+    data class Available(
+        val availableModels: List<Model>,
+        val availableCharacters: List<CharacterCard>,
+        val selectedCharacter: CharacterCard,
+        val selectedGreetingIndex: Int?,
+        val userName: String,
+        val selectedModel: Model,
+    ) : NewRoleplayState
+}
+
+val NewRoleplayState.canCreate: Boolean
+    get() = when (this) {
+        is NewRoleplayState.Available -> userName.isNotBlank()
+        else -> false
+    }
+
+fun NewRoleplayState.createConfiguration(): RoleplayAgentConfiguration =
+    when (this) {
+        is NewRoleplayState.Available -> RoleplayAgentConfiguration(
+            characterName = selectedCharacter.name,
+            characterGreetingIndex = selectedGreetingIndex,
+            userName = userName,
+            modelName = selectedModel.name,
+        )
+
+        else -> error("Invalid state: $this")
+    }

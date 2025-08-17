@@ -116,7 +116,6 @@ internal sealed class AgentConfigurationDto {
 
     @Serializable
     data class QuestionAnswer(
-        val promptName: String,
         val toolNames: List<String>,
         val modelName: String,
     ) : AgentConfigurationDto()
@@ -152,7 +151,6 @@ internal object DtoMappers {
         agent = when (val agentConfiguration = conv.agentConfiguration) {
             is NoAgentConfiguration -> AgentConfigurationDto.None
             is QuestionAnswerAgentConfiguration -> AgentConfigurationDto.QuestionAnswer(
-                promptName = agentConfiguration.promptName,
                 toolNames = agentConfiguration.toolNames,
                 modelName = agentConfiguration.modelName,
             )
@@ -179,7 +177,6 @@ internal object DtoMappers {
         agentConfiguration = when (val agentConfigurationDto = dto.agent) {
             is AgentConfigurationDto.None -> NoAgentConfiguration
             is AgentConfigurationDto.QuestionAnswer -> QuestionAnswerAgentConfiguration(
-                promptName = agentConfigurationDto.promptName,
                 toolNames = agentConfigurationDto.toolNames,
                 modelName = agentConfigurationDto.modelName,
             )

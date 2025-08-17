@@ -29,22 +29,29 @@ fun ToolSelector(
         label = "Tools",
         modifier = modifier,
     ) {
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            tools.forEach { tool ->
-                FilterChip(
-                    selected = selectedTools.contains(tool),
-                    onClick = {
-                        if (selectedTools.contains(tool)) {
-                            onToolsSelected(selectedTools - tool)
-                        } else {
-                            onToolsSelected(selectedTools + tool)
-                        }
-                    },
-                    label = { Text(tool.name) },
-                )
+        if (tools.isEmpty()) {
+            Text(
+                text = "No tools available",
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
+        } else {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                tools.forEach { tool ->
+                    FilterChip(
+                        selected = selectedTools.contains(tool),
+                        onClick = {
+                            if (selectedTools.contains(tool)) {
+                                onToolsSelected(selectedTools - tool)
+                            } else {
+                                onToolsSelected(selectedTools + tool)
+                            }
+                        },
+                        label = { Text(tool.name) },
+                    )
+                }
             }
         }
     }

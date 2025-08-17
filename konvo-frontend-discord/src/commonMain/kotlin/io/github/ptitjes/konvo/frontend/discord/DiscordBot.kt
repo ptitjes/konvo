@@ -256,7 +256,6 @@ private fun MessageBuilder.conversationStartMessage(
 
                 textDisplay {
                     content = markdown {
-                        line { bold("Prompt:"); space(); text(configuration.promptName) }
                         line {
                             bold("Tools:"); space()
                             text(configuration.toolNames.takeIf { it.isNotEmpty() }?.joinToString() ?: "None")

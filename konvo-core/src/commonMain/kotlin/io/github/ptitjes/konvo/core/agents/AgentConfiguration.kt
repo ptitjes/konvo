@@ -6,7 +6,6 @@ sealed interface AgentConfiguration
 object NoAgentConfiguration : AgentConfiguration
 
 data class QuestionAnswerAgentConfiguration(
-    val promptName: String,
     val toolNames: List<String>,
     val modelName: String,
 ) : AgentConfiguration

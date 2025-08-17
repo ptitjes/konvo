@@ -16,7 +16,6 @@ class AgentFactory(
         return when (agentConfiguration) {
             is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(
                 model = modelProviderManager.named(agentConfiguration.modelName),
-                prompt = promptProviderManager.named(agentConfiguration.promptName),
                 tools = agentConfiguration.toolNames.map { toolProviders.named(it) },
             )
 
