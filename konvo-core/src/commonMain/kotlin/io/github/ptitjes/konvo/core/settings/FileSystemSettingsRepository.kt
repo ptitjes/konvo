@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.core.settings
 
-import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.base.*
+import io.github.ptitjes.konvo.core.platform.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
@@ -11,7 +10,7 @@ import kotlinx.serialization.json.*
 /**
  * File system implementation of [SettingsRepository].
  *
- * - Uses [StoragePaths.configDirectory] as the base directory.
+ * - Uses [io.github.ptitjes.konvo.core.platform.StoragePaths.configDirectory] as the base directory.
  * - Each settings section is stored in its own `${name}.json5` file.
  * - JSON is configured to be pretty and lenient, and ignore unknown keys.
  */

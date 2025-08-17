@@ -1,15 +1,15 @@
 package io.github.ptitjes.konvo.frontend.compose.util
 
-import androidx.compose.runtime.Composable
-import coil3.ImageLoader
-import coil3.compose.setSingletonImageLoaderFactory
-import coil3.disk.DiskCache
-import coil3.memory.MemoryCache
-import coil3.request.crossfade
-import io.github.ptitjes.konvo.core.base.StoragePaths
-import kotlinx.io.files.Path
+import androidx.compose.runtime.*
+import coil3.*
+import coil3.compose.*
+import coil3.disk.*
+import coil3.memory.*
+import coil3.request.*
+import io.github.ptitjes.konvo.core.platform.*
+import kotlinx.io.files.*
 import okio.Path.Companion.toPath
-import org.kodein.di.compose.rememberInstance
+import org.kodein.di.compose.*
 
 @Composable
 fun CoilImageLoader() {

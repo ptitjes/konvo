@@ -1,8 +1,7 @@
 package io.github.ptitjes.konvo.core.characters.providers
 
-import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.base.*
 import io.github.ptitjes.konvo.core.characters.*
+import io.github.ptitjes.konvo.core.platform.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*

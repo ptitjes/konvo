@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core
+package io.github.ptitjes.konvo.core.platform
 
 import kotlinx.io.files.*
 

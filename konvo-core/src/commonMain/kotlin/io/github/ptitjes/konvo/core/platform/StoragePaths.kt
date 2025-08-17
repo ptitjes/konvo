@@ -1,6 +1,6 @@
-package io.github.ptitjes.konvo.core.base
+package io.github.ptitjes.konvo.core.platform
 
-import kotlinx.io.files.Path
+import kotlinx.io.files.*
 
 /**
  * Service providing standard storage directories for the application.

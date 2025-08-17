@@ -2,25 +2,18 @@
 
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
-import io.github.ptitjes.konvo.core.conversation.model.Conversation
-import io.github.ptitjes.konvo.core.conversation.model.Event
-import io.github.ptitjes.konvo.core.conversation.model.Participant
-import io.github.ptitjes.konvo.core.defaultFileSystem
-import kotlinx.coroutines.test.runTest
+import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.platform.*
 import kotlinx.coroutines.flow.first
-import kotlinx.io.Source
-import kotlinx.io.buffered
-import kotlinx.io.files.FileSystem
+import kotlinx.coroutines.test.*
+import kotlinx.io.*
+import kotlinx.io.files.*
 import kotlinx.io.files.Path
-import kotlinx.io.files.source
-import kotlinx.io.readString
-import kotlinx.io.writeString
+import kotlin.collections.all
+import kotlin.collections.map
 import kotlin.io.path.createTempDirectory
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
-import kotlin.time.Clock
-import kotlin.time.Instant
+import kotlin.test.*
+import kotlin.time.*
 
 class FileConversationRepositoryPartialFilesTests {
 

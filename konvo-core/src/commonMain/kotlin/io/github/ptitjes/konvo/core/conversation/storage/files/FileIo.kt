@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
-import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.platform.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 

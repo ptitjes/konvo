@@ -9,7 +9,6 @@ import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.base.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.characters.providers.*
 import io.github.ptitjes.konvo.core.conversation.*
@@ -17,6 +16,7 @@ import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.conversation.storage.files.*
 import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.platform.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 import kotlinx.coroutines.*
