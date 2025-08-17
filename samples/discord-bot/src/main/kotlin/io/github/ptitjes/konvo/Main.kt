@@ -3,13 +3,14 @@ package io.github.ptitjes.konvo
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.characters.*
-import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.base.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.conversation.storage.files.*
+import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.models.providers.*
 import io.github.ptitjes.konvo.frontend.discord.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
@@ -25,7 +26,7 @@ suspend fun main() = coroutineScope {
 
     try {
         mcpServersManager.startAndConnectServers()
-        di.direct.instance<ProviderManager<ModelCard>>().init()
+        di.direct.instance<ModelManager>().init()
         di.direct.instance<ProviderManager<PromptCard>>().init()
         di.direct.instance<ProviderManager<ToolCard>>().init()
         di.direct.instance<ProviderManager<CharacterCard>>().init()
@@ -37,7 +38,7 @@ suspend fun main() = coroutineScope {
 }
 
 fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
-    bindSet<Provider<ModelCard>>()
+    bindSet<ModelProvider>()
     bindSet<Provider<PromptCard>>()
     bindSet<Provider<ToolCard>>()
     bindSet<Provider<CharacterCard>>()
@@ -46,7 +47,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     import(configurationProviders(configuration))
 
-    bind<ProviderManager<ModelCard>> { singleton { DiProviderManager(instance()) } }
+    bind<ModelManager> { singleton { DiModelManager(instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<CharacterCard>> { singleton { DiProviderManager(instance()) } }
@@ -61,13 +62,13 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
         )
     }
 
-    bindSingleton { LiveConversationsManager(coroutineContext, instance()) }
+    bindSingleton { LiveConversationsManager(coroutineContext, instance(), instance()) }
 }
 
 fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {
     bindConstant(tag = DataDirectory) { configuration.dataDirectory }
 
-    inBindSet<Provider<ModelCard>> {
+    inBindSet<ModelProvider> {
         configuration.modelProviders.forEach { (name, configuration) ->
             add { singleton { configuration.buildModelProvider(name) } }
         }
@@ -88,7 +89,7 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
     }
 }
 
-private fun ModelProviderConfiguration.buildModelProvider(name: String): Provider<ModelCard> = when (this) {
+private fun ModelProviderConfiguration.buildModelProvider(name: String): ModelProvider = when (this) {
     is ModelProviderConfiguration.Ollama -> OllamaModelProvider(name, this.baseUrl)
     is ModelProviderConfiguration.Anthropic -> AnthropicModelProvider(name, this.apiKey)
     is ModelProviderConfiguration.OpenAI -> OpenAIModelProvider(name, this.apiKey)

@@ -1,16 +1,15 @@
-package io.github.ptitjes.konvo.core.ai
+package io.github.ptitjes.konvo.core.models
 
-import io.github.ptitjes.konvo.core.ai.koog.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.providers.*
 import io.github.ptitjes.konvo.core.settings.*
 import kotlinx.coroutines.flow.*
 
 class SettingsBasedModelProviderManager(
     private val settingsRepository: SettingsRepository,
-) : ProviderManager<ModelCard> {
+) : ModelManager {
 
-    private lateinit var _elements: List<ModelCard>
-    override val elements: List<ModelCard>
+    private lateinit var _elements: List<Model>
+    override val elements: List<Model>
         get() = _elements
 
     override suspend fun init() {

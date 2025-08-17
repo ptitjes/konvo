@@ -6,7 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.*
 
 /**
  * A selector for models.
@@ -18,9 +18,9 @@ import io.github.ptitjes.konvo.core.ai.spi.*
  */
 @Composable
 fun ModelSelector(
-    selectedModel: ModelCard,
-    onModelSelected: (ModelCard) -> Unit,
-    models: List<ModelCard>,
+    selectedModel: Model,
+    onModelSelected: (Model) -> Unit,
+    models: List<Model>,
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(

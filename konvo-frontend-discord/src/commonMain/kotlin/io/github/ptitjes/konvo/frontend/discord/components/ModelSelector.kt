@@ -2,14 +2,14 @@ package io.github.ptitjes.konvo.frontend.discord.components
 
 import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
 
 fun EphemeralComponentContainerBuilder.modelSelector(
-    models: List<ModelCard>,
-    selectedModel: ModelCard?,
-    onSelectModel: suspend (ModelCard) -> Unit,
+    models: List<Model>,
+    selectedModel: Model?,
+    onSelectModel: suspend (Model) -> Unit,
 ) {
     textDisplay { content = markdown { bold("Model:") } }
 

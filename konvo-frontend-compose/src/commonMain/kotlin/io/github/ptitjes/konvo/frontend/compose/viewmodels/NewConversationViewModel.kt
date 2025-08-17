@@ -7,6 +7,7 @@ import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import kotlinx.coroutines.*
@@ -73,7 +74,7 @@ class NewConversationViewModel(
         }
     }
 
-    fun onQAModelSelected(model: ModelCard) {
+    fun onQAModelSelected(model: Model) {
         selectedQAModel = model
     }
 
@@ -91,7 +92,7 @@ class NewConversationViewModel(
         userName = name
     }
 
-    fun onRPModelSelected(model: ModelCard) {
+    fun onRPModelSelected(model: Model) {
         selectedRPModel = model
     }
 

@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.models.providers.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*

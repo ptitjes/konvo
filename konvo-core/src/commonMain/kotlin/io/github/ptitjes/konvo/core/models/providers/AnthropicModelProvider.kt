@@ -1,17 +1,17 @@
-package io.github.ptitjes.konvo.core.ai.koog
+package io.github.ptitjes.konvo.core.models.providers
 
 import ai.koog.prompt.executor.clients.*
 import ai.koog.prompt.executor.clients.anthropic.*
 import ai.koog.prompt.llm.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.*
 
 class AnthropicModelProvider(
     override val name: String,
     apiKey: String,
-) : Provider<ModelCard> {
+) : ModelProvider {
     private val client by lazy { AnthropicLLMClient(apiKey) }
 
-    override suspend fun query(): List<ModelCard> {
+    override suspend fun query(): List<Model> {
         return listOf(
             AnthropicModels.Sonnet_4,
             AnthropicModels.Sonnet_3_7,
@@ -20,13 +20,13 @@ class AnthropicModelProvider(
             AnthropicModels.Opus_3,
             AnthropicModels.Haiku_3_5,
             AnthropicModels.Haiku_3,
-        ).map { card -> AnthropicModelCard(card) }
+        ).map { card -> AnthropicModel(card) }
     }
 
-    private inner class AnthropicModelCard(
+    private inner class AnthropicModel(
         private val delegate: LLModel,
-    ) : ModelCard {
-        override val provider: Provider<ModelCard> get() = this@AnthropicModelProvider
+    ) : Model {
+        override val provider: ModelProvider get() = this@AnthropicModelProvider
         override val name: String get() = delegate.id
         override val size: Long? get() = null
         override val parameterCount: Long? get() = null

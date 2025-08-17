@@ -15,6 +15,7 @@ import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.conversation.storage.files.*
+import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 import kotlinx.coroutines.*
@@ -30,7 +31,7 @@ fun runComposeFrontend() = application {
 
         di = buildDi(configuration).apply {
             direct.instance<McpServersManager>().startAndConnectServers()
-            direct.instance<ProviderManager<ModelCard>>().init()
+            direct.instance<ModelManager>().init()
             direct.instance<ProviderManager<PromptCard>>().init()
             direct.instance<ProviderManager<ToolCard>>().init()
             direct.instance<ProviderManager<CharacterCard>>().init()
@@ -67,7 +68,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     import(configurationProviders(configuration))
 
-    bind<ProviderManager<ModelCard>> { singleton { SettingsBasedModelProviderManager(instance()) } }
+    bind<ModelManager> { singleton { SettingsBasedModelProviderManager(instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<CharacterCard>> { singleton { DiProviderManager(instance()) } }

@@ -1,13 +1,13 @@
 package io.github.ptitjes.konvo.frontend.discord.utils
 
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.*
 import kotlin.math.*
 
-val ModelCard.shortName: String get() = name.removeSuffix(":latest")
+val Model.shortName: String get() = name.removeSuffix(":latest")
 
-val ModelCard.sizeString: String get() = size?.let { it.humanReadableSize(1000) + "B" } ?: "unknown"
-val ModelCard.parameterCountString: String? get() = parameterCount?.humanReadableSize(1000)
-val ModelCard.contextLengthString: String? get() = contextLength?.humanReadableSize(1024, 0)
+val Model.sizeString: String get() = size?.let { it.humanReadableSize(1000) + "B" } ?: "unknown"
+val Model.parameterCountString: String? get() = parameterCount?.humanReadableSize(1000)
+val Model.contextLengthString: String? get() = contextLength?.humanReadableSize(1024, 0)
 
 private fun Long.humanReadableSize(base: Long, digitCount: Int = 1): String {
     val units = listOf("", "K", "M", "G", "T", "P", "E")

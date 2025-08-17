@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
@@ -128,13 +129,13 @@ fun NewConversationScreen(
 private fun QuestionAnswerConfigurationForm(
     prompts: List<PromptCard>,
     tools: List<ToolCard>,
-    models: List<ModelCard>,
+    models: List<Model>,
     selectedPrompt: PromptCard?,
     onPromptSelected: (PromptCard) -> Unit,
     selectedTools: List<ToolCard>,
     onToolsSelected: (List<ToolCard>) -> Unit,
-    selectedModel: ModelCard,
-    onModelSelected: (ModelCard) -> Unit,
+    selectedModel: Model,
+    onModelSelected: (Model) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -164,15 +165,15 @@ private fun QuestionAnswerConfigurationForm(
 @Composable
 private fun RoleplayConfigurationForm(
     characters: List<CharacterCard>,
-    models: List<ModelCard>,
+    models: List<Model>,
     selectedCharacter: CharacterCard,
     onCharacterSelected: (CharacterCard) -> Unit,
     selectedGreetingIndex: Int?,
     onGreetingIndexSelected: (Int?) -> Unit,
     userName: String,
     onUserNameChanged: (String) -> Unit,
-    selectedModel: ModelCard,
-    onModelSelected: (ModelCard) -> Unit,
+    selectedModel: Model,
+    onModelSelected: (Model) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)

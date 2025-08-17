@@ -4,6 +4,7 @@ package io.github.ptitjes.konvo.core.conversation.storage.files
 
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.models.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.time.*
@@ -131,7 +132,7 @@ internal sealed class AgentConfigurationDto {
 internal interface CardResolver {
     fun promptByName(name: String): io.github.ptitjes.konvo.core.ai.spi.PromptCard?
     fun toolByName(name: String): io.github.ptitjes.konvo.core.ai.spi.ToolCard?
-    fun modelByName(name: String): io.github.ptitjes.konvo.core.ai.spi.ModelCard?
+    fun modelByName(name: String): Model?
     fun characterByName(name: String): io.github.ptitjes.konvo.core.ai.spi.CharacterCard?
 }
 

@@ -1,17 +1,17 @@
-package io.github.ptitjes.konvo.core.ai.koog
+package io.github.ptitjes.konvo.core.models.providers
 
 import ai.koog.prompt.executor.clients.*
 import ai.koog.prompt.executor.clients.openai.*
 import ai.koog.prompt.llm.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.*
 
 class OpenAIModelProvider(
     override val name: String,
     apiKey: String,
-) : Provider<ModelCard> {
+) : ModelProvider {
     private val client by lazy { OpenAILLMClient(apiKey) }
 
-    override suspend fun query(): List<ModelCard> {
+    override suspend fun query(): List<Model> {
         return listOf(
             OpenAIModels.Chat.GPT4o,
             OpenAIModels.Reasoning.GPT4oMini,
@@ -22,13 +22,13 @@ class OpenAIModelProvider(
             OpenAIModels.Reasoning.O3Mini,
             OpenAIModels.Reasoning.O1,
             OpenAIModels.Reasoning.O1Mini,
-        ).map { card -> OpenAIModelCard(card) }
+        ).map { card -> OpenAIModel(card) }
     }
 
-    private inner class OpenAIModelCard(
+    private inner class OpenAIModel(
         private val delegate: LLModel,
-    ) : ModelCard {
-        override val provider: Provider<ModelCard> get() = this@OpenAIModelProvider
+    ) : Model {
+        override val provider: ModelProvider get() = this@OpenAIModelProvider
         override val name: String get() = delegate.id
         override val size: Long? get() = null
         override val parameterCount: Long? get() = null

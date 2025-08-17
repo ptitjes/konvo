@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.frontend.discord
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 data class ConversationBuilder(
@@ -27,7 +28,7 @@ sealed interface ConversationModeBuilder {
 data class QuestionAnswerModeBuilder(
     val prompt: PromptCard? = null,
     val tools: List<ToolCard>? = null,
-    val model: ModelCard? = null,
+    val model: Model? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean = prompt != null && model != null
@@ -47,7 +48,7 @@ data class RoleplayModeBuilder(
     val character: CharacterCard? = null,
     val characterGreetingIndex: Int? = null,
     val userName: String? = null,
-    val model: ModelCard? = null,
+    val model: Model? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean =

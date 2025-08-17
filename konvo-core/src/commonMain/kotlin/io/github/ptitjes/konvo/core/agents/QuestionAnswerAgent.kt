@@ -10,12 +10,13 @@ import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.models.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.uuid.*
 
 suspend fun buildQuestionAnswerAgent(
-    model: ModelCard,
+    model: Model,
     prompt: PromptCard,
     tools: List<ToolCard>,
 ): Agent {

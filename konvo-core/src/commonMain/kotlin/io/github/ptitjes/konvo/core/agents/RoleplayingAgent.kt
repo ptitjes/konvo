@@ -6,10 +6,11 @@ import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
 import io.github.ptitjes.konvo.core.ai.koog.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.models.*
 import kotlin.random.*
 
 fun buildRoleplayAgent(
-    model: ModelCard,
+    model: Model,
     character: CharacterCard,
     characterGreetingIndex: Int?,
     userName: String,
