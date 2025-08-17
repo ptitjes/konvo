@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core
+package io.github.ptitjes.konvo.core.util
 
 import kotlinx.io.*
 import kotlinx.io.bytestring.*

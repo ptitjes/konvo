@@ -11,11 +11,11 @@ import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
 import com.eygraber.uri.*
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.model.Attachment
+import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
