@@ -3,6 +3,7 @@
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
 import io.github.ptitjes.konvo.core.agents.*
+import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.models.*
 import kotlinx.serialization.*
@@ -133,7 +134,7 @@ internal interface CardResolver {
     fun promptByName(name: String): io.github.ptitjes.konvo.core.ai.spi.PromptCard?
     fun toolByName(name: String): io.github.ptitjes.konvo.core.ai.spi.ToolCard?
     fun modelByName(name: String): Model?
-    fun characterByName(name: String): io.github.ptitjes.konvo.core.ai.spi.CharacterCard?
+    fun characterByName(name: String): CharacterCard?
 }
 
 internal object DtoMappers {

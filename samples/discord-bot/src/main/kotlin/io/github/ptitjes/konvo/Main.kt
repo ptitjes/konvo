@@ -2,10 +2,11 @@ package io.github.ptitjes.konvo
 
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.ai.*
-import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.base.*
+import io.github.ptitjes.konvo.core.characters.*
+import io.github.ptitjes.konvo.core.characters.providers.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.conversation.storage.files.*
@@ -29,7 +30,7 @@ suspend fun main() = coroutineScope {
         di.direct.instance<ModelManager>().init()
         di.direct.instance<ProviderManager<PromptCard>>().init()
         di.direct.instance<ProviderManager<ToolCard>>().init()
-        di.direct.instance<ProviderManager<CharacterCard>>().init()
+        di.direct.instance<CharacterCardManager>().init()
 
         discordBot(konvo, configuration.discord.token)
     } finally {
@@ -41,7 +42,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<ModelProvider>()
     bindSet<Provider<PromptCard>>()
     bindSet<Provider<ToolCard>>()
-    bindSet<Provider<CharacterCard>>()
+    bindSet<CharacterCardProvider>()
 
     bindSingleton<StoragePaths> { LinuxXdgServerStoragePaths() }
 
@@ -50,7 +51,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind<ModelManager> { singleton { DiModelManager(instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
-    bind<ProviderManager<CharacterCard>> { singleton { DiProviderManager(instance()) } }
+    bind<CharacterCardManager> { singleton { DiCharacterCardManager(instance()) } }
 
     bindSingleton<Konvo> { Konvo(di) }
 
@@ -84,8 +85,8 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 
-    inBindSet<Provider<CharacterCard>> {
-        add { singleton { FileSystemCharacterProvider(instance()) } }
+    inBindSet<CharacterCardProvider> {
+        add { singleton { FileSystemCharacterCardProvider(instance()) } }
     }
 }
 

@@ -2,13 +2,14 @@ package io.github.ptitjes.konvo.core.agents
 
 import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.models.*
 
 class AgentFactory(
     private val modelProviderManager: ModelManager,
     private val promptProviderManager: ProviderManager<PromptCard>,
     private val toolProviders: ProviderManager<ToolCard>,
-    private val characterProviderManager: ProviderManager<CharacterCard>,
+    private val characterProviderManager: CharacterCardManager,
 ) {
 
     suspend fun createAgent(agentConfiguration: AgentConfiguration): Agent {

@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.frontend.discord.components
 
 import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.ai.spi.CharacterCard
+import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 fun EphemeralComponentContainerBuilder.characterSelector(

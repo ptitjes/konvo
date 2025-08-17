@@ -5,7 +5,7 @@ import ai.koog.agents.core.dsl.extension.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
 import io.github.ptitjes.konvo.core.ai.koog.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.models.*
 import kotlin.random.*
 
@@ -15,6 +15,14 @@ fun buildRoleplayAgent(
     characterGreetingIndex: Int?,
     userName: String,
 ): Agent {
+    val systemPrompt = buildString {
+        this.append(character.description)
+        this.append("\n")
+        this.append("Here is {{char}}'s personality: ${character.personality}\n")
+        this.append("Here is the scenario: ${character.scenario}\n")
+        this.append("Here are an example conversation: ${character.messageExample}\n")
+    }.replaceTags(userName, character.name)
+
     val greetings = character.greetings
     val greetingIndex = characterGreetingIndex ?: Random.nextInt(0, greetings.size)
     val initialAssistantMessage = greetings[greetingIndex].replaceTags(userName, character.name)
@@ -22,9 +30,7 @@ fun buildRoleplayAgent(
     val welcomeMessage = "![${character.name}](${character.avatarUrl})\n\n$initialAssistantMessage"
 
     return ChatAgent(
-        systemPrompt = prompt("role-play") {
-            system { +character.systemPrompt.replaceTags(userName, character.name) }
-        },
+        systemPrompt = prompt("role-play") { system { +systemPrompt } },
         welcomeMessage = welcomeMessage,
         model = model.toLLModel(),
         maxAgentIterations = 50,

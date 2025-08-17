@@ -1,12 +1,20 @@
 package io.github.ptitjes.konvo.core
 
 import kotlinx.io.*
-import kotlinx.io.bytestring.ByteString
+import kotlinx.io.bytestring.*
 import kotlinx.io.files.*
-import kotlinx.serialization.json.*
 
-internal inline fun <reified T> FileSystem.readJson(path: Path): T = source(path).buffered().use { it.readJson() }
+internal fun <T> FileSystem.loadFiles(
+    directory: Path,
+    extension: String,
+    loader: FileSystem.(Path) -> T,
+): List<T> {
+    if (!exists(directory)) return listOf()
+    return list(directory)
+        .filter { it.name.endsWith(".$extension") }
+        .mapNotNull { runCatching { loader(it) }.getOrNull() }
+}
+
+internal fun FileSystem.readText(path: Path): String = source(path).buffered().use { it.readString() }
 
 internal fun FileSystem.readBytes(path: Path): ByteString = source(path).buffered().use { it.readByteString() }
-
-internal inline fun <reified T> Source.readJson(): T = Json.Default.decodeFromString<T>(this.readString())

@@ -10,6 +10,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
