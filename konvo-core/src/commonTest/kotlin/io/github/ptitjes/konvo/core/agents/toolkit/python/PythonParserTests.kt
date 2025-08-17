@@ -1,7 +1,7 @@
-package io.github.ptitjes.konvo.core.ai.koog.python
+package io.github.ptitjes.konvo.core.agents.toolkit.python
 
-import io.github.ptitjes.konvo.core.ai.koog.python.PythonNode.*
-import io.github.ptitjes.konvo.core.ai.koog.python.PythonNode.Literal.*
+import io.github.ptitjes.konvo.core.agents.toolkit.python.PythonNode.*
+import io.github.ptitjes.konvo.core.agents.toolkit.python.PythonNode.Literal.*
 import kotlin.test.*
 
 class PythonParserTests {

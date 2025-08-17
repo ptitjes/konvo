@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.koog
+package io.github.ptitjes.konvo.core.agents.toolkit
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.environment.*

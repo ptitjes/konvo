@@ -6,7 +6,7 @@ import ai.koog.agents.core.tools.*
 import ai.koog.agents.features.eventHandler.feature.*
 import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.message.*
-import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.agents.toolkit.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
@@ -22,7 +22,7 @@ suspend fun buildQuestionAnswerAgent(
 ): Agent {
     val toolRegistry = tools.map { it.toTool() }.let { ToolRegistry { tools(it) } }
 
-    return ChatAgent(
+    return DefaultAgent(
         systemPrompt = prompt.toPrompt(),
         model = model.toLLModel(),
         maxAgentIterations = 50,

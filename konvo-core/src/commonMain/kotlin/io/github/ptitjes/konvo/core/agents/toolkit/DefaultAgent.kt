@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.koog
+package io.github.ptitjes.konvo.core.agents.toolkit
 
 import ai.koog.agents.core.agent.*
 import ai.koog.agents.core.agent.config.*
@@ -28,7 +28,7 @@ import kotlin.time.*
 import kotlin.time.Clock
 import ai.koog.prompt.message.Attachment as KoogAttachment
 
-class ChatAgent(
+internal class DefaultAgent(
     private val systemPrompt: Prompt,
     private val welcomeMessage: String? = null,
     private val model: LLModel,

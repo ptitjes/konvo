@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.koog.python
+package io.github.ptitjes.konvo.core.agents.toolkit.python
 
 internal sealed interface PythonNode {
     data class CallExpr(val name: String, val arguments: List<Argument>) : PythonNode

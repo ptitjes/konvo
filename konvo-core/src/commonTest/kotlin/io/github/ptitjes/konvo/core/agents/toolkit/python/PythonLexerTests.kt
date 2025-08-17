@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.koog.python
+package io.github.ptitjes.konvo.core.agents.toolkit.python
 
 import kotlin.test.*
 

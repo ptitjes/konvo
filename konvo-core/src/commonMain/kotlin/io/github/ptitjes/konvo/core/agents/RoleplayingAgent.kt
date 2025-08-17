@@ -4,7 +4,7 @@ import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
-import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.agents.toolkit.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.models.*
 import kotlin.random.*
@@ -29,7 +29,7 @@ fun buildRoleplayAgent(
 
     val welcomeMessage = "![${character.name}](${character.avatarUrl})\n\n$initialAssistantMessage"
 
-    return ChatAgent(
+    return DefaultAgent(
         systemPrompt = prompt("role-play") { system { +systemPrompt } },
         welcomeMessage = welcomeMessage,
         model = model.toLLModel(),

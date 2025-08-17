@@ -1,11 +1,11 @@
-package io.github.ptitjes.konvo.core.ai.koog
+package io.github.ptitjes.konvo.core.agents.toolkit
 
 import ai.koog.agents.core.tools.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
-import io.github.ptitjes.konvo.core.ai.koog.python.*
+import io.github.ptitjes.konvo.core.agents.toolkit.python.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
 
