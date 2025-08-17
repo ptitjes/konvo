@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.core.conversation.storage
 
-import io.github.ptitjes.konvo.core.conversation.agents.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.inmemory.*
 import kotlinx.coroutines.flow.*

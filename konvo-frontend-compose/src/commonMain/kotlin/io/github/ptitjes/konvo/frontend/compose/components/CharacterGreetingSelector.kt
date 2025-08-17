@@ -2,8 +2,8 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import io.github.ptitjes.konvo.core.ai.spi.CharacterCard
-import io.github.ptitjes.konvo.core.conversation.agents.replaceTags
+import io.github.ptitjes.konvo.core.agents.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 
 /**
  * A selector for character greetings.

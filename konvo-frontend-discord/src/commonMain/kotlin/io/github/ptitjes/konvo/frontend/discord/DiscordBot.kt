@@ -16,8 +16,8 @@ import dev.kord.rest.builder.component.*
 import dev.kord.rest.builder.interaction.*
 import dev.kord.rest.builder.message.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.model.Event
 import io.github.ptitjes.konvo.core.conversation.storage.*
@@ -111,6 +111,7 @@ class KonvoBot(
                 conversationStartMessage(
                     configuration = configuration,
                     conversation = conversationView,
+                    konvo = konvo,
                 )
             }
         }
@@ -135,6 +136,7 @@ class KonvoBot(
                     configuration = configuration,
                     conversation = conversationView,
                     newChannel = newChannel,
+                    konvo = konvo,
                 )
             }
         }
@@ -175,6 +177,7 @@ class KonvoBot(
                 configuration = configuration,
                 conversation = conversationView,
                 fullSizeCharacterAvatar = true,
+                konvo = konvo,
             )
         }
 
@@ -227,6 +230,7 @@ private fun MessageBuilder.conversationStartMessage(
     conversation: ConversationUserView,
     newChannel: TextChannel? = null,
     fullSizeCharacterAvatar: Boolean = false,
+    konvo: Konvo,
 ) {
     val configuration: AgentConfiguration = configuration.agent
 
@@ -248,31 +252,36 @@ private fun MessageBuilder.conversationStartMessage(
 
         when (configuration) {
             is QuestionAnswerAgentConfiguration -> {
+                val model = konvo.models.first { it.name == configuration.modelName }
+
                 textDisplay {
                     content = markdown {
-                        line { bold("Prompt:"); space(); text(configuration.prompt.name) }
+                        line { bold("Prompt:"); space(); text(configuration.promptName) }
                         line {
                             bold("Tools:"); space()
-                            text(configuration.tools.takeIf { it.isNotEmpty() }?.joinToString { it.name } ?: "None")
+                            text(configuration.toolNames.takeIf { it.isNotEmpty() }?.joinToString() ?: "None")
                         }
-                        line { bold("Model:"); space(); text(configuration.model.shortName) }
+                        line { bold("Model:"); space(); text(model.shortName) }
                     }
                 }
             }
 
             is RoleplayAgentConfiguration -> {
+                val character = konvo.characters.first { it.name == configuration.characterName }
+                val model = konvo.models.first { it.name == configuration.modelName }
+
                 fun conversationDescriptionString(): String = markdown {
-                    line { bold("Character:"); space(); text(configuration.character.name) }
-                    if (configuration.character.greetings.isNotEmpty()) line {
+                    line { bold("Character:"); space(); text(character.name) }
+                    if (character.greetings.isNotEmpty()) line {
                         bold("Character greeting:"); space()
                         text(configuration.characterGreetingIndex?.let { "#$it" } ?: "Random")
                     }
                     line { bold("Username:"); space(); text(configuration.userName) }
-                    line { bold("Model:"); space(); text(configuration.model.shortName) }
+                    line { bold("Model:"); space(); text(model.shortName) }
                 }
 
-                val characterName = configuration.character.name
-                val characterUrl = configuration.character.avatarUrl
+                val characterName = character.name
+                val characterUrl = character.avatarUrl
                 if (fullSizeCharacterAvatar) {
                     textDisplay { content = conversationDescriptionString() }
 

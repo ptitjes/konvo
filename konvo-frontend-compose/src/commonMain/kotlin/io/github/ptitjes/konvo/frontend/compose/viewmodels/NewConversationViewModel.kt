@@ -3,8 +3,8 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.spi.*
-import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.util.*
@@ -120,18 +120,18 @@ class NewConversationViewModel(
     private fun createAgentConfiguration(): AgentConfiguration = when (selectedAgentType) {
         AgentType.QuestionAnswer -> {
             QuestionAnswerAgentConfiguration(
-                prompt = selectedPrompt,
-                tools = selectedTools,
-                model = selectedQAModel,
+                promptName = selectedPrompt.name,
+                toolNames = selectedTools.map { it.name },
+                modelName = selectedQAModel.name,
             )
         }
 
         AgentType.Roleplay -> {
             RoleplayAgentConfiguration(
-                character = selectedCharacter,
+                characterName = selectedCharacter.name,
                 characterGreetingIndex = selectedGreetingIndex,
                 userName = userName,
-                model = selectedRPModel,
+                modelName = selectedRPModel.name,
             )
         }
     }

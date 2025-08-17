@@ -5,6 +5,7 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.characters.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
@@ -78,6 +79,8 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind { singleton { SettingsListViewModel() } }
     bind { singleton { SettingsViewModel(instance()) } }
 
+    bindSingletonOf(::AgentFactory)
+
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
     bindSingleton<ConversationRepository> {
         FileConversationRepository(
@@ -86,7 +89,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
         )
     }
 
-    bindSingleton { LiveConversationsManager(coroutineContext, instance()) }
+    bindSingleton { LiveConversationsManager(coroutineContext, instance(), instance()) }
 
     bindSingletonOf(::ConversationListViewModel)
     bindSingletonOf(::NewConversationViewModel)

@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.conversation.agents
+package io.github.ptitjes.konvo.core.agents
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
@@ -14,14 +14,15 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.uuid.*
 
-suspend fun buildQuestionAnswerAgent(configuration: QuestionAnswerAgentConfiguration): ChatAgent {
-    val model = configuration.model
-
-    val tools = configuration.tools
+suspend fun buildQuestionAnswerAgent(
+    model: ModelCard,
+    prompt: PromptCard,
+    tools: List<ToolCard>,
+): Agent {
     val toolRegistry = tools.map { it.toTool() }.let { ToolRegistry { tools(it) } }
 
     return ChatAgent(
-        systemPrompt = configuration.prompt.toPrompt(),
+        systemPrompt = prompt.toPrompt(),
         model = model.toLLModel(),
         maxAgentIterations = 50,
         promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),

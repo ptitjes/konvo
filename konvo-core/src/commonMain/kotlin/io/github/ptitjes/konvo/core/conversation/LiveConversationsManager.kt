@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation
 
 import io.github.oshai.kotlinlogging.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
@@ -9,6 +10,7 @@ import kotlin.coroutines.*
 class LiveConversationsManager(
     coroutineContext: CoroutineContext,
     private val conversationRepository: ConversationRepository,
+    private val agentFactory: AgentFactory,
 ) {
     private companion object {
         private val logger = KotlinLogging.logger {}
@@ -39,6 +41,7 @@ class LiveConversationsManager(
             coroutineContext = coroutineScope.coroutineContext,
             conversationId = conversationId,
             repository = conversationRepository,
+            agentFactory = agentFactory,
         )
     }
 }

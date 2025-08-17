@@ -5,7 +5,7 @@ import kotlinx.io.files.*
 import kotlinx.serialization.json.*
 
 data class CharacterCard(
-    val name: String,
+    override val name: String,
     val avatarUrl: String? = null,
     val description: String,
     val personality: String,
@@ -13,7 +13,7 @@ data class CharacterCard(
     val messageExample: String,
     val greetings: List<String>,
     val tags: List<String>,
-) {
+) : NamedCard {
     val systemPrompt: String
         get() = buildString {
             append(description)

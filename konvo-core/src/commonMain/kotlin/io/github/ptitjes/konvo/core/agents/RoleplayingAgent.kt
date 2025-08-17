@@ -1,20 +1,21 @@
-package io.github.ptitjes.konvo.core.conversation.agents
+package io.github.ptitjes.konvo.core.agents
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
 import io.github.ptitjes.konvo.core.ai.koog.*
+import io.github.ptitjes.konvo.core.ai.spi.*
 import kotlin.random.*
 
-fun buildRoleplayAgent(configuration: RoleplayAgentConfiguration): ChatAgent {
-    val model = configuration.model
-
-    val character = configuration.character
-    val userName = configuration.userName
-
+fun buildRoleplayAgent(
+    model: ModelCard,
+    character: CharacterCard,
+    characterGreetingIndex: Int?,
+    userName: String,
+): Agent {
     val greetings = character.greetings
-    val greetingIndex = configuration.characterGreetingIndex ?: Random.nextInt(0, greetings.size)
+    val greetingIndex = characterGreetingIndex ?: Random.nextInt(0, greetings.size)
     val initialAssistantMessage = greetings[greetingIndex].replaceTags(userName, character.name)
 
     val welcomeMessage = "![${character.name}](${character.avatarUrl})\n\n$initialAssistantMessage"

@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo.frontend.discord
 
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.agents.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 data class ConversationBuilder(
@@ -36,9 +36,9 @@ data class QuestionAnswerModeBuilder(
         if (prompt == null || model == null) error("Conversation configuration is incomplete")
 
         return QuestionAnswerAgentConfiguration(
-            prompt = prompt,
-            tools = tools ?: emptyList(),
-            model = model,
+            promptName = prompt.name,
+            toolNames = tools?.map { it.name } ?: emptyList(),
+            modelName = model.name,
         )
     }
 }
@@ -58,10 +58,10 @@ data class RoleplayModeBuilder(
             error("Conversation configuration is incomplete")
 
         return RoleplayAgentConfiguration(
-            character = character,
+            characterName = character.name,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,
-            model = model,
+            modelName = model.name,
         )
     }
 }

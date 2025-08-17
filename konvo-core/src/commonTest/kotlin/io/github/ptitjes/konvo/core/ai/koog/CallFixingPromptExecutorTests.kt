@@ -5,6 +5,8 @@ import ai.koog.prompt.message.*
 import kotlinx.datetime.*
 import kotlinx.serialization.json.*
 import kotlin.test.*
+import kotlin.time.*
+import kotlin.time.Clock
 
 class CallFixingPromptExecutorTests {
 
@@ -45,6 +47,7 @@ class CallFixingPromptExecutorTests {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun testFixToolCalls(
         text: String,
         expectation: PromptBuilder.ToolMessageBuilder.() -> Unit,
@@ -58,7 +61,7 @@ class CallFixingPromptExecutorTests {
         val sourceMessage = Message.Assistant(
             content = text,
             metaInfo = ResponseMetaInfo(
-                timestamp = Clock.System.now(),
+                timestamp = Clock.System.now().toDeprecatedInstant(),
             ),
         )
 

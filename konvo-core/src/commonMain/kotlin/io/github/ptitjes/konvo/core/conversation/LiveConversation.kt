@@ -3,7 +3,7 @@
 package io.github.ptitjes.konvo.core.conversation
 
 import io.github.oshai.kotlinlogging.*
-import io.github.ptitjes.konvo.core.conversation.agents.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.util.*
@@ -16,6 +16,7 @@ class LiveConversation(
     coroutineContext: CoroutineContext,
     private val conversationId: String,
     private val repository: ConversationRepository,
+    private val agentFactory: AgentFactory,
     private val timeProvider: TimeProvider = SystemTimeProvider,
     private val idGenerator: IdGenerator = UuidIdGenerator,
 ) : AutoCloseable {
@@ -85,7 +86,7 @@ class LiveConversation(
 
             // Restore agent
             val agentConfiguration = conversation.agentConfiguration
-            val agent = agentConfiguration.buildAgent()
+            val agent = agentFactory.createAgent(agentConfiguration)
             agent.restorePrompt(events)
 
             launch {

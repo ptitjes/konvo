@@ -12,6 +12,7 @@ import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
 import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.model.Attachment
@@ -36,7 +37,7 @@ class ChatAgent(
     private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
     private val toolRegistry: ToolRegistry = ToolRegistry.EMPTY,
     private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
-) {
+) : Agent {
     private var prompt: Prompt = systemPrompt
 
     private fun buildAgent(conversation: ConversationAgentView): AIAgent<Message.User, List<Message.Assistant>> {
@@ -62,7 +63,7 @@ class ChatAgent(
         )
     }
 
-    suspend fun restorePrompt(events: List<Event>) {
+    override suspend fun restorePrompt(events: List<Event>) {
         val messages = events.mapNotNull { event ->
             when (event) {
                 is Event.UserMessage -> event.toUserMessage()
@@ -77,7 +78,7 @@ class ChatAgent(
     }
 
     @OptIn(ExperimentalTime::class)
-    suspend fun joinConversation(conversation: ConversationAgentView) {
+    override suspend fun joinConversation(conversation: ConversationAgentView) {
         if (conversation.transcript.events.isEmpty()) {
             welcomeMessage?.let { content ->
                 conversation.sendMessage(content)

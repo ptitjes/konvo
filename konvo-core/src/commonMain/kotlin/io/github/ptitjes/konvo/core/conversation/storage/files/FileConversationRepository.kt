@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.base.StoragePaths
+import io.github.ptitjes.konvo.core.base.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import kotlinx.coroutines.flow.*
@@ -75,15 +75,15 @@ class FileConversationRepository(
                         fileSystem.source(meta).buffered().use { src ->
                             val dto = json.decodeFromString(ConversationDto.serializer(), src.readString())
                             entries += ConversationIndexEntryDto(
-                            id = dto.id,
-                            title = dto.title,
-                            createdAt = dto.createdAt,
-                            updatedAt = dto.updatedAt,
-                            lastMessagePreview = dto.lastMessagePreview,
-                            messageCount = dto.messageCount,
-                            lastReadMessageIndex = dto.lastReadMessageIndex,
-                            unreadMessageCount = dto.unreadMessageCount,
-                        )
+                                id = dto.id,
+                                title = dto.title,
+                                createdAt = dto.createdAt,
+                                updatedAt = dto.updatedAt,
+                                lastMessagePreview = dto.lastMessagePreview,
+                                messageCount = dto.messageCount,
+                                lastReadMessageIndex = dto.lastReadMessageIndex,
+                                unreadMessageCount = dto.unreadMessageCount,
+                            )
                         }
                     } catch (_: Throwable) {
                         // skip broken conversation
@@ -134,13 +134,7 @@ class FileConversationRepository(
         return try {
             fileSystem.source(meta).buffered().use { src ->
                 val dto = json.decodeFromString(ConversationDto.serializer(), src.readString())
-                val resolver = object : CardResolver {
-                    override fun promptByName(name: String) = konvo?.prompts?.firstOrNull { it.name == name }
-                    override fun toolByName(name: String) = konvo?.tools?.firstOrNull { it.name == name }
-                    override fun modelByName(name: String) = konvo?.models?.firstOrNull { it.name == name }
-                    override fun characterByName(name: String) = konvo?.characters?.firstOrNull { it.name == name }
-                }
-                DtoMappers.fromDto(dto, resolver)
+                DtoMappers.fromDto(dto)
             }
         } catch (_: Throwable) {
             null
@@ -148,7 +142,8 @@ class FileConversationRepository(
     }
 
     override fun getConversation(id: String): Flow<Conversation> =
-        changeTicker.map { readConversation(id) }.onStart { emit(readConversation(id)) }.filterNotNull().distinctUntilChanged()
+        changeTicker.map { readConversation(id) }.onStart { emit(readConversation(id)) }.filterNotNull()
+            .distinctUntilChanged()
 
     private fun readConversations(
         sort: Sort,
@@ -194,16 +189,20 @@ class FileConversationRepository(
             sink.writeString(newLine)
         }
         // Update meta and index
-        val current = readConversation(conversationId) ?: throw NoSuchElementException("Unknown conversation: $conversationId")
+        val current =
+            readConversation(conversationId) ?: throw NoSuchElementException("Unknown conversation: $conversationId")
         val now = Clock.System.now()
-        val (preview, delta, deltaUnread) = when (event) {
-            is Event.UserMessage -> Triple(event.content, 1, 1)
-            is Event.AssistantMessage -> Triple(event.content, 1, 1)
-            else -> Triple(current.lastMessagePreview, 0, 0)
+        // Compute new preview from full transcript (skip non-message events)
+        val events = readEvents(conversationId)
+        val newPreview = ConversationUtils.computeLastMessagePreview(events)
+        val (delta, deltaUnread) = when (event) {
+            is Event.UserMessage -> 1 to 1
+            is Event.AssistantMessage -> 1 to 1
+            else -> 0 to 0
         }
         val updated = current.copy(
             updatedAt = now,
-            lastMessagePreview = preview,
+            lastMessagePreview = newPreview,
             messageCount = current.messageCount + delta,
             unreadMessageCount = current.unreadMessageCount + deltaUnread,
         )
@@ -229,7 +228,8 @@ class FileConversationRepository(
     }
 
     override suspend fun updateConversation(conversation: Conversation) {
-        val existing = readConversation(conversation.id) ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
+        val existing = readConversation(conversation.id)
+            ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
         val updated = conversation.copy(
             createdAt = existing.createdAt,
             messageCount = existing.messageCount,
@@ -261,9 +261,18 @@ class FileConversationRepository(
         val dir = conversationDir(id)
         if (fileSystem.exists(dir)) {
             // Delete files if present, then dir
-            try { if (fileSystem.exists(eventsPath(id))) fileSystem.delete(eventsPath(id)) } catch (_: Throwable) {}
-            try { if (fileSystem.exists(metaPath(id))) fileSystem.delete(metaPath(id)) } catch (_: Throwable) {}
-            try { fileSystem.delete(dir) } catch (_: Throwable) {}
+            try {
+                if (fileSystem.exists(eventsPath(id))) fileSystem.delete(eventsPath(id))
+            } catch (_: Throwable) {
+            }
+            try {
+                if (fileSystem.exists(metaPath(id))) fileSystem.delete(metaPath(id))
+            } catch (_: Throwable) {
+            }
+            try {
+                fileSystem.delete(dir)
+            } catch (_: Throwable) {
+            }
         }
         val idx = loadIndex() ?: ConversationIndexDto(conversations = emptyList())
         saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != id }))
@@ -281,7 +290,10 @@ class FileConversationRepository(
                 }
             }
             // Remove index last
-            if (fileSystem.exists(indexPath)) try { fileSystem.delete(indexPath) } catch (_: Throwable) {}
+            if (fileSystem.exists(indexPath)) try {
+                fileSystem.delete(indexPath)
+            } catch (_: Throwable) {
+            }
         }
         changeTicker.value = changeTicker.value + 1
     }
@@ -309,5 +321,6 @@ class FileConversationRepository(
     }
 
     override fun getEvents(conversationId: String): Flow<List<Event>> =
-        changeTicker.map { readEvents(conversationId) }.onStart { emit(readEvents(conversationId)) }.distinctUntilChanged()
+        changeTicker.map { readEvents(conversationId) }.onStart { emit(readEvents(conversationId)) }
+            .distinctUntilChanged()
 }

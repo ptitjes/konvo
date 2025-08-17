@@ -2,7 +2,7 @@
 
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
-import io.github.ptitjes.konvo.core.conversation.agents.*
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
@@ -26,7 +26,9 @@ internal data class ConversationDto(
 @Serializable
 internal sealed class EventDto {
     abstract val id: String
-    @Contextual abstract val timestamp: Instant
+
+    @Contextual
+    abstract val timestamp: Instant
     abstract val source: ParticipantDto
 }
 
@@ -76,6 +78,7 @@ internal data class ToolUseNotificationDto(
 internal sealed class ParticipantDto {
     @Serializable
     data class User(val id: String, val name: String) : ParticipantDto()
+
     @Serializable
     data class Agent(val id: String, val name: String) : ParticipantDto()
 }
@@ -99,6 +102,7 @@ internal data class ToolCallDto(
 internal sealed class ToolCallResultDto {
     @Serializable
     data class Success(val text: String) : ToolCallResultDto()
+
     @Serializable
     data class ExecutionFailure(val reason: String) : ToolCallResultDto()
 }
@@ -143,23 +147,24 @@ internal object DtoMappers {
         messageCount = conv.messageCount,
         lastReadMessageIndex = conv.lastReadMessageIndex,
         unreadMessageCount = conv.unreadMessageCount,
-        agent = when (val a = conv.agentConfiguration) {
+        agent = when (val agentConfiguration = conv.agentConfiguration) {
             is NoAgentConfiguration -> AgentConfigurationDto.None
             is QuestionAnswerAgentConfiguration -> AgentConfigurationDto.QuestionAnswer(
-                promptName = a.prompt.name,
-                toolNames = a.tools.map { it.name },
-                modelName = a.model.name,
+                promptName = agentConfiguration.promptName,
+                toolNames = agentConfiguration.toolNames,
+                modelName = agentConfiguration.modelName,
             )
+
             is RoleplayAgentConfiguration -> AgentConfigurationDto.Roleplay(
-                characterName = a.character.name,
-                characterGreetingIndex = a.characterGreetingIndex,
-                userName = a.userName,
-                modelName = a.model.name,
+                characterName = agentConfiguration.characterName,
+                characterGreetingIndex = agentConfiguration.characterGreetingIndex,
+                userName = agentConfiguration.userName,
+                modelName = agentConfiguration.modelName,
             )
         },
     )
 
-    fun fromDto(dto: ConversationDto, resolver: CardResolver? = null): Conversation = Conversation(
+    fun fromDto(dto: ConversationDto): Conversation = Conversation(
         id = dto.id,
         title = dto.title,
         createdAt = dto.createdAt,
@@ -169,32 +174,20 @@ internal object DtoMappers {
         messageCount = dto.messageCount,
         lastReadMessageIndex = dto.lastReadMessageIndex,
         unreadMessageCount = dto.unreadMessageCount,
-        agentConfiguration = when (val a = dto.agent) {
+        agentConfiguration = when (val agentConfigurationDto = dto.agent) {
             is AgentConfigurationDto.None -> NoAgentConfiguration
-            is AgentConfigurationDto.QuestionAnswer -> {
-                val prompt = resolver?.promptByName(a.promptName)
-                val tools = a.toolNames.mapNotNull { resolver?.toolByName(it) }
-                val model = resolver?.modelByName(a.modelName)
-                if (prompt != null && model != null) {
-                    QuestionAnswerAgentConfiguration(
-                        prompt = prompt,
-                        tools = tools,
-                        model = model,
-                    )
-                } else NoAgentConfiguration
-            }
-            is AgentConfigurationDto.Roleplay -> {
-                val character = resolver?.characterByName(a.characterName)
-                val model = resolver?.modelByName(a.modelName)
-                if (character != null && model != null) {
-                    RoleplayAgentConfiguration(
-                        character = character,
-                        characterGreetingIndex = a.characterGreetingIndex,
-                        userName = a.userName,
-                        model = model,
-                    )
-                } else NoAgentConfiguration
-            }
+            is AgentConfigurationDto.QuestionAnswer -> QuestionAnswerAgentConfiguration(
+                promptName = agentConfigurationDto.promptName,
+                toolNames = agentConfigurationDto.toolNames,
+                modelName = agentConfigurationDto.modelName,
+            )
+
+            is AgentConfigurationDto.Roleplay -> RoleplayAgentConfiguration(
+                characterName = agentConfigurationDto.characterName,
+                characterGreetingIndex = agentConfigurationDto.characterGreetingIndex,
+                userName = agentConfigurationDto.userName,
+                modelName = agentConfigurationDto.modelName,
+            )
         },
     )
 
@@ -209,20 +202,45 @@ internal object DtoMappers {
     }
 
     fun toDto(e: Event): EventDto = when (e) {
-        is Event.UserMessage -> UserMessageDto(e.id, e.timestamp, toDto(e.source), e.content, e.attachments.map { toDto(it) })
+        is Event.UserMessage -> UserMessageDto(
+            e.id,
+            e.timestamp,
+            toDto(e.source),
+            e.content,
+            e.attachments.map { toDto(it) })
+
         is Event.AssistantMessage -> AssistantMessageDto(e.id, e.timestamp, toDto(e.source), e.content)
         is Event.AssistantProcessing -> AssistantProcessingDto(e.id, e.timestamp, toDto(e.source), e.isProcessing)
         is Event.ToolUseVetting -> ToolUseVettingDto(e.id, e.timestamp, toDto(e.source), e.calls.map { toDto(it) })
-        is Event.ToolUseNotification -> ToolUseNotificationDto(e.id, e.timestamp, toDto(e.source), toDto(e.call), toDto(e.result))
+        is Event.ToolUseNotification -> ToolUseNotificationDto(
+            e.id,
+            e.timestamp,
+            toDto(e.source),
+            toDto(e.call),
+            toDto(e.result)
+        )
+
         else -> error("Unsupported event type: ${e::class}")
     }
 
     fun fromDto(e: EventDto): Event = when (e) {
-        is UserMessageDto -> Event.UserMessage(e.id, e.timestamp, fromDto(e.source), e.content, e.attachments.map { fromDto(it) })
+        is UserMessageDto -> Event.UserMessage(
+            e.id,
+            e.timestamp,
+            fromDto(e.source),
+            e.content,
+            e.attachments.map { fromDto(it) })
+
         is AssistantMessageDto -> Event.AssistantMessage(e.id, e.timestamp, fromDto(e.source), e.content)
         is AssistantProcessingDto -> Event.AssistantProcessing(e.id, e.timestamp, fromDto(e.source), e.isProcessing)
         is ToolUseVettingDto -> Event.ToolUseVetting(e.id, e.timestamp, fromDto(e.source), e.calls.map { fromDto(it) })
-        is ToolUseNotificationDto -> Event.ToolUseNotification(e.id, e.timestamp, fromDto(e.source), fromDto(e.call), fromDto(e.result))
+        is ToolUseNotificationDto -> Event.ToolUseNotification(
+            e.id,
+            e.timestamp,
+            fromDto(e.source),
+            fromDto(e.call),
+            fromDto(e.result)
+        )
     }
 
     fun toDto(a: Attachment): AttachmentDto = AttachmentDto(
