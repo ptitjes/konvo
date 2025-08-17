@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
 
 interface SettingsRepository {
-    fun <T> getSettings(key: SettingsSectionKey<T>): Flow<T>
+    fun <T> getSettings(key: SettingsSectionKey<T>): StateFlow<T>
     suspend fun <T> updateSettings(key: SettingsSectionKey<T>, value: T)
 }
 

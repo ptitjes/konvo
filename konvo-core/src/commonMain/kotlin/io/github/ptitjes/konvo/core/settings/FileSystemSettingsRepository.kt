@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.settings
 
 import io.github.ptitjes.konvo.core.platform.*
+import kotlinx.atomicfu.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
@@ -34,48 +35,36 @@ class FileSystemSettingsRepository(
 
     private fun fileFor(name: String): Path = Path(baseDir, "$name.json5")
 
-    // Keep a StateFlow per settings section to provide a Flow API and push updates
-    private val flows: MutableMap<String, MutableStateFlow<Any?>> = mutableMapOf()
+    private val settingsFlows = atomic(mapOf<SettingsSectionKey<*>, MutableStateFlow<Any?>>())
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getSettings(key: SettingsSectionKey<T>): Flow<T> {
-        val state = flows.getOrPut(key.name) {
-            val initial: Any? = try {
-                readFromDisk(key)
-            } catch (_: Throwable) {
-                key.defaultValue
-            }
-            MutableStateFlow(initial)
-        }
-        return (state.asStateFlow() as StateFlow<T>)
+    override fun <T> getSettings(key: SettingsSectionKey<T>): StateFlow<T> {
+        val newFlow = settingsFlows.updateAndGet { previous ->
+            if (previous.containsKey(key)) previous
+            else previous + (key to MutableStateFlow(readFromDisk(key)))
+        }[key]!!
+
+        return newFlow.asStateFlow() as StateFlow<T>
     }
 
     override suspend fun <T> updateSettings(key: SettingsSectionKey<T>, value: T) {
         writeToDisk(key, value)
-        @Suppress("UNCHECKED_CAST")
-        val state = flows[key.name] as? MutableStateFlow<T>
-        if (state == null) {
-            // Create the flow if it didn't exist yet so future subscribers see the latest value
-            @Suppress("UNCHECKED_CAST")
-            flows[key.name] = MutableStateFlow(value as Any?)
-        } else {
-            state.value = value
-        }
+
+        val previousFlow = settingsFlows.getAndUpdate { previous ->
+            if (previous.containsKey(key)) previous
+            else previous + (key to MutableStateFlow(value))
+        }[key]
+
+        if (previousFlow != null) previousFlow.value = value
     }
 
-    private fun <T> readFromDisk(key: SettingsSectionKey<T>): T {
+    private fun <T> readFromDisk(key: SettingsSectionKey<T>): T = runCatching {
         val path = fileFor(key.name)
-        return try {
-            if (!fileSystem.exists(path)) return key.defaultValue
-            fileSystem.source(path).buffered().use { src ->
-                val content = src.readString()
-                json.decodeFromString(key.serializer, content)
-            }
-        } catch (_: Throwable) {
-            // On any error, return the default value to keep the app functioning.
-            key.defaultValue
+        fileSystem.source(path).buffered().use { src ->
+            val content = src.readString()
+            json.decodeFromString(key.serializer, content)
         }
-    }
+    }.getOrDefault(key.defaultValue)
 
     private fun <T> writeToDisk(key: SettingsSectionKey<T>, value: T) {
         val path = fileFor(key.name)
