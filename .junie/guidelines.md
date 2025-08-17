@@ -94,6 +94,8 @@ Run a specific test class:
 
 ### Code Style
 
+- Use full name variables, methods, classes, properties, etc.
+- Avoid one-letter or two-letter variable names (for example, prefer `index` and `conversation` over `idx` and `conv`)
 - Always use import statements, and avoid fully qualified names in the code at all costs
 - If necessary, use `import` ... `as` statements to rename imports
 - Only use inline comments when essential and make code self-explanatory through naming conventions
