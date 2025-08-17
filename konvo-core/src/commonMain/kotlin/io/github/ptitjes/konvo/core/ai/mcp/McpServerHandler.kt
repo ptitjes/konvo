@@ -20,7 +20,11 @@ internal class McpServerHandler(
         private val logger = KotlinLogging.logger {}
     }
 
-    private val coroutineScope = CoroutineScope(coroutineContext + Dispatchers.IO + SupervisorJob())
+    private val job = SupervisorJob()
+    private val handler = CoroutineExceptionHandler { _, exception ->
+        logger.error(exception) { "Exception caught in MCP server handler: $name" }
+    }
+    private val coroutineScope = CoroutineScope(coroutineContext + Dispatchers.IO + handler + job)
 
     private var process: Process? = null
     private var processObserverJob: Job? = null
