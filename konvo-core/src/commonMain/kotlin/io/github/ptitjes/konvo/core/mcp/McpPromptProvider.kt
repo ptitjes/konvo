@@ -1,8 +1,8 @@
-package io.github.ptitjes.konvo.core.ai.mcp
+package io.github.ptitjes.konvo.core.mcp
 
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.dsl.Prompt
-import io.github.ptitjes.konvo.core.ai.prompts.*
+import io.github.ptitjes.konvo.core.prompts.*
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import io.modelcontextprotocol.kotlin.sdk.Prompt as McpPrompt

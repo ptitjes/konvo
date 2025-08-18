@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.components
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import io.github.ptitjes.konvo.core.ai.prompts.*
+import io.github.ptitjes.konvo.core.prompts.*
 
 /**
  * A selector for prompts.

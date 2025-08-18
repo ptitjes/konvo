@@ -9,10 +9,10 @@ import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.markdown.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
-import io.github.ptitjes.konvo.core.ai.tools.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.tools.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*

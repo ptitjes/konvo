@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo
 
-import io.github.ptitjes.konvo.core.ai.mcp.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.platform.*
 import kotlinx.io.*
 import kotlinx.io.files.*

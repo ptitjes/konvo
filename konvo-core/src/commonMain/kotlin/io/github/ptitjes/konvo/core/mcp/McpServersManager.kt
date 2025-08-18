@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.mcp
+package io.github.ptitjes.konvo.core.mcp
 
 import io.github.oshai.kotlinlogging.*
 import io.modelcontextprotocol.kotlin.sdk.client.*

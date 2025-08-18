@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.prompts
+package io.github.ptitjes.konvo.core.prompts
 
 /**
  * Dedicated provider interface for PromptCard entries.

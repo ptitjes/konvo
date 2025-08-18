@@ -1,8 +1,8 @@
-package io.github.ptitjes.konvo.core.ai.mcp
+package io.github.ptitjes.konvo.core.mcp
 
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.mcp.*
-import io.github.ptitjes.konvo.core.ai.tools.*
+import io.github.ptitjes.konvo.core.tools.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.serialization.json.*
 import ai.koog.agents.mcp.McpTool as KoogMcpTool
@@ -11,7 +11,7 @@ import io.modelcontextprotocol.kotlin.sdk.Tool as McpTool
 class McpToolProvider(
     private val serversManager: McpServersManager,
     private val permissions: ToolPermissions?,
-) : io.github.ptitjes.konvo.core.ai.tools.ToolProvider {
+) : ToolProvider {
     override val name: String = "MCP"
 
     override suspend fun query(): List<ToolCard> {

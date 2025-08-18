@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.core.settings
 
-import io.github.ptitjes.konvo.core.ai.mcp.*
+import io.github.ptitjes.konvo.core.mcp.*
 import kotlinx.serialization.*
 
 @Serializable

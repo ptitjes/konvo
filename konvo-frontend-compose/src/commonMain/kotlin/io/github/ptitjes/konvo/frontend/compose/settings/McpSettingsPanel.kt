@@ -7,7 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.ai.mcp.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*

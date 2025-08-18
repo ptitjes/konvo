@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.tools
+package io.github.ptitjes.konvo.core.tools
 
 /**
  * Dedicated provider interface for ToolCard entries.
