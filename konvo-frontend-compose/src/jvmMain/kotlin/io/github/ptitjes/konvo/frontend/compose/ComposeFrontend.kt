@@ -65,13 +65,19 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     import(configurationProviders(configuration))
 
+    bind<McpServerSpecificationsManager> {
+        singleton {
+            SettingsBasedMcpServerSpecificationsManager(coroutineContext, instance())
+        }
+    }
+
     bind<ModelManager> { singleton { SettingsBasedModelProviderManager(coroutineContext, instance()) } }
     bind<PromptManager> { singleton { DiPromptManager(coroutineContext, instance()) } }
     bind<ToolManager> { singleton { DiToolManager(coroutineContext, instance()) } }
     bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
 
-    bindFactory { coroutineContext: CoroutineContext ->
-        McpSession(coroutineContext, instance())
+    bindFactory<CoroutineContext, McpHostSession> { coroutineContext: CoroutineContext ->
+        McpHostSession(coroutineContext, instance())
     }
 
     bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
@@ -91,7 +97,16 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSingleton { LiveConversationsManager(coroutineContext, instance(), instance()) }
 
     bindSingletonOf(::ConversationListViewModel)
-    bindSingletonOf(::NewConversationViewModel)
+    bind {
+        singleton {
+            NewConversationViewModel(
+                modelManager = instance(),
+                characterManager = instance(),
+                mcpHostSessionFactory = factory(),
+                conversationRepository = instance(),
+            )
+        }
+    }
     bindSingletonOf(::AppViewModel)
     bindFactory { initialConversation: Conversation ->
         ConversationViewModel(instance(), instance(), initialConversation)

@@ -2,16 +2,19 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
+import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.coroutines.*
 import kotlin.time.*
 
 /**
@@ -19,10 +22,16 @@ import kotlin.time.*
  */
 class NewConversationViewModel(
     private val modelManager: ModelManager,
-    private val characterCardManager: CharacterManager,
-    private val mcpToolManager: ToolManager,
+    private val characterManager: CharacterManager,
+    private val mcpHostSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
     private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
+
+    companion object {
+        private val logger = KotlinLogging.logger { }
+    }
+
+    private lateinit var mcpHostSession: McpHostSession
 
     var selectedAgentType: AgentType by mutableStateOf(AgentType.QuestionAnswer)
         private set
@@ -35,17 +44,29 @@ class NewConversationViewModel(
 
     init {
         viewModelScope.launch {
+            mcpHostSession = mcpHostSessionFactory(viewModelScope.coroutineContext)
+            mcpHostSession.addAllServers()
+
             val availableModels = modelManager.models.first()
-            val availableTools = mcpToolManager.tools.first()
-            val availableCharacters = characterCardManager.characters.first()
+            val availableTools = mcpHostSession.tools.first()
+            val availableCharacters = characterManager.characters.first()
 
             updateQuestionAnswerState(availableModels, availableTools)
             updateRoleplayState(availableModels, availableCharacters)
 
             launch {
-                modelManager.models.collect { models ->
-                    updateQuestionAnswerState(models, availableTools)
-                    updateRoleplayState(models, availableCharacters)
+                combine(
+                    modelManager.models,
+                    mcpHostSession.tools,
+                    characterManager.characters
+                ) { models, tools, characters ->
+                    Triple(models, tools, characters)
+                }.collect { (models, tools, characters) ->
+                    logger.debug {
+                        "Collecting ${models.size} models, ${tools.size} tools and ${characters.size} characters"
+                    }
+                    updateQuestionAnswerState(models, tools)
+                    updateRoleplayState(models, characters)
                 }
             }
         }
@@ -68,7 +89,9 @@ class NewConversationViewModel(
 
                     previous.copy(
                         availableModels = availableModels,
+                        availableTools = availableTools,
                         selectedModel = availableModels.first(),
+                        selectedTools = previous.selectedTools.intersect(availableTools.toSet()).toList(),
                     )
                 }
 

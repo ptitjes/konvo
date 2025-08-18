@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.seconds
 
 internal class McpServerHandler(
     coroutineContext: CoroutineContext,
-    private val name: String,
+    val name: String,
     private val specification: ServerSpecification,
 ) {
     private companion object {
