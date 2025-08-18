@@ -155,6 +155,13 @@ The project uses Jetpack Compose for UI development:
 - Compose Foundation is used for layout components
 - Compose Tooling is used for debugging
 
+### File Storage
+
+- When creating Data Transfer Objects (DTOs) for JSON serialization, use Kotlin serialization
+- Always add @SerialName annotations on DTO classes and objects to avoid class names in JSON files
+- Serial names must be in lower caps with words separated by dashes (i.e., kebab-case) and not include the "dto" word.
+  For example, for the class `ToolCallResultDto` the serial name will be "tool-call-result".
+
 ## Additional Development Information
 
 ### Debugging

@@ -19,6 +19,7 @@ object FilesLayout {
  * Top-level index containing summaries for fast listing without opening each conversation directory.
  */
 @Serializable
+@SerialName("conversation-index")
 internal data class ConversationIndexDto(
     val schemaVersion: Int = 2,
     val conversations: List<ConversationIndexEntryDto>,
@@ -28,6 +29,7 @@ internal data class ConversationIndexDto(
  * Summary entry mirroring [Conversation] fields necessary for listing.
  */
 @Serializable
+@SerialName("conversation-index-entry")
 internal data class ConversationIndexEntryDto(
     val id: String,
     val title: String,

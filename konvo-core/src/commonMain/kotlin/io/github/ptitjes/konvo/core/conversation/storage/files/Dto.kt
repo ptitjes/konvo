@@ -3,16 +3,13 @@
 package io.github.ptitjes.konvo.core.conversation.storage.files
 
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.core.models.*
-import io.github.ptitjes.konvo.core.prompts.*
-import io.github.ptitjes.konvo.core.tools.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.time.*
 
 @Serializable
+@SerialName("conversation")
 internal data class ConversationDto(
     val id: String,
     val title: String,
@@ -28,6 +25,7 @@ internal data class ConversationDto(
 )
 
 @Serializable
+@SerialName("event")
 internal sealed class EventDto {
     abstract val id: String
 
@@ -37,6 +35,7 @@ internal sealed class EventDto {
 }
 
 @Serializable
+@SerialName("user-message")
 internal data class UserMessageDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
@@ -46,6 +45,7 @@ internal data class UserMessageDto(
 ) : EventDto()
 
 @Serializable
+@SerialName("assistant-message")
 internal data class AssistantMessageDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
@@ -54,6 +54,7 @@ internal data class AssistantMessageDto(
 ) : EventDto()
 
 @Serializable
+@SerialName("assistant-processing")
 internal data class AssistantProcessingDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
@@ -62,6 +63,7 @@ internal data class AssistantProcessingDto(
 ) : EventDto()
 
 @Serializable
+@SerialName("tool-use-vetting")
 internal data class ToolUseVettingDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
@@ -70,6 +72,7 @@ internal data class ToolUseVettingDto(
 ) : EventDto()
 
 @Serializable
+@SerialName("tool-use-notification")
 internal data class ToolUseNotificationDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
@@ -79,15 +82,19 @@ internal data class ToolUseNotificationDto(
 ) : EventDto()
 
 @Serializable
+@SerialName("participant")
 internal sealed class ParticipantDto {
     @Serializable
+    @SerialName("user")
     data class User(val id: String, val name: String) : ParticipantDto()
 
     @Serializable
+    @SerialName("agent")
     data class Agent(val id: String, val name: String) : ParticipantDto()
 }
 
 @Serializable
+@SerialName("attachment")
 internal data class AttachmentDto(
     val type: String,
     val url: String,
@@ -96,6 +103,7 @@ internal data class AttachmentDto(
 )
 
 @Serializable
+@SerialName("tool-call")
 internal data class ToolCallDto(
     val id: String,
     val tool: String,
@@ -103,39 +111,39 @@ internal data class ToolCallDto(
 )
 
 @Serializable
+@SerialName("tool-call-result")
 internal sealed class ToolCallResultDto {
     @Serializable
+    @SerialName("success")
     data class Success(val text: String) : ToolCallResultDto()
 
     @Serializable
+    @SerialName("execution-failure")
     data class ExecutionFailure(val reason: String) : ToolCallResultDto()
 }
 
 @Serializable
+@SerialName("agent-configuration")
 internal sealed class AgentConfigurationDto {
     @Serializable
+    @SerialName("none")
     data object None : AgentConfigurationDto()
 
     @Serializable
+    @SerialName("question-answer")
     data class QuestionAnswer(
         val toolNames: List<String>,
         val modelName: String,
     ) : AgentConfigurationDto()
 
     @Serializable
+    @SerialName("roleplay")
     data class Roleplay(
         val characterName: String,
         val characterGreetingIndex: Int? = null,
         val userName: String,
         val modelName: String,
     ) : AgentConfigurationDto()
-}
-
-internal interface CardResolver {
-    fun promptByName(name: String): PromptCard?
-    fun toolByName(name: String): ToolCard?
-    fun modelByName(name: String): ModelCard?
-    fun characterByName(name: String): CharacterCard?
 }
 
 internal object DtoMappers {
