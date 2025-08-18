@@ -27,10 +27,10 @@ suspend fun main() = coroutineScope {
 
     try {
         mcpServersManager.startAndConnectServers()
-        di.direct.instance<ModelManager>().init()
         di.direct.instance<ProviderManager<PromptCard>>().init()
         di.direct.instance<ProviderManager<ToolCard>>().init()
         di.direct.instance<CharacterCardManager>().init()
+        di.direct.instance<Konvo>().init()
 
         discordBot(konvo, configuration.discord.token)
     } finally {
@@ -48,7 +48,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     import(configurationProviders(configuration))
 
-    bind<ModelManager> { singleton { DiModelManager(instance()) } }
+    bind<ModelManager> { singleton { DiModelManager(coroutineContext, instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
     bind<CharacterCardManager> { singleton { DiCharacterCardManager(instance()) } }

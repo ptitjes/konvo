@@ -4,6 +4,7 @@ import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.spi.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.models.*
+import kotlinx.coroutines.flow.*
 import org.kodein.di.*
 
 class Konvo(
@@ -14,7 +15,14 @@ class Konvo(
     private val toolProviders: ProviderManager<ToolCard> by instance()
     private val characterProviderManager: CharacterCardManager by instance()
 
-    val models: List<Model> get() = modelProviderManager.elements
+    private var _models: List<Model> = emptyList()
+
+    suspend fun init() {
+        // Ensure models are initialized by collecting the first emission and caching it
+        _models = modelProviderManager.models.first()
+    }
+
+    val models: List<Model> get() = _models
     val prompts: List<PromptCard> get() = promptProviderManager.elements
     val tools: List<ToolCard> get() = toolProviders.elements
     val characters: List<CharacterCard> get() = characterProviderManager.elements

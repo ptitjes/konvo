@@ -25,7 +25,7 @@ class LiveConversation(
         private val logger = KotlinLogging.logger {}
     }
 
-    private val job = SupervisorJob()
+    private val job = SupervisorJob(coroutineContext[Job])
     private val handler = CoroutineExceptionHandler { _, exception ->
         logger.error(exception) { "Exception caught in conversation" }
     }

@@ -15,7 +15,7 @@ class McpSession(
         private val logger = KotlinLogging.logger {}
     }
 
-    private val sessionJob = SupervisorJob()
+    private val sessionJob = SupervisorJob(coroutineContext[Job])
     private val coroutineScope = CoroutineScope(coroutineContext + Dispatchers.IO + sessionJob)
 
     private lateinit var settings: StateFlow<McpSettings>

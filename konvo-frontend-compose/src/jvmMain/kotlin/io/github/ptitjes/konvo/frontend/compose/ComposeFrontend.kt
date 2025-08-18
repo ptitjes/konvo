@@ -33,7 +33,6 @@ fun runComposeFrontend() = application {
 
         di = buildDi(configuration).apply {
             direct.instance<McpServersManager>().startAndConnectServers()
-            direct.instance<ModelManager>().init()
             direct.instance<ProviderManager<PromptCard>>().init()
             direct.instance<ProviderManager<ToolCard>>().init()
             direct.instance<CharacterCardManager>().init()
@@ -70,7 +69,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     import(configurationProviders(configuration))
 
-    bind<ModelManager> { singleton { SettingsBasedModelProviderManager(instance()) } }
+    bind<ModelManager> { singleton { SettingsBasedModelProviderManager(coroutineContext, instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
     bind<CharacterCardManager> { singleton { DiCharacterCardManager(instance()) } }

@@ -36,59 +36,79 @@ class NewConversationViewModel(
 
     init {
         viewModelScope.launch {
-            val availableModels = modelManager.elements
+            val availableModels = modelManager.models.first()
             val availableTools = mcpToolManager.elements
             val availableCharacters = characterCardManager.elements
 
-            _questionAnswer.update { previous ->
-                when {
-                    availableModels.isEmpty() -> NewQuestionAnswerState.Unavailable(
-                        noAvailableModels = true,
-                    )
+            updateQuestionAnswerState(availableModels, availableTools)
+            updateRoleplayState(availableModels, availableCharacters)
 
-                    previous is NewQuestionAnswerState.Available -> {
-                        val noTools = previous.selectedTools.isEmpty()
-                        val availableModels =
-                            if (noTools) availableModels else availableModels.filter { it.supportsTools }
-
-                        previous.copy(
-                            availableModels = availableModels,
-                            selectedModel = availableModels.first(),
-                        )
-                    }
-
-                    else -> NewQuestionAnswerState.Available(
-                        availableModels = availableModels,
-                        availableTools = availableTools,
-                        selectedModel = availableModels.first(),
-                        selectedTools = emptyList(),
-                    )
+            launch {
+                modelManager.models.collect { models ->
+                    updateQuestionAnswerState(models, availableTools)
+                    updateRoleplayState(models, availableCharacters)
                 }
             }
+        }
+    }
 
-            _roleplay.update { previous ->
-                when {
-                    availableCharacters.isEmpty() || availableModels.isEmpty() -> NewRoleplayState.Unavailable(
-                        noAvailableCharacters = availableModels.isEmpty(),
-                        noAvailableModels = availableCharacters.isEmpty(),
-                    )
+    private fun updateQuestionAnswerState(
+        availableModels: List<Model>,
+        availableTools: List<ToolCard>,
+    ) {
+        _questionAnswer.update { previous ->
+            when {
+                availableModels.isEmpty() -> NewQuestionAnswerState.Unavailable(
+                    noAvailableModels = true,
+                )
 
-                    previous is NewRoleplayState.Available -> {
-                        previous.copy(
-                            availableModels = availableModels,
-                            selectedModel = availableModels.first(),
-                        )
-                    }
+                previous is NewQuestionAnswerState.Available -> {
+                    val noTools = previous.selectedTools.isEmpty()
+                    val availableModels =
+                        if (noTools) availableModels else availableModels.filter { it.supportsTools }
 
-                    else -> NewRoleplayState.Available(
+                    previous.copy(
                         availableModels = availableModels,
-                        availableCharacters = availableCharacters,
-                        selectedCharacter = availableCharacters.first(),
-                        selectedGreetingIndex = null,
-                        userName = "User",
                         selectedModel = availableModels.first(),
                     )
                 }
+
+                else -> NewQuestionAnswerState.Available(
+                    availableModels = availableModels,
+                    availableTools = availableTools,
+                    selectedModel = availableModels.first(),
+                    selectedTools = emptyList(),
+                )
+            }
+        }
+    }
+
+    private fun updateRoleplayState(
+        availableModels: List<Model>,
+        availableCharacters: List<CharacterCard>,
+    ) {
+        _roleplay.update { previous ->
+            when {
+                availableCharacters.isEmpty() || availableModels.isEmpty() -> NewRoleplayState.Unavailable(
+                    noAvailableCharacters = availableModels.isEmpty(),
+                    noAvailableModels = availableCharacters.isEmpty(),
+                )
+
+                previous is NewRoleplayState.Available -> {
+                    previous.copy(
+                        availableModels = availableModels,
+                        selectedModel = availableModels.first(),
+                    )
+                }
+
+                else -> NewRoleplayState.Available(
+                    availableModels = availableModels,
+                    availableCharacters = availableCharacters,
+                    selectedCharacter = availableCharacters.first(),
+                    selectedGreetingIndex = null,
+                    userName = "User",
+                    selectedModel = availableModels.first(),
+                )
             }
         }
     }
