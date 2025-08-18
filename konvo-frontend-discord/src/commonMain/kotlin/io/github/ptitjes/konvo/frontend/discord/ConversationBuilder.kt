@@ -60,7 +60,7 @@ data class RoleplayModeBuilder(
             error("Conversation configuration is incomplete")
 
         return RoleplayAgentConfiguration(
-            characterName = character.name,
+            characterId = character.id,
             characterGreetingIndex = characterGreetingIndex,
             userName = userName,
             modelName = model.name,

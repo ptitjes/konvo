@@ -46,8 +46,8 @@ fun CharacterGridSelector(
         horizontalArrangement = Arrangement.spacedBy(cellSpacing),
         contentPadding = PaddingValues(vertical = 4.dp),
     ) {
-        items(characters, key = { it.name }) { character ->
-            val isSelected = character.name == selectedCharacter.name
+        items(characters, key = { it.id }) { character ->
+            val isSelected = character.id == selectedCharacter.id
             CharacterGridItem(
                 character = character,
                 selected = isSelected,

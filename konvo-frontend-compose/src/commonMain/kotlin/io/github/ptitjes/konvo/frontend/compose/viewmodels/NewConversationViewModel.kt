@@ -280,7 +280,7 @@ val NewRoleplayState.canCreate: Boolean
 fun NewRoleplayState.createConfiguration(): RoleplayAgentConfiguration =
     when (this) {
         is NewRoleplayState.Available -> RoleplayAgentConfiguration(
-            characterName = selectedCharacter.name,
+            characterId = selectedCharacter.id,
             characterGreetingIndex = selectedGreetingIndex,
             userName = userName,
             modelName = selectedModel.name,

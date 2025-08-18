@@ -139,7 +139,7 @@ internal sealed class AgentConfigurationDto {
     @Serializable
     @SerialName("roleplay")
     data class Roleplay(
-        val characterName: String,
+        val characterId: String,
         val characterGreetingIndex: Int? = null,
         val userName: String,
         val modelName: String,
@@ -166,7 +166,7 @@ internal object DtoMappers {
             )
 
             is RoleplayAgentConfiguration -> AgentConfigurationDto.Roleplay(
-                characterName = agentConfiguration.characterName,
+                characterId = agentConfiguration.characterId,
                 characterGreetingIndex = agentConfiguration.characterGreetingIndex,
                 userName = agentConfiguration.userName,
                 modelName = agentConfiguration.modelName,
@@ -192,7 +192,7 @@ internal object DtoMappers {
             )
 
             is AgentConfigurationDto.Roleplay -> RoleplayAgentConfiguration(
-                characterName = agentConfigurationDto.characterName,
+                characterId = agentConfigurationDto.characterId,
                 characterGreetingIndex = agentConfigurationDto.characterGreetingIndex,
                 userName = agentConfigurationDto.userName,
                 modelName = agentConfigurationDto.modelName,

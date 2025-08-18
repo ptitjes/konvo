@@ -20,6 +20,7 @@ kotlin {
                 implementation(libs.bundles.ktorClient)
                 implementation(libs.ktorClientCio)
                 implementation(libs.uriKmp)
+                implementation(libs.kim)
             }
         }
 

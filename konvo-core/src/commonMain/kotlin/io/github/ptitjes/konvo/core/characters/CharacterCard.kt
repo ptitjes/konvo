@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.characters
 
 interface CharacterCard {
+    val id: String
     val name: String
     val avatarUrl: String?
     val description: String

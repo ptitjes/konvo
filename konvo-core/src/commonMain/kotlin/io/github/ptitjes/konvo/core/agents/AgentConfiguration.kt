@@ -11,7 +11,7 @@ data class QuestionAnswerAgentConfiguration(
 ) : AgentConfiguration
 
 data class RoleplayAgentConfiguration(
-    val characterName: String,
+    val characterId: String,
     val characterGreetingIndex: Int?,
     val userName: String,
     val modelName: String,

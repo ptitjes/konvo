@@ -16,13 +16,13 @@ fun EphemeralComponentContainerBuilder.characterSelector(
         stringSelect(
             onSelect = { selected ->
                 acknowledge()
-                onSelectCharacter(characters.first { it.name == selected.first() })
+                onSelectCharacter(characters.first { it.id == selected.first() })
             },
         ) {
             placeholder = "Select a character"
 
             characters.forEach { character ->
-                option(label = character.name, value = character.name) {
+                option(label = character.name, value = character.id) {
                     val tags = character.tags.joinToString(", ")
                     description = tags.maybeEllipsisDiscordLabel()
                     default = character == selectedCharacter

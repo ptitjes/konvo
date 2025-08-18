@@ -21,7 +21,7 @@ class AgentFactory(
 
             is RoleplayAgentConfiguration -> buildRoleplayAgent(
                 model = modelProviderManager.named(agentConfiguration.modelName),
-                character = characterProviderManager.named(agentConfiguration.characterName),
+                character = characterProviderManager.withId(agentConfiguration.characterId),
                 characterGreetingIndex = agentConfiguration.characterGreetingIndex,
                 userName = agentConfiguration.userName,
             )

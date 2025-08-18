@@ -266,7 +266,7 @@ private fun MessageBuilder.conversationStartMessage(
             }
 
             is RoleplayAgentConfiguration -> {
-                val character = konvo.characters.first { it.name == configuration.characterName }
+                val character = konvo.characters.first { it.id == configuration.characterId }
                 val model = konvo.models.first { it.name == configuration.modelName }
 
                 fun conversationDescriptionString(): String = markdown {

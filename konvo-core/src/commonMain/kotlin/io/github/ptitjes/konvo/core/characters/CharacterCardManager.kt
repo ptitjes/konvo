@@ -11,7 +11,7 @@ interface CharacterManager {
 }
 
 /**
- * Retrieve a character by its name from the current characters emission or throw if not found.
+ * Retrieve a character by its id from the current characters emission or throw if not found.
  */
-suspend fun CharacterManager.named(name: String): CharacterCard =
-    characters.first().firstOrNull { it.name == name } ?: error("Model not found: $name")
+suspend fun CharacterManager.withId(id: String): CharacterCard =
+    characters.first().firstOrNull { it.id == id } ?: error("Model not found: $id")

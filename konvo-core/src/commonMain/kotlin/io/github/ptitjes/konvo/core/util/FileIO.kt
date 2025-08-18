@@ -1,8 +1,11 @@
 package io.github.ptitjes.konvo.core.util
 
+import io.github.oshai.kotlinlogging.*
 import kotlinx.io.*
 import kotlinx.io.bytestring.*
 import kotlinx.io.files.*
+
+private val logger = KotlinLogging.logger {}
 
 internal fun <T> FileSystem.loadFiles(
     directory: Path,
@@ -12,7 +15,11 @@ internal fun <T> FileSystem.loadFiles(
     if (!exists(directory)) return listOf()
     return list(directory)
         .filter { it.name.endsWith(".$extension") }
-        .mapNotNull { runCatching { loader(it) }.getOrNull() }
+        .mapNotNull {
+            val result = runCatching { loader(it) }
+            if (result.isFailure) logger.error(result.exceptionOrNull()) { "Failed to load file: $it" }
+            result.getOrNull()
+        }
 }
 
 internal fun FileSystem.readText(path: Path): String = source(path).buffered().use { it.readString() }
