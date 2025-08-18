@@ -1,18 +1,17 @@
 package io.github.ptitjes.konvo.core.characters
 
+import kotlinx.coroutines.flow.*
+
 /**
  * Dedicated manager for character cards.
  */
-interface CharacterCardManager {
-    /** The list of available character cards. */
-    val elements: List<CharacterCard>
-
-    /** Initialize the manager (e.g., query providers, load settings). */
-    suspend fun init()
+interface CharacterManager {
+    /** A flow emitting the list of available character cards. */
+    val characters: Flow<List<CharacterCard>>
 }
 
 /**
- * Retrieve a character by its name or throw if not found.
+ * Retrieve a character by its name from the current characters emission or throw if not found.
  */
-fun CharacterCardManager.named(name: String): CharacterCard =
-    elements.firstOrNull { it.name == name } ?: error("Model not found: $name")
+suspend fun CharacterManager.named(name: String): CharacterCard =
+    characters.first().firstOrNull { it.name == name } ?: error("Model not found: $name")

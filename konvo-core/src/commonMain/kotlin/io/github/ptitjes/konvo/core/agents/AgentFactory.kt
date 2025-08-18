@@ -9,7 +9,7 @@ class AgentFactory(
     private val modelProviderManager: ModelManager,
     private val promptProviderManager: ProviderManager<PromptCard>,
     private val toolProviders: ProviderManager<ToolCard>,
-    private val characterProviderManager: CharacterCardManager,
+    private val characterProviderManager: CharacterManager,
 ) {
 
     suspend fun createAgent(agentConfiguration: AgentConfiguration): Agent {

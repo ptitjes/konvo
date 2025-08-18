@@ -20,7 +20,7 @@ import kotlin.time.*
  */
 class NewConversationViewModel(
     private val modelManager: ModelManager,
-    private val characterCardManager: CharacterCardManager,
+    private val characterCardManager: CharacterManager,
     private val mcpToolManager: ProviderManager<ToolCard>,
     private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
@@ -38,7 +38,7 @@ class NewConversationViewModel(
         viewModelScope.launch {
             val availableModels = modelManager.models.first()
             val availableTools = mcpToolManager.elements
-            val availableCharacters = characterCardManager.elements
+            val availableCharacters = characterCardManager.characters.first()
 
             updateQuestionAnswerState(availableModels, availableTools)
             updateRoleplayState(availableModels, availableCharacters)

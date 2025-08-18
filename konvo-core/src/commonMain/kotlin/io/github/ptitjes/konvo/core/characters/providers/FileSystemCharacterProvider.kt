@@ -6,9 +6,9 @@ import io.github.ptitjes.konvo.core.util.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
 
-class FileSystemCharacterCardProvider(
+class FileSystemCharacterProvider(
     storagePaths: StoragePaths,
-) : CharacterCardProvider {
+) : CharacterProvider {
     override val name: String? = null
 
     private val path = Path(storagePaths.dataDirectory, "characters")

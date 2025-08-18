@@ -29,7 +29,6 @@ suspend fun main() = coroutineScope {
         mcpServersManager.startAndConnectServers()
         di.direct.instance<ProviderManager<PromptCard>>().init()
         di.direct.instance<ProviderManager<ToolCard>>().init()
-        di.direct.instance<CharacterCardManager>().init()
         di.direct.instance<Konvo>().init()
 
         discordBot(konvo, configuration.discord.token)
@@ -42,7 +41,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<ModelProvider>()
     bindSet<Provider<PromptCard>>()
     bindSet<Provider<ToolCard>>()
-    bindSet<CharacterCardProvider>()
+    bindSet<CharacterProvider>()
 
     bindSingleton<StoragePaths> { LinuxXdgServerStoragePaths() }
 
@@ -51,7 +50,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind<ModelManager> { singleton { DiModelManager(coroutineContext, instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
-    bind<CharacterCardManager> { singleton { DiCharacterCardManager(instance()) } }
+    bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
 
     bindSingleton<Konvo> { Konvo(di) }
 
@@ -85,8 +84,8 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 
-    inBindSet<CharacterCardProvider> {
-        add { singleton { FileSystemCharacterCardProvider(instance()) } }
+    inBindSet<CharacterProvider> {
+        add { singleton { FileSystemCharacterProvider(instance()) } }
     }
 }
 

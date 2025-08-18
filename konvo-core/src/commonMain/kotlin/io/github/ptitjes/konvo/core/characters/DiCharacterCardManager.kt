@@ -1,17 +1,21 @@
 package io.github.ptitjes.konvo.core.characters
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlin.coroutines.*
+
 /**
  * Character manager backed by a set of CharacterProviders.
  */
-class DiCharacterCardManager(
-    private val providers: Set<CharacterCardProvider>,
-) : CharacterCardManager {
+class DiCharacterManager(
+    coroutineContext: CoroutineContext,
+    private val providers: Set<CharacterProvider>,
+) : CharacterManager {
 
-    private lateinit var _elements: List<CharacterCard>
-    override val elements: List<CharacterCard>
-        get() = _elements
+    private val job = SupervisorJob(coroutineContext[Job])
+    private val coroutineScope = CoroutineScope(coroutineContext + job)
 
-    override suspend fun init() {
-        _elements = providers.flatMap { it.query() }
-    }
+    override val characters: Flow<List<CharacterCard>> =
+        flow { emit(providers.flatMap { it.query() }) }
+            .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
 }

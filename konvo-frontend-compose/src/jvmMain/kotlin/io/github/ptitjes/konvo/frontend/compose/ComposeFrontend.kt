@@ -35,7 +35,6 @@ fun runComposeFrontend() = application {
             direct.instance<McpServersManager>().startAndConnectServers()
             direct.instance<ProviderManager<PromptCard>>().init()
             direct.instance<ProviderManager<ToolCard>>().init()
-            direct.instance<CharacterCardManager>().init()
         }
     }
 
@@ -63,7 +62,7 @@ fun runComposeFrontend() = application {
 fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<Provider<PromptCard>>()
     bindSet<Provider<ToolCard>>()
-    bindSet<CharacterCardProvider>()
+    bindSet<CharacterProvider>()
 
     bindSingleton<StoragePaths> { LinuxXdgHomeStoragePaths() }
 
@@ -72,7 +71,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind<ModelManager> { singleton { SettingsBasedModelProviderManager(coroutineContext, instance()) } }
     bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
     bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
-    bind<CharacterCardManager> { singleton { DiCharacterCardManager(instance()) } }
+    bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
 
     bindFactory { coroutineContext: CoroutineContext ->
         McpSession(coroutineContext, instance())
@@ -118,8 +117,8 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 
-    inBindSet<CharacterCardProvider> {
-        add { singleton { FileSystemCharacterCardProvider(instance()) } }
+    inBindSet<CharacterProvider> {
+        add { singleton { FileSystemCharacterProvider(instance()) } }
     }
 }
 
