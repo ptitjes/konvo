@@ -11,22 +11,23 @@ import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.tools.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlin.coroutines.*
 import kotlin.time.*
 import kotlin.time.Clock
 import kotlin.uuid.*
 
 suspend fun buildQuestionAnswerAgent(
     model: ModelCard,
-    tools: List<ToolCard>,
+    mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
+    toolNames: List<String>,
 ): Agent {
-    val toolRegistry = tools.map { it.toTool() }.let { ToolRegistry { tools(it) } }
-
     return DefaultAgent(
         systemPrompt = buildSystemPrompt(),
         model = model.toLLModel(),
@@ -34,11 +35,12 @@ suspend fun buildQuestionAnswerAgent(
         promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
         strategy = { conversationView ->
             strategy("qa") {
-                val qa by qaWithTools { calls -> conversationView.vetToolCalls(calls, tools) }
+                val qa by qaWithTools { calls -> conversationView.vetToolCalls(calls, emptyList()) }
                 nodeStart then qa then nodeFinish
             }
         },
-        toolRegistry = toolRegistry,
+        mcpSessionFactory = mcpSessionFactory,
+        toolNames = toolNames,
     ) { conversationView ->
         install(EventHandler) {
             onToolValidationError { eventContext ->
@@ -123,7 +125,7 @@ private suspend fun ConversationAgentView.vetToolCalls(
     val vettedCalls = calls.map { CompletableDeferred<Boolean>() }
 
     val (withVetting, withoutVetting) = calls.withIndex().partition { (_, call) ->
-        tools.first { it.name == call.tool }.requiresVetting
+        tools.firstOrNull { it.name == call.tool }?.requiresVetting ?: false
     }
 
     withoutVetting.forEach { (index, _) -> vettedCalls[index].complete(true) }

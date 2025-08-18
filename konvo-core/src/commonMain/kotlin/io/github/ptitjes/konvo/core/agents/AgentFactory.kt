@@ -1,15 +1,13 @@
 package io.github.ptitjes.konvo.core.agents
 
 import io.github.ptitjes.konvo.core.characters.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
-import io.github.ptitjes.konvo.core.prompts.*
-import io.github.ptitjes.konvo.core.tools.*
-import kotlinx.coroutines.flow.*
+import kotlin.coroutines.*
 
 class AgentFactory(
     private val modelProviderManager: ModelManager,
-    private val promptProviderManager: PromptManager,
-    private val toolProviders: ToolManager,
+    private val mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
     private val characterProviderManager: CharacterManager,
 ) {
 
@@ -17,12 +15,8 @@ class AgentFactory(
         return when (agentConfiguration) {
             is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(
                 model = modelProviderManager.named(agentConfiguration.modelName),
-                tools = run {
-                                    val available = toolProviders.tools.first()
-                                    agentConfiguration.toolNames.map { name ->
-                                        available.firstOrNull { it.name == name } ?: error("Model not found: $name")
-                                    }
-                                },
+                mcpSessionFactory = mcpSessionFactory,
+                toolNames = agentConfiguration.toolNames,
             )
 
             is RoleplayAgentConfiguration -> buildRoleplayAgent(

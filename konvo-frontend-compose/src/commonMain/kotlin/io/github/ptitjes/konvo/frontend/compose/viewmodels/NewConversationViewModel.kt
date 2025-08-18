@@ -189,14 +189,6 @@ class NewConversationViewModel(
         it.copy(selectedModel = model)
     }
 
-    val isCreateEnabled: Boolean
-        get() {
-            return when (selectedAgentType) {
-                AgentType.QuestionAnswer -> questionAnswer.value.canCreate
-                AgentType.Roleplay -> roleplay.value.canCreate
-            }
-        }
-
     @OptIn(ExperimentalTime::class)
     fun createConversation(onConversationCreated: (Conversation) -> Unit) = viewModelScope.launch {
         val agentConfiguration = createAgentConfiguration()

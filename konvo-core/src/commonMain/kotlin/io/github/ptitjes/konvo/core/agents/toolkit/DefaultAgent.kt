@@ -15,15 +15,18 @@ import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.model.Attachment
+import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.io.files.*
+import kotlin.coroutines.*
 import kotlin.time.*
 import kotlin.time.Clock
 import ai.koog.prompt.message.Attachment as KoogAttachment
@@ -35,12 +38,16 @@ internal class DefaultAgent(
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
     private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
-    private val toolRegistry: ToolRegistry = ToolRegistry.EMPTY,
+    private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
+    private val toolNames: List<String> = emptyList(),
     private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
 ) : Agent {
     private var prompt: Prompt = systemPrompt
 
-    private fun buildAgent(conversation: ConversationAgentView): AIAgent<Message.User, List<Message.Assistant>> {
+    private fun buildAgent(
+        toolRegistry: ToolRegistry,
+        conversation: ConversationAgentView,
+    ): AIAgent<Message.User, List<Message.Assistant>> {
         val agentConfig = AIAgentConfig(
             prompt = prompt,
             model = model,
@@ -78,7 +85,7 @@ internal class DefaultAgent(
     }
 
     @OptIn(ExperimentalTime::class)
-    override suspend fun joinConversation(conversation: ConversationAgentView) {
+    override suspend fun joinConversation(conversation: ConversationAgentView) = coroutineScope {
         if (conversation.transcript.events.isEmpty()) {
             welcomeMessage?.let { content ->
                 conversation.sendMessage(content)
@@ -93,18 +100,31 @@ internal class DefaultAgent(
             }
         }
 
-        conversation.events.buffer(Channel.UNLIMITED).collect { event ->
-            when (event) {
-                is Event.UserMessage -> {
-                    conversation.sendProcessing(true)
-                    val agent = buildAgent(conversation)
-                    val result = agent.run(event.toUserMessage())
-                    result.forEach { conversation.sendMessage(it.content) }
-                    conversation.sendProcessing(false)
-                }
+        val mcpHostSession = mcpSessionFactory?.invoke(coroutineContext)
 
-                else -> {}
+        mcpHostSession?.addAllServers()
+        val tools = mcpHostSession?.tools?.first()
+        val toolRegistry = tools
+            ?.filter { it.name in toolNames }
+            ?.map { it.toTool() }
+            .let { ToolRegistry { if (it != null) tools(it) } }
+
+        try {
+            conversation.events.buffer(Channel.UNLIMITED).collect { event ->
+                when (event) {
+                    is Event.UserMessage -> {
+                        conversation.sendProcessing(true)
+                        val agent = buildAgent(toolRegistry, conversation)
+                        val result = agent.run(event.toUserMessage())
+                        result.forEach { conversation.sendMessage(it.content) }
+                        conversation.sendProcessing(false)
+                    }
+
+                    else -> {}
+                }
             }
+        } finally {
+            mcpHostSession?.close()
         }
     }
 

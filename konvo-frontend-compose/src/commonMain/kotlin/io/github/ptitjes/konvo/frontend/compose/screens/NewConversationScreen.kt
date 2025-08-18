@@ -33,6 +33,15 @@ fun NewConversationScreen(
 ) {
     val paneType = LocalListDetailPaneType.current
 
+    val selectedAgentType = viewModel.selectedAgentType
+    val questionAnswer by viewModel.questionAnswer.collectAsState()
+    val roleplay by viewModel.roleplay.collectAsState()
+
+    val canCreate = when (selectedAgentType) {
+        AgentType.QuestionAnswer -> questionAnswer.canCreate
+        AgentType.Roleplay -> roleplay.canCreate
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -58,7 +67,7 @@ fun NewConversationScreen(
                         onClick = {
                             viewModel.createConversation(onConversationCreated)
                         },
-                        enabled = viewModel.isCreateEnabled
+                        enabled = canCreate,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
@@ -82,10 +91,6 @@ fun NewConversationScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                val selectedAgentType = viewModel.selectedAgentType
-                val questionAnswer by viewModel.questionAnswer.collectAsState()
-                val roleplay by viewModel.roleplay.collectAsState()
-
                 NewConversationPanel(
                     selectedAgentType = selectedAgentType,
                     questionAnswer = questionAnswer,

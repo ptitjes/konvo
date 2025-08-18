@@ -29,10 +29,9 @@ fun runComposeFrontend() = application {
 
     LaunchedEffect(Unit) {
         val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json5"))
-
-        di = buildDi(configuration).apply {
-            direct.instance<McpServersManager>().startAndConnectServers()
-        }
+        di = buildDi(configuration)
+        // We need a slight delay, otherwise the recomposition is cancelled
+        delay(100)
     }
 
     di?.let {
@@ -85,7 +84,15 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind { singleton { SettingsListViewModel() } }
     bind { singleton { SettingsViewModel(instance()) } }
 
-    bindSingletonOf(::AgentFactory)
+    bind {
+        singleton {
+            AgentFactory(
+                modelProviderManager = instance(),
+                mcpSessionFactory = factory(),
+                characterProviderManager = instance(),
+            )
+        }
+    }
 
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
     bindSingleton<ConversationRepository> {
@@ -115,8 +122,6 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
 fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {
     bindConstant(tag = DataDirectory) { configuration.dataDirectory }
-
-    bind { singleton { McpServersManager(coroutineContext, configuration.mcp.servers) } }
 
     inBindSet<PromptProvider> {
         add { singleton { McpPromptProvider(instance()) } }
