@@ -1,11 +1,10 @@
-package io.github.ptitjes.konvo.core.mcp
+package io.github.ptitjes.konvo.core.prompts
 
 import ai.koog.prompt.dsl.*
-import ai.koog.prompt.dsl.Prompt
-import io.github.ptitjes.konvo.core.prompts.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.modelcontextprotocol.kotlin.sdk.*
+import io.modelcontextprotocol.kotlin.sdk.Prompt
 import io.modelcontextprotocol.kotlin.sdk.client.*
-import io.modelcontextprotocol.kotlin.sdk.Prompt as McpPrompt
 
 class McpPromptProvider(
     private val serversManager: McpServersManager,
@@ -30,12 +29,12 @@ class McpPromptProvider(
     private inner class McpPromptCard(
         val clientName: String,
         val client: Client,
-        val prompt: McpPrompt,
+        val prompt: Prompt,
     ) : PromptCard {
         override val name: String get() = prompt.name
         override val description: String? get() = prompt.description
 
-        override suspend fun toPrompt(): Prompt {
+        override suspend fun toPrompt(): ai.koog.prompt.dsl.Prompt {
             val promptResult = client.getPrompt(GetPromptRequest(name, mapOf()))
                 ?: error("Prompt not found")
 

@@ -1,8 +1,8 @@
-package io.github.ptitjes.konvo.core.mcp
+package io.github.ptitjes.konvo.core.tools
 
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.mcp.*
-import io.github.ptitjes.konvo.core.tools.*
+import io.github.ptitjes.konvo.core.mcp.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.serialization.json.*
 import ai.koog.agents.mcp.McpTool as KoogMcpTool
