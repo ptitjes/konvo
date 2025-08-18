@@ -20,13 +20,14 @@ class SettingsBasedModelProviderManager(
 
     private val modelCache = mutableMapOf<ModelProviderConfiguration, List<ModelCard>>()
 
-    private suspend fun loadModels(settings: ModelProviderSettings): List<ModelCard> {
-        return settings.providers.flatMap { providerSettings ->
-            modelCache.getOrPut(providerSettings.configuration) {
-                loadModels(providerSettings.name, providerSettings.configuration)
+    private suspend fun loadModels(settings: ModelProviderSettings): List<ModelCard> =
+        withContext(Dispatchers.Default) {
+            settings.providers.flatMap { providerSettings ->
+                modelCache.getOrPut(providerSettings.configuration) {
+                    loadModels(providerSettings.name, providerSettings.configuration)
+                }
             }
         }
-    }
 
     private suspend fun loadModels(
         name: String,

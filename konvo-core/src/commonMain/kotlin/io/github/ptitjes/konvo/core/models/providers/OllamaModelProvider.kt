@@ -4,6 +4,7 @@ import ai.koog.prompt.executor.clients.*
 import ai.koog.prompt.executor.ollama.client.*
 import ai.koog.prompt.llm.*
 import io.github.ptitjes.konvo.core.models.*
+import kotlinx.coroutines.*
 import ai.koog.prompt.executor.ollama.client.OllamaModelCard as KoogOllamaModelCard
 
 const val DEFAULT_OLLAMA_URL = "http://localhost:11434"
@@ -14,8 +15,8 @@ class OllamaModelProvider(
 ) : ModelProvider {
     private val client by lazy { OllamaClient(baseUrl) }
 
-    override suspend fun query(): List<ModelCard> {
-        return client.getModels()
+    override suspend fun query(): List<ModelCard> = withContext(Dispatchers.IO) {
+        client.getModels()
             .filter { LLMCapability.Completion in it.capabilities }
             .sortedBy { it.name }
             .map { card -> OllamaModelCard(card) }
