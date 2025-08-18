@@ -1,5 +1,6 @@
-package io.github.ptitjes.konvo.core.settings
+package io.github.ptitjes.konvo.frontend.compose.settings
 
+import io.github.ptitjes.konvo.core.settings.*
 import kotlinx.serialization.*
 
 /**

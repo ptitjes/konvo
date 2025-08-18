@@ -8,8 +8,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.core.models.providers.*
-import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*
 
@@ -121,7 +122,7 @@ private fun ProviderEditor(
         }
 
         when (val conf = provider.configuration) {
-            is ModelProviderConfiguration.Ollama -> {
+            is Ollama -> {
                 OutlinedTextField(
                     value = conf.url,
                     onValueChange = { newUrl -> onChange(provider.copy(configuration = conf.copy(url = newUrl))) },
@@ -131,7 +132,7 @@ private fun ProviderEditor(
                 )
             }
 
-            is ModelProviderConfiguration.Anthropic -> {
+            is Anthropic -> {
                 OutlinedTextField(
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
@@ -142,7 +143,7 @@ private fun ProviderEditor(
                 )
             }
 
-            is ModelProviderConfiguration.OpenAI -> {
+            is OpenAI -> {
                 OutlinedTextField(
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
@@ -153,7 +154,7 @@ private fun ProviderEditor(
                 )
             }
 
-            is ModelProviderConfiguration.Google -> {
+            is Google -> {
                 OutlinedTextField(
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
@@ -187,23 +188,23 @@ private fun buildNewConfiguration(
     provider: NamedModelProvider,
 ): ModelProviderConfiguration = when (selected) {
     ProviderType.Ollama -> when (val configuration = provider.configuration) {
-        is ModelProviderConfiguration.Ollama -> configuration
-        else -> ModelProviderConfiguration.Ollama(url = DEFAULT_OLLAMA_URL)
+        is Ollama -> configuration
+        else -> Ollama(url = DEFAULT_OLLAMA_URL)
     }
 
     ProviderType.Anthropic -> when (val configuration = provider.configuration) {
-        is ModelProviderConfiguration.Anthropic -> configuration
-        else -> ModelProviderConfiguration.Anthropic(apiKey = "")
+        is Anthropic -> configuration
+        else -> Anthropic(apiKey = "")
     }
 
     ProviderType.OpenAI -> when (val configuration = provider.configuration) {
-        is ModelProviderConfiguration.OpenAI -> configuration
-        else -> ModelProviderConfiguration.OpenAI(apiKey = "")
+        is OpenAI -> configuration
+        else -> OpenAI(apiKey = "")
     }
 
     ProviderType.Google -> when (val configuration = provider.configuration) {
-        is ModelProviderConfiguration.Google -> configuration
-        else -> ModelProviderConfiguration.Google(apiKey = "")
+        is Google -> configuration
+        else -> Google(apiKey = "")
     }
 }
 
@@ -260,12 +261,17 @@ private fun AddProviderBox(
                 FilledTonalIconButton(
                     onClick = {
                         val configuration: ModelProviderConfiguration = when (type) {
-                            ProviderType.Ollama -> ModelProviderConfiguration.Ollama(url = ollamaUrl)
-                            ProviderType.Anthropic -> ModelProviderConfiguration.Anthropic(apiKey = anthropicKey)
-                            ProviderType.OpenAI -> ModelProviderConfiguration.OpenAI(apiKey = openAIKey)
-                            ProviderType.Google -> ModelProviderConfiguration.Google(apiKey = googleKey)
+                            ProviderType.Ollama -> Ollama(url = ollamaUrl)
+                            ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
+                            ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
+                            ProviderType.Google -> Google(apiKey = googleKey)
                         }
-                        onAdd(NamedModelProvider(name = name, configuration = configuration))
+                        onAdd(
+                            NamedModelProvider(
+                                name = name,
+                                configuration = configuration
+                            )
+                        )
 
                         // Reset form
                         name = ""
@@ -342,8 +348,8 @@ private fun AddProviderBox(
 }
 
 private fun ModelProviderConfiguration.toType(): ProviderType = when (this) {
-    is ModelProviderConfiguration.Ollama -> ProviderType.Ollama
-    is ModelProviderConfiguration.Anthropic -> ProviderType.Anthropic
-    is ModelProviderConfiguration.OpenAI -> ProviderType.OpenAI
-    is ModelProviderConfiguration.Google -> ProviderType.Google
+    is Ollama -> ProviderType.Ollama
+    is Anthropic -> ProviderType.Anthropic
+    is OpenAI -> ProviderType.OpenAI
+    is Google -> ProviderType.Google
 }
