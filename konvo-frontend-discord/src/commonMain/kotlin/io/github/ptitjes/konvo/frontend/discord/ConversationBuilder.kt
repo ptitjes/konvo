@@ -29,7 +29,7 @@ sealed interface ConversationModeBuilder {
 data class QuestionAnswerModeBuilder(
     val prompt: PromptCard? = null,
     val tools: List<ToolCard>? = null,
-    val model: Model? = null,
+    val model: ModelCard? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean = prompt != null && model != null
@@ -48,7 +48,7 @@ data class RoleplayModeBuilder(
     val character: CharacterCard? = null,
     val characterGreetingIndex: Int? = null,
     val userName: String? = null,
-    val model: Model? = null,
+    val model: ModelCard? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
     override fun isValid(): Boolean =

@@ -10,7 +10,7 @@ import io.github.ptitjes.konvo.core.models.*
 import kotlin.random.*
 
 fun buildRoleplayAgent(
-    model: Model,
+    model: ModelCard,
     character: CharacterCard,
     characterGreetingIndex: Int?,
     userName: String,

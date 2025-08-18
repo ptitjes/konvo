@@ -22,7 +22,7 @@ import kotlin.time.Clock
 import kotlin.uuid.*
 
 suspend fun buildQuestionAnswerAgent(
-    model: Model,
+    model: ModelCard,
     tools: List<ToolCard>,
 ): Agent {
     val toolRegistry = tools.map { it.toTool() }.let { ToolRegistry { tools(it) } }

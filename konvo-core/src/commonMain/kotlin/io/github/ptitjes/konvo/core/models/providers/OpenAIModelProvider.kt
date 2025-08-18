@@ -11,7 +11,7 @@ class OpenAIModelProvider(
 ) : ModelProvider {
     private val client by lazy { OpenAILLMClient(apiKey) }
 
-    override suspend fun query(): List<Model> {
+    override suspend fun query(): List<ModelCard> {
         return listOf(
             OpenAIModels.Chat.GPT4o,
             OpenAIModels.Reasoning.GPT4oMini,
@@ -22,12 +22,12 @@ class OpenAIModelProvider(
             OpenAIModels.Reasoning.O3Mini,
             OpenAIModels.Reasoning.O1,
             OpenAIModels.Reasoning.O1Mini,
-        ).map { card -> OpenAIModel(card) }
+        ).map { card -> OpenAIModelCard(card) }
     }
 
-    private inner class OpenAIModel(
+    private inner class OpenAIModelCard(
         private val delegate: LLModel,
-    ) : Model {
+    ) : ModelCard {
         override val provider: ModelProvider get() = this@OpenAIModelProvider
         override val name: String get() = delegate.id
         override val size: Long? get() = null

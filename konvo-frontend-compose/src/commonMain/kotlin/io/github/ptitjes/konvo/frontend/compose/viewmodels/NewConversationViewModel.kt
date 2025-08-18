@@ -53,7 +53,7 @@ class NewConversationViewModel(
     }
 
     private fun updateQuestionAnswerState(
-        availableModels: List<Model>,
+        availableModels: List<ModelCard>,
         availableTools: List<ToolCard>,
     ) {
         _questionAnswer.update { previous ->
@@ -84,7 +84,7 @@ class NewConversationViewModel(
     }
 
     private fun updateRoleplayState(
-        availableModels: List<Model>,
+        availableModels: List<ModelCard>,
         availableCharacters: List<CharacterCard>,
     ) {
         _roleplay.update { previous ->
@@ -144,7 +144,7 @@ class NewConversationViewModel(
         )
     }
 
-    fun selectQuestionAnswerModel(model: Model) = updateQuestionAnswerState {
+    fun selectQuestionAnswerModel(model: ModelCard) = updateQuestionAnswerState {
         it.copy(selectedModel = model)
     }
 
@@ -163,7 +163,7 @@ class NewConversationViewModel(
         it.copy(userName = userName)
     }
 
-    fun selectRoleplayModel(model: Model) = updateRoleplayState {
+    fun selectRoleplayModel(model: ModelCard) = updateRoleplayState {
         it.copy(selectedModel = model)
     }
 
@@ -212,14 +212,14 @@ sealed interface NewQuestionAnswerState {
     ) : NewQuestionAnswerState
 
     data class Available(
-        val availableModels: List<Model>,
+        val availableModels: List<ModelCard>,
         val availableTools: List<ToolCard>,
-        val selectedModel: Model,
+        val selectedModel: ModelCard,
         val selectedTools: List<ToolCard>,
     ) : NewQuestionAnswerState
 }
 
-val NewQuestionAnswerState.Available.selectableModels: List<Model>
+val NewQuestionAnswerState.Available.selectableModels: List<ModelCard>
     get() =
         if (selectedTools.isEmpty()) availableModels
         else availableModels.filter { it.supportsTools }
@@ -248,12 +248,12 @@ sealed interface NewRoleplayState {
     ) : NewRoleplayState
 
     data class Available(
-        val availableModels: List<Model>,
+        val availableModels: List<ModelCard>,
         val availableCharacters: List<CharacterCard>,
         val selectedCharacter: CharacterCard,
         val selectedGreetingIndex: Int?,
         val userName: String,
-        val selectedModel: Model,
+        val selectedModel: ModelCard,
     ) : NewRoleplayState
 }
 

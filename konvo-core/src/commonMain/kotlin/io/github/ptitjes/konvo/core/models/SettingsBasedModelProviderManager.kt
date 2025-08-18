@@ -14,13 +14,13 @@ class SettingsBasedModelProviderManager(
     private val job = SupervisorJob(coroutineContext[Job])
     private val coroutineScope = CoroutineScope(coroutineContext + job)
 
-    override val models: Flow<List<Model>> = settingsRepository.getSettings(ModelProviderSettingsKey)
+    override val models: Flow<List<ModelCard>> = settingsRepository.getSettings(ModelProviderSettingsKey)
         .map { providerSettings -> loadModels(providerSettings) }
         .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
 
-    private val modelCache = mutableMapOf<ModelProviderConfiguration, List<Model>>()
+    private val modelCache = mutableMapOf<ModelProviderConfiguration, List<ModelCard>>()
 
-    private suspend fun loadModels(settings: ModelProviderSettings): List<Model> {
+    private suspend fun loadModels(settings: ModelProviderSettings): List<ModelCard> {
         return settings.providers.flatMap { providerSettings ->
             modelCache.getOrPut(providerSettings.configuration) {
                 loadModels(providerSettings.name, providerSettings.configuration)
@@ -31,7 +31,7 @@ class SettingsBasedModelProviderManager(
     private suspend fun loadModels(
         name: String,
         configuration: ModelProviderConfiguration,
-    ): List<Model> {
+    ): List<ModelCard> {
         val provider = when (configuration) {
             is ModelProviderConfiguration.Anthropic -> AnthropicModelProvider(
                 name = name,

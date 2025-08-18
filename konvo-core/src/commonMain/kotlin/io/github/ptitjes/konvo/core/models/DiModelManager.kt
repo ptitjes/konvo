@@ -1,10 +1,8 @@
 package io.github.ptitjes.konvo.core.models
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.*
 
 /**
  * Model manager backed by a set of ModelProviders.
@@ -17,7 +15,7 @@ class DiModelManager(
     private val job = SupervisorJob(coroutineContext[Job])
     private val coroutineScope = CoroutineScope(coroutineContext + job)
 
-    override val models: Flow<List<Model>> =
+    override val models: Flow<List<ModelCard>> =
         flow { emit(providers.flatMap { it.query() }) }
             .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
 }

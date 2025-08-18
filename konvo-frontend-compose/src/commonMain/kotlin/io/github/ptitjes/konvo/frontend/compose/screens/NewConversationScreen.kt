@@ -110,11 +110,11 @@ private fun NewConversationPanel(
     roleplay: NewRoleplayState,
     onSelectAgentType: (AgentType) -> Unit,
     onSelectQuestionAnswerTools: (List<ToolCard>) -> Unit,
-    onSelectQuestionAnswerModel: (Model) -> Unit,
+    onSelectQuestionAnswerModel: (ModelCard) -> Unit,
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
     onChangeRoleplayUserName: (String) -> Unit,
-    onSelectRoleplayModel: (Model) -> Unit,
+    onSelectRoleplayModel: (ModelCard) -> Unit,
 ) {
     AgentTypeSelector(
         selectedAgentType = selectedAgentType,
@@ -147,7 +147,7 @@ private fun NewConversationPanel(
 private fun QuestionAnswerConfigurationForm(
     questionAnswer: NewQuestionAnswerState,
     onSelectQuestionAnswerTools: (List<ToolCard>) -> Unit,
-    onSelectQuestionAnswerModel: (Model) -> Unit,
+    onSelectQuestionAnswerModel: (ModelCard) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -196,7 +196,7 @@ private fun RoleplayConfigurationForm(
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
     onChangeRoleplayUserName: (String) -> Unit,
-    onSelectRoleplayModel: (Model) -> Unit,
+    onSelectRoleplayModel: (ModelCard) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp),

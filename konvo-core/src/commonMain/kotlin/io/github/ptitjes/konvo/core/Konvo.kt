@@ -15,7 +15,7 @@ class Konvo(
     private val toolProviders: ProviderManager<ToolCard> by instance()
     private val characterProviderManager: CharacterManager by instance()
 
-    private var _models: List<Model> = emptyList()
+    private var _models: List<ModelCard> = emptyList()
     private var _characters: List<CharacterCard> = emptyList()
 
     suspend fun init() {
@@ -25,7 +25,7 @@ class Konvo(
         _characters = characterProviderManager.characters.first()
     }
 
-    val models: List<Model> get() = _models
+    val models: List<ModelCard> get() = _models
     val prompts: List<PromptCard> get() = promptProviderManager.elements
     val tools: List<ToolCard> get() = toolProviders.elements
     val characters: List<CharacterCard> get() = _characters

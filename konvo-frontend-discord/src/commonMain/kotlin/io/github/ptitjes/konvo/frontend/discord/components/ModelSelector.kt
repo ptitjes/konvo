@@ -7,9 +7,9 @@ import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 import io.github.ptitjes.konvo.frontend.discord.utils.*
 
 fun EphemeralComponentContainerBuilder.modelSelector(
-    models: List<Model>,
-    selectedModel: Model?,
-    onSelectModel: suspend (Model) -> Unit,
+    models: List<ModelCard>,
+    selectedModel: ModelCard?,
+    onSelectModel: suspend (ModelCard) -> Unit,
 ) {
     textDisplay { content = markdown { bold("Model:") } }
 

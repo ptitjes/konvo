@@ -11,18 +11,18 @@ class GoogleModelProvider(
 ) : ModelProvider {
     private val client by lazy { GoogleLLMClient(apiKey) }
 
-    override suspend fun query(): List<Model> {
+    override suspend fun query(): List<ModelCard> {
         return listOf(
             GoogleModels.Gemini2_5Pro,
             GoogleModels.Gemini2_5Flash,
             GoogleModels.Gemini2_0Flash,
             GoogleModels.Gemini2_0FlashLite,
-        ).map { card -> GoogleModel(card) }
+        ).map { card -> GoogleModelCard(card) }
     }
 
-    private inner class GoogleModel(
+    private inner class GoogleModelCard(
         private val delegate: LLModel,
-    ) : Model {
+    ) : ModelCard {
         override val provider: ModelProvider get() = this@GoogleModelProvider
         override val name: String get() = delegate.id
         override val size: Long? get() = null

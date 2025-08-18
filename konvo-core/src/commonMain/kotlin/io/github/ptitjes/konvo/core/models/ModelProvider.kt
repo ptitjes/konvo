@@ -11,5 +11,5 @@ interface ModelProvider {
     val name: String?
 
     /** Query and return the list of available model cards. */
-    suspend fun query(): List<Model>
+    suspend fun query(): List<ModelCard>
 }

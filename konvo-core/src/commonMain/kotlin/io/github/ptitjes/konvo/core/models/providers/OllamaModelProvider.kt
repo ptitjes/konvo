@@ -14,13 +14,13 @@ class OllamaModelProvider(
 ) : ModelProvider {
     private val client by lazy { OllamaClient(baseUrl) }
 
-    override suspend fun query(): List<Model> {
-        return client.getModels().map { card -> OllamaModel(card) }
+    override suspend fun query(): List<ModelCard> {
+        return client.getModels().map { card -> OllamaModelCard(card) }
     }
 
-    private inner class OllamaModel(
+    private inner class OllamaModelCard(
         private val delegate: KoogOllamaModelCard,
-    ) : Model {
+    ) : ModelCard {
         override val provider: ModelProvider get() = this@OllamaModelProvider
         override val name: String get() = delegate.name
         override val size: Long get() = delegate.size

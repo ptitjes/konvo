@@ -132,7 +132,7 @@ internal sealed class AgentConfigurationDto {
 internal interface CardResolver {
     fun promptByName(name: String): io.github.ptitjes.konvo.core.ai.spi.PromptCard?
     fun toolByName(name: String): io.github.ptitjes.konvo.core.ai.spi.ToolCard?
-    fun modelByName(name: String): Model?
+    fun modelByName(name: String): ModelCard?
     fun characterByName(name: String): CharacterCard?
 }
 

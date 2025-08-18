@@ -11,7 +11,7 @@ class AnthropicModelProvider(
 ) : ModelProvider {
     private val client by lazy { AnthropicLLMClient(apiKey) }
 
-    override suspend fun query(): List<Model> {
+    override suspend fun query(): List<ModelCard> {
         return listOf(
             AnthropicModels.Sonnet_4,
             AnthropicModels.Sonnet_3_7,
@@ -20,12 +20,12 @@ class AnthropicModelProvider(
             AnthropicModels.Opus_3,
             AnthropicModels.Haiku_3_5,
             AnthropicModels.Haiku_3,
-        ).map { card -> AnthropicModel(card) }
+        ).map { card -> AnthropicModelCard(card) }
     }
 
-    private inner class AnthropicModel(
+    private inner class AnthropicModelCard(
         private val delegate: LLModel,
-    ) : Model {
+    ) : ModelCard {
         override val provider: ModelProvider get() = this@AnthropicModelProvider
         override val name: String get() = delegate.id
         override val size: Long? get() = null

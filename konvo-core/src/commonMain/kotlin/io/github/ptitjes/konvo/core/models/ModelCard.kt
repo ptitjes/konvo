@@ -3,7 +3,7 @@ package io.github.ptitjes.konvo.core.models
 import ai.koog.prompt.executor.clients.*
 import ai.koog.prompt.llm.*
 
-interface Model {
+interface ModelCard {
     val name: String
     val size: Long?
     val parameterCount: Long?
