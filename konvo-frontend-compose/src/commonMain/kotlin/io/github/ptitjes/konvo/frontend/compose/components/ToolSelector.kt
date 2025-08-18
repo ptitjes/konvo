@@ -7,7 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.tools.*
 
 /**
  * A selector for tools.

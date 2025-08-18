@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.ai.spi
+package io.github.ptitjes.konvo.core.ai.tools
 
 import kotlinx.serialization.json.*
 

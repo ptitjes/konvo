@@ -3,8 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.ai.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.tools.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
@@ -21,7 +20,7 @@ import kotlin.time.*
 class NewConversationViewModel(
     private val modelManager: ModelManager,
     private val characterCardManager: CharacterManager,
-    private val mcpToolManager: ProviderManager<ToolCard>,
+    private val mcpToolManager: io.github.ptitjes.konvo.core.ai.tools.ToolManager,
     private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
 
@@ -37,7 +36,7 @@ class NewConversationViewModel(
     init {
         viewModelScope.launch {
             val availableModels = modelManager.models.first()
-            val availableTools = mcpToolManager.elements
+            val availableTools = mcpToolManager.tools.first()
             val availableCharacters = characterCardManager.characters.first()
 
             updateQuestionAnswerState(availableModels, availableTools)

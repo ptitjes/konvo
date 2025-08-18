@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo.frontend.discord.components
 
-import ai.koog.prompt.markdown.markdown
+import ai.koog.prompt.markdown.*
 import dev.kord.rest.builder.component.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.tools.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 fun EphemeralContainerBuilder.toolSelector(

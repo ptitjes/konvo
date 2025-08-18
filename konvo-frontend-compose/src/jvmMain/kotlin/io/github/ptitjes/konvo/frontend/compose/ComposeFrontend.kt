@@ -5,9 +5,9 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.prompts.*
+import io.github.ptitjes.konvo.core.ai.tools.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.characters.providers.*
 import io.github.ptitjes.konvo.core.conversation.*
@@ -32,8 +32,6 @@ fun runComposeFrontend() = application {
 
         di = buildDi(configuration).apply {
             direct.instance<McpServersManager>().startAndConnectServers()
-            direct.instance<ProviderManager<PromptCard>>().init()
-            direct.instance<ProviderManager<ToolCard>>().init()
         }
     }
 
@@ -59,8 +57,8 @@ fun runComposeFrontend() = application {
 }
 
 fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
-    bindSet<Provider<PromptCard>>()
-    bindSet<Provider<ToolCard>>()
+    bindSet<PromptProvider>()
+    bindSet<ToolProvider>()
     bindSet<CharacterProvider>()
 
     bindSingleton<StoragePaths> { LinuxXdgHomeStoragePaths() }
@@ -68,8 +66,8 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     import(configurationProviders(configuration))
 
     bind<ModelManager> { singleton { SettingsBasedModelProviderManager(coroutineContext, instance()) } }
-    bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
-    bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
+    bind<PromptManager> { singleton { DiPromptManager(coroutineContext, instance()) } }
+    bind<ToolManager> { singleton { DiToolManager(coroutineContext, instance()) } }
     bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
 
     bindFactory { coroutineContext: CoroutineContext ->
@@ -105,11 +103,11 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
 
     bind { singleton { McpServersManager(coroutineContext, configuration.mcp.servers) } }
 
-    inBindSet<Provider<PromptCard>> {
+    inBindSet<PromptProvider> {
         add { singleton { McpPromptProvider(instance()) } }
     }
 
-    inBindSet<Provider<ToolCard>> {
+    inBindSet<ToolProvider> {
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 

@@ -1,9 +1,9 @@
 package io.github.ptitjes.konvo
 
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
-import io.github.ptitjes.konvo.core.ai.spi.*
+import io.github.ptitjes.konvo.core.ai.prompts.*
+import io.github.ptitjes.konvo.core.ai.tools.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.characters.providers.*
 import io.github.ptitjes.konvo.core.conversation.*
@@ -27,8 +27,6 @@ suspend fun main() = coroutineScope {
 
     try {
         mcpServersManager.startAndConnectServers()
-        di.direct.instance<ProviderManager<PromptCard>>().init()
-        di.direct.instance<ProviderManager<ToolCard>>().init()
         di.direct.instance<Konvo>().init()
 
         discordBot(konvo, configuration.discord.token)
@@ -39,8 +37,8 @@ suspend fun main() = coroutineScope {
 
 fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<ModelProvider>()
-    bindSet<Provider<PromptCard>>()
-    bindSet<Provider<ToolCard>>()
+    bindSet<PromptProvider>()
+    bindSet<ToolProvider>()
     bindSet<CharacterProvider>()
 
     bindSingleton<StoragePaths> { LinuxXdgServerStoragePaths() }
@@ -48,8 +46,8 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     import(configurationProviders(configuration))
 
     bind<ModelManager> { singleton { DiModelManager(coroutineContext, instance()) } }
-    bind<ProviderManager<PromptCard>> { singleton { DiProviderManager(instance()) } }
-    bind<ProviderManager<ToolCard>> { singleton { DiProviderManager(instance()) } }
+    bind<PromptManager> { singleton { DiPromptManager(coroutineContext, instance()) } }
+    bind<ToolManager> { singleton { DiToolManager(coroutineContext, instance()) } }
     bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
 
     bindSingleton<Konvo> { Konvo(di) }
@@ -58,7 +56,6 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSingleton<ConversationRepository> {
         FileConversationRepository(
             storagePaths = instance(),
-            konvo = instance(),
         )
     }
 
@@ -76,11 +73,11 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
 
     bind { singleton { McpServersManager(coroutineContext, configuration.mcp.servers) } }
 
-    inBindSet<Provider<PromptCard>> {
+    inBindSet<PromptProvider> {
         add { singleton { McpPromptProvider(instance()) } }
     }
 
-    inBindSet<Provider<ToolCard>> {
+    inBindSet<ToolProvider> {
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 
