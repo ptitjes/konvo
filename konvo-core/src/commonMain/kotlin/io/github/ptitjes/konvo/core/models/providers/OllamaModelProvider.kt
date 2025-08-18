@@ -15,7 +15,10 @@ class OllamaModelProvider(
     private val client by lazy { OllamaClient(baseUrl) }
 
     override suspend fun query(): List<ModelCard> {
-        return client.getModels().map { card -> OllamaModelCard(card) }
+        return client.getModels()
+            .filter { LLMCapability.Completion in it.capabilities }
+            .sortedBy { it.name }
+            .map { card -> OllamaModelCard(card) }
     }
 
     private inner class OllamaModelCard(

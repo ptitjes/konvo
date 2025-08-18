@@ -3,9 +3,8 @@ package io.github.ptitjes.konvo.frontend.compose.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
-import io.github.ptitjes.konvo.frontend.compose.components.settings.SettingsBox
+import io.github.ptitjes.konvo.frontend.compose.components.settings.*
 
 @Composable
 fun AppearanceSettingsPanel(

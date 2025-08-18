@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import coil3.compose.*
 import io.github.ptitjes.konvo.core.characters.*
+import io.github.ptitjes.konvo.frontend.compose.util.*
 
 /**
  * An alternative pretty selector for characters showing avatars in a responsive grid.
@@ -39,20 +40,33 @@ fun CharacterGridSelector(
     minCellSize: Dp = 120.dp,
     cellSpacing: Dp = 12.dp,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = minCellSize),
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(cellSpacing),
-        horizontalArrangement = Arrangement.spacedBy(cellSpacing),
-        contentPadding = PaddingValues(vertical = 4.dp),
-    ) {
-        items(characters, key = { it.id }) { character ->
-            val isSelected = character.id == selectedCharacter.id
-            CharacterGridItem(
-                character = character,
-                selected = isSelected,
-                onClick = { onCharacterSelected(character) },
-            )
+    val filteredTags by rememberSetting(CharacterSettingsKey, null) { characterSettings ->
+        characterSettings.filteredTags.map { it.lowercase() }.toSet()
+    }
+
+    when (val filteredTags = filteredTags) {
+        null -> FullSizeProgressIndicator()
+        else -> {
+            val filteredCharacters = characters.filter { character ->
+                !character.tags.any { it.lowercase() in filteredTags }
+            }
+
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = minCellSize),
+                modifier = modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(cellSpacing),
+                horizontalArrangement = Arrangement.spacedBy(cellSpacing),
+                contentPadding = PaddingValues(vertical = 4.dp),
+            ) {
+                items(filteredCharacters, key = { it.id }) { character ->
+                    val isSelected = character.id == selectedCharacter.id
+                    CharacterGridItem(
+                        character = character,
+                        selected = isSelected,
+                        onClick = { onCharacterSelected(character) },
+                    )
+                }
+            }
         }
     }
 }
