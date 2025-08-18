@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
-import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.ai.*
 import io.github.ptitjes.konvo.core.ai.mcp.*
@@ -77,8 +76,6 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
         McpSession(coroutineContext, instance())
     }
 
-    bindSingleton<Konvo> { Konvo(di) }
-
     bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
 
     bind { singleton { SettingsListViewModel() } }
@@ -90,7 +87,6 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSingleton<ConversationRepository> {
         FileConversationRepository(
             storagePaths = instance(),
-            konvo = instance(),
         )
     }
 

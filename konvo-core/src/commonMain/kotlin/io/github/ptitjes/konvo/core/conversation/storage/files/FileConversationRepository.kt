@@ -22,17 +22,14 @@ import kotlin.time.*
 class FileConversationRepository(
     private val rootPath: Path,
     private val fileSystem: FileSystem = defaultFileSystem,
-    private val konvo: Konvo? = null,
 ) : ConversationRepository {
 
     constructor(
         storagePaths: StoragePaths,
         fileSystem: FileSystem = defaultFileSystem,
-        konvo: Konvo? = null,
     ) : this(
         rootPath = Path(storagePaths.dataDirectory, FilesLayout.CONVERSATIONS_DIR),
         fileSystem = fileSystem,
-        konvo = konvo,
     )
 
     private val json = Json { ignoreUnknownKeys = true }
