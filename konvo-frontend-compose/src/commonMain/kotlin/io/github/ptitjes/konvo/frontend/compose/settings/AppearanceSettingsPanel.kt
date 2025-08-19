@@ -14,19 +14,20 @@ fun AppearanceSettingsPanel(
     SettingsBox(
         title = "Base color scheme",
         description = "The color scheme used for the application.",
-    ) {
-        GenericSelector(
-            modifier = Modifier.fillMaxWidth(),
-            selectedItem = settings.baseColorScheme,
-            onSelectItem = { updateSettings { previous -> previous.copy(baseColorScheme = it) } },
-            options = BaseColorScheme.entries,
-            itemLabeler = {
-                when (it) {
-                    BaseColorScheme.Dark -> "Dark"
-                    BaseColorScheme.Light -> "Light"
-                    BaseColorScheme.System -> "Adapt to system"
-                }
-            },
-        )
-    }
+        bottomContent = {
+            GenericSelector(
+                modifier = Modifier.fillMaxWidth(),
+                selectedItem = settings.baseColorScheme,
+                onSelectItem = { updateSettings { previous -> previous.copy(baseColorScheme = it) } },
+                options = BaseColorScheme.entries,
+                itemLabeler = {
+                    when (it) {
+                        BaseColorScheme.Dark -> "Dark"
+                        BaseColorScheme.Light -> "Light"
+                        BaseColorScheme.System -> "Adapt to system"
+                    }
+                },
+            )
+        }
+    )
 }

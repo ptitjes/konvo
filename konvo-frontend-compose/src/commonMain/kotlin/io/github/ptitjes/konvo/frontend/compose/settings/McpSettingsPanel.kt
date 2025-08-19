@@ -49,33 +49,34 @@ fun McpSettingsPanel(
         SettingsBox(
             title = "Configured MCP servers",
             description = "Add, remove, and edit MCP servers.",
-        ) {
-            if (settings.servers.isEmpty()) {
-                Text(
-                    text = "No MCP servers configured.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    settings.servers.entries.forEachIndexed { index, entry ->
-                        val name = entry.key
-                        val spec = entry.value
-                        ServerEditor(
-                            name = name,
-                            specification = spec,
-                            otherNames = settings.servers.keys - name,
-                            onRename = { newName -> renameServer(name, newName) },
-                            onChange = { newSpec -> updateServer(name) { _ -> newSpec } },
-                            onRemove = { removeServer(name) },
-                        )
-                        if (index < settings.servers.size - 1) HorizontalDivider()
+            bottomContent = {
+                if (settings.servers.isEmpty()) {
+                    Text(
+                        text = "No MCP servers configured.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        settings.servers.entries.forEachIndexed { index, entry ->
+                            val name = entry.key
+                            val spec = entry.value
+                            ServerEditor(
+                                name = name,
+                                specification = spec,
+                                otherNames = settings.servers.keys - name,
+                                onRename = { newName -> renameServer(name, newName) },
+                                onChange = { newSpec -> updateServer(name) { _ -> newSpec } },
+                                onRemove = { removeServer(name) },
+                            )
+                            if (index < settings.servers.size - 1) HorizontalDivider()
+                        }
                     }
                 }
             }
-        }
+        )
 
         AddServerBox(
             existingNames = settings.servers.keys,
@@ -124,7 +125,7 @@ private fun ServerEditor(
                         McpTransportType.Stdio -> TransportSpecification.Stdio
                         McpTransportType.Sse -> when (val t = specification.transport) {
                             is TransportSpecification.Sse -> t
-                            else -> TransportSpecification.Sse(url = "", reconnectionTime = null)
+                            else -> TransportSpecification.Sse(url = "")
                         }
                     }
                     onChange(specification.copy(transport = newTransport))
@@ -264,113 +265,115 @@ private fun AddServerBox(
     SettingsBox(
         title = "Add server",
         description = "Create a new MCP server entry.",
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier.weight(1f),
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") },
-                    singleLine = true,
-                    isError = name.isBlank() || name in existingNames,
-                )
-
-                GenericSelector(
-                    label = "Transport",
-                    selectedItem = transportType,
-                    onSelectItem = { transportType = it },
-                    options = McpTransportType.entries,
-                    itemLabeler = { it.name },
-                    modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
-                )
-            }
-
-            if (transportType == McpTransportType.Sse) {
-                OutlinedTextField(
+        bottomContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    value = sseUrl,
-                    onValueChange = { sseUrl = it },
-                    label = { Text("SSE URL") },
-                    singleLine = true,
-                )
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier.weight(1f),
+                        value = name,
+                        onValueChange = { name = it },
+                        label = { Text("Name") },
+                        singleLine = true,
+                        isError = name.isBlank() || name in existingNames,
+                    )
 
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = sseReconnectionTimeText,
-                    onValueChange = { sseReconnectionTimeText = it.filter { ch -> ch.isDigit() } },
-                    label = { Text("Reconnection time (seconds)") },
-                    singleLine = true,
-                )
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(text = "Run as process")
-                Switch(checked = addProcess, onCheckedChange = { addProcess = it })
-            }
-
-            if (addProcess) {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = commandText,
-                    onValueChange = { commandText = it },
-                    label = { Text("Command (space-separated)") },
-                    singleLine = true,
-                )
-
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = environmentText,
-                    onValueChange = { environmentText = it },
-                    label = { Text("Environment (key=value; key2=value2)") },
-                    singleLine = true,
-                )
-            }
-
-            Button(
-                enabled = isValid(),
-                onClick = {
-                    val transportSpecification = when (transportType) {
-                        McpTransportType.Stdio -> TransportSpecification.Stdio
-                        McpTransportType.Sse -> TransportSpecification.Sse(
-                            url = sseUrl,
-                            reconnectionTime = sseReconnectionTimeText.toLongOrNull()?.seconds
-                        )
-                    }
-
-                    val process = if (addProcess) {
-                        val cmd = commandText.split(" ").filter { it.isNotBlank() }
-
-                        ProcessSpecification(
-                            command = cmd,
-                            environment = parseEnv(environmentText).ifEmpty { null },
-                        )
-                    } else null
-
-                    val serverSpecification = ServerSpecification(transport = transportSpecification, process = process)
-                    onAdd(name, serverSpecification)
-
-                    // Reset
-                    name = ""
-                    transportType = McpTransportType.Stdio
-                    sseUrl = ""
-                    sseReconnectionTimeText = ""
-                    addProcess = false
-                    commandText = ""
-                    environmentText = ""
+                    GenericSelector(
+                        label = "Transport",
+                        selectedItem = transportType,
+                        onSelectItem = { transportType = it },
+                        options = McpTransportType.entries,
+                        itemLabeler = { it.name },
+                        modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
+                    )
                 }
-            ) {
-                Text("Add server")
+
+                if (transportType == McpTransportType.Sse) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = sseUrl,
+                        onValueChange = { sseUrl = it },
+                        label = { Text("SSE URL") },
+                        singleLine = true,
+                    )
+
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = sseReconnectionTimeText,
+                        onValueChange = { sseReconnectionTimeText = it.filter { ch -> ch.isDigit() } },
+                        label = { Text("Reconnection time (seconds)") },
+                        singleLine = true,
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(text = "Run as process")
+                    Switch(checked = addProcess, onCheckedChange = { addProcess = it })
+                }
+
+                if (addProcess) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = commandText,
+                        onValueChange = { commandText = it },
+                        label = { Text("Command (space-separated)") },
+                        singleLine = true,
+                    )
+
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = environmentText,
+                        onValueChange = { environmentText = it },
+                        label = { Text("Environment (key=value; key2=value2)") },
+                        singleLine = true,
+                    )
+                }
+
+                Button(
+                    enabled = isValid(),
+                    onClick = {
+                        val transportSpecification = when (transportType) {
+                            McpTransportType.Stdio -> TransportSpecification.Stdio
+                            McpTransportType.Sse -> TransportSpecification.Sse(
+                                url = sseUrl,
+                                reconnectionTime = sseReconnectionTimeText.toLongOrNull()?.seconds
+                            )
+                        }
+
+                        val process = if (addProcess) {
+                            val cmd = commandText.split(" ").filter { it.isNotBlank() }
+
+                            ProcessSpecification(
+                                command = cmd,
+                                environment = parseEnv(environmentText).ifEmpty { null },
+                            )
+                        } else null
+
+                        val serverSpecification =
+                            ServerSpecification(transport = transportSpecification, process = process)
+                        onAdd(name, serverSpecification)
+
+                        // Reset
+                        name = ""
+                        transportType = McpTransportType.Stdio
+                        sseUrl = ""
+                        sseReconnectionTimeText = ""
+                        addProcess = false
+                        commandText = ""
+                        environmentText = ""
+                    }
+                ) {
+                    Text("Add server")
+                }
             }
         }
-    }
+    )
 }
 
 private fun parseEnv(text: String): Map<String, String> {

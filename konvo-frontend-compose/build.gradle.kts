@@ -32,6 +32,7 @@ kotlin {
                 implementation(libs.fileKit)
                 implementation(libs.coil)
                 implementation(libs.coilKtor)
+                implementation(libs.reorderable)
             }
         }
 

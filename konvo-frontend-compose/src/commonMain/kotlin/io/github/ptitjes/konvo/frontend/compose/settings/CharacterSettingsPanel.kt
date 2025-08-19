@@ -31,19 +31,20 @@ fun CharacterSettingsPanel(
     SettingsBox(
         title = "Character tags filter",
         description = "Tags listed here will be excluded when showing characters. Separate tags with commas.",
-    ) {
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-            value = text,
-            onValueChange = { newValue ->
-                text = newValue
-                val parsed = newValue.split(',')
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                updateSettings { previous -> previous.copy(filteredTags = parsed) }
-            },
-            singleLine = true,
-            placeholder = { Text("e.g. nsfw, beta, wip") },
-        )
-    }
+        bottomContent = {
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                value = text,
+                onValueChange = { newValue ->
+                    text = newValue
+                    val parsed = newValue.split(',')
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                    updateSettings { previous -> previous.copy(filteredTags = parsed) }
+                },
+                singleLine = true,
+                placeholder = { Text("e.g. nsfw, beta, wip") },
+            )
+        }
+    )
 }

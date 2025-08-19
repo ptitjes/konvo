@@ -13,9 +13,9 @@ import io.github.ptitjes.konvo.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.core.models.providers.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*
+import sh.calvin.reorderable.*
 
-private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelProviderSettingsPanel(
     settings: ModelProviderSettings,
@@ -39,6 +39,19 @@ fun ModelProviderSettingsPanel(
         }
     }
 
+    fun moveProvider(fromIndex: Int, toIndex: Int) {
+        if (fromIndex == toIndex) return
+        updateSettings { previous ->
+            val list = previous.providers.toMutableList()
+            val item = list.removeAt(fromIndex)
+            val target = toIndex.coerceIn(0, list.size)
+            list.add(target, item)
+            previous.copy(providers = list)
+        }
+    }
+
+    var sheetState by remember { mutableStateOf<ModelProvidersSheetState>(ModelProvidersSheetState.Closed) }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -46,46 +59,124 @@ fun ModelProviderSettingsPanel(
         SettingsBox(
             title = "Configured providers",
             description = "Add, remove, and edit model providers.",
-        ) {
-            if (settings.providers.isEmpty()) {
-                Text(
-                    text = "No model providers configured.",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+            trailingContent = {
+                FilledTonalIconButton(
+                    onClick = { sheetState = ModelProvidersSheetState.Adding },
                 ) {
-                    settings.providers.forEachIndexed { index, provider ->
-                        ProviderEditor(
-                            provider = provider,
-                            otherNames = settings.providers.map { it.name }.toSet() - provider.name,
-                            onChange = { updated -> updateProvider(index) { _ -> updated } },
-                            onRemove = { removeProvider(index) },
-                        )
-                        if (index < settings.providers.lastIndex) HorizontalDivider()
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
+                }
+            },
+            bottomContent = {
+                if (settings.providers.isEmpty()) {
+                    Text(
+                        text = "No model providers configured.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                } else {
+                    ReorderableColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        list = settings.providers,
+                        onSettle = { fromIndex, toIndex -> moveProvider(fromIndex, toIndex) },
+                    ) { index, provider, _ ->
+                        key(provider.name) {
+                            ReorderableItem {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    IconButton(
+                                        modifier = Modifier.draggableHandle(),
+                                        onClick = { },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.DragHandle,
+                                            contentDescription = "Drag handle",
+                                        )
+                                    }
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = provider.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                        Text(
+                                            text = provider.configuration.toType().name,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = { sheetState = ModelProvidersSheetState.Editing(index) },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit provider",
+                                        )
+                                    }
+
+                                    IconButton(
+                                        onClick = { removeProvider(index) },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete provider",
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-
-        AddProviderBox(
-            existingNames = settings.providers.map { it.name }.toSet(),
-            onAdd = { newProvider -> addProvider(newProvider) }
         )
+
+        if (sheetState !is ModelProvidersSheetState.Closed) {
+            ModalBottomSheet(
+                onDismissRequest = { sheetState = ModelProvidersSheetState.Closed },
+                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            ) {
+                when (val sheet = sheetState) {
+                    is ModelProvidersSheetState.Adding -> {
+                        AddProviderSheetContent(
+                            existingNames = settings.providers.map { it.name }.toSet(),
+                            onAdd = { newProvider ->
+                                addProvider(newProvider)
+                                sheetState = ModelProvidersSheetState.Closed
+                            },
+                        )
+                    }
+
+                    is ModelProvidersSheetState.Editing -> {
+                        val index = sheet.index
+                        EditProviderSheetContent(
+                            provider = settings.providers[sheet.index],
+                            otherNames = settings.providers.map { it.name }.toSet() - settings.providers[index].name,
+                            onChange = { updated -> updateProvider(index) { _ -> updated } },
+                            onRemove = {
+                                removeProvider(index)
+                                sheetState = ModelProvidersSheetState.Closed
+                            },
+                        )
+                    }
+
+                    is ModelProvidersSheetState.Closed -> {}
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun ProviderEditor(
+private fun EditProviderSheetContent(
     provider: NamedModelProvider,
     otherNames: Set<String>,
     onChange: (NamedModelProvider) -> Unit,
     onRemove: () -> Unit,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Row(
@@ -209,7 +300,7 @@ private fun buildNewConfiguration(
 }
 
 @Composable
-private fun AddProviderBox(
+private fun AddProviderSheetContent(
     existingNames: Set<String>,
     onAdd: (NamedModelProvider) -> Unit,
 ) {
@@ -227,124 +318,121 @@ private fun AddProviderBox(
         ProviderType.Google -> googleKey.isNotBlank()
     }
 
-    SettingsBox(
-        title = "Add provider",
-        description = "Create a new model provider entry.",
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier.weight(1f),
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") },
-                    singleLine = true,
-                    isError = name.isBlank() || existingNames.contains(name),
-                )
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                singleLine = true,
+                isError = name.isBlank() || existingNames.contains(name),
+            )
 
-                GenericSelector(
-                    label = "Type",
-                    selectedItem = type,
-                    onSelectItem = { type = it },
-                    options = ProviderType.entries,
-                    itemLabeler = { it.name },
-                    modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
-                )
+            GenericSelector(
+                label = "Type",
+                selectedItem = type,
+                onSelectItem = { type = it },
+                options = ProviderType.entries,
+                itemLabeler = { it.name },
+                modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
+            )
 
-                FilledTonalIconButton(
-                    onClick = {
-                        val configuration: ModelProviderConfiguration = when (type) {
-                            ProviderType.Ollama -> Ollama(url = ollamaUrl)
-                            ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
-                            ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
-                            ProviderType.Google -> Google(apiKey = googleKey)
-                        }
-                        onAdd(
-                            NamedModelProvider(
-                                name = name,
-                                configuration = configuration
-                            )
+            FilledTonalIconButton(
+                onClick = {
+                    val configuration: ModelProviderConfiguration = when (type) {
+                        ProviderType.Ollama -> Ollama(url = ollamaUrl)
+                        ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
+                        ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
+                        ProviderType.Google -> Google(apiKey = googleKey)
+                    }
+                    onAdd(
+                        NamedModelProvider(
+                            name = name,
+                            configuration = configuration,
                         )
-
-                        // Reset form
-                        name = ""
-                        type = ProviderType.Ollama
-                        ollamaUrl = DEFAULT_OLLAMA_URL
-                        anthropicKey = ""
-                    },
-                    enabled = isValid(),
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
-                }
+                    )
+                },
+                enabled = isValid(),
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
             }
+        }
 
-            when (type) {
-                ProviderType.Ollama -> {
-                    OutlinedTextField(
-                        value = ollamaUrl,
-                        onValueChange = { ollamaUrl = it },
-                        label = { Text("Ollama base URL") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-
-                ProviderType.Anthropic -> {
-                    OutlinedTextField(
-                        value = anthropicKey,
-                        onValueChange = { anthropicKey = it },
-                        label = { Text("Anthropic API key") },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-
-                ProviderType.OpenAI -> {
-                    OutlinedTextField(
-                        value = openAIKey,
-                        onValueChange = { openAIKey = it },
-                        label = { Text("OpenAI API key") },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-
-                ProviderType.Google -> {
-                    OutlinedTextField(
-                        value = googleKey,
-                        onValueChange = { googleKey = it },
-                        label = { Text("Google API key") },
-                        singleLine = true,
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-
-            if (name.isBlank()) {
-                Text(
-                    text = "Name cannot be empty",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+        when (type) {
+            ProviderType.Ollama -> {
+                OutlinedTextField(
+                    value = ollamaUrl,
+                    onValueChange = { ollamaUrl = it },
+                    label = { Text("Ollama base URL") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
                 )
-            } else if (existingNames.contains(name)) {
-                Text(
-                    text = "Name must be unique",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+            }
+
+            ProviderType.Anthropic -> {
+                OutlinedTextField(
+                    value = anthropicKey,
+                    onValueChange = { anthropicKey = it },
+                    label = { Text("Anthropic API key") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            ProviderType.OpenAI -> {
+                OutlinedTextField(
+                    value = openAIKey,
+                    onValueChange = { openAIKey = it },
+                    label = { Text("OpenAI API key") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
+            ProviderType.Google -> {
+                OutlinedTextField(
+                    value = googleKey,
+                    onValueChange = { googleKey = it },
+                    label = { Text("Google API key") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
+
+        if (name.isBlank()) {
+            Text(
+                text = "Name cannot be empty",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        } else if (existingNames.contains(name)) {
+            Text(
+                text = "Name must be unique",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
     }
+}
+
+private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
+
+private sealed interface ModelProvidersSheetState {
+    data object Closed : ModelProvidersSheetState
+    data object Adding : ModelProvidersSheetState
+    data class Editing(val index: Int) : ModelProvidersSheetState
 }
 
 private fun ModelProviderConfiguration.toType(): ProviderType = when (this) {

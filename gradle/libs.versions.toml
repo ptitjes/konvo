@@ -27,6 +27,7 @@ androidxLifecycleViewmodel = "2.9.1"
 markdownRenderer = "0.35.0"
 fileKit = "0.8.8"
 coil = "3.3.0"
+reorderable = "3.0.0"
 
 # Discord Frontend
 kord = "feat-components-v2-didier-SNAPSHOT"
@@ -76,6 +77,7 @@ markdownRendererCode = { module = "com.mikepenz:multiplatform-markdown-renderer-
 fileKit = { module = "io.github.vinceglb:filekit-compose", version.ref = "fileKit" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coilKtor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
+reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 
 # Discord Frontend
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
