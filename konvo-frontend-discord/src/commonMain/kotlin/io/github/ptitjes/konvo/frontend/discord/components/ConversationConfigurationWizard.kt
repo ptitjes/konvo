@@ -59,13 +59,13 @@ suspend fun EphemeralMessageInteractionResponseBehavior.conversationBuilderWizar
 
                     separator { divider = false }
 
-                    toolSelector(konvo.tools, mode.tools) {
-                        updateMode(mode.copy(tools = it))
+                    mcpServerSelector(konvo.mcpServerNames, mode.mcpServerNames) {
+                        updateMode(mode.copy(mcpServerNames = it))
                     }
 
                     separator { divider = false }
 
-                    val needsToolSupport = mode.tools != null && mode.tools.isNotEmpty()
+                    val needsToolSupport = mode.mcpServerNames != null && mode.mcpServerNames.isNotEmpty()
                     val models = konvo.models.let { models ->
                         if (needsToolSupport) models.filter { it.supportsTools } else models
                     }

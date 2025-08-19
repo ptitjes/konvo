@@ -39,7 +39,7 @@ internal class DefaultAgent(
     val promptExecutor: PromptExecutor,
     private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
-    private val toolNames: List<String> = emptyList(),
+    private val mcpServerNames: Set<String> = emptySet(),
     private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
 ) : Agent {
     private var prompt: Prompt = systemPrompt
@@ -102,10 +102,10 @@ internal class DefaultAgent(
 
         val mcpHostSession = mcpSessionFactory?.invoke(coroutineContext)
 
-        mcpHostSession?.addAllServers()
+        mcpHostSession?.addServers(mcpServerNames)
         val tools = mcpHostSession?.tools?.first()
         val toolRegistry = tools
-            ?.filter { it.name in toolNames }
+            ?.filter { it.name in mcpServerNames }
             ?.map { it.toTool() }
             .let { ToolRegistry { if (it != null) tools(it) } }
 

@@ -16,7 +16,7 @@ class AgentFactory(
             is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(
                 model = modelProviderManager.named(agentConfiguration.modelName),
                 mcpSessionFactory = mcpSessionFactory,
-                toolNames = agentConfiguration.toolNames,
+                mcpServerNames = agentConfiguration.mcpServerNames,
             )
 
             is RoleplayAgentConfiguration -> buildRoleplayAgent(

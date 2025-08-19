@@ -9,12 +9,10 @@ import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
-import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlin.coroutines.*
 import kotlin.time.*
 
 /**
@@ -23,7 +21,7 @@ import kotlin.time.*
 class NewConversationViewModel(
     private val modelManager: ModelManager,
     private val characterManager: CharacterManager,
-    private val mcpHostSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
+    mcpServerSpecificationsManager: McpServerSpecificationsManager,
     private val conversationRepository: ConversationRepository,
 ) : ViewModel() {
 
@@ -31,7 +29,7 @@ class NewConversationViewModel(
         private val logger = KotlinLogging.logger { }
     }
 
-    private lateinit var mcpHostSession: McpHostSession
+    private val mcpServerNames = mcpServerSpecificationsManager.specifications.map { it.keys }
 
     var selectedAgentType: AgentType by mutableStateOf(AgentType.QuestionAnswer)
         private set
@@ -44,28 +42,25 @@ class NewConversationViewModel(
 
     init {
         viewModelScope.launch {
-            mcpHostSession = mcpHostSessionFactory(viewModelScope.coroutineContext)
-            mcpHostSession.addAllServers()
-
             val availableModels = modelManager.models.first()
-            val availableTools = mcpHostSession.tools.first()
+            val availableMcpServerNames = mcpServerNames.first()
             val availableCharacters = characterManager.characters.first()
 
-            updateQuestionAnswerState(availableModels, availableTools)
+            updateQuestionAnswerState(availableModels, availableMcpServerNames)
             updateRoleplayState(availableModels, availableCharacters)
 
             launch {
                 combine(
                     modelManager.models,
-                    mcpHostSession.tools,
+                    mcpServerNames,
                     characterManager.characters
-                ) { models, tools, characters ->
-                    Triple(models, tools, characters)
-                }.collect { (models, tools, characters) ->
+                ) { models, mcpServerNames, characters ->
+                    Triple(models, mcpServerNames, characters)
+                }.collect { (models, mcpServerNames, characters) ->
                     logger.debug {
-                        "Collecting ${models.size} models, ${tools.size} tools and ${characters.size} characters"
+                        "Collecting ${models.size} models, ${mcpServerNames.size} MCP servers and ${characters.size} characters"
                     }
-                    updateQuestionAnswerState(models, tools)
+                    updateQuestionAnswerState(models, mcpServerNames)
                     updateRoleplayState(models, characters)
                 }
             }
@@ -74,7 +69,7 @@ class NewConversationViewModel(
 
     private fun updateQuestionAnswerState(
         availableModels: List<ModelCard>,
-        availableTools: List<ToolCard>,
+        availableMcpServerNames: Set<String>,
     ) {
         _questionAnswer.update { previous ->
             when {
@@ -83,23 +78,19 @@ class NewConversationViewModel(
                 )
 
                 previous is NewQuestionAnswerState.Available -> {
-                    val noTools = previous.selectedTools.isEmpty()
-                    val availableModels =
-                        if (noTools) availableModels else availableModels.filter { it.supportsTools }
-
                     previous.copy(
                         availableModels = availableModels,
-                        availableTools = availableTools,
-                        selectedModel = availableModels.first(),
-                        selectedTools = previous.selectedTools.intersect(availableTools.toSet()).toList(),
+                        availableMcpServers = availableMcpServerNames,
+                        selectedModel = previous.selectedModel,
+                        selectedMcpServers = previous.selectedMcpServers,
                     )
                 }
 
                 else -> NewQuestionAnswerState.Available(
                     availableModels = availableModels,
-                    availableTools = availableTools,
+                    availableMcpServers = availableMcpServerNames,
                     selectedModel = availableModels.first(),
-                    selectedTools = emptyList(),
+                    selectedMcpServers = emptySet(),
                 )
             }
         }
@@ -157,11 +148,11 @@ class NewConversationViewModel(
         }
     }
 
-    fun selectQuestionAnswerTools(tools: List<ToolCard>) = updateQuestionAnswerState { state ->
+    fun selectQuestionAnswerMcpServerNames(mcpServerNames: Set<String>) = updateQuestionAnswerState { state ->
         state.copy(
-            selectedTools = tools,
+            selectedMcpServers = mcpServerNames,
             selectedModel =
-                if (tools.isEmpty() || state.selectedModel.supportsTools) state.selectedModel
+                if (mcpServerNames.isEmpty() || state.selectedModel.supportsTools) state.selectedModel
                 else state.availableModels.first { it.supportsTools },
         )
     }
@@ -227,15 +218,15 @@ sealed interface NewQuestionAnswerState {
 
     data class Available(
         val availableModels: List<ModelCard>,
-        val availableTools: List<ToolCard>,
+        val availableMcpServers: Set<String>,
         val selectedModel: ModelCard,
-        val selectedTools: List<ToolCard>,
+        val selectedMcpServers: Set<String>,
     ) : NewQuestionAnswerState
 }
 
 val NewQuestionAnswerState.Available.selectableModels: List<ModelCard>
     get() =
-        if (selectedTools.isEmpty()) availableModels
+        if (selectedMcpServers.isEmpty()) availableModels
         else availableModels.filter { it.supportsTools }
 
 val NewQuestionAnswerState.canCreate: Boolean
@@ -247,7 +238,7 @@ val NewQuestionAnswerState.canCreate: Boolean
 fun NewQuestionAnswerState.createConfiguration(): QuestionAnswerAgentConfiguration =
     when (this) {
         is NewQuestionAnswerState.Available -> QuestionAnswerAgentConfiguration(
-            toolNames = selectedTools.map { it.name },
+            mcpServerNames = selectedMcpServers,
             modelName = selectedModel.name,
         )
 

@@ -5,31 +5,30 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.tools.*
 
 /**
- * A selector for tools.
+ * A selector for MCP servers.
  *
- * @param selectedTools The currently selected tools
- * @param onToolsSelected Callback for when tools are selected
- * @param tools List of available tools
+ * @param selectedServers The currently selected servers
+ * @param onServersSelected Callback for when servers are selected
+ * @param servers List of available servers
  * @param modifier The modifier to apply to this component
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ToolSelector(
-    selectedTools: List<ToolCard>,
-    onToolsSelected: (List<ToolCard>) -> Unit,
-    tools: List<ToolCard>,
+fun McpServerSelector(
+    selectedServers: Set<String>,
+    onServersSelected: (Set<String>) -> Unit,
+    servers: Set<String>,
     modifier: Modifier = Modifier,
 ) {
     OutlineBox(
-        label = "Tools",
+        label = "MCP Servers",
         modifier = modifier,
     ) {
-        if (tools.isEmpty()) {
+        if (servers.isEmpty()) {
             Text(
-                text = "No tools available",
+                text = "No MCP servers available",
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         } else {
@@ -37,21 +36,20 @@ fun ToolSelector(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                tools.forEach { tool ->
+                servers.sortedBy { it }.forEach { server ->
                     FilterChip(
-                        selected = selectedTools.contains(tool),
+                        selected = selectedServers.contains(server),
                         onClick = {
-                            if (selectedTools.contains(tool)) {
-                                onToolsSelected(selectedTools - tool)
+                            if (selectedServers.contains(server)) {
+                                onServersSelected(selectedServers - server)
                             } else {
-                                onToolsSelected(selectedTools + tool)
+                                onServersSelected(selectedServers + server)
                             }
                         },
-                        label = { Text(tool.name) },
+                        label = { Text(server) },
                     )
                 }
             }
         }
     }
 }
-

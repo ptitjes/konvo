@@ -109,7 +109,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
             NewConversationViewModel(
                 modelManager = instance(),
                 characterManager = instance(),
-                mcpHostSessionFactory = factory(),
+                mcpServerSpecificationsManager = instance(),
                 conversationRepository = instance(),
             )
         }

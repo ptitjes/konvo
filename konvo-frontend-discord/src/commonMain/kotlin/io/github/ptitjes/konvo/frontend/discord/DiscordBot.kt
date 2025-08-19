@@ -258,7 +258,7 @@ private fun MessageBuilder.conversationStartMessage(
                     content = markdown {
                         line {
                             bold("Tools:"); space()
-                            text(configuration.toolNames.takeIf { it.isNotEmpty() }?.joinToString() ?: "None")
+                            text(configuration.mcpServerNames.takeIf { it.isNotEmpty() }?.joinToString() ?: "None")
                         }
                         line { bold("Model:"); space(); text(model.shortName) }
                     }

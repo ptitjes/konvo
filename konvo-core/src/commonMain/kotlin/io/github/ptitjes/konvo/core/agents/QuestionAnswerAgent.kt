@@ -23,15 +23,14 @@ import kotlin.time.*
 import kotlin.time.Clock
 import kotlin.uuid.*
 
-suspend fun buildQuestionAnswerAgent(
+fun buildQuestionAnswerAgent(
     model: ModelCard,
     mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
-    toolNames: List<String>,
+    mcpServerNames: Set<String>,
 ): Agent {
     return DefaultAgent(
         systemPrompt = buildSystemPrompt(),
         model = model.toLLModel(),
-        maxAgentIterations = 50,
         promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
         strategy = { conversationView ->
             strategy("qa") {
@@ -40,7 +39,7 @@ suspend fun buildQuestionAnswerAgent(
             }
         },
         mcpSessionFactory = mcpSessionFactory,
-        toolNames = toolNames,
+        mcpServerNames = mcpServerNames,
     ) { conversationView ->
         install(EventHandler) {
             onToolValidationError { eventContext ->

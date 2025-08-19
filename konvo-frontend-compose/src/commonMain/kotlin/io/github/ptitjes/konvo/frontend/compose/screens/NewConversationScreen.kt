@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.models.*
-import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
@@ -96,7 +95,7 @@ fun NewConversationScreen(
                     questionAnswer = questionAnswer,
                     roleplay = roleplay,
                     onSelectAgentType = viewModel::selectAgentType,
-                    onSelectQuestionAnswerTools = viewModel::selectQuestionAnswerTools,
+                    onSelectQuestionAnswerMcpServerNames = viewModel::selectQuestionAnswerMcpServerNames,
                     onSelectQuestionAnswerModel = viewModel::selectQuestionAnswerModel,
                     onSelectRoleplayCharacter = viewModel::selectRoleplayCharacter,
                     onSelectRoleplayGreetingIndex = viewModel::selectRoleplayGreetingIndex,
@@ -114,7 +113,7 @@ private fun NewConversationPanel(
     questionAnswer: NewQuestionAnswerState,
     roleplay: NewRoleplayState,
     onSelectAgentType: (AgentType) -> Unit,
-    onSelectQuestionAnswerTools: (List<ToolCard>) -> Unit,
+    onSelectQuestionAnswerMcpServerNames: (Set<String>) -> Unit,
     onSelectQuestionAnswerModel: (ModelCard) -> Unit,
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
@@ -131,7 +130,7 @@ private fun NewConversationPanel(
         AgentType.QuestionAnswer -> {
             QuestionAnswerConfigurationForm(
                 questionAnswer = questionAnswer,
-                onSelectQuestionAnswerTools = onSelectQuestionAnswerTools,
+                onSelectQuestionAnswerMcpServerNames = onSelectQuestionAnswerMcpServerNames,
                 onSelectQuestionAnswerModel = onSelectQuestionAnswerModel,
             )
         }
@@ -151,7 +150,7 @@ private fun NewConversationPanel(
 @Composable
 private fun QuestionAnswerConfigurationForm(
     questionAnswer: NewQuestionAnswerState,
-    onSelectQuestionAnswerTools: (List<ToolCard>) -> Unit,
+    onSelectQuestionAnswerMcpServerNames: (Set<String>) -> Unit,
     onSelectQuestionAnswerModel: (ModelCard) -> Unit,
 ) {
     Column(
@@ -171,10 +170,10 @@ private fun QuestionAnswerConfigurationForm(
             }
 
             is NewQuestionAnswerState.Available -> {
-                ToolSelector(
-                    selectedTools = questionAnswer.selectedTools,
-                    onToolsSelected = onSelectQuestionAnswerTools,
-                    tools = questionAnswer.availableTools
+                McpServerSelector(
+                    selectedServers = questionAnswer.selectedMcpServers,
+                    onServersSelected = onSelectQuestionAnswerMcpServerNames,
+                    servers = questionAnswer.availableMcpServers
                 )
 
                 if (questionAnswer.selectableModels.isEmpty()) {

@@ -5,7 +5,6 @@ import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.prompts.*
-import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 
 data class ConversationBuilder(
@@ -29,7 +28,7 @@ sealed interface ConversationModeBuilder {
 
 data class QuestionAnswerModeBuilder(
     val prompt: PromptCard? = null,
-    val tools: List<ToolCard>? = null,
+    val mcpServerNames: Set<String>? = null,
     val model: ModelCard? = null,
     val endMessageBuilder: (EphemeralMessageBuilder.() -> Unit)? = null,
 ) : ConversationModeBuilder {
@@ -39,7 +38,7 @@ data class QuestionAnswerModeBuilder(
         if (prompt == null || model == null) error("Conversation configuration is incomplete")
 
         return QuestionAnswerAgentConfiguration(
-            toolNames = tools?.map { it.name } ?: emptyList(),
+            mcpServerNames = mcpServerNames ?: emptySet(),
             modelName = model.name,
         )
     }
