@@ -7,7 +7,9 @@ interface CharacterCard {
     val description: String
     val personality: String
     val scenario: String
-    val messageExample: String
+    val dialogueExamples: String
+    val systemPrompt: String?
+    val postHistoryInstructions: String?
     val greetings: List<String>
     val tags: List<String>
 }

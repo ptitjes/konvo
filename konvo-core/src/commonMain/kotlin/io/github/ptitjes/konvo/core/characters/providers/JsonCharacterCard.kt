@@ -24,7 +24,9 @@ internal fun JsonObject.parseCharacterCard(id: String): CharacterCard {
         description = data.description,
         personality = data.personality,
         scenario = data.scenario,
-        messageExample = data.messageExample,
+        dialogueExamples = data.messageExample,
+        systemPrompt = data.systemPrompt?.takeIf { it.isNotBlank() },
+        postHistoryInstructions = data.postHistoryInstructions?.takeIf { it.isNotBlank() },
         greetings = listOf(data.firstMessage) + data.alternateGreetings,
         tags = data.tags,
     )

@@ -2,7 +2,6 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
-import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.conversation.model.*
@@ -23,13 +22,11 @@ class NewConversationViewModel(
     private val characterManager: CharacterManager,
     mcpServerSpecificationsManager: McpServerSpecificationsManager,
     private val conversationRepository: ConversationRepository,
+    settingsRepository: io.github.ptitjes.konvo.core.settings.SettingsRepository,
 ) : ViewModel() {
 
-    companion object {
-        private val logger = KotlinLogging.logger { }
-    }
-
     private val mcpServerNames = mcpServerSpecificationsManager.specifications.map { it.keys }
+    private val roleplaySettings = settingsRepository.getSettings(RoleplayAgentSettingsKey)
 
     var selectedAgentType: AgentType by mutableStateOf(AgentType.QuestionAnswer)
         private set
@@ -45,23 +42,26 @@ class NewConversationViewModel(
             val availableModels = modelManager.models.first()
             val availableMcpServerNames = mcpServerNames.first()
             val availableCharacters = characterManager.characters.first()
+            val roleplaySettings = roleplaySettings.first()
 
             updateQuestionAnswerState(availableModels, availableMcpServerNames)
-            updateRoleplayState(availableModels, availableCharacters)
+            updateRoleplayState(availableModels, availableCharacters, roleplaySettings)
+
+            data class ObservedData(
+                val models: List<ModelCard>,
+                val mcpServerNames: Set<String>,
+                val characters: List<CharacterCard>,
+            )
 
             launch {
                 combine(
                     modelManager.models,
                     mcpServerNames,
-                    characterManager.characters
-                ) { models, mcpServerNames, characters ->
-                    Triple(models, mcpServerNames, characters)
-                }.collect { (models, mcpServerNames, characters) ->
-                    logger.debug {
-                        "Collecting ${models.size} models, ${mcpServerNames.size} MCP servers and ${characters.size} characters"
-                    }
-                    updateQuestionAnswerState(models, mcpServerNames)
-                    updateRoleplayState(models, characters)
+                    characterManager.characters,
+                    transform = ::ObservedData,
+                ).collect { data ->
+                    updateQuestionAnswerState(data.models, data.mcpServerNames)
+                    updateRoleplayState(data.models, data.characters, roleplaySettings)
                 }
             }
         }
@@ -99,6 +99,7 @@ class NewConversationViewModel(
     private fun updateRoleplayState(
         availableModels: List<ModelCard>,
         availableCharacters: List<CharacterCard>,
+        roleplaySettings: RoleplayAgentSettings,
     ) {
         _roleplay.update { previous ->
             when {
@@ -108,20 +109,30 @@ class NewConversationViewModel(
                 )
 
                 previous is NewRoleplayState.Available -> {
+                    val previouslySelectedModel = availableModels.firstOrNull {
+                        it.name == previous.selectedModel.name
+                    }
+
                     previous.copy(
                         availableModels = availableModels,
-                        selectedModel = availableModels.first(),
+                        selectedModel = previouslySelectedModel ?: availableModels.first(),
                     )
                 }
 
-                else -> NewRoleplayState.Available(
-                    availableModels = availableModels,
-                    availableCharacters = availableCharacters,
-                    selectedCharacter = availableCharacters.first(),
-                    selectedGreetingIndex = null,
-                    userName = "User",
-                    selectedModel = availableModels.first(),
-                )
+                else -> {
+                    val preferredModel = roleplaySettings.defaultPreferredModelName?.let { name ->
+                        availableModels.firstOrNull { it.name == name }
+                    }
+
+                    NewRoleplayState.Available(
+                        availableModels = availableModels,
+                        availableCharacters = availableCharacters,
+                        selectedCharacter = availableCharacters.first(),
+                        selectedGreetingIndex = null,
+                        userName = roleplaySettings.defaultUserPersonaName,
+                        selectedModel = preferredModel ?: availableModels.first(),
+                    )
+                }
             }
         }
     }

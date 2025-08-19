@@ -90,6 +90,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
                 modelProviderManager = instance(),
                 mcpSessionFactory = factory(),
                 characterProviderManager = instance(),
+                settingsRepository = instance(),
             )
         }
     }
@@ -111,6 +112,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
                 characterManager = instance(),
                 mcpServerSpecificationsManager = instance(),
                 conversationRepository = instance(),
+                settingsRepository = instance(),
             )
         }
     }

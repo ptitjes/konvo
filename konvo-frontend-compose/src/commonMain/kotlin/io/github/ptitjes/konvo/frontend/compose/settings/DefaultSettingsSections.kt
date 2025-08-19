@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.settings
 
+import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
@@ -25,5 +26,10 @@ val defaultSettingsSections = listOf(
         key = ModelProviderSettingsKey,
         title = "Model providers",
         panel = ::ModelProviderSettingsPanel,
+    ),
+    SettingsSection(
+        key = RoleplayAgentSettingsKey,
+        title = "Roleplay Agent",
+        panel = ::RoleplayAgentSettingsPanel,
     ),
 )
