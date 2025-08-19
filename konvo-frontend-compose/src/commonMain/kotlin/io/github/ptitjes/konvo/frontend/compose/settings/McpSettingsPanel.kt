@@ -42,6 +42,7 @@ fun McpSettingsPanel(
     }
 
     var sheetState by remember { mutableStateOf<McpServersSheetState>(McpServersSheetState.Closed) }
+    var serverPendingDeletion by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -84,7 +85,7 @@ fun McpSettingsPanel(
                                     Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit server")
                                 }
 
-                                IconButton(onClick = { removeServer(name) }) {
+                                IconButton(onClick = { serverPendingDeletion = name }) {
                                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete server")
                                 }
                             }
@@ -93,6 +94,30 @@ fun McpSettingsPanel(
                 }
             },
         )
+
+        // Deletion confirmation dialog
+        serverPendingDeletion?.let { nameToDelete ->
+            AlertDialog(
+                onDismissRequest = { serverPendingDeletion = null },
+                title = { Text("Delete server?") },
+                text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        removeServer(nameToDelete)
+                        serverPendingDeletion = null
+                        val currentSheet = sheetState
+                        if (currentSheet is McpServersSheetState.Editing && currentSheet.name == nameToDelete) {
+                            sheetState = McpServersSheetState.Closed
+                        }
+                    }) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { serverPendingDeletion = null }) { Text("Cancel") }
+                },
+            )
+        }
 
         if (sheetState !is McpServersSheetState.Closed) {
             ModalBottomSheet(
@@ -124,8 +149,7 @@ fun McpSettingsPanel(
                                 },
                                 onChange = { newSpec -> updateServer(currentName) { _ -> newSpec } },
                                 onRemove = {
-                                    removeServer(currentName)
-                                    sheetState = McpServersSheetState.Closed
+                                    serverPendingDeletion = currentName
                                 },
                             )
                         } else {

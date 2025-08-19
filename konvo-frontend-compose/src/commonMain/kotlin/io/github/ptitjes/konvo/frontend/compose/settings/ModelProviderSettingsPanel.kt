@@ -51,6 +51,7 @@ fun ModelProviderSettingsPanel(
     }
 
     var sheetState by remember { mutableStateOf<ModelProvidersSheetState>(ModelProvidersSheetState.Closed) }
+    var providerPendingDeletionIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -117,7 +118,7 @@ fun ModelProviderSettingsPanel(
                                     }
 
                                     IconButton(
-                                        onClick = { removeProvider(index) },
+                                        onClick = { providerPendingDeletionIndex = index },
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
@@ -131,6 +132,32 @@ fun ModelProviderSettingsPanel(
                 }
             }
         )
+
+        // Deletion confirmation dialog
+        providerPendingDeletionIndex?.let { indexToDelete ->
+            val nameToDelete = settings.providers.getOrNull(indexToDelete)?.name ?: "this provider"
+            AlertDialog(
+                onDismissRequest = { providerPendingDeletionIndex = null },
+                title = { Text("Delete provider?") },
+                text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        // Confirm deletion
+                        removeProvider(indexToDelete)
+                        providerPendingDeletionIndex = null
+                        val currentSheet = sheetState
+                        if (currentSheet is ModelProvidersSheetState.Editing && currentSheet.index == indexToDelete) {
+                            sheetState = ModelProvidersSheetState.Closed
+                        }
+                    }) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { providerPendingDeletionIndex = null }) { Text("Cancel") }
+                },
+            )
+        }
 
         if (sheetState !is ModelProvidersSheetState.Closed) {
             ModalBottomSheet(
@@ -155,8 +182,7 @@ fun ModelProviderSettingsPanel(
                             otherNames = settings.providers.map { it.name }.toSet() - settings.providers[index].name,
                             onChange = { updated -> updateProvider(index) { _ -> updated } },
                             onRemove = {
-                                removeProvider(index)
-                                sheetState = ModelProvidersSheetState.Closed
+                                providerPendingDeletionIndex = index
                             },
                         )
                     }
