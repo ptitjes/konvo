@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.characters.ccv2
+package io.github.ptitjes.konvo.core.roleplay.ccv2
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*

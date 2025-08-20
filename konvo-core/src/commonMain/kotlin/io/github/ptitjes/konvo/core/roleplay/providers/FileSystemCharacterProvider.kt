@@ -1,7 +1,7 @@
-package io.github.ptitjes.konvo.core.characters.providers
+package io.github.ptitjes.konvo.core.roleplay.providers
 
-import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.platform.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*

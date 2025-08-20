@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.characters
+package io.github.ptitjes.konvo.core.roleplay
 
 import kotlinx.coroutines.flow.*
 

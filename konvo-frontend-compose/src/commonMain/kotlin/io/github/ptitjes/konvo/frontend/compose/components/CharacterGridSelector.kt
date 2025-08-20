@@ -17,7 +17,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import coil3.compose.*
-import io.github.ptitjes.konvo.core.characters.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
 
 /**

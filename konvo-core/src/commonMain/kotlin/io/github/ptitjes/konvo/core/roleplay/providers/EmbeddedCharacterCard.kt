@@ -1,9 +1,9 @@
-package io.github.ptitjes.konvo.core.characters.providers
+package io.github.ptitjes.konvo.core.roleplay.providers
 
 import com.ashampoo.kim.format.png.*
 import com.ashampoo.kim.format.png.chunk.*
 import com.ashampoo.kim.input.*
-import io.github.ptitjes.konvo.core.characters.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.io.*
 import kotlinx.io.bytestring.*

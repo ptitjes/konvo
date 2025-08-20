@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo.core.agents
 
-import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.settings.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*

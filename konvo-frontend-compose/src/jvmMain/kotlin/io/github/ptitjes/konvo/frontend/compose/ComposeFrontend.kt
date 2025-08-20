@@ -5,8 +5,6 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.characters.*
-import io.github.ptitjes.konvo.core.characters.providers.*
 import io.github.ptitjes.konvo.core.conversation.*
 import io.github.ptitjes.konvo.core.conversation.model.*
 import io.github.ptitjes.konvo.core.conversation.storage.*
@@ -15,6 +13,8 @@ import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.platform.*
 import io.github.ptitjes.konvo.core.prompts.*
+import io.github.ptitjes.konvo.core.roleplay.*
+import io.github.ptitjes.konvo.core.roleplay.providers.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.compose.viewmodels.*

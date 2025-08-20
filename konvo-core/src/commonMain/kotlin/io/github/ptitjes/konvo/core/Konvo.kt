@@ -1,9 +1,9 @@
 package io.github.ptitjes.konvo.core
 
-import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.prompts.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import kotlinx.coroutines.flow.*
 import org.kodein.di.*
 

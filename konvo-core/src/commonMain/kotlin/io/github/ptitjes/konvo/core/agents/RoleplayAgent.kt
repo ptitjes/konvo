@@ -8,8 +8,8 @@ import ai.koog.prompt.message.*
 import ai.koog.prompt.tokenizer.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
-import io.github.ptitjes.konvo.core.characters.*
 import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import kotlin.random.*
 
 private val logger = KotlinLogging.logger { }
