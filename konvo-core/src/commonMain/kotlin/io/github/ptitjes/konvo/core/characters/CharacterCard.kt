@@ -12,4 +12,5 @@ interface CharacterCard {
     val postHistoryInstructions: String?
     val greetings: List<String>
     val tags: List<String>
+    val characterBook: Lorebook?
 }

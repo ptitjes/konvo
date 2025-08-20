@@ -14,4 +14,5 @@ internal data class DefaultCharacterCard(
     override val postHistoryInstructions: String?,
     override val greetings: List<String>,
     override val tags: List<String>,
+    override val characterBook: Lorebook?,
 ) : CharacterCard
