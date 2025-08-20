@@ -4,6 +4,9 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.shape.*
+import androidx.compose.material.icons.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -116,6 +119,24 @@ private fun CharacterGridItem(
                         text = character.name.firstOrNull()?.uppercase() ?: "?",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            if (character.characterBook != null) {
+                // Small book icon at the top-right when the character has a character book
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .background(color = Color(0x66000000), shape = CircleShape)
+                        .padding(4.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Book,
+                        contentDescription = "Has character book",
+                        tint = Color.White,
+                        modifier = Modifier.size(12.dp),
                     )
                 }
             }
