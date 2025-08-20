@@ -23,11 +23,10 @@ class AgentFactory(
             )
 
             is RoleplayAgentConfiguration -> buildRoleplayAgent(
+                roleplayAgentSettings = settingsRepository.getSettings(RoleplayAgentSettingsKey).first(),
+                roleplayConfiguration = agentConfiguration,
                 model = modelProviderManager.named(agentConfiguration.modelName),
                 character = characterProviderManager.withId(agentConfiguration.characterId),
-                characterGreetingIndex = agentConfiguration.characterGreetingIndex,
-                userName = agentConfiguration.userName,
-                roleplayAgentSettings = settingsRepository.getSettings(RoleplayAgentSettingsKey).first(),
             )
 
             is NoAgentConfiguration -> error("No agent configured for this conversation")

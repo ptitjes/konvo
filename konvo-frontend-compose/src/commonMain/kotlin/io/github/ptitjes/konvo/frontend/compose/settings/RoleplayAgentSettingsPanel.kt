@@ -27,13 +27,12 @@ fun RoleplayAgentSettingsPanel(
             description = "Name used for the user's persona in new roleplay conversations.",
             bottomContent = {
                 OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                     value = settings.defaultUserPersonaName,
                     onValueChange = { newValue ->
                         updateSettings { previous -> previous.copy(defaultUserPersonaName = newValue) }
                     },
                     singleLine = true,
-                    label = { Text("User persona name") },
                 )
             }
         )
@@ -57,6 +56,7 @@ fun RoleplayAgentSettingsPanel(
                     }
 
                     ModelSelector(
+                        label = null,
                         selectedModel = selectedModel,
                         onModelSelected = { model ->
                             updateSettings { previous -> previous.copy(defaultPreferredModelName = model.name) }
@@ -75,13 +75,60 @@ fun RoleplayAgentSettingsPanel(
             bottomContent = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).heightIn(min = 120.dp),
                         value = settings.defaultSystemPrompt,
                         onValueChange = { newValue ->
                             updateSettings { previous -> previous.copy(defaultSystemPrompt = newValue) }
                         },
-                        label = { Text("Default system prompt") },
                     )
+                }
+            }
+        )
+
+        // Default lorebook settings
+        SettingsBox(
+            title = "Default Lorebook settings",
+            description = "Used when the character card doesn't define its own lorebook configuration.",
+            bottomContent = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Numeric fields for scan depth and token budget
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        OutlinedIntegerField(
+                            modifier = Modifier.weight(1f),
+                            value = settings.defaultScanDepth,
+                            onValueChange = { value ->
+                                updateSettings { previous -> previous.copy(defaultScanDepth = value) }
+                            },
+                            label = "Scan depth",
+                        )
+
+                        OutlinedIntegerField(
+                            modifier = Modifier.weight(1f),
+                            value = settings.defaultTokenBudget,
+                            onValueChange = { value ->
+                                updateSettings { previous -> previous.copy(defaultTokenBudget = value) }
+                            },
+                            label = "Token budget",
+                        )
+                    }
+
+                    // Recursive scanning switch
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(text = "Recursive scanning")
+                        Switch(
+                            checked = settings.defaultRecursiveScanning,
+                            onCheckedChange = { checked ->
+                                updateSettings { previous -> previous.copy(defaultRecursiveScanning = checked) }
+                            },
+                        )
+                    }
                 }
             }
         )

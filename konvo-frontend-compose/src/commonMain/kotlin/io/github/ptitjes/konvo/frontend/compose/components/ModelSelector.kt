@@ -18,13 +18,14 @@ import io.github.ptitjes.konvo.core.models.*
  */
 @Composable
 fun ModelSelector(
+    label: String? = "Model",
     selectedModel: ModelCard,
     onModelSelected: (ModelCard) -> Unit,
     models: List<ModelCard>,
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(
-        label = "Model",
+        label = label,
         selectedItem = selectedModel,
         onSelectItem = onModelSelected,
         options = models,
