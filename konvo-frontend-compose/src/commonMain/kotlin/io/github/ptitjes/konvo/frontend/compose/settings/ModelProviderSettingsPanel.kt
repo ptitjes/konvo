@@ -53,142 +53,137 @@ fun ModelProviderSettingsPanel(
     var sheetState by remember { mutableStateOf<ModelProvidersSheetState>(ModelProvidersSheetState.Closed) }
     var providerPendingDeletionIndex by remember { mutableStateOf<Int?>(null) }
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        SettingsBox(
-            title = "Configured providers",
-            description = "Add, remove, and edit model providers.",
-            trailingContent = {
-                FilledTonalIconButton(
-                    onClick = { sheetState = ModelProvidersSheetState.Adding },
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
-                }
-            },
-            bottomContent = {
-                if (settings.providers.isEmpty()) {
-                    Text(
-                        text = "No model providers configured.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                } else {
-                    ReorderableColumn(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        list = settings.providers,
-                        onSettle = { fromIndex, toIndex -> moveProvider(fromIndex, toIndex) },
-                    ) { index, provider, _ ->
-                        key(provider.name) {
-                            ReorderableItem {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
+    SettingsBox(
+        title = "Configured providers",
+        description = "Add, remove, and edit model providers.",
+        trailingContent = {
+            FilledTonalIconButton(
+                onClick = { sheetState = ModelProvidersSheetState.Adding },
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
+            }
+        },
+        bottomContent = {
+            if (settings.providers.isEmpty()) {
+                Text(
+                    text = "No model providers configured.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                ReorderableColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    list = settings.providers,
+                    onSettle = { fromIndex, toIndex -> moveProvider(fromIndex, toIndex) },
+                ) { index, provider, _ ->
+                    key(provider.name) {
+                        ReorderableItem {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                IconButton(
+                                    modifier = Modifier.draggableHandle(),
+                                    onClick = { },
                                 ) {
-                                    IconButton(
-                                        modifier = Modifier.draggableHandle(),
-                                        onClick = { },
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.DragHandle,
-                                            contentDescription = "Drag handle",
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Default.DragHandle,
+                                        contentDescription = "Drag handle",
+                                    )
+                                }
 
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = provider.name,
-                                            style = MaterialTheme.typography.titleMedium,
-                                        )
-                                        Text(
-                                            text = provider.configuration.toType().name,
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                    }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = provider.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                    Text(
+                                        text = provider.configuration.toType().name,
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                }
 
-                                    IconButton(
-                                        onClick = { sheetState = ModelProvidersSheetState.Editing(index) },
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit provider",
-                                        )
-                                    }
+                                IconButton(
+                                    onClick = { sheetState = ModelProvidersSheetState.Editing(index) },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit provider",
+                                    )
+                                }
 
-                                    IconButton(
-                                        onClick = { providerPendingDeletionIndex = index },
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete provider",
-                                        )
-                                    }
+                                IconButton(
+                                    onClick = { providerPendingDeletionIndex = index },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete provider",
+                                    )
                                 }
                             }
                         }
                     }
                 }
             }
-        )
-
-        // Deletion confirmation dialog
-        providerPendingDeletionIndex?.let { indexToDelete ->
-            val nameToDelete = settings.providers.getOrNull(indexToDelete)?.name ?: "this provider"
-            AlertDialog(
-                onDismissRequest = { providerPendingDeletionIndex = null },
-                title = { Text("Delete provider?") },
-                text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        // Confirm deletion
-                        removeProvider(indexToDelete)
-                        providerPendingDeletionIndex = null
-                        val currentSheet = sheetState
-                        if (currentSheet is ModelProvidersSheetState.Editing && currentSheet.index == indexToDelete) {
-                            sheetState = ModelProvidersSheetState.Closed
-                        }
-                    }) {
-                        Text("Delete")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { providerPendingDeletionIndex = null }) { Text("Cancel") }
-                },
-            )
         }
+    )
 
-        if (sheetState !is ModelProvidersSheetState.Closed) {
-            ModalBottomSheet(
-                onDismissRequest = { sheetState = ModelProvidersSheetState.Closed },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            ) {
-                when (val sheet = sheetState) {
-                    is ModelProvidersSheetState.Adding -> {
-                        AddProviderSheetContent(
-                            existingNames = settings.providers.map { it.name }.toSet(),
-                            onAdd = { newProvider ->
-                                addProvider(newProvider)
-                                sheetState = ModelProvidersSheetState.Closed
-                            },
-                        )
+    // Deletion confirmation dialog
+    providerPendingDeletionIndex?.let { indexToDelete ->
+        val nameToDelete = settings.providers.getOrNull(indexToDelete)?.name ?: "this provider"
+        AlertDialog(
+            onDismissRequest = { providerPendingDeletionIndex = null },
+            title = { Text("Delete provider?") },
+            text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    // Confirm deletion
+                    removeProvider(indexToDelete)
+                    providerPendingDeletionIndex = null
+                    val currentSheet = sheetState
+                    if (currentSheet is ModelProvidersSheetState.Editing && currentSheet.index == indexToDelete) {
+                        sheetState = ModelProvidersSheetState.Closed
                     }
-
-                    is ModelProvidersSheetState.Editing -> {
-                        val index = sheet.index
-                        EditProviderSheetContent(
-                            provider = settings.providers[sheet.index],
-                            otherNames = settings.providers.map { it.name }.toSet() - settings.providers[index].name,
-                            onChange = { updated -> updateProvider(index) { _ -> updated } },
-                            onRemove = {
-                                providerPendingDeletionIndex = index
-                            },
-                        )
-                    }
-
-                    is ModelProvidersSheetState.Closed -> {}
+                }) {
+                    Text("Delete")
                 }
+            },
+            dismissButton = {
+                TextButton(onClick = { providerPendingDeletionIndex = null }) { Text("Cancel") }
+            },
+        )
+    }
+
+    if (sheetState !is ModelProvidersSheetState.Closed) {
+        ModalBottomSheet(
+            onDismissRequest = { sheetState = ModelProvidersSheetState.Closed },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            when (val sheet = sheetState) {
+                is ModelProvidersSheetState.Adding -> {
+                    AddProviderSheetContent(
+                        existingNames = settings.providers.map { it.name }.toSet(),
+                        onAdd = { newProvider ->
+                            addProvider(newProvider)
+                            sheetState = ModelProvidersSheetState.Closed
+                        },
+                    )
+                }
+
+                is ModelProvidersSheetState.Editing -> {
+                    val index = sheet.index
+                    EditProviderSheetContent(
+                        provider = settings.providers[sheet.index],
+                        otherNames = settings.providers.map { it.name }.toSet() - settings.providers[index].name,
+                        onChange = { updated -> updateProvider(index) { _ -> updated } },
+                        onRemove = {
+                            providerPendingDeletionIndex = index
+                        },
+                    )
+                }
+
+                is ModelProvidersSheetState.Closed -> {}
             }
         }
     }

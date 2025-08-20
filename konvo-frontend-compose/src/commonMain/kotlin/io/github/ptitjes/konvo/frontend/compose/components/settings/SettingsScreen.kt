@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.util.*
@@ -25,12 +24,13 @@ fun SettingsScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = Color.Red,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        modifier = Modifier.padding(start = 16.dp),
+                        modifier =
+                            if (paneType != ListDetailPaneType.OnePane) Modifier.padding(start = 16.dp)
+                            else Modifier,
                         text = title,
                     )
                 },
@@ -52,15 +52,17 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
-        Surface(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 modifier = Modifier
                     .widthIn(max = 800.dp)
-                    .padding(horizontal = 32.dp)
                     .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 content()
             }

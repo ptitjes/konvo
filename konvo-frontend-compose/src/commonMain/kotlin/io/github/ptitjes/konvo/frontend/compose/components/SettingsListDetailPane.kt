@@ -60,7 +60,7 @@ fun <T> SettingsPanel(
     when (val settings = settings) {
         is SettingsViewState.Loading -> FullSizeProgressIndicator()
         is SettingsViewState.Loaded<T> -> Column(
-            modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
         ) {
             section.panel(settings.value) { block ->
                 updateSettings(block)

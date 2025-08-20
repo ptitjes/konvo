@@ -25,6 +25,7 @@ fun ModelSelector(
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(
+        modifier = modifier,
         label = label,
         selectedItem = selectedModel,
         onSelectItem = onModelSelected,
@@ -36,7 +37,12 @@ fun ModelSelector(
             ) {
                 it.provider.name?.let { providerName ->
                     FilterChip(
-                        label = { Text(providerName) },
+                        label = {
+                            Text(
+                                text = providerName,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        },
                         onClick = {},
                         selected = false,
                         enabled = false,
@@ -50,6 +56,5 @@ fun ModelSelector(
                 )
             }
         },
-        modifier = modifier,
     )
 }

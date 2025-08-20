@@ -22,7 +22,6 @@ fun <T> GenericSelector(
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { if (enabled) expanded = it },
-        modifier = modifier,
     ) {
         OutlinedTextField(
             label = {
@@ -33,7 +32,7 @@ fun <T> GenericSelector(
             readOnly = true,
             maxLines = 1,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
         )

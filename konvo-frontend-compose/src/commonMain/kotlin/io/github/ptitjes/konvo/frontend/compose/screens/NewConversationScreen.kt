@@ -47,8 +47,10 @@ fun NewConversationScreen(
             TopAppBar(
                 title = {
                     Text(
+                        modifier =
+                            if (paneType != ListDetailPaneType.OnePane) Modifier.padding(start = 16.dp)
+                            else Modifier,
                         text = "New Conversation",
-                        modifier = Modifier.fillMaxWidth(),
                     )
                 },
                 navigationIcon = {
@@ -59,6 +61,11 @@ fun NewConversationScreen(
                                 contentDescription = "Back"
                             )
                         }
+                    } else {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Chat,
+                            contentDescription = "Back"
+                        )
                     }
                 },
                 actions = {
@@ -80,15 +87,15 @@ fun NewConversationScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxSize()
-                .widthIn(max = 800.dp),
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
                 modifier = Modifier
                     .widthIn(max = 800.dp)
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 NewConversationPanel(
                     selectedAgentType = selectedAgentType,
@@ -108,7 +115,7 @@ fun NewConversationScreen(
 }
 
 @Composable
-private fun NewConversationPanel(
+private fun ColumnScope.NewConversationPanel(
     selectedAgentType: AgentType,
     questionAnswer: NewQuestionAnswerState,
     roleplay: NewRoleplayState,
@@ -148,115 +155,107 @@ private fun NewConversationPanel(
 }
 
 @Composable
-private fun QuestionAnswerConfigurationForm(
+private fun ColumnScope.QuestionAnswerConfigurationForm(
     questionAnswer: NewQuestionAnswerState,
     onSelectQuestionAnswerMcpServerNames: (Set<String>) -> Unit,
     onSelectQuestionAnswerModel: (ModelCard) -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        when (questionAnswer) {
-            NewQuestionAnswerState.Loading -> {
-                FullSizeProgressIndicator()
-            }
+    when (questionAnswer) {
+        NewQuestionAnswerState.Loading -> {
+            FullSizeProgressIndicator()
+        }
 
-            is NewQuestionAnswerState.Unavailable -> {
+        is NewQuestionAnswerState.Unavailable -> {
+            Text(
+                text = "No available models",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+
+        is NewQuestionAnswerState.Available -> {
+            McpServerSelector(
+                selectedServers = questionAnswer.selectedMcpServers,
+                onServersSelected = onSelectQuestionAnswerMcpServerNames,
+                servers = questionAnswer.availableMcpServers
+            )
+
+            if (questionAnswer.selectableModels.isEmpty()) {
                 Text(
-                    text = "No available models",
+                    text = "No available models with tool support",
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp),
                 )
-            }
-
-            is NewQuestionAnswerState.Available -> {
-                McpServerSelector(
-                    selectedServers = questionAnswer.selectedMcpServers,
-                    onServersSelected = onSelectQuestionAnswerMcpServerNames,
-                    servers = questionAnswer.availableMcpServers
+            } else {
+                ModelSelector(
+                    selectedModel = questionAnswer.selectedModel,
+                    onModelSelected = onSelectQuestionAnswerModel,
+                    models = questionAnswer.selectableModels
                 )
-
-                if (questionAnswer.selectableModels.isEmpty()) {
-                    Text(
-                        text = "No available models with tool support",
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                } else {
-                    ModelSelector(
-                        selectedModel = questionAnswer.selectedModel,
-                        onModelSelected = onSelectQuestionAnswerModel,
-                        models = questionAnswer.selectableModels
-                    )
-                }
             }
         }
     }
 }
 
 @Composable
-private fun RoleplayConfigurationForm(
+private fun ColumnScope.RoleplayConfigurationForm(
     roleplay: NewRoleplayState,
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
     onChangeRoleplayUserName: (String) -> Unit,
     onSelectRoleplayModel: (ModelCard) -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        when (val roleplay = roleplay) {
-            NewRoleplayState.Loading -> {
-                FullSizeProgressIndicator()
-            }
+    when (val roleplay = roleplay) {
+        NewRoleplayState.Loading -> {
+            FullSizeProgressIndicator()
+        }
 
-            is NewRoleplayState.Unavailable -> {
-                Text(
-                    text = "No available characters or models",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp),
+        is NewRoleplayState.Unavailable -> {
+            Text(
+                text = "No available characters or models",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+
+        is NewRoleplayState.Available -> {
+            CharacterGridSelector(
+                modifier = Modifier.weight(1f),
+                selectedCharacter = roleplay.selectedCharacter,
+                onCharacterSelected = { character ->
+                    onSelectRoleplayCharacter(character)
+                    // Reset greeting index when the character changes
+                    onSelectRoleplayGreetingIndex(null)
+                },
+                characters = roleplay.availableCharacters,
+            )
+
+            if (roleplay.selectedCharacter.greetings.size > 1) {
+                CharacterGreetingSelector(
+                    selectedGreetingIndex = roleplay.selectedGreetingIndex,
+                    onGreetingIndexSelected = onSelectRoleplayGreetingIndex,
+                    character = roleplay.selectedCharacter,
+                    userName = roleplay.userName,
                 )
             }
 
-            is NewRoleplayState.Available -> {
-                CharacterGridSelector(
-                    modifier = Modifier.weight(1f),
-                    selectedCharacter = roleplay.selectedCharacter,
-                    onCharacterSelected = { character ->
-                        onSelectRoleplayCharacter(character)
-                        // Reset greeting index when the character changes
-                        onSelectRoleplayGreetingIndex(null)
-                    },
-                    characters = roleplay.availableCharacters,
-                )
-
-                if (roleplay.selectedCharacter.greetings.size > 1) {
-                    CharacterGreetingSelector(
-                        selectedGreetingIndex = roleplay.selectedGreetingIndex,
-                        onGreetingIndexSelected = onSelectRoleplayGreetingIndex,
-                        character = roleplay.selectedCharacter,
-                        userName = roleplay.userName,
+            OutlinedTextField(
+                label = {
+                    Text(
+                        text = "Your Persona",
+                        style = MaterialTheme.typography.titleSmall
                     )
-                }
+                },
+                value = roleplay.userName,
+                onValueChange = onChangeRoleplayUserName,
+                modifier = Modifier.fillMaxWidth()
+            )
 
-                OutlinedTextField(
-                    label = {
-                        Text(
-                            text = "Your Persona",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    },
-                    value = roleplay.userName,
-                    onValueChange = onChangeRoleplayUserName,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                ModelSelector(
-                    selectedModel = roleplay.selectedModel,
-                    onModelSelected = onSelectRoleplayModel,
-                    models = roleplay.availableModels
-                )
-            }
+            ModelSelector(
+                selectedModel = roleplay.selectedModel,
+                onModelSelected = onSelectRoleplayModel,
+                models = roleplay.availableModels
+            )
         }
     }
 }

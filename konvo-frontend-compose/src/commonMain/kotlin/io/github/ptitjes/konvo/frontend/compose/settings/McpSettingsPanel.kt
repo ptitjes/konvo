@@ -44,122 +44,117 @@ fun McpSettingsPanel(
     var sheetState by remember { mutableStateOf<McpServersSheetState>(McpServersSheetState.Closed) }
     var serverPendingDeletion by remember { mutableStateOf<String?>(null) }
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        SettingsBox(
-            title = "Configured MCP servers",
-            description = "Add, remove, and edit MCP servers.",
-            trailingContent = {
-                FilledTonalIconButton(onClick = { sheetState = McpServersSheetState.Adding }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add server")
-                }
-            },
-            bottomContent = {
-                if (settings.servers.isEmpty()) {
-                    Text(
-                        text = "No MCP servers configured.",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        settings.servers.entries.sortedBy { it.key }.forEach { (name, specification) ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = name, style = MaterialTheme.typography.titleMedium)
-                                    Text(
-                                        text = specification.transport.toType().name,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
+    SettingsBox(
+        title = "Configured MCP servers",
+        description = "Add, remove, and edit MCP servers.",
+        trailingContent = {
+            FilledTonalIconButton(onClick = { sheetState = McpServersSheetState.Adding }) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add server")
+            }
+        },
+        bottomContent = {
+            if (settings.servers.isEmpty()) {
+                Text(
+                    text = "No MCP servers configured.",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    settings.servers.entries.sortedBy { it.key }.forEach { (name, specification) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = name, style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    text = specification.transport.toType().name,
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
 
-                                IconButton(onClick = { sheetState = McpServersSheetState.Editing(name) }) {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit server")
-                                }
+                            IconButton(onClick = { sheetState = McpServersSheetState.Editing(name) }) {
+                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit server")
+                            }
 
-                                IconButton(onClick = { serverPendingDeletion = name }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete server")
-                                }
+                            IconButton(onClick = { serverPendingDeletion = name }) {
+                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete server")
                             }
                         }
                     }
                 }
+            }
+        },
+    )
+
+    // Deletion confirmation dialog
+    serverPendingDeletion?.let { nameToDelete ->
+        AlertDialog(
+            onDismissRequest = { serverPendingDeletion = null },
+            title = { Text("Delete server?") },
+            text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    removeServer(nameToDelete)
+                    serverPendingDeletion = null
+                    val currentSheet = sheetState
+                    if (currentSheet is McpServersSheetState.Editing && currentSheet.name == nameToDelete) {
+                        sheetState = McpServersSheetState.Closed
+                    }
+                }) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { serverPendingDeletion = null }) { Text("Cancel") }
             },
         )
+    }
 
-        // Deletion confirmation dialog
-        serverPendingDeletion?.let { nameToDelete ->
-            AlertDialog(
-                onDismissRequest = { serverPendingDeletion = null },
-                title = { Text("Delete server?") },
-                text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        removeServer(nameToDelete)
-                        serverPendingDeletion = null
-                        val currentSheet = sheetState
-                        if (currentSheet is McpServersSheetState.Editing && currentSheet.name == nameToDelete) {
+    if (sheetState !is McpServersSheetState.Closed) {
+        ModalBottomSheet(
+            onDismissRequest = { sheetState = McpServersSheetState.Closed },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        ) {
+            when (val sheet = sheetState) {
+                is McpServersSheetState.Adding -> {
+                    AddServerSheetContent(
+                        existingNames = settings.servers.keys,
+                        onAdd = { newName, newSpec ->
+                            addServer(newName, newSpec)
                             sheetState = McpServersSheetState.Closed
-                        }
-                    }) {
-                        Text("Delete")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { serverPendingDeletion = null }) { Text("Cancel") }
-                },
-            )
-        }
+                        },
+                    )
+                }
 
-        if (sheetState !is McpServersSheetState.Closed) {
-            ModalBottomSheet(
-                onDismissRequest = { sheetState = McpServersSheetState.Closed },
-                sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            ) {
-                when (val sheet = sheetState) {
-                    is McpServersSheetState.Adding -> {
-                        AddServerSheetContent(
-                            existingNames = settings.servers.keys,
-                            onAdd = { newName, newSpec ->
-                                addServer(newName, newSpec)
-                                sheetState = McpServersSheetState.Closed
+                is McpServersSheetState.Editing -> {
+                    val currentName = sheet.name
+                    val spec = settings.servers[currentName]
+                    if (spec != null) {
+                        EditServerSheetContent(
+                            name = currentName,
+                            specification = spec,
+                            otherNames = settings.servers.keys - currentName,
+                            onRename = { newName ->
+                                renameServer(currentName, newName)
+                                sheetState = McpServersSheetState.Editing(newName)
+                            },
+                            onChange = { newSpec -> updateServer(currentName) { _ -> newSpec } },
+                            onRemove = {
+                                serverPendingDeletion = currentName
                             },
                         )
+                    } else {
+                        // In case the server was renamed/removed, close the sheet
+                        sheetState = McpServersSheetState.Closed
                     }
-
-                    is McpServersSheetState.Editing -> {
-                        val currentName = sheet.name
-                        val spec = settings.servers[currentName]
-                        if (spec != null) {
-                            EditServerSheetContent(
-                                name = currentName,
-                                specification = spec,
-                                otherNames = settings.servers.keys - currentName,
-                                onRename = { newName ->
-                                    renameServer(currentName, newName)
-                                    sheetState = McpServersSheetState.Editing(newName)
-                                },
-                                onChange = { newSpec -> updateServer(currentName) { _ -> newSpec } },
-                                onRemove = {
-                                    serverPendingDeletion = currentName
-                                },
-                            )
-                        } else {
-                            // In case the server was renamed/removed, close the sheet
-                            sheetState = McpServersSheetState.Closed
-                        }
-                    }
-
-                    is McpServersSheetState.Closed -> {}
                 }
+
+                is McpServersSheetState.Closed -> {}
             }
         }
     }

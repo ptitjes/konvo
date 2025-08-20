@@ -21,14 +21,11 @@ fun AgentTypeSelector(
     agentTypes: List<AgentType>,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
-        Text(
-            text = "Agent Type",
-            style = MaterialTheme.typography.titleMedium
-        )
-
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             agentTypes.forEach { agentType ->

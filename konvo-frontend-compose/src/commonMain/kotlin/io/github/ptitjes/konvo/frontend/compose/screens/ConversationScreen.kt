@@ -60,9 +60,7 @@ fun ConversationScreen(
                             viewModel.updateTitle(value.text)
                         },
                         singleLine = true,
-                        modifier = Modifier.onFocusChanged { focusState ->
-                            isFocused = focusState.isFocused
-                        },
+                        modifier = Modifier.onFocusChanged { focusState -> isFocused = focusState.isFocused },
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color.Transparent,
                             unfocusedContainerColor = Color.Transparent,
