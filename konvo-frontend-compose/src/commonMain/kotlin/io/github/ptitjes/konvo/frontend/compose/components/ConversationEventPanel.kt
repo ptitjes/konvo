@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.components
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.text.selection.*
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -41,11 +42,13 @@ fun ConversationUserMessagePanel(
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
                 Column {
-                    MarkdownContent(
-                        state = eventViewState.markdownState,
-                        textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    )
+                    SelectionContainer {
+                        MarkdownContent(
+                            state = eventViewState.markdownState,
+                            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        )
+                    }
 
                     eventViewState.event.attachments.forEach { attachment ->
                         AttachmentView(attachment)
@@ -65,10 +68,12 @@ fun ConversationAgentMessagePanel(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = horizontalArrangement,
     ) {
-        MarkdownContent(
-            state = eventViewState.markdownState,
-            textColor = MaterialTheme.colorScheme.onBackground,
-        )
+        SelectionContainer {
+            MarkdownContent(
+                state = eventViewState.markdownState,
+                textColor = MaterialTheme.colorScheme.onBackground,
+            )
+        }
     }
 }
 
