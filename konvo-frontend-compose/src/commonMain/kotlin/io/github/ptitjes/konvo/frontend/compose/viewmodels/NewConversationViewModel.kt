@@ -28,6 +28,7 @@ class NewConversationViewModel(
 
     private val mcpServerNames = mcpServerSpecificationsManager.specifications.map { it.keys }
     private val roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey)
+    private val personaSettings = settingsRepository.getSettings(PersonaSettingsKey).map { it.personas }
 
     var selectedAgentType: AgentType by mutableStateOf(AgentType.QuestionAnswer)
         private set
@@ -43,16 +44,27 @@ class NewConversationViewModel(
             val availableModels = modelManager.models.first()
             val availableMcpServerNames = mcpServerNames.first()
             val availableCharacters = characterManager.characters.first()
+            val availablePersonas = personaSettings.first()
             val availableLorebooks = lorebookManager.lorebooks.first()
             val roleplaySettings = roleplaySettings.first()
 
-            updateQuestionAnswerState(availableModels, availableMcpServerNames)
-            updateRoleplayState(availableModels, availableCharacters, availableLorebooks, roleplaySettings)
+            updateQuestionAnswerState(
+                availableModels = availableModels,
+                availableMcpServerNames = availableMcpServerNames,
+            )
+            updateRoleplayState(
+                availableModels = availableModels,
+                availableCharacters = availableCharacters,
+                availablePersonas = availablePersonas,
+                availableLorebooks = availableLorebooks,
+                roleplaySettings = roleplaySettings,
+            )
 
             data class ObservedData(
                 val models: List<ModelCard>,
                 val mcpServerNames: Set<String>,
                 val characters: List<CharacterCard>,
+                val personas: List<Persona>,
                 val lorebooks: List<Lorebook>,
             )
 
@@ -61,11 +73,21 @@ class NewConversationViewModel(
                     modelManager.models,
                     mcpServerNames,
                     characterManager.characters,
+                    personaSettings,
                     lorebookManager.lorebooks,
                     transform = ::ObservedData,
                 ).collect { data ->
-                    updateQuestionAnswerState(data.models, data.mcpServerNames)
-                    updateRoleplayState(data.models, data.characters, data.lorebooks, roleplaySettings)
+                    updateQuestionAnswerState(
+                        availableModels = data.models,
+                        availableMcpServerNames = data.mcpServerNames,
+                    )
+                    updateRoleplayState(
+                        availableModels = data.models,
+                        availableCharacters = data.characters,
+                        availablePersonas = availablePersonas,
+                        availableLorebooks = data.lorebooks,
+                        roleplaySettings = roleplaySettings,
+                    )
                 }
             }
         }
@@ -103,6 +125,7 @@ class NewConversationViewModel(
     private fun updateRoleplayState(
         availableModels: List<ModelCard>,
         availableCharacters: List<CharacterCard>,
+        availablePersonas: List<Persona>,
         availableLorebooks: List<Lorebook>,
         roleplaySettings: RoleplaySettings,
     ) {
@@ -111,6 +134,7 @@ class NewConversationViewModel(
                 availableCharacters.isEmpty() || availableModels.isEmpty() -> NewRoleplayState.Unavailable(
                     noAvailableCharacters = availableModels.isEmpty(),
                     noAvailableModels = availableCharacters.isEmpty(),
+                    noAvailablePersonas = availablePersonas.isEmpty(),
                 )
 
                 previous is NewRoleplayState.Available -> {
@@ -120,16 +144,21 @@ class NewConversationViewModel(
                     val previouslySelectedCharacter = availableCharacters.firstOrNull {
                         it.id == previous.selectedCharacter.id
                     }
+                    val previouslySelectedPersona = availablePersonas.firstOrNull {
+                        it.name == previous.selectedPersona.name
+                    }
                     val previouslySelectedLorebook = availableLorebooks.firstOrNull {
                         it.id == previous.selectedLorebook?.id
                     }
 
                     previous.copy(
                         availableModels = availableModels,
-                        selectedModel = previouslySelectedModel ?: availableModels.first(),
                         availableCharacters = availableCharacters,
-                        selectedCharacter = previouslySelectedCharacter ?: availableCharacters.first(),
+                        availablePersonas = availablePersonas,
                         availableLorebooks = availableLorebooks,
+                        selectedModel = previouslySelectedModel ?: availableModels.first(),
+                        selectedCharacter = previouslySelectedCharacter ?: availableCharacters.first(),
+                        selectedPersona = previouslySelectedPersona ?: availablePersonas.first(),
                         selectedLorebook = previouslySelectedLorebook,
                     )
                 }
@@ -138,15 +167,18 @@ class NewConversationViewModel(
                     val preferredModel = roleplaySettings.defaultPreferredModelName?.let { name ->
                         availableModels.firstOrNull { it.name == name }
                     }
+                    val preferredPersona =
+                        availablePersonas.firstOrNull { it.name == roleplaySettings.defaultPersonaName }
 
                     NewRoleplayState.Available(
                         availableModels = availableModels,
                         availableCharacters = availableCharacters,
+                        availablePersonas = availablePersonas,
                         availableLorebooks = availableLorebooks,
                         selectedCharacter = availableCharacters.first(),
                         selectedGreetingIndex = null,
                         selectedLorebook = null,
-                        userName = roleplaySettings.defaultUserPersonaName,
+                        selectedPersona = preferredPersona ?: availablePersonas.first(),
                         selectedModel = preferredModel ?: availableModels.first(),
                     )
                 }
@@ -200,8 +232,8 @@ class NewConversationViewModel(
         it.copy(selectedGreetingIndex = index)
     }
 
-    fun changeRoleplayUserName(userName: String) = updateRoleplayState {
-        it.copy(userName = userName)
+    fun changeRoleplayPersona(persona: Persona) = updateRoleplayState {
+        it.copy(selectedPersona = persona)
     }
 
     fun selectRoleplayModel(model: ModelCard) = updateRoleplayState {
@@ -281,24 +313,26 @@ sealed interface NewRoleplayState {
     data object Loading : NewRoleplayState
     data class Unavailable(
         val noAvailableCharacters: Boolean,
+        val noAvailablePersonas: Boolean,
         val noAvailableModels: Boolean,
     ) : NewRoleplayState
 
     data class Available(
         val availableModels: List<ModelCard>,
         val availableCharacters: List<CharacterCard>,
+        val availablePersonas: List<Persona>,
         val availableLorebooks: List<Lorebook>,
         val selectedCharacter: CharacterCard,
         val selectedGreetingIndex: Int?,
         val selectedLorebook: Lorebook?,
-        val userName: String,
+        val selectedPersona: Persona,
         val selectedModel: ModelCard,
     ) : NewRoleplayState
 }
 
 val NewRoleplayState.canCreate: Boolean
     get() = when (this) {
-        is NewRoleplayState.Available -> userName.isNotBlank()
+        is NewRoleplayState.Available -> true
         else -> false
     }
 
@@ -307,7 +341,7 @@ fun NewRoleplayState.createConfiguration(): RoleplayAgentConfiguration =
         is NewRoleplayState.Available -> RoleplayAgentConfiguration(
             characterId = selectedCharacter.id,
             characterGreetingIndex = selectedGreetingIndex,
-            userName = userName,
+            personaName = selectedPersona.name,
             modelName = selectedModel.name,
             lorebookId = selectedLorebook?.id,
         )

@@ -7,8 +7,10 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.models.*
+import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.components.*
 import io.github.ptitjes.konvo.frontend.compose.components.settings.*
+import io.github.ptitjes.konvo.frontend.compose.util.*
 import org.kodein.di.compose.*
 
 @Composable
@@ -20,19 +22,32 @@ fun RoleplaySettingsPanel(
     val modelManager by rememberInstance<ModelManager>()
     val models by modelManager.models.collectAsState(initial = emptyList())
 
-    // Default user persona name
+    // Default user persona
     SettingsBox(
-        title = "Default user persona",
-        description = "Name used for the user's persona in new roleplay conversations.",
+        title = "Default persona",
+        description = "Used as your persona in new roleplay conversations.",
         bottomContent = {
-            OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                value = settings.defaultUserPersonaName,
-                onValueChange = { newValue ->
-                    updateSettings { previous -> previous.copy(defaultUserPersonaName = newValue) }
-                },
-                singleLine = true,
-            )
+            val personaSettings by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
+            if (personaSettings.isEmpty()) {
+                Text(
+                    text = "No persona defined yet",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp),
+                )
+            } else {
+                val selectedPersona = remember(settings.defaultPersonaName, personaSettings) {
+                    personaSettings.firstOrNull { it.name == settings.defaultPersonaName } ?: personaSettings.first()
+                }
+                PersonaSelector(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    label = null,
+                    selectedPersona = selectedPersona,
+                    onPersonaSelected = { persona ->
+                        updateSettings { previous -> previous.copy(defaultPersonaName = persona.name) }
+                    },
+                    personas = personaSettings,
+                )
+            }
         }
     )
 

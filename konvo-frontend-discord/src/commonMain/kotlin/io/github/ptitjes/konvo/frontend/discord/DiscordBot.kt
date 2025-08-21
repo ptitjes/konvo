@@ -275,7 +275,7 @@ private fun MessageBuilder.conversationStartMessage(
                         bold("Character greeting:"); space()
                         text(configuration.characterGreetingIndex?.let { "#$it" } ?: "Random")
                     }
-                    line { bold("Username:"); space(); text(configuration.userName) }
+                    line { bold("Username:"); space(); text(configuration.personaName) }
                     line { bold("Model:"); space(); text(model.shortName) }
                 }
 

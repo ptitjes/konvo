@@ -19,7 +19,7 @@ fun CharacterGreetingSelector(
     onGreetingIndexSelected: (Int?) -> Unit,
     character: CharacterCard,
     modifier: Modifier = Modifier,
-    userName: String,
+    personaName: String,
 ) {
     GenericSelector(
         label = "Greeting",
@@ -30,7 +30,7 @@ fun CharacterGreetingSelector(
             if (indexOrNull == null) {
                 "Random Greeting"
             } else {
-                val greeting = character.greetings[indexOrNull].replaceTags(userName, character.name)
+                val greeting = character.greetings[indexOrNull].replaceTags(personaName, character.name)
                 val preview = if (greeting.length > 100) greeting.take(100) + "..." else greeting
                 "Greeting ${indexOrNull + 1}: $preview"
             }

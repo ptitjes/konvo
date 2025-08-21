@@ -61,7 +61,7 @@ data class RoleplayModeBuilder(
         return RoleplayAgentConfiguration(
             characterId = character.id,
             characterGreetingIndex = characterGreetingIndex,
-            userName = userName,
+            personaName = userName,
             modelName = model.name,
         )
     }

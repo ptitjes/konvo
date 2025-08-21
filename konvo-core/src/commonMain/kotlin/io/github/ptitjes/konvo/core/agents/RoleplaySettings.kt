@@ -8,8 +8,8 @@ import kotlinx.serialization.*
  */
 @Serializable
 data class RoleplaySettings(
-    /** Default name to use for the user persona in roleplay conversations. */
-    val defaultUserPersonaName: String = "User",
+    /** Default persona name used to identify the persona for new roleplay conversations. */
+    val defaultPersonaName: String? = null,
     /** Default preferred model name to use for roleplay conversations. */
     val defaultPreferredModelName: String? = null,
     /** Optional default system prompt to use when the character card does not define one. */

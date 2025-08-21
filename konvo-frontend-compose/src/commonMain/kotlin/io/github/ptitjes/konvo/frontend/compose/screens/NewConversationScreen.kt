@@ -106,7 +106,7 @@ fun NewConversationScreen(
                     onSelectQuestionAnswerModel = viewModel::selectQuestionAnswerModel,
                     onSelectRoleplayCharacter = viewModel::selectRoleplayCharacter,
                     onSelectRoleplayGreetingIndex = viewModel::selectRoleplayGreetingIndex,
-                    onChangeRoleplayUserName = viewModel::changeRoleplayUserName,
+                    onChangeRoleplayPersona = viewModel::changeRoleplayPersona,
                     onSelectRoleplayModel = viewModel::selectRoleplayModel,
                     onSelectRoleplayLorebook = viewModel::selectRoleplayLorebook,
                 )
@@ -125,7 +125,7 @@ private fun ColumnScope.NewConversationPanel(
     onSelectQuestionAnswerModel: (ModelCard) -> Unit,
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
-    onChangeRoleplayUserName: (String) -> Unit,
+    onChangeRoleplayPersona: (Persona) -> Unit,
     onSelectRoleplayModel: (ModelCard) -> Unit,
     onSelectRoleplayLorebook: (Lorebook?) -> Unit,
 ) {
@@ -149,7 +149,7 @@ private fun ColumnScope.NewConversationPanel(
                 roleplay = roleplay,
                 onSelectRoleplayCharacter = onSelectRoleplayCharacter,
                 onSelectRoleplayGreetingIndex = onSelectRoleplayGreetingIndex,
-                onChangeRoleplayUserName = onChangeRoleplayUserName,
+                onChangeRoleplayPersona = onChangeRoleplayPersona,
                 onSelectRoleplayModel = onSelectRoleplayModel,
                 onSelectRoleplayLorebook = onSelectRoleplayLorebook,
             )
@@ -206,7 +206,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
     roleplay: NewRoleplayState,
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
-    onChangeRoleplayUserName: (String) -> Unit,
+    onChangeRoleplayPersona: (Persona) -> Unit,
     onSelectRoleplayModel: (ModelCard) -> Unit,
     onSelectRoleplayLorebook: (Lorebook?) -> Unit,
 ) {
@@ -240,27 +240,31 @@ private fun ColumnScope.RoleplayConfigurationForm(
                     selectedGreetingIndex = roleplay.selectedGreetingIndex,
                     onGreetingIndexSelected = onSelectRoleplayGreetingIndex,
                     character = roleplay.selectedCharacter,
-                    userName = roleplay.userName,
+                    personaName = roleplay.selectedPersona.nickname,
                 )
             }
-
-            var showLorebookSheet by remember { mutableStateOf(false) }
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                OutlinedTextField(
-                    label = {
-                        Text(
-                            text = "Your Persona",
-                            style = MaterialTheme.typography.titleSmall
-                        )
-                    },
-                    value = roleplay.userName,
-                    onValueChange = onChangeRoleplayUserName,
-                    modifier = Modifier.weight(1f),
-                )
+                var showLorebookSheet by remember { mutableStateOf(false) }
+
+                val personas by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    PersonaSelector(
+                        selectedPersona = roleplay.selectedPersona,
+                        onPersonaSelected = { persona ->
+                            onChangeRoleplayPersona(persona)
+                            val preferredLorebook =
+                                roleplay.availableLorebooks.firstOrNull { it.id == persona.defaultLorebookId }
+                            if (preferredLorebook != null) onSelectRoleplayLorebook(preferredLorebook)
+                        },
+                        personas = personas,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
 
                 FilledTonalIconButton(
                     modifier = Modifier.offset(y = 4.dp),
@@ -271,24 +275,23 @@ private fun ColumnScope.RoleplayConfigurationForm(
                         contentDescription = "Persona Settings"
                     )
                 }
-            }
-
-            if (showLorebookSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showLorebookSheet = false },
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
+                if (showLorebookSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showLorebookSheet = false },
                     ) {
-                        LorebookSelector(
-                            label = "Additional Lorebook",
-                            selectedLorebook = roleplay.selectedLorebook,
-                            onLorebookSelected = { selected ->
-                                onSelectRoleplayLorebook(selected)
-                                showLorebookSheet = false
-                            },
-                            lorebooks = roleplay.availableLorebooks,
-                        )
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                        ) {
+                            LorebookSelector(
+                                label = "Additional Lorebook",
+                                selectedLorebook = roleplay.selectedLorebook,
+                                onLorebookSelected = { selected ->
+                                    onSelectRoleplayLorebook(selected)
+                                    showLorebookSheet = false
+                                },
+                                lorebooks = roleplay.availableLorebooks,
+                            )
+                        }
                     }
                 }
             }

@@ -17,19 +17,33 @@ class AgentFactory(
 
     suspend fun createAgent(agentConfiguration: AgentConfiguration): Agent {
         return when (agentConfiguration) {
-            is QuestionAnswerAgentConfiguration -> buildQuestionAnswerAgent(
-                model = modelProviderManager.named(agentConfiguration.modelName),
-                mcpSessionFactory = mcpSessionFactory,
-                mcpServerNames = agentConfiguration.mcpServerNames,
-            )
+            is QuestionAnswerAgentConfiguration -> {
+                val model = modelProviderManager.named(agentConfiguration.modelName)
 
-            is RoleplayAgentConfiguration -> buildRoleplayAgent(
-                roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey).first(),
-                roleplayConfiguration = agentConfiguration,
-                model = modelProviderManager.named(agentConfiguration.modelName),
-                character = characterProviderManager.withId(agentConfiguration.characterId),
-                lorebook = agentConfiguration.lorebookId?.let { id -> lorebookManager.withId(id) },
-            )
+                buildQuestionAnswerAgent(
+                    model = model,
+                    mcpSessionFactory = mcpSessionFactory,
+                    mcpServerNames = agentConfiguration.mcpServerNames,
+                )
+            }
+
+            is RoleplayAgentConfiguration -> {
+                val roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey).first()
+                val model = modelProviderManager.named(agentConfiguration.modelName)
+                val character = characterProviderManager.withId(agentConfiguration.characterId)
+                val personaSettings = settingsRepository.getSettings(PersonaSettingsKey).first()
+                val persona = personaSettings.personas.first { it.name == agentConfiguration.personaName }
+                val lorebook = agentConfiguration.lorebookId?.let { id -> lorebookManager.withId(id) }
+
+                buildRoleplayAgent(
+                    roleplaySettings = roleplaySettings,
+                    roleplayConfiguration = agentConfiguration,
+                    model = model,
+                    character = character,
+                    persona = persona,
+                    lorebook = lorebook,
+                )
+            }
 
             is NoAgentConfiguration -> error("No agent configured for this conversation")
         }

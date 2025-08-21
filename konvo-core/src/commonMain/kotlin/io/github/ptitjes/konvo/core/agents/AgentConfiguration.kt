@@ -13,7 +13,7 @@ data class QuestionAnswerAgentConfiguration(
 data class RoleplayAgentConfiguration(
     val characterId: String,
     val characterGreetingIndex: Int?,
-    val userName: String,
+    val personaName: String,
     val modelName: String,
     val lorebookId: String? = null,
     val scanDepthOverride: Int? = null,

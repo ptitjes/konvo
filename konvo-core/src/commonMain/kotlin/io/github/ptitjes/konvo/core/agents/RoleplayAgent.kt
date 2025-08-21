@@ -19,10 +19,11 @@ fun buildRoleplayAgent(
     roleplayConfiguration: RoleplayAgentConfiguration,
     model: ModelCard,
     character: CharacterCard,
+    persona: Persona,
     lorebook: Lorebook?,
 ): Agent {
     val characterGreetingIndex = roleplayConfiguration.characterGreetingIndex
-    val userName = roleplayConfiguration.userName
+    val userName = persona.nickname
 
     val initialSystemPrompt = buildRoleplaySystemPrompt(
         defaultSystemPrompt = roleplaySettings.defaultSystemPrompt
@@ -60,6 +61,7 @@ fun buildRoleplayAgent(
                     roleplaySettings = roleplaySettings,
                     roleplayConfiguration = roleplayConfiguration,
                     character = character,
+                    persona = persona,
                     lorebooks = lorebooks,
                 )
 
@@ -75,6 +77,7 @@ private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.execut
     roleplaySettings: RoleplaySettings,
     roleplayConfiguration: RoleplayAgentConfiguration,
     character: CharacterCard,
+    persona: Persona,
     lorebooks: List<Lorebook>,
 ) = node<Unit, List<Message.Response>>("roleplay-request") {
     llm.writeSession {
@@ -87,16 +90,15 @@ private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.execut
                 )
             }
 
-            logger.debug {
-                "Selected ${selectedEntries.size} entries from ${lorebooks.size} lorebooks:\n${selectedEntries.joinToString("\n")}\n"
-            }
+            logger.debug { "Selected ${selectedEntries.size} entries from ${lorebooks.size} lorebooks." }
+            logger.trace { "Extracted content:\n${selectedEntries.joinToString("\n") { it.content }}" }
 
             val newSystemPrompt = buildRoleplaySystemPrompt(
                 defaultSystemPrompt = roleplaySettings.defaultSystemPrompt
                     .takeIf { it.isNotBlank() }
                     ?: DEFAULT_ROLEPLAY_SYSTEM_PROMPT,
                 character = character,
-                userName = roleplayConfiguration.userName,
+                userName = persona.nickname,
                 lorebookEntries = selectedEntries,
             )
 
@@ -166,10 +168,9 @@ private fun Prompt.replaceSystemPrompt(systemPrompt: String): Prompt {
 /**
  * Selects the entries from the lorebook that are relevant to the conversation history.
  *
+ * @param roleplaySettings The roleplay settings.
+ * @param roleplayConfiguration The roleplay configuration.
  * @param history The conversation history.
- * @param scanDepth The maximum depth to scan the lorebook.
- * @param tokenBudget The maximum number of tokens to use.
- * @param recursiveScanning Whether to recursively scan the lorebook.
  * @param tokenizer The tokenizer to use for token counting.
  * @return The relevant entries, ordered by relevance (from the most relevant to the least relevant).
  */

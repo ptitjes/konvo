@@ -141,7 +141,7 @@ internal sealed class AgentConfigurationDto {
     data class Roleplay(
         val characterId: String,
         val characterGreetingIndex: Int? = null,
-        val userName: String,
+        val personaName: String,
         val modelName: String,
         val lorebookId: String? = null,
     ) : AgentConfigurationDto()
@@ -169,7 +169,7 @@ internal object DtoMappers {
             is RoleplayAgentConfiguration -> AgentConfigurationDto.Roleplay(
                 characterId = agentConfiguration.characterId,
                 characterGreetingIndex = agentConfiguration.characterGreetingIndex,
-                userName = agentConfiguration.userName,
+                personaName = agentConfiguration.personaName,
                 modelName = agentConfiguration.modelName,
                 lorebookId = agentConfiguration.lorebookId,
             )
@@ -196,7 +196,7 @@ internal object DtoMappers {
             is AgentConfigurationDto.Roleplay -> RoleplayAgentConfiguration(
                 characterId = agentConfigurationDto.characterId,
                 characterGreetingIndex = agentConfigurationDto.characterGreetingIndex,
-                userName = agentConfigurationDto.userName,
+                personaName = agentConfigurationDto.personaName,
                 modelName = agentConfigurationDto.modelName,
                 lorebookId = agentConfigurationDto.lorebookId,
             )
