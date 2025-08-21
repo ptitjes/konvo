@@ -38,7 +38,7 @@ fun RoleplaySettingsPanel(
                     personaSettings.firstOrNull { it.name == settings.defaultPersonaName } ?: personaSettings.first()
                 }
                 PersonaSelector(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
                     label = null,
                     selectedPersona = selectedPersona,
                     onPersonaSelected = { persona ->
@@ -132,7 +132,10 @@ fun RoleplaySettingsPanel(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(text = "Recursive scanning")
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "Recursive scanning",
+                    )
                     Switch(
                         checked = settings.defaultRecursiveScanning,
                         onCheckedChange = { checked ->

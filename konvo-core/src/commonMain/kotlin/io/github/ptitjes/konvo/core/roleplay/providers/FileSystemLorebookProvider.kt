@@ -19,9 +19,9 @@ class FileSystemLorebookProvider(
 
     private val path = Path(storagePaths.dataDirectory, "lorebooks")
 
-    override suspend fun query(): List<Lorebook> {
+    override suspend fun query(): List<Lorebook> = withContext(Dispatchers.IO) {
         val jsonFileCards = defaultFileSystem.jsonFileLorebooks(path)
-        return jsonFileCards.sortedBy { it.name }
+        jsonFileCards.sortedBy { it.name }
     }
 
     suspend fun add(sourcePath: Path) = withContext(Dispatchers.IO) {

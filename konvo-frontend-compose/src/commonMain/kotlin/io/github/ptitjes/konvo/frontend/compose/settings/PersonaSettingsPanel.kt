@@ -98,7 +98,7 @@ fun PersonaSettingsPanel(
         AlertDialog(
             onDismissRequest = { pendingDeletion = null },
             title = { Text("Delete persona?") },
-            text = { Text("Are you sure you want to delete \"${p.name}\"?\nThis action cannot be undone.") },
+            text = { Text("Are you sure you want to delete \"${p.name}\"? This action cannot be undone.") },
             confirmButton = {
                 TextButton(onClick = {
                     removePersona(p.name)

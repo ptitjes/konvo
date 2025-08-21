@@ -96,7 +96,7 @@ fun McpSettingsPanel(
         AlertDialog(
             onDismissRequest = { serverPendingDeletion = null },
             title = { Text("Delete server?") },
-            text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
+            text = { Text("Are you sure you want to delete \"$nameToDelete\"? This cannot be undone.") },
             confirmButton = {
                 TextButton(onClick = {
                     removeServer(nameToDelete)
@@ -260,7 +260,10 @@ private fun EditServerSheetContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = "Run as process")
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "Run as process",
+            )
             Switch(
                 checked = hasProcess, onCheckedChange = { enabled ->
                     val newSpec = if (enabled) {
@@ -273,7 +276,8 @@ private fun EditServerSheetContent(
                         specification.copy(process = null)
                     }
                     onChange(newSpec)
-                })
+                }
+            )
         }
 
         if (hasProcess) {
@@ -421,7 +425,10 @@ private fun AddServerSheetContent(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(text = "Run as process")
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "Run as process",
+            )
             Switch(checked = addProcess, onCheckedChange = { addProcess = it })
         }
 

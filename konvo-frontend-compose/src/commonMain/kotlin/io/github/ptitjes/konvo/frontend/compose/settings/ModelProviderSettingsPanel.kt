@@ -135,7 +135,7 @@ fun ModelProviderSettingsPanel(
         AlertDialog(
             onDismissRequest = { providerPendingDeletionIndex = null },
             title = { Text("Delete provider?") },
-            text = { Text("Are you sure you want to delete \"$nameToDelete\"?\nThis action cannot be undone.") },
+            text = { Text("Are you sure you want to delete \"$nameToDelete\"? This cannot be undone.") },
             confirmButton = {
                 TextButton(onClick = {
                     // Confirm deletion

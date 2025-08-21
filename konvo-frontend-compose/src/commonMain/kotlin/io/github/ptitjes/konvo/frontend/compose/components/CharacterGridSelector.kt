@@ -43,6 +43,31 @@ fun CharacterGridSelector(
     minCellSize: Dp = 120.dp,
     cellSpacing: Dp = 12.dp,
 ) {
+    CharacterGrid(
+        characters = characters,
+        selectedCharacterId = selectedCharacter.id,
+        onCharacterClicked = onCharacterSelected,
+        modifier = modifier,
+        minCellSize = minCellSize,
+        cellSpacing = cellSpacing,
+    )
+}
+
+/**
+ * Generic grid for displaying characters. Supports optional selected item highlighting,
+ * optional click handling, and an optional top-end overlay per item (e.g., action buttons).
+ */
+@Composable
+fun CharacterGrid(
+    characters: List<CharacterCard>,
+    selectedCharacterId: String? = null,
+    onCharacterClicked: ((CharacterCard) -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    minCellSize: Dp = 120.dp,
+    cellSpacing: Dp = 12.dp,
+    topEndContent: (@Composable (character: CharacterCard) -> Unit)? = ::DefaultTopEndContent,
+    bottomEndContent: (@Composable (character: CharacterCard) -> Unit)? = null,
+) {
     val filteredTags by rememberSetting(CharacterSettingsKey, null) { characterSettings ->
         characterSettings.filteredTags.map { it.lowercase() }.toSet()
     }
@@ -62,14 +87,35 @@ fun CharacterGridSelector(
                 contentPadding = PaddingValues(vertical = 4.dp),
             ) {
                 items(filteredCharacters, key = { it.id }) { character ->
-                    val isSelected = character.id == selectedCharacter.id
+                    val isSelected = selectedCharacterId != null && character.id == selectedCharacterId
                     CharacterGridItem(
                         character = character,
                         selected = isSelected,
-                        onClick = { onCharacterSelected(character) },
+                        onClick = { onCharacterClicked?.invoke(character) },
+                        topEndContent = topEndContent?.let { { it(character) } },
+                        bottomEndContent = bottomEndContent?.let { { it(character) } },
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DefaultTopEndContent(character: CharacterCard) {
+    if (character.characterBook != null) {
+        Box(
+            modifier = Modifier
+                .padding(4.dp)
+                .background(color = Color(0x66000000), shape = CircleShape)
+                .padding(4.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Book,
+                contentDescription = "Has character book",
+                tint = Color.White,
+                modifier = Modifier.size(12.dp),
+            )
         }
     }
 }
@@ -80,6 +126,8 @@ private fun CharacterGridItem(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    topEndContent: @Composable (() -> Unit)? = null,
+    bottomEndContent: @Composable (() -> Unit)? = null,
 ) {
     val shape = CardDefaults.shape
     val border: BorderStroke? = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
@@ -123,21 +171,21 @@ private fun CharacterGridItem(
                 }
             }
 
-            if (character.characterBook != null) {
-                // Small book icon at the top-right when the character has a character book
+            // Top-end overlay container which can host custom content and the book marker
+            if (topEndContent != null) {
                 Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .background(color = Color(0x66000000), shape = CircleShape)
-                        .padding(4.dp),
+                    modifier = Modifier                        .align(Alignment.TopEnd)
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Book,
-                        contentDescription = "Has character book",
-                        tint = Color.White,
-                        modifier = Modifier.size(12.dp),
-                    )
+                    topEndContent()
+                }
+            }
+
+            // Bottom-end overlay container which can host custom content and the book marker
+            if (bottomEndContent != null) {
+                Box(
+                    modifier = Modifier                        .align(Alignment.BottomEnd)
+                ) {
+                    bottomEndContent()
                 }
             }
 

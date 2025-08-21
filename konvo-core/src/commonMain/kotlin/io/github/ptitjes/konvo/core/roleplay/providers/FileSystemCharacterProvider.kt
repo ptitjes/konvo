@@ -14,10 +14,10 @@ class FileSystemCharacterProvider(
 
     private val path = Path(storagePaths.dataDirectory, "characters")
 
-    override suspend fun query(): List<CharacterCard> {
+    override suspend fun query(): List<CharacterCard> = withContext(Dispatchers.IO) {
         val jsonFileCards = defaultFileSystem.jsonFileCards(path)
         val pngFileCards = defaultFileSystem.pngFileCards(path)
-        return (jsonFileCards + pngFileCards).sortedBy { it.name }
+        (jsonFileCards + pngFileCards).sortedBy { it.name }
     }
 
     suspend fun add(sourcePath: Path) = withContext(Dispatchers.IO) {

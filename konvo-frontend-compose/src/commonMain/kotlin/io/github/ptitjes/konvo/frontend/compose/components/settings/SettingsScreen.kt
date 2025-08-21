@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.frontend.compose.components.settings
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.automirrored.filled.*
@@ -53,15 +52,11 @@ fun SettingsScreen(
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize(),
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
-                modifier = Modifier
-                    .widthIn(max = 800.dp)
-                    .verticalScroll(rememberScrollState()),
+                modifier = Modifier.widthIn(max = 800.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 content()

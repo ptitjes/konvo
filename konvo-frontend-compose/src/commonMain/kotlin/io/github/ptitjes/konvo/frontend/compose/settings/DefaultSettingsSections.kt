@@ -28,6 +28,7 @@ val defaultSettingsSections = listOf(
         children = listOf(
             SettingsSection.WithKey(
                 title = "Characters",
+                scrollable = false,
                 key = CharacterSettingsKey,
                 panel = ::CharacterSettingsPanel,
             ),

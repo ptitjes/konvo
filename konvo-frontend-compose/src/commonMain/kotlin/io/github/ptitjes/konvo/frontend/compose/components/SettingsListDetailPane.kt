@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.components
 
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.runtime.*
@@ -53,9 +54,8 @@ fun SettingsListDetailPane(
 private fun SettingsPanelWithoutKey(
     section: SettingsSection.WithoutKey,
 ) {
-    Column(
-        modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
-    ) {
+    val baseModifier = if (section.scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
+    Column(modifier = baseModifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
         section.panel()
     }
 }
@@ -73,11 +73,12 @@ private fun <T> SettingsPanelWithKey(
 
     when (val settings = settings) {
         is SettingsViewState.Loading -> FullSizeProgressIndicator()
-        is SettingsViewState.Loaded<T> -> Column(
-            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
-        ) {
-            section.panel(settings.value) { block ->
-                updateSettings(block)
+        is SettingsViewState.Loaded<T> -> {
+            val baseModifier = if (section.scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
+            Column(modifier = baseModifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
+                section.panel(settings.value) { block ->
+                    updateSettings(block)
+                }
             }
         }
     }

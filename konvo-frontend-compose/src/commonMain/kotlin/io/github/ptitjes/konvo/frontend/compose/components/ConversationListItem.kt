@@ -104,7 +104,7 @@ fun ConversationListItem(
                 TextButton(onClick = { showConfirm = false }) { Text("Cancel") }
             },
             title = { Text("Delete conversation?") },
-            text = { Text("This action cannot be undone.") },
+            text = { Text("Are you sure you want to delete \"${conversation.title}\"This action cannot be undone.") },
         )
     }
 }
