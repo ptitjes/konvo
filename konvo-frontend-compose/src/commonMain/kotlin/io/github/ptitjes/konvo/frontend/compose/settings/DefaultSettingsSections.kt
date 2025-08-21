@@ -32,6 +32,11 @@ val defaultSettingsSections = listOf(
                 title = "Characters",
                 panel = ::CharacterSettingsPanel,
             ),
+            SettingsSection(
+                key = PersonaSettingsKey,
+                title = "Personas",
+                panel = ::PersonaSettingsPanel,
+            ),
         ),
     ),
 )
