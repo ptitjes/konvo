@@ -137,12 +137,15 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
         add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
     }
 
+    bindSingletonOf(::FileSystemCharacterProvider)
+    bindSingletonOf(::FileSystemLorebookProvider)
+
     inBindSet<CharacterProvider> {
-        add { singleton { FileSystemCharacterProvider(instance()) } }
+        add { singleton { instance<FileSystemCharacterProvider>() } }
     }
 
     inBindSet<LorebookProvider> {
-        add { singleton { FileSystemLorebookProvider(instance()) } }
+        add { singleton { instance<FileSystemLorebookProvider>() } }
     }
 }
 

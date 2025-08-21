@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core.roleplay.providers
 import io.github.ptitjes.konvo.core.platform.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.util.*
+import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
 
@@ -21,6 +22,14 @@ class FileSystemLorebookProvider(
     override suspend fun query(): List<Lorebook> {
         val jsonFileCards = defaultFileSystem.jsonFileLorebooks(path)
         return jsonFileCards.sortedBy { it.name }
+    }
+
+    suspend fun add(sourcePath: Path) = withContext(Dispatchers.IO) {
+        defaultFileSystem.copy(sourcePath, Path(path, sourcePath.name))
+    }
+
+    suspend fun delete(lorebook: Lorebook) = withContext(Dispatchers.IO) {
+        defaultFileSystem.delete(Path(path, "${lorebook.id}.json"))
     }
 
     private fun FileSystem.jsonFileLorebooks(path: Path): List<Lorebook> =

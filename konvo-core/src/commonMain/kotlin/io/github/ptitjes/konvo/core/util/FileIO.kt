@@ -25,3 +25,16 @@ internal fun <T> FileSystem.loadFiles(
 internal fun FileSystem.readText(path: Path): String = source(path).buffered().use { it.readString() }
 
 internal fun FileSystem.readBytes(path: Path): ByteString = source(path).buffered().use { it.readByteString() }
+
+internal fun FileSystem.copy(sourcePath: Path, destinationPath: Path) {
+    source(sourcePath).use { source ->
+        sink(destinationPath).use { sink ->
+            val buffer = Buffer()
+            while (true) {
+                val bytesRead = source.readAtMostTo(buffer, 8192)
+                if (bytesRead == -1L) break
+                sink.write(buffer, bytesRead)
+            }
+        }
+    }
+}
