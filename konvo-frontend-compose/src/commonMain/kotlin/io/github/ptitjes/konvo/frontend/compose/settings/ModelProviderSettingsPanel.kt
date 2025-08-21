@@ -78,48 +78,53 @@ fun ModelProviderSettingsPanel(
                 ) { index, provider, _ ->
                     key(provider.name) {
                         ReorderableItem {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                            Surface(
+                                tonalElevation = 2.dp,
+                                shape = MaterialTheme.shapes.small,
                             ) {
-                                IconButton(
-                                    modifier = Modifier.draggableHandle(),
-                                    onClick = { },
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.DragHandle,
-                                        contentDescription = "Drag handle",
-                                    )
-                                }
+                                    IconButton(
+                                        modifier = Modifier.draggableHandle(),
+                                        onClick = { },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.DragHandle,
+                                            contentDescription = "Drag handle",
+                                        )
+                                    }
 
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = provider.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                    )
-                                    Text(
-                                        text = provider.configuration.toType().name,
-                                        style = MaterialTheme.typography.bodySmall,
-                                    )
-                                }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = provider.name,
+                                            style = MaterialTheme.typography.titleMedium,
+                                        )
+                                        Text(
+                                            text = provider.configuration.toType().name,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
 
-                                IconButton(
-                                    onClick = { sheetState = ModelProvidersSheetState.Editing(index) },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit provider",
-                                    )
-                                }
+                                    IconButton(
+                                        onClick = { sheetState = ModelProvidersSheetState.Editing(index) },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit provider",
+                                        )
+                                    }
 
-                                IconButton(
-                                    onClick = { providerPendingDeletionIndex = index },
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete provider",
-                                    )
+                                    IconButton(
+                                        onClick = { providerPendingDeletionIndex = index },
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete provider",
+                                        )
+                                    }
                                 }
                             }
                         }

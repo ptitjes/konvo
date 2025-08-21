@@ -64,28 +64,34 @@ fun PersonaSettingsPanel(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     settings.personas.sortedBy { it.name.lowercase() }.forEach { persona ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        Surface(
+                            tonalElevation = 2.dp,
+                            shape = MaterialTheme.shapes.small,
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(text = persona.name, style = MaterialTheme.typography.titleMedium)
-                                val subtitle = buildList {
-                                    add("Nickname: ${persona.nickname}")
-                                    if (persona.defaultLorebookId != null) {
-                                        add("With lorebook")
-                                    }
-                                }.joinToString(" • ")
-                                Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
-                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = persona.name, style = MaterialTheme.typography.titleMedium)
+                                    val subtitle = buildList {
+                                        add("Nickname: ${persona.nickname}")
+                                        if (persona.defaultLorebookId != null) {
+                                            add("With lorebook")
+                                        }
+                                    }.joinToString(" • ")
+                                    Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
+                                }
 
-                            IconButton(onClick = { openSheet = PersonaSheetState.Editing(persona.name) }) {
-                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit persona")
-                            }
+                                IconButton(onClick = { openSheet = PersonaSheetState.Editing(persona.name) }) {
+                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit persona")
+                                }
 
-                            IconButton(onClick = { pendingDeletion = persona }) {
-                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete persona")
+                                IconButton(onClick = { pendingDeletion = persona }) {
+                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete persona")
+                                }
                             }
                         }
                     }
@@ -235,7 +241,10 @@ private fun PersonaEditor(
             horizontalArrangement = Arrangement.End,
             modifier = Modifier.fillMaxWidth(),
         ) {
-            FilledTonalButton(onClick = { onSubmit(name.trim(), nickname.trim(), selectedLorebook) }, enabled = valid()) {
+            FilledTonalButton(
+                onClick = { onSubmit(name.trim(), nickname.trim(), selectedLorebook) },
+                enabled = valid()
+            ) {
                 Text(if (editing) "Save" else "Add")
             }
         }

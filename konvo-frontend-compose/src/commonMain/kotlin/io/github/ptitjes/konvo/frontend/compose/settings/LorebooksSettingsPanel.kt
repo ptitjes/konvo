@@ -83,26 +83,31 @@ fun LorebooksSettingsPanel() {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     lorebooks!!.forEach { lorebook ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        Surface(
+                            tonalElevation = 2.dp,
+                            shape = MaterialTheme.shapes.small,
                         ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                val title = lorebook.name ?: lorebook.id ?: "Unnamed lorebook"
-                                Text(text = title, style = MaterialTheme.typography.titleMedium)
-                                val description = lorebook.description
-                                if (!description.isNullOrBlank()) {
-                                    Text(
-                                        text = description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    val title = lorebook.name ?: lorebook.id ?: "Unnamed lorebook"
+                                    Text(text = title, style = MaterialTheme.typography.titleMedium)
+                                    val description = lorebook.description
+                                    if (!description.isNullOrBlank()) {
+                                        Text(
+                                            text = description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
                                 }
-                            }
-                            IconButton(onClick = { pendingDelete = lorebook }) {
-                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete lorebook")
+                                IconButton(onClick = { pendingDelete = lorebook }) {
+                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete lorebook")
+                                }
                             }
                         }
                     }

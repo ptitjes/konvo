@@ -56,7 +56,12 @@ fun ConversationListPanel(
 
                         LazyColumn(
                             modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
+                            contentPadding = PaddingValues(
+                                start = 8.dp,
+                                end = 8.dp,
+                                top = 8.dp,
+                                bottom = 64.dp,
+                            ),
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
                             items(conversations, key = { it.id }) { conversation ->
