@@ -31,6 +31,11 @@ val defaultSettingsSections = listOf(
                 key = CharacterSettingsKey,
                 panel = ::CharacterSettingsPanel,
             ),
+            SettingsSection.WithoutKey(
+                title = "Lorebooks",
+                panel = ::LorebooksSettingsPanel,
+                children = emptyList(),
+            ),
             SettingsSection.WithKey(
                 title = "Personas",
                 key = PersonaSettingsKey,
