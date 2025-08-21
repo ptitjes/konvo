@@ -228,7 +228,10 @@ private fun EditProviderSheetContent(
                 modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
             )
 
-            IconButton(onClick = onRemove) {
+            IconButton(
+                modifier = Modifier.offset(y = 4.dp),
+                onClick = onRemove,
+            ) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove provider")
             }
         }
@@ -367,6 +370,7 @@ private fun AddProviderSheetContent(
             )
 
             FilledTonalIconButton(
+                modifier = Modifier.offset(y = 4.dp),
                 onClick = {
                     val configuration: ModelProviderConfiguration = when (type) {
                         ProviderType.Ollama -> Ollama(url = ollamaUrl)

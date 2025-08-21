@@ -143,6 +143,7 @@ internal sealed class AgentConfigurationDto {
         val characterGreetingIndex: Int? = null,
         val userName: String,
         val modelName: String,
+        val lorebookId: String? = null,
     ) : AgentConfigurationDto()
 }
 
@@ -170,6 +171,7 @@ internal object DtoMappers {
                 characterGreetingIndex = agentConfiguration.characterGreetingIndex,
                 userName = agentConfiguration.userName,
                 modelName = agentConfiguration.modelName,
+                lorebookId = agentConfiguration.lorebookId,
             )
         },
     )
@@ -196,6 +198,7 @@ internal object DtoMappers {
                 characterGreetingIndex = agentConfigurationDto.characterGreetingIndex,
                 userName = agentConfigurationDto.userName,
                 modelName = agentConfigurationDto.modelName,
+                lorebookId = agentConfigurationDto.lorebookId,
             )
         },
     )

@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.roleplay.ccv3
+package io.github.ptitjes.konvo.core.roleplay.formats
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
@@ -13,6 +13,13 @@ data class CharaCardV3(
     /** Should be "3.0" but may vary in future */
     @SerialName("spec_version") val specVersion: String = "3.0",
     val data: DataV3,
+)
+
+@Serializable
+data class LorebookV3(
+    /** Must be "lorebook_v3" */
+    @SerialName("spec") val spec: String = "lorebook_v3",
+    val data: CharacterBookV3,
 )
 
 @Serializable

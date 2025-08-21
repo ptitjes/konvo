@@ -59,6 +59,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bindSet<PromptProvider>()
     bindSet<ToolProvider>()
     bindSet<CharacterProvider>()
+    bindSet<LorebookProvider>()
 
     bindSingleton<StoragePaths> { LinuxXdgHomeStoragePaths() }
 
@@ -74,6 +75,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
     bind<PromptManager> { singleton { DiPromptManager(coroutineContext, instance()) } }
     bind<ToolManager> { singleton { DiToolManager(coroutineContext, instance()) } }
     bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
+    bind<LorebookManager> { singleton { DiLorebookManager(coroutineContext, instance()) } }
 
     bindFactory<CoroutineContext, McpHostSession> { coroutineContext: CoroutineContext ->
         McpHostSession(coroutineContext, instance())
@@ -91,6 +93,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
                 mcpSessionFactory = factory(),
                 characterProviderManager = instance(),
                 settingsRepository = instance(),
+                lorebookManager = instance(),
             )
         }
     }
@@ -110,6 +113,7 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
             NewConversationViewModel(
                 modelManager = instance(),
                 characterManager = instance(),
+                lorebookManager = instance(),
                 mcpServerSpecificationsManager = instance(),
                 conversationRepository = instance(),
                 settingsRepository = instance(),
@@ -135,6 +139,10 @@ fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) 
 
     inBindSet<CharacterProvider> {
         add { singleton { FileSystemCharacterProvider(instance()) } }
+    }
+
+    inBindSet<LorebookProvider> {
+        add { singleton { FileSystemLorebookProvider(instance()) } }
     }
 }
 

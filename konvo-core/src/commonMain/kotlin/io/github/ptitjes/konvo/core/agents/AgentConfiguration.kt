@@ -15,6 +15,7 @@ data class RoleplayAgentConfiguration(
     val characterGreetingIndex: Int?,
     val userName: String,
     val modelName: String,
+    val lorebookId: String? = null,
     val scanDepthOverride: Int? = null,
     val tokenBudgetOverride: Int? = null,
     val recursiveScanningOverride: Boolean? = null,

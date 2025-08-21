@@ -173,144 +173,142 @@ private fun EditServerSheetContent(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Column(
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedTextField(
-                    modifier = Modifier.weight(1f),
-                    value = name,
-                    onValueChange = { newName -> onRename(newName) },
-                    label = { Text("Name") },
-                    isError = name.isBlank() || otherNames.contains(element = name),
-                    singleLine = true,
-                )
+            OutlinedTextField(
+                modifier = Modifier.weight(1f),
+                value = name,
+                onValueChange = { newName -> onRename(newName) },
+                label = { Text("Name") },
+                isError = name.isBlank() || otherNames.contains(element = name),
+                singleLine = true,
+            )
 
-                var transportType by remember(specification.transport) {
-                    mutableStateOf(specification.transport.toType())
-                }
-
-                GenericSelector(
-                    label = "Transport",
-                    selectedItem = transportType,
-                    onSelectItem = { selected ->
-                        transportType = selected
-                        val newTransport = when (selected) {
-                            McpTransportType.Stdio -> TransportSpecification.Stdio
-                            McpTransportType.Sse -> when (val t = specification.transport) {
-                                is TransportSpecification.Sse -> t
-                                else -> TransportSpecification.Sse(url = "")
-                            }
-                        }
-                        onChange(specification.copy(transport = newTransport))
-                    },
-                    options = McpTransportType.entries,
-                    itemLabeler = { it.name },
-                    modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
-                )
-
-                IconButton(onClick = onRemove) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove server")
-                }
+            var transportType by remember(specification.transport) {
+                mutableStateOf(specification.transport.toType())
             }
 
-            when (val transport = specification.transport) {
-                TransportSpecification.Stdio -> {
-                    // No additional fields for stdio
-                }
-
-                is TransportSpecification.Sse -> {
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = transport.url.orEmpty(),
-                        onValueChange = { newUrl -> onChange(specification.copy(transport = transport.copy(url = newUrl))) },
-                        label = { Text("SSE URL") },
-                        singleLine = true,
-                    )
-
-                    var reconnectionTimeText by remember(transport.reconnectionTime) {
-                        mutableStateOf(
-                            transport.reconnectionTime?.inWholeSeconds?.toString().orEmpty()
-                        )
+            GenericSelector(
+                label = "Transport",
+                selectedItem = transportType,
+                onSelectItem = { selected ->
+                    transportType = selected
+                    val newTransport = when (selected) {
+                        McpTransportType.Stdio -> TransportSpecification.Stdio
+                        McpTransportType.Sse -> when (val t = specification.transport) {
+                            is TransportSpecification.Sse -> t
+                            else -> TransportSpecification.Sse(url = "")
+                        }
                     }
+                    onChange(specification.copy(transport = newTransport))
+                },
+                options = McpTransportType.entries,
+                itemLabeler = { it.name },
+                modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
+            )
 
-                    OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
-                        value = reconnectionTimeText,
-                        onValueChange = { newValue ->
-                            val filtered = newValue.filter { it.isDigit() }
-                            reconnectionTimeText = filtered
-                            val reconnectionTime = filtered.toLongOrNull()?.takeIf { it >= 0 }?.seconds
-                            onChange(specification.copy(transport = transport.copy(reconnectionTime = reconnectionTime)))
-                        },
-                        label = { Text("Reconnection time (seconds)") },
-                        singleLine = true,
+            IconButton(
+                modifier = Modifier.offset(y = 4.dp),
+                onClick = onRemove,
+            ) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove server")
+            }
+        }
+
+        when (val transport = specification.transport) {
+            TransportSpecification.Stdio -> {
+                // No additional fields for stdio
+            }
+
+            is TransportSpecification.Sse -> {
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = transport.url.orEmpty(),
+                    onValueChange = { newUrl -> onChange(specification.copy(transport = transport.copy(url = newUrl))) },
+                    label = { Text("SSE URL") },
+                    singleLine = true,
+                )
+
+                var reconnectionTimeText by remember(transport.reconnectionTime) {
+                    mutableStateOf(
+                        transport.reconnectionTime?.inWholeSeconds?.toString().orEmpty()
                     )
                 }
+
+                OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    value = reconnectionTimeText,
+                    onValueChange = { newValue ->
+                        val filtered = newValue.filter { it.isDigit() }
+                        reconnectionTimeText = filtered
+                        val reconnectionTime = filtered.toLongOrNull()?.takeIf { it >= 0 }?.seconds
+                        onChange(specification.copy(transport = transport.copy(reconnectionTime = reconnectionTime)))
+                    },
+                    label = { Text("Reconnection time (seconds)") },
+                    singleLine = true,
+                )
             }
+        }
 
-            // Process configuration
-            val hasProcess = specification.process != null
+        // Process configuration
+        val hasProcess = specification.process != null
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(text = "Run as process")
-                Switch(
-                    checked = hasProcess, onCheckedChange = { enabled ->
-                        val newSpec = if (enabled) {
-                            specification.copy(
-                                process = ProcessSpecification(
-                                    command = listOf("program"), environment = emptyMap()
-                                )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(text = "Run as process")
+            Switch(
+                checked = hasProcess, onCheckedChange = { enabled ->
+                    val newSpec = if (enabled) {
+                        specification.copy(
+                            process = ProcessSpecification(
+                                command = listOf("program"), environment = emptyMap()
                             )
-                        } else {
-                            specification.copy(process = null)
-                        }
-                        onChange(newSpec)
-                    })
+                        )
+                    } else {
+                        specification.copy(process = null)
+                    }
+                    onChange(newSpec)
+                })
+        }
+
+        if (hasProcess) {
+            val process = specification.process!!
+
+            var commandText by remember(process) { mutableStateOf(process.command.joinToString(" ")) }
+
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = commandText,
+                onValueChange = { newValue ->
+                    commandText = newValue
+                    val parts = newValue.split(" ").filter { it.isNotBlank() }
+                    onChange(specification.copy(process = process.copy(command = parts)))
+                },
+                label = { Text("Command (space-separated)") },
+                singleLine = true,
+            )
+
+            var environmentText by remember(process) {
+                mutableStateOf(process.environment?.entries?.joinToString("; ") { "${it.key}=${it.value}" }
+                    .orEmpty())
             }
 
-            if (hasProcess) {
-                val process = specification.process!!
-
-                var commandText by remember(process) { mutableStateOf(process.command.joinToString(" ")) }
-
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = commandText,
-                    onValueChange = { newValue ->
-                        commandText = newValue
-                        val parts = newValue.split(" ").filter { it.isNotBlank() }
-                        onChange(specification.copy(process = process.copy(command = parts)))
-                    },
-                    label = { Text("Command (space-separated)") },
-                    singleLine = true,
-                )
-
-                var environmentText by remember(process) {
-                    mutableStateOf(process.environment?.entries?.joinToString("; ") { "${it.key}=${it.value}" }
-                        .orEmpty())
-                }
-
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = environmentText,
-                    onValueChange = { newValue ->
-                        environmentText = newValue
-                        val environmentMap = parseEnv(newValue)
-                        onChange(specification.copy(process = process.copy(environment = environmentMap.ifEmpty { null })))
-                    },
-                    label = { Text("Environment (key=value; key2=value2)") },
-                    singleLine = true,
-                )
-            }
+            OutlinedTextField(
+                modifier = Modifier.fillMaxWidth(),
+                value = environmentText,
+                onValueChange = { newValue ->
+                    environmentText = newValue
+                    val environmentMap = parseEnv(newValue)
+                    onChange(specification.copy(process = process.copy(environment = environmentMap.ifEmpty { null })))
+                },
+                label = { Text("Environment (key=value; key2=value2)") },
+                singleLine = true,
+            )
         }
     }
 }
@@ -363,6 +361,7 @@ private fun AddServerSheetContent(
             )
 
             FilledTonalIconButton(
+                modifier = Modifier.offset(y = 4.dp),
                 onClick = {
                     val transportSpecification = when (transportType) {
                         McpTransportType.Stdio -> TransportSpecification.Stdio

@@ -20,6 +20,7 @@ import kotlin.time.*
 class NewConversationViewModel(
     private val modelManager: ModelManager,
     private val characterManager: CharacterManager,
+    private val lorebookManager: LorebookManager,
     mcpServerSpecificationsManager: McpServerSpecificationsManager,
     private val conversationRepository: ConversationRepository,
     settingsRepository: io.github.ptitjes.konvo.core.settings.SettingsRepository,
@@ -42,15 +43,17 @@ class NewConversationViewModel(
             val availableModels = modelManager.models.first()
             val availableMcpServerNames = mcpServerNames.first()
             val availableCharacters = characterManager.characters.first()
+            val availableLorebooks = lorebookManager.lorebooks.first()
             val roleplaySettings = roleplaySettings.first()
 
             updateQuestionAnswerState(availableModels, availableMcpServerNames)
-            updateRoleplayState(availableModels, availableCharacters, roleplaySettings)
+            updateRoleplayState(availableModels, availableCharacters, availableLorebooks, roleplaySettings)
 
             data class ObservedData(
                 val models: List<ModelCard>,
                 val mcpServerNames: Set<String>,
                 val characters: List<CharacterCard>,
+                val lorebooks: List<Lorebook>,
             )
 
             launch {
@@ -58,10 +61,11 @@ class NewConversationViewModel(
                     modelManager.models,
                     mcpServerNames,
                     characterManager.characters,
+                    lorebookManager.lorebooks,
                     transform = ::ObservedData,
                 ).collect { data ->
                     updateQuestionAnswerState(data.models, data.mcpServerNames)
-                    updateRoleplayState(data.models, data.characters, roleplaySettings)
+                    updateRoleplayState(data.models, data.characters, data.lorebooks, roleplaySettings)
                 }
             }
         }
@@ -99,6 +103,7 @@ class NewConversationViewModel(
     private fun updateRoleplayState(
         availableModels: List<ModelCard>,
         availableCharacters: List<CharacterCard>,
+        availableLorebooks: List<Lorebook>,
         roleplaySettings: RoleplayAgentSettings,
     ) {
         _roleplay.update { previous ->
@@ -112,10 +117,20 @@ class NewConversationViewModel(
                     val previouslySelectedModel = availableModels.firstOrNull {
                         it.name == previous.selectedModel.name
                     }
+                    val previouslySelectedCharacter = availableCharacters.firstOrNull {
+                        it.id == previous.selectedCharacter.id
+                    }
+                    val previouslySelectedLorebook = availableLorebooks.firstOrNull {
+                        it.id == previous.selectedLorebook?.id
+                    }
 
                     previous.copy(
                         availableModels = availableModels,
                         selectedModel = previouslySelectedModel ?: availableModels.first(),
+                        availableCharacters = availableCharacters,
+                        selectedCharacter = previouslySelectedCharacter ?: availableCharacters.first(),
+                        availableLorebooks = availableLorebooks,
+                        selectedLorebook = previouslySelectedLorebook,
                     )
                 }
 
@@ -127,8 +142,10 @@ class NewConversationViewModel(
                     NewRoleplayState.Available(
                         availableModels = availableModels,
                         availableCharacters = availableCharacters,
+                        availableLorebooks = availableLorebooks,
                         selectedCharacter = availableCharacters.first(),
                         selectedGreetingIndex = null,
+                        selectedLorebook = null,
                         userName = roleplaySettings.defaultUserPersonaName,
                         selectedModel = preferredModel ?: availableModels.first(),
                     )
@@ -175,7 +192,7 @@ class NewConversationViewModel(
     fun selectRoleplayCharacter(character: CharacterCard) = updateRoleplayState {
         it.copy(
             selectedCharacter = character,
-            selectedGreetingIndex = null,
+            selectedGreetingIndex = if (character.id != it.selectedCharacter.id) null else it.selectedGreetingIndex,
         )
     }
 
@@ -189,6 +206,10 @@ class NewConversationViewModel(
 
     fun selectRoleplayModel(model: ModelCard) = updateRoleplayState {
         it.copy(selectedModel = model)
+    }
+
+    fun selectRoleplayLorebook(lorebook: Lorebook?) = updateRoleplayState {
+        it.copy(selectedLorebook = lorebook)
     }
 
     @OptIn(ExperimentalTime::class)
@@ -266,8 +287,10 @@ sealed interface NewRoleplayState {
     data class Available(
         val availableModels: List<ModelCard>,
         val availableCharacters: List<CharacterCard>,
+        val availableLorebooks: List<Lorebook>,
         val selectedCharacter: CharacterCard,
         val selectedGreetingIndex: Int?,
+        val selectedLorebook: Lorebook?,
         val userName: String,
         val selectedModel: ModelCard,
     ) : NewRoleplayState
@@ -286,6 +309,7 @@ fun NewRoleplayState.createConfiguration(): RoleplayAgentConfiguration =
             characterGreetingIndex = selectedGreetingIndex,
             userName = userName,
             modelName = selectedModel.name,
+            lorebookId = selectedLorebook?.id,
         )
 
         else -> error("Invalid state: $this")

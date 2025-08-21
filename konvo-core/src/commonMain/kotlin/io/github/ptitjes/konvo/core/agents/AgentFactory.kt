@@ -12,6 +12,7 @@ class AgentFactory(
     private val mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
     private val characterProviderManager: CharacterManager,
     private val settingsRepository: SettingsRepository,
+    private val lorebookManager: LorebookManager,
 ) {
 
     suspend fun createAgent(agentConfiguration: AgentConfiguration): Agent {
@@ -27,6 +28,7 @@ class AgentFactory(
                 roleplayConfiguration = agentConfiguration,
                 model = modelProviderManager.named(agentConfiguration.modelName),
                 character = characterProviderManager.withId(agentConfiguration.characterId),
+                lorebook = agentConfiguration.lorebookId?.let { id -> lorebookManager.withId(id) },
             )
 
             is NoAgentConfiguration -> error("No agent configured for this conversation")

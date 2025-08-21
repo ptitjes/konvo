@@ -1,8 +1,7 @@
 package io.github.ptitjes.konvo.core.roleplay.providers
 
 import io.github.ptitjes.konvo.core.roleplay.*
-import io.github.ptitjes.konvo.core.roleplay.ccv2.*
-import io.github.ptitjes.konvo.core.roleplay.ccv3.*
+import io.github.ptitjes.konvo.core.roleplay.formats.*
 import kotlinx.serialization.json.*
 
 internal fun JsonObject.parseCharacterCard(id: String): CharacterCard {
@@ -44,7 +43,7 @@ private fun parseCharacterCardV2(
     postHistoryInstructions = data.postHistoryInstructions?.takeIf { it.isNotBlank() },
     greetings = listOf(data.firstMessage) + data.alternateGreetings,
     tags = data.tags,
-    characterBook = data.characterBook?.toLorebook(),
+    characterBook = data.characterBook?.toLorebook(null),
 )
 
 private fun parseCharacterCardV3(
@@ -67,60 +66,6 @@ private fun parseCharacterCardV3(
         postHistoryInstructions = data.postHistoryInstructions?.takeIf { it.isNotBlank() },
         greetings = listOf(data.firstMessage) + data.alternateGreetings,
         tags = data.tags,
-        characterBook = data.characterBook?.toLorebook(),
+        characterBook = data.characterBook?.toLorebook(null),
     )
 }
-
-private fun CharacterBookV2.toLorebook(): Lorebook = DefaultLorebook(
-    name = name,
-    description = description,
-    scanDepth = scanDepth,
-    tokenBudget = tokenBudget,
-    recursiveScanning = recursiveScanning,
-    entries = entries.map { it.toLorebookEntry() },
-)
-
-private fun CharacterBookEntryV2.toLorebookEntry(): LorebookEntry = DefaultLorebookEntry(
-    enabled = enabled,
-    constant = constant ?: false,
-    keys = keys,
-    useRegex = false,
-    caseSensitive = caseSensitive ?: false,
-    secondaryKeys = secondaryKeys,
-    selective = selective,
-    content = content,
-    insertionOrder = insertionOrder,
-    priority = priority,
-    position = when (position) {
-        EntryPositionV2.BeforeChar -> LorebookEntryPosition.BeforeChar
-        EntryPositionV2.AfterChar -> LorebookEntryPosition.AfterChar
-        EntryPositionV2.None, null -> null
-    },
-)
-
-private fun CharacterBookV3.toLorebook(): Lorebook = DefaultLorebook(
-    name = name,
-    description = description,
-    scanDepth = scanDepth,
-    tokenBudget = tokenBudget,
-    recursiveScanning = recursiveScanning,
-    entries = entries.map { it.toLorebookEntry() },
-)
-
-private fun CharacterBookEntryV3.toLorebookEntry(): LorebookEntry = DefaultLorebookEntry(
-    enabled = enabled,
-    constant = constant ?: false,
-    keys = keys,
-    useRegex = useRegex,
-    caseSensitive = caseSensitive ?: false,
-    secondaryKeys = secondaryKeys,
-    selective = selective,
-    content = content,
-    insertionOrder = insertionOrder,
-    priority = priority,
-    position = when (position) {
-        EntryPositionV3.BeforeChar -> LorebookEntryPosition.BeforeChar
-        EntryPositionV3.AfterChar -> LorebookEntryPosition.AfterChar
-        EntryPositionV3.None, null -> null
-    },
-)

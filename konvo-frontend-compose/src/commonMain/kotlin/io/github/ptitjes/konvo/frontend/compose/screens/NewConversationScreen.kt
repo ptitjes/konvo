@@ -108,6 +108,7 @@ fun NewConversationScreen(
                     onSelectRoleplayGreetingIndex = viewModel::selectRoleplayGreetingIndex,
                     onChangeRoleplayUserName = viewModel::changeRoleplayUserName,
                     onSelectRoleplayModel = viewModel::selectRoleplayModel,
+                    onSelectRoleplayLorebook = viewModel::selectRoleplayLorebook,
                 )
             }
         }
@@ -126,6 +127,7 @@ private fun ColumnScope.NewConversationPanel(
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
     onChangeRoleplayUserName: (String) -> Unit,
     onSelectRoleplayModel: (ModelCard) -> Unit,
+    onSelectRoleplayLorebook: (Lorebook?) -> Unit,
 ) {
     AgentTypeSelector(
         selectedAgentType = selectedAgentType,
@@ -149,6 +151,7 @@ private fun ColumnScope.NewConversationPanel(
                 onSelectRoleplayGreetingIndex = onSelectRoleplayGreetingIndex,
                 onChangeRoleplayUserName = onChangeRoleplayUserName,
                 onSelectRoleplayModel = onSelectRoleplayModel,
+                onSelectRoleplayLorebook = onSelectRoleplayLorebook,
             )
         }
     }
@@ -197,6 +200,7 @@ private fun ColumnScope.QuestionAnswerConfigurationForm(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ColumnScope.RoleplayConfigurationForm(
     roleplay: NewRoleplayState,
@@ -204,6 +208,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
     onChangeRoleplayUserName: (String) -> Unit,
     onSelectRoleplayModel: (ModelCard) -> Unit,
+    onSelectRoleplayLorebook: (Lorebook?) -> Unit,
 ) {
     when (val roleplay = roleplay) {
         NewRoleplayState.Loading -> {
@@ -239,17 +244,54 @@ private fun ColumnScope.RoleplayConfigurationForm(
                 )
             }
 
-            OutlinedTextField(
-                label = {
-                    Text(
-                        text = "Your Persona",
-                        style = MaterialTheme.typography.titleSmall
+            var showLorebookSheet by remember { mutableStateOf(false) }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OutlinedTextField(
+                    label = {
+                        Text(
+                            text = "Your Persona",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    },
+                    value = roleplay.userName,
+                    onValueChange = onChangeRoleplayUserName,
+                    modifier = Modifier.weight(1f),
+                )
+
+                FilledTonalIconButton(
+                    modifier = Modifier.offset(y = 4.dp),
+                    onClick = { showLorebookSheet = true },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Persona Settings"
                     )
-                },
-                value = roleplay.userName,
-                onValueChange = onChangeRoleplayUserName,
-                modifier = Modifier.fillMaxWidth()
-            )
+                }
+            }
+
+            if (showLorebookSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showLorebookSheet = false },
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                    ) {
+                        LorebookSelector(
+                            label = "Additional Lorebook",
+                            selectedLorebook = roleplay.selectedLorebook,
+                            onLorebookSelected = { selected ->
+                                onSelectRoleplayLorebook(selected)
+                                showLorebookSheet = false
+                            },
+                            lorebooks = roleplay.availableLorebooks,
+                        )
+                    }
+                }
+            }
 
             ModelSelector(
                 selectedModel = roleplay.selectedModel,

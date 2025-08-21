@@ -19,6 +19,7 @@ fun buildRoleplayAgent(
     roleplayConfiguration: RoleplayAgentConfiguration,
     model: ModelCard,
     character: CharacterCard,
+    lorebook: Lorebook?,
 ): Agent {
     val characterGreetingIndex = roleplayConfiguration.characterGreetingIndex
     val userName = roleplayConfiguration.userName
@@ -41,7 +42,10 @@ fun buildRoleplayAgent(
         append(initialAssistantMessage)
     }
 
-    val lorebook = character.characterBook
+    val lorebooks: List<Lorebook> = buildList {
+        character.characterBook?.let { add(it) }
+        lorebook?.let { add(it) }
+    }
 
     return DefaultAgent(
         systemPrompt = prompt("role-play") { system { +initialSystemPrompt } },
@@ -56,7 +60,7 @@ fun buildRoleplayAgent(
                     roleplayAgentSettings = roleplayAgentSettings,
                     roleplayConfiguration = roleplayConfiguration,
                     character = character,
-                    lorebook = lorebook,
+                    lorebooks = lorebooks,
                 )
 
                 edge(nodeStart forwardTo dumpRequest)
@@ -71,15 +75,21 @@ private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.execut
     roleplayAgentSettings: RoleplayAgentSettings,
     roleplayConfiguration: RoleplayAgentConfiguration,
     character: CharacterCard,
-    lorebook: Lorebook?,
+    lorebooks: List<Lorebook>,
 ) = node<Unit, List<Message.Response>>("roleplay-request") {
     llm.writeSession {
-        if (lorebook != null) {
-            val selectedEntries = lorebook.selectEntries(
-                roleplayAgentSettings = roleplayAgentSettings,
-                roleplayConfiguration = roleplayConfiguration,
-                history = prompt.messages,
-            )
+        if (!lorebooks.isEmpty()) {
+            val selectedEntries = lorebooks.flatMap {
+                it.selectEntries(
+                    roleplayAgentSettings = roleplayAgentSettings,
+                    roleplayConfiguration = roleplayConfiguration,
+                    history = prompt.messages,
+                )
+            }
+
+            logger.debug {
+                "Selected ${selectedEntries.size} entries from ${lorebooks.size} lorebooks:\n${selectedEntries.joinToString("\n")}\n"
+            }
 
             val newSystemPrompt = buildRoleplaySystemPrompt(
                 defaultSystemPrompt = roleplayAgentSettings.defaultSystemPrompt
@@ -94,7 +104,7 @@ private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.execut
         }
 
         requestLLMMultiple().also {
-            logger.info { "Last token usage: ${prompt.latestTokenUsage}" }
+            logger.debug { "Last token usage: ${prompt.latestTokenUsage}" }
         }
     }
 }
@@ -108,7 +118,9 @@ private fun buildRoleplaySystemPrompt(
     characterMemory: String? = null,
 ): String = buildString {
     val (lorebookEntriesBefore, lorebookEntriesAfter) = lorebookEntries
-        ?.partition { it.position == LorebookEntryPosition.BeforeChar } ?: (null to null)
+        ?.asReversed()
+        ?.partition { it.position == LorebookEntryPosition.BeforeChar }
+        ?: (null to null)
 
     appendLine(character.systemPrompt ?: defaultSystemPrompt)
     onlyIf(character.description) { appendLine(it) }

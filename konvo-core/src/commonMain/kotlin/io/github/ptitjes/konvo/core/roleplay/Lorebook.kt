@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core.roleplay
 import kotlinx.serialization.*
 
 interface Lorebook {
+    val id: String?
     val name: String?
     val description: String?
     val scanDepth: Int?

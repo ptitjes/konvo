@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core.roleplay.providers
 import io.github.ptitjes.konvo.core.roleplay.*
 
 internal data class DefaultLorebook(
+    override val id: String?,
     override val name: String?,
     override val description: String?,
     override val scanDepth: Int?,
