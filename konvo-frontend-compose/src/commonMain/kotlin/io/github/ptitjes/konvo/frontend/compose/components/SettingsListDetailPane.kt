@@ -38,7 +38,10 @@ fun SettingsListDetailPane(
                         title = section.title,
                         onBackClick = { viewModel.unselectSection() },
                     ) {
-                        SettingsPanel(section)
+                        when (section) {
+                            is SettingsSection.WithoutKey -> SettingsPanelWithoutKey(section)
+                            is SettingsSection.WithKey<*> -> SettingsPanelWithKey(section)
+                        }
                     }
                 }
             }
@@ -47,8 +50,19 @@ fun SettingsListDetailPane(
 }
 
 @Composable
-fun <T> SettingsPanel(
-    section: SettingsSection<T>,
+private fun SettingsPanelWithoutKey(
+    section: SettingsSection.WithoutKey,
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 16.dp),
+    ) {
+        section.panel()
+    }
+}
+
+@Composable
+private fun <T> SettingsPanelWithKey(
+    section: SettingsSection.WithKey<T>,
     viewModel: SettingsViewModel = viewModel(),
 ) {
     val settings by viewModel.getSettings(section.key).collectAsState()

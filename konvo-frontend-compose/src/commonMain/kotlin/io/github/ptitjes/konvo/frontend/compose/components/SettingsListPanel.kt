@@ -13,9 +13,9 @@ import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
 
 @Composable
 fun SettingsListPanel(
-    sections: List<SettingsSection<*>>,
-    selectedSection: SettingsSection<*>?,
-    onSelectSection: (SettingsSection<*>) -> Unit,
+    sections: List<SettingsSection>,
+    selectedSection: SettingsSection?,
+    onSelectSection: (SettingsSection) -> Unit,
     modifier: Modifier = Modifier.Companion,
 ) {
     Column(
@@ -62,8 +62,8 @@ fun SettingsListPanel(
     }
 }
 
-fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
-    fun List<SettingsSection<*>>.flatten(depth: Int): List<FlattenSettingsSection> {
+fun List<SettingsSection>.flatten(): List<FlattenSettingsSection> {
+    fun List<SettingsSection>.flatten(depth: Int): List<FlattenSettingsSection> {
         return flatMap { section ->
             listOf(FlattenSettingsSection(section, depth)) + section.children.flatten(depth + 1)
         }
@@ -73,6 +73,6 @@ fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
 }
 
 data class FlattenSettingsSection(
-    val section: SettingsSection<*>,
+    val section: SettingsSection,
     val depth: Int,
 )

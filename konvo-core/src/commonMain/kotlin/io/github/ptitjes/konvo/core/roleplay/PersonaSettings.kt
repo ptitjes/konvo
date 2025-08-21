@@ -27,7 +27,7 @@ data class PersonaSettings(
 /**
  * Key for Persona settings persisted in the configuration directory.
  */
-val PersonaSettingsKey: SettingsSectionKey<PersonaSettings> = SettingsSectionKey(
+val PersonaSettingsKey: SettingsKey<PersonaSettings> = SettingsKey(
     name = "personas",
     defaultValue = PersonaSettings(),
     serializer = PersonaSettings.serializer(),

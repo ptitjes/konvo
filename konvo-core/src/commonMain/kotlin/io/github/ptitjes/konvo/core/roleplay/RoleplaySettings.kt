@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.core.agents
+package io.github.ptitjes.konvo.core.roleplay
 
 import io.github.ptitjes.konvo.core.settings.*
 import kotlinx.serialization.*
@@ -31,8 +31,8 @@ internal const val DEFAULT_RECURSIVE_SCANNING = false
 /**
  * Key for Roleplay Agent settings persisted in the configuration directory.
  */
-val RoleplaySettingsKey: SettingsSectionKey<RoleplaySettings> = SettingsSectionKey(
-    name = "roleplay-agent",
+val RoleplaySettingsKey: SettingsKey<RoleplaySettings> = SettingsKey(
+    name = "roleplay",
     defaultValue = RoleplaySettings(),
     serializer = RoleplaySettings.serializer(),
 )

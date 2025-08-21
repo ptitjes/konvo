@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.*
 import org.kodein.di.compose.*
 
 @Composable
-fun <T, R> rememberSetting(key: SettingsSectionKey<T>, initial: R, mapper: (T) -> R): State<R> {
+fun <T, R> rememberSetting(key: SettingsKey<T>, initial: R, mapper: (T) -> R): State<R> {
     val repository by rememberInstance<SettingsRepository>()
     return repository.getSettings(key).map(mapper).collectAsState(initial)
 }

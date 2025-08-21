@@ -35,10 +35,10 @@ class FileSystemSettingsRepository(
 
     private fun fileFor(name: String): Path = Path(baseDir, "$name.json5")
 
-    private val settingsFlows = atomic(mapOf<SettingsSectionKey<*>, MutableStateFlow<Any?>>())
+    private val settingsFlows = atomic(mapOf<SettingsKey<*>, MutableStateFlow<Any?>>())
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getSettings(key: SettingsSectionKey<T>): StateFlow<T> {
+    override fun <T> getSettings(key: SettingsKey<T>): StateFlow<T> {
         val newFlow = settingsFlows.updateAndGet { previous ->
             if (previous.containsKey(key)) previous
             else previous + (key to MutableStateFlow(readFromDisk(key)))
@@ -47,7 +47,7 @@ class FileSystemSettingsRepository(
         return newFlow.asStateFlow() as StateFlow<T>
     }
 
-    override suspend fun <T> updateSettings(key: SettingsSectionKey<T>, value: T) {
+    override suspend fun <T> updateSettings(key: SettingsKey<T>, value: T) {
         writeToDisk(key, value)
 
         val previousFlow = settingsFlows.getAndUpdate { previous ->
@@ -58,7 +58,7 @@ class FileSystemSettingsRepository(
         if (previousFlow != null) previousFlow.value = value
     }
 
-    private fun <T> readFromDisk(key: SettingsSectionKey<T>): T = runCatching {
+    private fun <T> readFromDisk(key: SettingsKey<T>): T = runCatching {
         val path = fileFor(key.name)
         fileSystem.source(path).buffered().use { src ->
             val content = src.readString()
@@ -66,7 +66,7 @@ class FileSystemSettingsRepository(
         }
     }.getOrDefault(key.defaultValue)
 
-    private fun <T> writeToDisk(key: SettingsSectionKey<T>, value: T) {
+    private fun <T> writeToDisk(key: SettingsKey<T>, value: T) {
         val path = fileFor(key.name)
         atomicWrite(path) { sink ->
             val content = json.encodeToString(key.serializer, value)

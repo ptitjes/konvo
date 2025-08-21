@@ -6,17 +6,15 @@ import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
 import kotlinx.coroutines.flow.*
 
-class SettingsListViewModel(
-
-) : ViewModel() {
+class SettingsListViewModel() : ViewModel() {
 
     private val _sections = MutableStateFlow(defaultSettingsSections)
-    val sections: StateFlow<List<SettingsSection<*>>> = _sections.asStateFlow()
+    val sections: StateFlow<List<SettingsSection>> = _sections.asStateFlow()
 
-    private val _selectedSection = MutableStateFlow<SettingsSection<*>?>(null)
-    val selectedSection: StateFlow<SettingsSection<*>?> = _selectedSection.asStateFlow()
+    private val _selectedSection = MutableStateFlow<SettingsSection?>(null)
+    val selectedSection: StateFlow<SettingsSection?> = _selectedSection.asStateFlow()
 
-    fun selectSection(section: SettingsSection<*>) {
+    fun selectSection(section: SettingsSection) {
         _selectedSection.value = section
     }
 
@@ -25,14 +23,20 @@ class SettingsListViewModel(
     }
 }
 
-data class SettingsSection<T>(
-    val key: SettingsSectionKey<T>,
-    val title: String,
-    val panel: SettingsSectionPanel<T>,
-    val children: List<SettingsSection<*>> = emptyList(),
-)
+sealed interface SettingsSection {
+    val title: String
+    val children: List<SettingsSection>
 
-typealias SettingsSectionPanel<T> = @Composable (
-    settings: T,
-    updateSettings: ((T) -> T) -> Unit,
-) -> Unit
+    data class WithoutKey(
+        override val title: String,
+        val panel: @Composable () -> Unit,
+        override val children: List<SettingsSection>,
+    ) : SettingsSection
+
+    data class WithKey<T>(
+        override val title: String,
+        val key: SettingsKey<T>,
+        val panel: @Composable (settings: T, updateSettings: ((T) -> T) -> Unit) -> Unit,
+        override val children: List<SettingsSection> = emptyList(),
+    ) : SettingsSection
+}

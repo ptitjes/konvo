@@ -36,7 +36,7 @@ data class NamedModelProvider(
 /**
  * Key for model provider settings.
  */
-val ModelProviderSettingsKey: SettingsSectionKey<ModelProviderSettings> = SettingsSectionKey(
+val ModelProviderSettingsKey: SettingsKey<ModelProviderSettings> = SettingsKey(
     name = "model-providers",
     defaultValue = ModelProviderSettings(),
     serializer = ModelProviderSettings.serializer(),

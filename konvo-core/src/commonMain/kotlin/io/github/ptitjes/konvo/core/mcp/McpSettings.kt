@@ -11,7 +11,7 @@ data class McpSettings(
 /**
  * Key for MCP settings persisted in the configuration directory.
  */
-val McpSettingsKey: SettingsSectionKey<McpSettings> = SettingsSectionKey(
+val McpSettingsKey: SettingsKey<McpSettings> = SettingsKey(
     name = "mcp",
     defaultValue = McpSettings(),
     serializer = McpSettings.serializer(),

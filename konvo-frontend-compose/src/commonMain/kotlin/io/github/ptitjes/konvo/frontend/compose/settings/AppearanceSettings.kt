@@ -22,7 +22,7 @@ enum class BaseColorScheme {
 /**
  * Key for appearance settings persisted in the configuration directory.
  */
-val AppearanceSettingsKey: SettingsSectionKey<AppearanceSettings> = SettingsSectionKey(
+val AppearanceSettingsKey: SettingsKey<AppearanceSettings> = SettingsKey(
     name = "appearance",
     defaultValue = AppearanceSettings(),
     serializer = AppearanceSettings.serializer(),

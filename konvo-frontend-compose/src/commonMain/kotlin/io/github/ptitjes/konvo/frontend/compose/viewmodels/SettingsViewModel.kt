@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.*
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
-    fun <T> getSettings(key: SettingsSectionKey<T>): StateFlow<SettingsViewState<T>> {
+    fun <T> getSettings(key: SettingsKey<T>): StateFlow<SettingsViewState<T>> {
         @Suppress("UNCHECKED_CAST")
         return settingsRepository.getSettings(key)
             .map { SettingsViewState.Loaded(it) }
@@ -20,7 +20,7 @@ class SettingsViewModel(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> updateSettings(key: SettingsSectionKey<T>, updater: (previous: T) -> T) = viewModelScope.launch {
+    fun <T> updateSettings(key: SettingsKey<T>, updater: (previous: T) -> T) = viewModelScope.launch {
         val settings = getSettings(key).filterIsInstance<SettingsViewState.Loaded<T>>().first().value
         settingsRepository.updateSettings(key, updater(settings))
     }
