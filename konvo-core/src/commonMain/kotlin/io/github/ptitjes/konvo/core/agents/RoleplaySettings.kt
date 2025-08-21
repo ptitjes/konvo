@@ -7,7 +7,7 @@ import kotlinx.serialization.*
  * Settings for the Roleplay agent behavior and defaults.
  */
 @Serializable
-data class RoleplayAgentSettings(
+data class RoleplaySettings(
     /** Default name to use for the user persona in roleplay conversations. */
     val defaultUserPersonaName: String = "User",
     /** Default preferred model name to use for roleplay conversations. */
@@ -31,8 +31,8 @@ internal const val DEFAULT_RECURSIVE_SCANNING = false
 /**
  * Key for Roleplay Agent settings persisted in the configuration directory.
  */
-val RoleplayAgentSettingsKey: SettingsSectionKey<RoleplayAgentSettings> = SettingsSectionKey(
+val RoleplaySettingsKey: SettingsSectionKey<RoleplaySettings> = SettingsSectionKey(
     name = "roleplay-agent",
-    defaultValue = RoleplayAgentSettings(),
-    serializer = RoleplayAgentSettings.serializer(),
+    defaultValue = RoleplaySettings(),
+    serializer = RoleplaySettings.serializer(),
 )

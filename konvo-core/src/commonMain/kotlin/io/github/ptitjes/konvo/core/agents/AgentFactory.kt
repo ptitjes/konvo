@@ -24,7 +24,7 @@ class AgentFactory(
             )
 
             is RoleplayAgentConfiguration -> buildRoleplayAgent(
-                roleplayAgentSettings = settingsRepository.getSettings(RoleplayAgentSettingsKey).first(),
+                roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey).first(),
                 roleplayConfiguration = agentConfiguration,
                 model = modelProviderManager.named(agentConfiguration.modelName),
                 character = characterProviderManager.withId(agentConfiguration.characterId),

@@ -27,7 +27,7 @@ class NewConversationViewModel(
 ) : ViewModel() {
 
     private val mcpServerNames = mcpServerSpecificationsManager.specifications.map { it.keys }
-    private val roleplaySettings = settingsRepository.getSettings(RoleplayAgentSettingsKey)
+    private val roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey)
 
     var selectedAgentType: AgentType by mutableStateOf(AgentType.QuestionAnswer)
         private set
@@ -104,7 +104,7 @@ class NewConversationViewModel(
         availableModels: List<ModelCard>,
         availableCharacters: List<CharacterCard>,
         availableLorebooks: List<Lorebook>,
-        roleplaySettings: RoleplayAgentSettings,
+        roleplaySettings: RoleplaySettings,
     ) {
         _roleplay.update { previous ->
             when {

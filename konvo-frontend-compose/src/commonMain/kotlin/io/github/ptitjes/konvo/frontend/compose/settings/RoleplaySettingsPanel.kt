@@ -12,9 +12,9 @@ import io.github.ptitjes.konvo.frontend.compose.components.settings.*
 import org.kodein.di.compose.*
 
 @Composable
-fun RoleplayAgentSettingsPanel(
-    settings: RoleplayAgentSettings,
-    updateSettings: (updater: (previous: RoleplayAgentSettings) -> RoleplayAgentSettings) -> Unit,
+fun RoleplaySettingsPanel(
+    settings: RoleplaySettings,
+    updateSettings: (updater: (previous: RoleplaySettings) -> RoleplaySettings) -> Unit,
 ) {
     // We need models to offer a selector for the default preferred model
     val modelManager by rememberInstance<ModelManager>()

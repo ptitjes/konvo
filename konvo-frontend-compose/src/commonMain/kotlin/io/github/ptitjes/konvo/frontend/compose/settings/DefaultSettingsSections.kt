@@ -13,11 +13,6 @@ val defaultSettingsSections = listOf(
         panel = ::AppearanceSettingsPanel,
     ),
     SettingsSection(
-        key = CharacterSettingsKey,
-        title = "Characters",
-        panel = ::CharacterSettingsPanel,
-    ),
-    SettingsSection(
         key = McpSettingsKey,
         title = "MCP servers",
         panel = ::McpSettingsPanel,
@@ -28,8 +23,15 @@ val defaultSettingsSections = listOf(
         panel = ::ModelProviderSettingsPanel,
     ),
     SettingsSection(
-        key = RoleplayAgentSettingsKey,
-        title = "Roleplay Agent",
-        panel = ::RoleplayAgentSettingsPanel,
+        key = RoleplaySettingsKey,
+        title = "Roleplay",
+        panel = ::RoleplaySettingsPanel,
+        children = listOf(
+            SettingsSection(
+                key = CharacterSettingsKey,
+                title = "Characters",
+                panel = ::CharacterSettingsPanel,
+            ),
+        ),
     ),
 )

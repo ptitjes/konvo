@@ -3,7 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.viewmodels
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.settings.*
-import io.github.ptitjes.konvo.frontend.compose.settings.defaultSettingsSections
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import kotlinx.coroutines.flow.*
 
 class SettingsListViewModel(
@@ -29,6 +29,7 @@ data class SettingsSection<T>(
     val key: SettingsSectionKey<T>,
     val title: String,
     val panel: SettingsSectionPanel<T>,
+    val children: List<SettingsSection<*>> = emptyList(),
 )
 
 typealias SettingsSectionPanel<T> = @Composable (

@@ -27,14 +27,16 @@ fun SettingsListPanel(
             style = MaterialTheme.typography.titleLarge,
         )
 
+        val flattenedSections = remember(sections) { sections.flatten() }
+
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(sections, key = { it.title }) { section ->
-                val selected = section == selectedSection
-                val onClick: () -> Unit = { onSelectSection(section) }
+            items(flattenedSections, key = { it.section.title }) { flattenedSection ->
+                val selected = flattenedSection.section == selectedSection
+                val onClick: () -> Unit = { onSelectSection(flattenedSection.section) }
 
                 Surface(
                     color = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
@@ -49,10 +51,28 @@ fun SettingsListPanel(
                             .clickable(role = Role.Button, onClick = onClick)
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                     ) {
-                        Text(section.title)
+                        Text(
+                            modifier = Modifier.padding(start = 16.dp * flattenedSection.depth),
+                            text = flattenedSection.section.title,
+                        )
                     }
                 }
             }
         }
     }
 }
+
+fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
+    fun List<SettingsSection<*>>.flatten(depth: Int): List<FlattenSettingsSection> {
+        return flatMap { section ->
+            listOf(FlattenSettingsSection(section, depth)) + section.children.flatten(depth + 1)
+        }
+    }
+
+    return flatten(0)
+}
+
+data class FlattenSettingsSection(
+    val section: SettingsSection<*>,
+    val depth: Int,
+)

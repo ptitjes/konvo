@@ -15,7 +15,7 @@ import kotlin.random.*
 private val logger = KotlinLogging.logger { }
 
 fun buildRoleplayAgent(
-    roleplayAgentSettings: RoleplayAgentSettings,
+    roleplaySettings: RoleplaySettings,
     roleplayConfiguration: RoleplayAgentConfiguration,
     model: ModelCard,
     character: CharacterCard,
@@ -25,7 +25,7 @@ fun buildRoleplayAgent(
     val userName = roleplayConfiguration.userName
 
     val initialSystemPrompt = buildRoleplaySystemPrompt(
-        defaultSystemPrompt = roleplayAgentSettings.defaultSystemPrompt
+        defaultSystemPrompt = roleplaySettings.defaultSystemPrompt
             .takeIf { it.isNotBlank() }
             ?: DEFAULT_SYSTEM_PROMPT,
         character = character,
@@ -57,7 +57,7 @@ fun buildRoleplayAgent(
                 val dumpRequest by dumpToPrompt()
 
                 val request by executeRoleplayRequest(
-                    roleplayAgentSettings = roleplayAgentSettings,
+                    roleplaySettings = roleplaySettings,
                     roleplayConfiguration = roleplayConfiguration,
                     character = character,
                     lorebooks = lorebooks,
@@ -72,7 +72,7 @@ fun buildRoleplayAgent(
 }
 
 private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.executeRoleplayRequest(
-    roleplayAgentSettings: RoleplayAgentSettings,
+    roleplaySettings: RoleplaySettings,
     roleplayConfiguration: RoleplayAgentConfiguration,
     character: CharacterCard,
     lorebooks: List<Lorebook>,
@@ -81,7 +81,7 @@ private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.execut
         if (!lorebooks.isEmpty()) {
             val selectedEntries = lorebooks.flatMap {
                 it.selectEntries(
-                    roleplayAgentSettings = roleplayAgentSettings,
+                    roleplaySettings = roleplaySettings,
                     roleplayConfiguration = roleplayConfiguration,
                     history = prompt.messages,
                 )
@@ -92,7 +92,7 @@ private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.execut
             }
 
             val newSystemPrompt = buildRoleplaySystemPrompt(
-                defaultSystemPrompt = roleplayAgentSettings.defaultSystemPrompt
+                defaultSystemPrompt = roleplaySettings.defaultSystemPrompt
                     .takeIf { it.isNotBlank() }
                     ?: DEFAULT_ROLEPLAY_SYSTEM_PROMPT,
                 character = character,
@@ -174,7 +174,7 @@ private fun Prompt.replaceSystemPrompt(systemPrompt: String): Prompt {
  * @return The relevant entries, ordered by relevance (from the most relevant to the least relevant).
  */
 private fun Lorebook.selectEntries(
-    roleplayAgentSettings: RoleplayAgentSettings,
+    roleplaySettings: RoleplaySettings,
     roleplayConfiguration: RoleplayAgentConfiguration,
     history: List<Message>,
     tokenizer: Tokenizer = SimpleRegexBasedTokenizer(),
@@ -182,13 +182,13 @@ private fun Lorebook.selectEntries(
     // Determine effective parameters with sensible defaults
     val effectiveScanDepth = roleplayConfiguration.scanDepthOverride
         ?: this.scanDepth
-        ?: roleplayAgentSettings.defaultScanDepth
+        ?: roleplaySettings.defaultScanDepth
     val effectiveTokenBudget = roleplayConfiguration.tokenBudgetOverride
         ?: this.tokenBudget
-        ?: roleplayAgentSettings.defaultTokenBudget
+        ?: roleplaySettings.defaultTokenBudget
     val effectiveRecursive = roleplayConfiguration.recursiveScanningOverride
         ?: this.recursiveScanning
-        ?: roleplayAgentSettings.defaultRecursiveScanning
+        ?: roleplaySettings.defaultRecursiveScanning
 
     val historyMessages = history.filter { it is Message.User || it is Message.Assistant }
     // Build initial scan context from the last N messages
