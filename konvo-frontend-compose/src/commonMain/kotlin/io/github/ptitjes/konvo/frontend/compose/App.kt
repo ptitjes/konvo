@@ -37,7 +37,7 @@ fun App(
                             icon = {
                                 Icon(
                                     imageVector = state.icon,
-                                    contentDescription = state.contentDescription,
+                                    contentDescription = strings.navigationDestinationTitles(state),
                                 )
                             },
                             badge = {},
@@ -52,13 +52,13 @@ fun App(
 
                     AppState.Archive -> Text(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                        text = "Archive",
+                        text = strings.navigationDestinationTitles(AppState.Archive),
                         style = MaterialTheme.typography.titleLarge,
                     )
 
                     AppState.KnowledgeBases -> Text(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                        text = "Knowledge Bases",
+                        text = strings.navigationDestinationTitles(AppState.KnowledgeBases),
                         style = MaterialTheme.typography.titleLarge,
                     )
 

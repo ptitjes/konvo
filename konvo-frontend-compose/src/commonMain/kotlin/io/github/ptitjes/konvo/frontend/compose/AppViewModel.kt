@@ -24,22 +24,9 @@ class AppViewModel : ViewModel() {
  */
 enum class AppState(
     val icon: ImageVector,
-    val contentDescription: String,
 ) {
-    Conversations(
-        icon = Icons.AutoMirrored.Filled.Chat,
-        contentDescription = "Conversations",
-    ),
-    Archive(
-        icon = Icons.Filled.Archive,
-        contentDescription = "Archive",
-    ),
-    KnowledgeBases(
-        icon = Icons.Filled.Dataset,
-        contentDescription = "Knowledge Bases",
-    ),
-    Settings(
-        icon = Icons.Filled.Settings,
-        contentDescription = "Settings",
-    ),
+    Conversations(icon = Icons.AutoMirrored.Filled.Chat),
+    Archive(icon = Icons.Filled.Archive),
+    KnowledgeBases(icon = Icons.Filled.Dataset),
+    Settings(icon = Icons.Filled.Settings),
 }

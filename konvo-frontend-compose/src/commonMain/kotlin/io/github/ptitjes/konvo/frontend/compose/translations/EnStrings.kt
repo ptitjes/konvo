@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.translations
 
 import cafe.adriel.lyricist.*
+import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
@@ -186,4 +187,12 @@ internal val EnStrings = Strings(
         appearanceBaseColorSchemeOptionLight = "Light",
         appearanceBaseColorSchemeOptionSystem = "Adapt to system",
     ),
+    navigationDestinationTitles = { state ->
+        when (state) {
+            AppState.Conversations -> "Conversations"
+            AppState.Archive -> "Archive"
+            AppState.KnowledgeBases -> "Knowledge Bases"
+            AppState.Settings -> "Settings"
+        }
+    },
 )
