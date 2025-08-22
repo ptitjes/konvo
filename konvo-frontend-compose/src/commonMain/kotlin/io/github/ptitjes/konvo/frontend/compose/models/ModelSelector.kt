@@ -20,7 +20,7 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
  */
 @Composable
 fun ModelSelector(
-    label: String? = null,
+    label: String? = strings.models.modelLabel,
     selectedModel: ModelCard,
     onModelSelected: (ModelCard) -> Unit,
     models: List<ModelCard>,
@@ -28,7 +28,7 @@ fun ModelSelector(
 ) {
     GenericSelector(
         modifier = modifier,
-        label = label ?: strings.models.modelLabel,
+        label = label,
         selectedItem = selectedModel,
         onSelectItem = onModelSelected,
         options = models,

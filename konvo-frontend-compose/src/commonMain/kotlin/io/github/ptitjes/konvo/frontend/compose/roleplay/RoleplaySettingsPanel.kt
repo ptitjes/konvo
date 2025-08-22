@@ -10,6 +10,7 @@ import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import org.kodein.di.compose.*
 
 @Composable
@@ -23,13 +24,13 @@ fun RoleplaySettingsPanel(
 
     // Default user persona
     SettingsBox(
-        title = "Default persona",
-        description = "Used as your persona in new roleplay conversations.",
+        title = strings.roleplay.defaultPersonaTitle,
+        description = strings.roleplay.defaultPersonaDescription,
         bottomContent = {
             val personaSettings by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
             if (personaSettings.isEmpty()) {
                 Text(
-                    text = "No persona defined yet",
+                    text = strings.roleplay.noPersonaDefined,
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp),
                 )
@@ -52,12 +53,12 @@ fun RoleplaySettingsPanel(
 
     // Default preferred model selector
     SettingsBox(
-        title = "Default preferred model",
-        description = "Model used by default for new roleplay conversations.",
+        title = strings.roleplay.defaultPreferredModelTitle,
+        description = strings.roleplay.defaultPreferredModelDescription,
         bottomContent = {
             if (models.isEmpty()) {
                 Text(
-                    text = "No available models",
+                    text = strings.roleplay.noAvailableModels,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(8.dp),
                 )
@@ -83,8 +84,8 @@ fun RoleplaySettingsPanel(
 
     // Default system prompt
     SettingsBox(
-        title = "Default system prompt",
-        description = "Used when the character card doesn't define its own system prompt.",
+        title = strings.roleplay.defaultSystemPromptTitle,
+        description = strings.roleplay.defaultSystemPromptDescription,
         bottomContent = {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).heightIn(min = 120.dp),
@@ -98,8 +99,8 @@ fun RoleplaySettingsPanel(
 
     // Default lorebook settings
     SettingsBox(
-        title = "Default Lorebook settings",
-        description = "Used when the character card doesn't define its own lorebook configuration.",
+        title = strings.roleplay.defaultLorebookSettingsTitle,
+        description = strings.roleplay.defaultLorebookSettingsDescription,
         bottomContent = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // Numeric fields for scan depth and token budget
@@ -114,7 +115,7 @@ fun RoleplaySettingsPanel(
                         onValueChange = { value ->
                             updateSettings { previous -> previous.copy(defaultScanDepth = value) }
                         },
-                        label = "Scan depth",
+                        label = strings.roleplay.scanDepthLabel,
                     )
 
                     OutlinedIntegerField(
@@ -123,7 +124,7 @@ fun RoleplaySettingsPanel(
                         onValueChange = { value ->
                             updateSettings { previous -> previous.copy(defaultTokenBudget = value) }
                         },
-                        label = "Token budget",
+                        label = strings.roleplay.tokenBudgetLabel,
                     )
                 }
 
@@ -134,7 +135,7 @@ fun RoleplaySettingsPanel(
                 ) {
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = "Recursive scanning",
+                        text = strings.roleplay.recursiveScanningLabel,
                     )
                     Switch(
                         checked = settings.defaultRecursiveScanning,

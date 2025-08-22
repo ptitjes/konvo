@@ -7,6 +7,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for lorebooks.
@@ -22,12 +23,15 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
  */
 @Composable
 fun LorebookSelector(
-    label: String? = "Lorebook",
+    label: String? = strings.roleplay.lorebookLabel,
     selectedLorebook: Lorebook?,
     onLorebookSelected: (Lorebook?) -> Unit,
     lorebooks: List<Lorebook>,
     modifier: Modifier = Modifier,
 ) {
+    val none = strings.roleplay.lorebookNone
+    val unnamed = strings.roleplay.lorebookUnnamed
+
     GenericSelector(
         modifier = modifier,
         label = label,
@@ -37,18 +41,18 @@ fun LorebookSelector(
         options = listOf<Lorebook?>(null) + lorebooks,
         itemLabeler = { lorebookOrNull ->
             if (lorebookOrNull == null) {
-                "None"
+                none
             } else {
-                lorebookOrNull.name ?: "Unnamed lorebook"
+                lorebookOrNull.name ?: unnamed
             }
         },
         itemOption = { lorebookOrNull ->
             if (lorebookOrNull == null) {
-                Text("None")
+                Text(none)
             } else {
                 Column {
                     Text(
-                        text = lorebookOrNull.name ?: "Unnamed lorebook",
+                        text = lorebookOrNull.name ?: unnamed,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

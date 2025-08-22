@@ -12,6 +12,7 @@ import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.roleplay.providers.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.vinceglb.filekit.compose.*
 import io.github.vinceglb.filekit.core.*
 import kotlinx.coroutines.*
@@ -38,8 +39,8 @@ fun CharacterSettingsPanel(
     }
 
     SettingsBox(
-        title = "Character tags filter",
-        description = "Tags listed here will be excluded when showing characters. Separate tags with commas.",
+        title = strings.roleplay.characterTagsFilterTitle,
+        description = strings.roleplay.characterTagsFilterDescription,
         bottomContent = {
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -52,7 +53,7 @@ fun CharacterSettingsPanel(
                     updateSettings { previous -> previous.copy(filteredTags = parsed) }
                 },
                 singleLine = true,
-                placeholder = { Text("e.g. nsfw, beta, wip") },
+                placeholder = { Text(strings.roleplay.characterTagsPlaceholder) },
             )
         }
     )
@@ -108,25 +109,25 @@ private fun ImportedCharactersSettingsBox() {
     }
 
     SettingsBox(
-        title = "Imported characters",
-        description = "Import, list and delete characters.",
+        title = strings.roleplay.importedCharactersTitle,
+        description = strings.roleplay.importedCharactersDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
-                Icon(imageVector = Icons.Default.FileDownload, contentDescription = "Import characters")
+                Icon(imageVector = Icons.Default.FileDownload, contentDescription = strings.roleplay.importCharactersAria)
             }
         },
         bottomContent = {
             when {
-                loadError != null -> Text(text = "Failed to load characters: $loadError")
+                loadError != null -> Text(text = strings.roleplay.failedToLoadCharacters(loadError!!))
                 characters == null -> FullSizeProgressIndicator()
-                characters!!.isEmpty() -> Text(text = "No characters available.")
+                characters!!.isEmpty() -> Text(text = strings.roleplay.noCharactersAvailable)
                 else -> CharacterGrid(
                     characters = characters!!,
                     bottomEndContent = { character ->
                         FilledTonalIconButton(onClick = { pendingDelete = character }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete character",
+                                contentDescription = strings.roleplay.deleteCharacterAria,
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
                         }
@@ -139,8 +140,8 @@ private fun ImportedCharactersSettingsBox() {
     pendingDelete?.let { toDelete ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Delete character?") },
-            text = { Text("Are you sure you want to delete \"${toDelete.name}\"? This cannot be undone.") },
+            title = { Text(strings.roleplay.deleteCharacterDialogTitle) },
+            text = { Text(strings.roleplay.deleteCharacterDialogText(toDelete.name)) },
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
@@ -148,9 +149,9 @@ private fun ImportedCharactersSettingsBox() {
                         pendingDelete = null
                         reload()
                     }
-                }) { Text("Delete") }
+                }) { Text(strings.roleplay.deleteConfirm) }
             },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(strings.roleplay.cancel) } },
         )
     }
 }

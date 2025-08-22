@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.roleplay.providers.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.vinceglb.filekit.compose.*
 import io.github.vinceglb.filekit.core.*
 import kotlinx.coroutines.*
@@ -66,18 +67,18 @@ fun LorebooksSettingsPanel() {
     }
 
     SettingsBox(
-        title = "Imported lorebooks",
-        description = "Import, list and delete lorebooks.",
+        title = strings.roleplay.importedLorebooksTitle,
+        description = strings.roleplay.importedLorebooksDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
-                Icon(imageVector = Icons.Default.FileDownload, contentDescription = "Import lorebook")
+                Icon(imageVector = Icons.Default.FileDownload, contentDescription = strings.roleplay.importLorebookAria)
             }
         },
         bottomContent = {
             when {
-                loadError != null -> Text(text = "Failed to load lorebooks: $loadError")
+                loadError != null -> Text(text = strings.roleplay.failedToLoadLorebooks(loadError!!))
                 lorebooks == null -> FullSizeProgressIndicator()
-                lorebooks!!.isEmpty() -> Text(text = "No lorebooks available.")
+                lorebooks!!.isEmpty() -> Text(text = strings.roleplay.noLorebooksAvailable)
                 else -> Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -94,7 +95,7 @@ fun LorebooksSettingsPanel() {
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    val title = lorebook.name ?: lorebook.id ?: "Unnamed lorebook"
+                                    val title = lorebook.name ?: lorebook.id ?: strings.roleplay.lorebookUnnamed
                                     Text(text = title, style = MaterialTheme.typography.titleMedium)
                                     val description = lorebook.description
                                     if (!description.isNullOrBlank()) {
@@ -107,7 +108,7 @@ fun LorebooksSettingsPanel() {
                                     }
                                 }
                                 IconButton(onClick = { pendingDelete = lorebook }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete lorebook")
+                                    Icon(imageVector = Icons.Default.Delete, contentDescription = strings.roleplay.deleteLorebookAria)
                                 }
                             }
                         }
@@ -121,8 +122,8 @@ fun LorebooksSettingsPanel() {
     pendingDelete?.let { toDelete ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Delete lorebook?") },
-            text = { Text("Are you sure you want to delete \"${toDelete.name ?: toDelete.id}\"? This cannot be undone.") },
+            title = { Text(strings.roleplay.deleteLorebookDialogTitle) },
+            text = { Text(strings.roleplay.deleteLorebookDialogText(toDelete.name ?: toDelete.id ?: "")) },
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
@@ -130,9 +131,9 @@ fun LorebooksSettingsPanel() {
                         pendingDelete = null
                         reload()
                     }
-                }) { Text("Delete") }
+                }) { Text(strings.roleplay.deleteConfirm) }
             },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(strings.roleplay.cancel) } },
         )
     }
 }

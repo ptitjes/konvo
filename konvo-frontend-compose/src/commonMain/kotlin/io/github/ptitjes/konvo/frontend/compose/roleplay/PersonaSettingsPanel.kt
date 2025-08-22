@@ -10,6 +10,7 @@ import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import org.kodein.di.compose.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,17 +45,20 @@ fun PersonaSettingsPanel(
     var pendingDeletion by remember { mutableStateOf<Persona?>(null) }
 
     SettingsBox(
-        title = "Personas",
-        description = "Add, remove, and edit personas.",
+        title = strings.roleplay.personasTitle,
+        description = strings.roleplay.personasDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { openSheet = PersonaSheetState.Adding }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add persona")
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = strings.roleplay.addPersonaAria,
+                )
             }
         },
         bottomContent = {
             if (settings.personas.isEmpty()) {
                 Text(
-                    text = "No personas configured.",
+                    text = strings.roleplay.noPersonasConfigured,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -76,20 +80,26 @@ fun PersonaSettingsPanel(
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(text = persona.name, style = MaterialTheme.typography.titleMedium)
                                     val subtitle = buildList {
-                                        add("Nickname: ${persona.nickname}")
+                                        add(strings.roleplay.nicknamePrefix(persona.nickname))
                                         if (persona.defaultLorebookId != null) {
-                                            add("With lorebook")
+                                            add(strings.roleplay.withLorebook)
                                         }
                                     }.joinToString(" • ")
                                     Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
                                 }
 
                                 IconButton(onClick = { openSheet = PersonaSheetState.Editing(persona.name) }) {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit persona")
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = strings.roleplay.editPersonaAria,
+                                    )
                                 }
 
                                 IconButton(onClick = { pendingDeletion = persona }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete persona")
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = strings.roleplay.deletePersonaAria,
+                                    )
                                 }
                             }
                         }
@@ -102,18 +112,27 @@ fun PersonaSettingsPanel(
     pendingDeletion?.let { p ->
         AlertDialog(
             onDismissRequest = { pendingDeletion = null },
-            title = { Text("Delete persona?") },
-            text = { Text("Are you sure you want to delete \"${p.name}\"? This action cannot be undone.") },
+            title = { Text(strings.roleplay.deletePersonaDialogTitle) },
+            text = { Text(strings.roleplay.deletePersonaDialogText(p.name)) },
             confirmButton = {
-                TextButton(onClick = {
-                    removePersona(p.name)
-                    if (openSheet is PersonaSheetState.Editing && (openSheet as PersonaSheetState.Editing).name == p.name) {
-                        openSheet = PersonaSheetState.Closed
-                    }
-                    pendingDeletion = null
-                }) { Text("Delete") }
+                TextButton(
+                    onClick = {
+                        removePersona(p.name)
+                        val sheet = openSheet
+                        if (sheet is PersonaSheetState.Editing && sheet.name == p.name) {
+                            openSheet = PersonaSheetState.Closed
+                        }
+                        pendingDeletion = null
+                    },
+                ) { Text(strings.roleplay.deleteConfirm) }
             },
-            dismissButton = { TextButton(onClick = { pendingDeletion = null }) { Text("Cancel") } },
+            dismissButton = {
+                TextButton(
+                    onClick = { pendingDeletion = null },
+                ) {
+                    Text(strings.roleplay.cancel)
+                }
+            },
         )
     }
 
@@ -186,7 +205,7 @@ private fun PersonaEditor(
 ) {
     var name by remember { mutableStateOf(initialName) }
     var nickname by remember { mutableStateOf(initialNickname) }
-    var selectedLorebook by remember { mutableStateOf<Lorebook?>(initialLorebook) }
+    var selectedLorebook by remember { mutableStateOf(initialLorebook) }
 
     fun valid(): Boolean = name.isNotBlank() && nickname.isNotBlank() && name !in existingNames
 
@@ -203,7 +222,7 @@ private fun PersonaEditor(
                 modifier = Modifier.weight(1f),
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") },
+                label = { Text(strings.roleplay.nameLabel) },
                 isError = name.isBlank() || existingNames.contains(name),
                 singleLine = true,
             )
@@ -213,7 +232,10 @@ private fun PersonaEditor(
                     modifier = Modifier.offset(y = 4.dp),
                     onClick = onRemove,
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove persona")
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = strings.roleplay.removePersonaAria,
+                    )
                 }
             }
         }
@@ -222,14 +244,14 @@ private fun PersonaEditor(
             modifier = Modifier.fillMaxWidth(),
             value = nickname,
             onValueChange = { nickname = it },
-            label = { Text("Nickname") },
+            label = { Text(strings.roleplay.nicknameLabel) },
             isError = nickname.isBlank(),
             singleLine = true,
             visualTransformation = VisualTransformation.None,
         )
 
         LorebookSelector(
-            label = "Default Lorebook",
+            label = strings.roleplay.defaultLorebookLabel,
             selectedLorebook = selectedLorebook,
             onLorebookSelected = { selectedLorebook = it },
             lorebooks = lorebooks,
@@ -244,7 +266,7 @@ private fun PersonaEditor(
                 onClick = { onSubmit(name.trim(), nickname.trim(), selectedLorebook) },
                 enabled = valid()
             ) {
-                Text(if (editing) "Save" else "Add")
+                Text(if (editing) strings.roleplay.saveAction else strings.roleplay.addAction)
             }
         }
     }

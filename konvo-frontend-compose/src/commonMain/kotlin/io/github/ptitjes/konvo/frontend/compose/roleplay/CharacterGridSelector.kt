@@ -20,6 +20,7 @@ import coil3.compose.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * An alternative pretty selector for characters showing avatars in a responsive grid.
@@ -113,7 +114,7 @@ private fun DefaultTopEndContent(character: CharacterCard) {
         ) {
             Icon(
                 imageVector = Icons.Rounded.Book,
-                contentDescription = "Has character book",
+                contentDescription = strings.roleplay.hasCharacterBookAria,
                 tint = Color.White,
                 modifier = Modifier.size(12.dp),
             )
@@ -157,7 +158,7 @@ private fun CharacterGridItem(
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {
-                // Fallback colored background with initial
+                // Fallback: colored background with initial
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -175,7 +176,7 @@ private fun CharacterGridItem(
             // Top-end overlay container which can host custom content and the book marker
             if (topEndContent != null) {
                 Box(
-                    modifier = Modifier                        .align(Alignment.TopEnd)
+                    modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     topEndContent()
                 }
@@ -184,7 +185,7 @@ private fun CharacterGridItem(
             // Bottom-end overlay container which can host custom content and the book marker
             if (bottomEndContent != null) {
                 Box(
-                    modifier = Modifier                        .align(Alignment.BottomEnd)
+                    modifier = Modifier.align(Alignment.BottomEnd)
                 ) {
                     bottomEndContent()
                 }

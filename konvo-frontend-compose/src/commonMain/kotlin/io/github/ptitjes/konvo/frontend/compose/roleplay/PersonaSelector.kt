@@ -8,6 +8,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for personas.
@@ -23,7 +24,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
  */
 @Composable
 fun PersonaSelector(
-    label: String? = "Persona",
+    label: String? = strings.roleplay.personaLabel,
     selectedPersona: Persona,
     onPersonaSelected: (Persona) -> Unit,
     personas: List<Persona>,
