@@ -19,7 +19,9 @@ import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
+import konvo.konvo_frontend_compose.generated.resources.*
 import kotlinx.coroutines.*
+import org.jetbrains.compose.resources.*
 import org.kodein.di.*
 import org.kodein.di.compose.*
 import kotlin.coroutines.*
@@ -38,6 +40,7 @@ fun runComposeFrontend() = application {
             Window(
                 title = "Konvo",
                 state = rememberWindowState(width = 1280.dp, height = 720.dp),
+                icon = painterResource(Res.drawable.ic_icon),
                 onCloseRequest = ::exitApplication,
                 onKeyEvent = { event ->
                     if (event.type == KeyEventType.KeyUp && event.isCtrlPressed && event.key == Key.Q) {

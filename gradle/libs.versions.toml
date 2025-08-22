@@ -1,4 +1,7 @@
 [versions]
+
+projectVersion = "1.0.0"
+
 kotlin = "2.2.20-Beta2"
 kotlinxDatetime = "0.7.1-0.6.x-compat"
 kotlinxSerialization = "1.9.0"

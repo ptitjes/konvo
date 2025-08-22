@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+        height="24px"
+        viewBox="0 -960 960 960"
+        width="24px"
+        fill="#e3e3e3"
+        version="1.1"
+        id="svg1"
+        sodipodi:docname="icon.svg"
+        inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+        inkscape:export-filename="icon-linux.png"
+        inkscape:export-xdpi="512"
+        inkscape:export-ydpi="512"
+        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns="http://www.w3.org/2000/svg"
+>
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient1"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#7f52ff;stop-opacity:1;"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#b125ea;stop-opacity:1;"
+         offset="0.5"
+         id="stop3" />
+      <stop
+         style="stop-color:#e24462;stop-opacity:1;"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient1"
+       id="linearGradient2"
+       x1="171.62546"
+       y1="-174.37396"
+       x2="885.59979"
+       y2="-888.50452"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="22.109894"
+     inkscape:cx="10.945326"
+     inkscape:cy="12.370028"
+     inkscape:window-width="1128"
+     inkscape:window-height="996"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1" />
+  <path
+     d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H240L80-80Zm126-240h594v-480H160v525l46-45Zm-46 0v-480 480Z"
+     id="path1"
+     style="fill:url(#linearGradient2);fill-opacity:1" />
+</svg>

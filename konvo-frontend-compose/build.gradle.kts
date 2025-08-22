@@ -29,6 +29,7 @@ kotlin {
                 implementation(libs.material3Adaptive)
                 implementation(compose.material3AdaptiveNavigationSuite)
                 implementation(compose.materialIconsExtended)
+                implementation(compose.components.resources)
                 implementation(compose.preview)
                 implementation(compose.uiTooling)
 
