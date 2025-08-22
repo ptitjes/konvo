@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A screen that displays a conversation with a top app bar.
@@ -73,13 +74,13 @@ fun ConversationScreen(
                         IconButton(onClick = onBackClick) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = strings.conversations.backAria
                             )
                         }
                     } else {
                         Icon(
                             imageVector = Icons.Default.ChatBubbleOutline,
-                            contentDescription = "Back"
+                            contentDescription = strings.conversations.backAria
                         )
                     }
                 },
@@ -87,7 +88,7 @@ fun ConversationScreen(
                     IconButton(onClick = {}) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = strings.conversations.settingsAria
                         )
                     }
                 }

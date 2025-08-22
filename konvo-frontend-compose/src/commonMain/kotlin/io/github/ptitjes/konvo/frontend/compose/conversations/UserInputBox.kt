@@ -11,6 +11,7 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun UserInputBox(
@@ -69,7 +70,7 @@ fun UserInputBox(
                             }
                             false
                         },
-                    placeholder = { Text("Type a message") },
+                    placeholder = { Text(strings.conversations.inputPlaceholder) },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -86,7 +87,7 @@ fun UserInputBox(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Rounded.Send,
-                        contentDescription = "Send the message",
+                        contentDescription = strings.conversations.sendMessageAria,
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }

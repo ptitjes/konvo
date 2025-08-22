@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlin.time.*
 
 @OptIn(ExperimentalTime::class)
@@ -25,6 +26,8 @@ fun ConversationListItem(
 ) {
     var showConfirm by remember { mutableStateOf(false) }
 
+    val openConversationAria = strings.conversations.openConversationAria
+
     Surface(
         color = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
         shape = MaterialTheme.shapes.extraSmall,
@@ -35,7 +38,7 @@ fun ConversationListItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {
-                    onClick(label = "Open conversation", action = null)
+                    onClick(label = openConversationAria, action = null)
                 }
                 .clickable(role = Role.Button, onClick = onClick)
                 .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -55,7 +58,7 @@ fun ConversationListItem(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ChatBubbleOutline,
-                        contentDescription = "Conversation",
+                        contentDescription = strings.conversations.conversationAria,
                     )
                 }
 
@@ -77,7 +80,10 @@ fun ConversationListItem(
                     overflow = TextOverflow.Ellipsis,
                 )
                 IconButton(onClick = { showConfirm = true }) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete conversation")
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = strings.conversations.deleteConversationAria
+                    )
                 }
             }
             if (hasLastMessagePreview) {
@@ -98,13 +104,17 @@ fun ConversationListItem(
         AlertDialog(
             onDismissRequest = { showConfirm = false },
             confirmButton = {
-                TextButton(onClick = { showConfirm = false; onDelete() }) { Text("Delete") }
+                TextButton(onClick = { showConfirm = false; onDelete() }) {
+                    Text(strings.conversations.deleteConfirm)
+                }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirm = false }) { Text("Cancel") }
+                TextButton(onClick = { showConfirm = false }) {
+                    Text(strings.conversations.cancel)
+                }
             },
-            title = { Text("Delete conversation?") },
-            text = { Text("Are you sure you want to delete \"${conversation.title}\"This action cannot be undone.") },
+            title = { Text(strings.conversations.deleteDialogTitle) },
+            text = { Text(strings.conversations.deleteDialogText(conversation.title)) },
         )
     }
 }

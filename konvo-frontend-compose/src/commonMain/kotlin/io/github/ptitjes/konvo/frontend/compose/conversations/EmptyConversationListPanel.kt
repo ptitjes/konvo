@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun EmptyConversationListPanel(onNewClick: () -> Unit) {
@@ -16,12 +17,12 @@ fun EmptyConversationListPanel(onNewClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "No conversations yet",
+            text = strings.conversations.emptyTitle,
             style = MaterialTheme.typography.titleMedium,
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Start a new conversation to see it here.",
+            text = strings.conversations.emptyBody,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

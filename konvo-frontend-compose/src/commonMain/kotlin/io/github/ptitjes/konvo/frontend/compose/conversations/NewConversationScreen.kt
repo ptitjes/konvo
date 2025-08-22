@@ -19,6 +19,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A screen that allows creating a new conversation.
@@ -55,21 +56,21 @@ fun NewConversationScreen(
                         modifier =
                             if (paneType != ListDetailPaneType.OnePane) Modifier.padding(start = 16.dp)
                             else Modifier,
-                        text = "New Conversation",
+                        text = strings.conversations.newConversationTitle,
                     )
                 },
                 navigationIcon = {
                     if (paneType == ListDetailPaneType.OnePane) {
                         IconButton(onClick = onBackClick) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = "Back"
-                            )
+                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            contentDescription = strings.conversations.backAria
+                        )
                         }
                     } else {
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.Chat,
-                            contentDescription = "Back"
+                            contentDescription = strings.conversations.newConversationIconAria,
                         )
                     }
                 },
@@ -82,7 +83,7 @@ fun NewConversationScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Check,
-                            contentDescription = "Create",
+                            contentDescription = strings.conversations.createAria,
                         )
                     }
                 }
@@ -175,7 +176,7 @@ private fun ColumnScope.QuestionAnswerConfigurationForm(
 
         is NewQuestionAnswerState.Unavailable -> {
             Text(
-                text = "No available models",
+                text = strings.conversations.qaNoModels,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(16.dp),
             )
@@ -190,7 +191,7 @@ private fun ColumnScope.QuestionAnswerConfigurationForm(
 
             if (questionAnswer.selectableModels.isEmpty()) {
                 Text(
-                    text = "No available models with tool support",
+                    text = strings.conversations.qaNoToolModels,
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(16.dp),
                 )
@@ -222,7 +223,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
 
         is NewRoleplayState.Unavailable -> {
             Text(
-                text = "No available characters or models",
+                text = strings.conversations.rpNoCharactersOrModels,
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(16.dp),
             )
@@ -277,7 +278,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = "Persona Settings"
+                        contentDescription = strings.conversations.personaSettingsAria
                     )
                 }
                 if (showLorebookSheet) {
@@ -288,7 +289,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
                             modifier = Modifier.padding(16.dp),
                         ) {
                             LorebookSelector(
-                                label = "Additional Lorebook",
+                                label = strings.conversations.additionalLorebookLabel,
                                 selectedLorebook = roleplay.selectedLorebook,
                                 onLorebookSelected = { selected ->
                                     onSelectRoleplayLorebook(selected)

@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.inmemory.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlin.time.*
 
 /**
@@ -50,7 +51,7 @@ fun ConversationListPanel(
                     Column(Modifier.fillMaxSize()) {
                         Text(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
-                            text = "Conversations",
+                            text = strings.conversations.listTitle,
                             style = MaterialTheme.typography.titleLarge,
                         )
 
@@ -83,7 +84,7 @@ fun ConversationListPanel(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Create,
-                            contentDescription = "New conversation",
+                            contentDescription = strings.conversations.newConversationAria,
                         )
                     }
                 }

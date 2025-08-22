@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.serialization.json.*
 
 @Composable
@@ -91,7 +92,7 @@ fun ConversationAssistantToolUseVettingPanel(
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = "Tool use vetting",
+                    text = strings.conversations.toolUseVettingTitle,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                 )
@@ -153,7 +154,7 @@ fun ConversationAssistantToolUseResultPanel(
 
                         Text(
                             text = buildAnnotatedString {
-                                append("Agent called tool: ")
+                                append(strings.conversations.agentCalledToolPrefix)
                                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                                     append(event.call.tool)
                                 }
@@ -163,11 +164,13 @@ fun ConversationAssistantToolUseResultPanel(
                             modifier = Modifier.weight(1f),
                         )
 
-                        Text("Details")
+                        Text(strings.conversations.detailsLabel)
 
                         Icon(
                             imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                            contentDescription = if (expanded) "Collapse" else "Expand",
+                            contentDescription =
+                                if (expanded) strings.conversations.collapseAria
+                                else strings.conversations.expandAria,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
@@ -210,14 +213,14 @@ fun ResultIcon(
 ) = when (result) {
     is ToolCallResult.Success -> Icon(
         imageVector = Icons.Filled.CheckCircle,
-        contentDescription = "Success",
+        contentDescription = strings.conversations.successAria,
         tint = MaterialTheme.colorScheme.primary,
         modifier = modifier,
     )
 
     is ToolCallResult.ExecutionFailure -> Icon(
         imageVector = Icons.Filled.Error,
-        contentDescription = "Failure",
+        contentDescription = strings.conversations.failureAria,
         tint = MaterialTheme.colorScheme.error,
         modifier = modifier,
     )

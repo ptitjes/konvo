@@ -14,4 +14,5 @@ internal data class Strings(
     val prompts: PromptStrings,
     val tools: ToolStrings,
     val roleplay: RoleplayStrings,
+    val conversations: io.github.ptitjes.konvo.frontend.compose.conversations.ConversationStrings,
 )
