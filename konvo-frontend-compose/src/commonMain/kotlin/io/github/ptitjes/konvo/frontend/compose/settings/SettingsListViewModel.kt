@@ -23,19 +23,19 @@ class SettingsListViewModel() : ViewModel() {
 }
 
 sealed interface SettingsSection {
-    val title: String
+    val titleKey: String
     val scrollable: Boolean
     val children: List<SettingsSection>
 
     data class WithoutKey(
-        override val title: String,
+        override val titleKey: String,
         override val scrollable: Boolean = true,
         val panel: @Composable () -> Unit,
         override val children: List<SettingsSection>,
     ) : SettingsSection
 
     data class WithKey<T>(
-        override val title: String,
+        override val titleKey: String,
         override val scrollable: Boolean = true,
         val key: SettingsKey<T>,
         val panel: @Composable (settings: T, updateSettings: ((T) -> T) -> Unit) -> Unit,

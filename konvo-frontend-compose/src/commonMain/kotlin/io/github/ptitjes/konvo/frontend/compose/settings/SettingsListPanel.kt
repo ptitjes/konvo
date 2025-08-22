@@ -9,6 +9,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun SettingsListPanel(
@@ -22,7 +23,7 @@ fun SettingsListPanel(
     ) {
         Text(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
-            text = "Settings",
+            text = strings.settings.listTitle,
             style = MaterialTheme.typography.titleLarge,
         )
 
@@ -33,9 +34,11 @@ fun SettingsListPanel(
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            items(flattenedSections, key = { it.section.title }) { flattenedSection ->
-                val selected = flattenedSection.section == selectedSection
-                val onClick: () -> Unit = { onSelectSection(flattenedSection.section) }
+            items(flattenedSections, key = { it.section.titleKey }) { flattenedSection ->
+                val section = flattenedSection.section
+                val selected = section == selectedSection
+                val selectSectionAria = strings.settings.selectSectionAria
+                val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
 
                 Surface(
                     color = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
@@ -45,14 +48,14 @@ fun SettingsListPanel(
                         modifier = Modifier
                             .fillMaxWidth()
                             .semantics {
-                                onClick(label = "Select settings section", action = null)
+                                onClick(label = selectSectionAria, action = null)
                             }
-                            .clickable(role = Role.Button, onClick = onClick)
+                            .clickable(role = Role.Button, onClick = { onSelectSection(section) })
                             .padding(horizontal = 12.dp, vertical = 8.dp)
                     ) {
                         Text(
                             modifier = Modifier.padding(start = 16.dp * flattenedSection.depth),
-                            text = flattenedSection.section.title,
+                            text = localizedTitle,
                         )
                     }
                 }

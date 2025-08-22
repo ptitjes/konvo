@@ -10,6 +10,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun SettingsListDetailPane(
@@ -35,9 +36,10 @@ fun SettingsListDetailPane(
         detail = {
             val section = selectedSection
             if (section != null) {
-                key(section.title) {
+                val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
+                key(localizedTitle) {
                     SettingsScreen(
-                        title = section.title,
+                        title = localizedTitle,
                         onBackClick = { viewModel.unselectSection() },
                     ) {
                         when (section) {

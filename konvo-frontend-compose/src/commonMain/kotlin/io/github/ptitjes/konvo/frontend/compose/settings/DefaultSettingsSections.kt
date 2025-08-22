@@ -9,38 +9,38 @@ import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 
 val defaultSettingsSections = listOf(
     SettingsSection.WithKey(
-        title = "Appearance",
+        titleKey = "appearance",
         key = AppearanceSettingsKey,
         panel = ::AppearanceSettingsPanel,
     ),
     SettingsSection.WithKey(
-        title = "MCP servers",
+        titleKey = "mcp",
         key = McpSettingsKey,
         panel = ::McpSettingsPanel,
     ),
     SettingsSection.WithKey(
-        title = "Model providers",
+        titleKey = "models",
         key = ModelProviderSettingsKey,
         panel = ::ModelProviderSettingsPanel,
     ),
     SettingsSection.WithKey(
-        title = "Roleplay",
+        titleKey = "roleplay",
         key = RoleplaySettingsKey,
         panel = ::RoleplaySettingsPanel,
         children = listOf(
             SettingsSection.WithKey(
-                title = "Characters",
+                titleKey = "characters",
                 scrollable = false,
                 key = CharacterSettingsKey,
                 panel = ::CharacterSettingsPanel,
             ),
             SettingsSection.WithoutKey(
-                title = "Lorebooks",
+                titleKey = "lorebooks",
                 panel = ::LorebooksSettingsPanel,
                 children = emptyList(),
             ),
             SettingsSection.WithKey(
-                title = "Personas",
+                titleKey = "personas",
                 key = PersonaSettingsKey,
                 panel = ::PersonaSettingsPanel,
             ),

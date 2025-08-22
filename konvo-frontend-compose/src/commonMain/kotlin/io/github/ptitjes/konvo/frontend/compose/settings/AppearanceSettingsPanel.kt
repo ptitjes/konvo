@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun AppearanceSettingsPanel(
@@ -12,9 +13,13 @@ fun AppearanceSettingsPanel(
     updateSettings: ((AppearanceSettings) -> AppearanceSettings) -> Unit,
 ) {
     SettingsBox(
-        title = "Base color scheme",
-        description = "The color scheme used for the application.",
+        title = strings.settings.appearanceBaseColorSchemeTitle,
+        description = strings.settings.appearanceBaseColorSchemeDescription,
         bottomContent = {
+            val optDark = strings.settings.appearanceBaseColorSchemeOptionDark
+            val optLight = strings.settings.appearanceBaseColorSchemeOptionLight
+            val optSystem = strings.settings.appearanceBaseColorSchemeOptionSystem
+
             GenericSelector(
                 modifier = Modifier.fillMaxWidth(),
                 selectedItem = settings.baseColorScheme,
@@ -22,9 +27,9 @@ fun AppearanceSettingsPanel(
                 options = BaseColorScheme.entries,
                 itemLabeler = {
                     when (it) {
-                        BaseColorScheme.Dark -> "Dark"
-                        BaseColorScheme.Light -> "Light"
-                        BaseColorScheme.System -> "Adapt to system"
+                        BaseColorScheme.Dark -> optDark
+                        BaseColorScheme.Light -> optLight
+                        BaseColorScheme.System -> optSystem
                     }
                 },
             )

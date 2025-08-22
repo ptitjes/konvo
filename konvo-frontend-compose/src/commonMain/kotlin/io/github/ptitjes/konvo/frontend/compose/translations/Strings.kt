@@ -15,4 +15,5 @@ internal data class Strings(
     val tools: ToolStrings,
     val roleplay: RoleplayStrings,
     val conversations: io.github.ptitjes.konvo.frontend.compose.conversations.ConversationStrings,
+    val settings: io.github.ptitjes.konvo.frontend.compose.settings.SettingsStrings,
 )

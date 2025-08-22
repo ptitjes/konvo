@@ -2,10 +2,12 @@ package io.github.ptitjes.konvo.frontend.compose.translations
 
 import cafe.adriel.lyricist.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
 import io.github.ptitjes.konvo.frontend.compose.prompts.*
 import io.github.ptitjes.konvo.frontend.compose.roleplay.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "en-US", default = true)
@@ -131,7 +133,7 @@ internal val EnStrings = Strings(
         panelLabel = "Tools",
         emptyMessage = "No tools available",
     ),
-    conversations = io.github.ptitjes.konvo.frontend.compose.conversations.ConversationStrings(
+    conversations = ConversationStrings(
         backAria = "Back",
         settingsAria = "Settings",
         listTitle = "Conversations",
@@ -165,5 +167,23 @@ internal val EnStrings = Strings(
         expandAria = "Expand",
         successAria = "Success",
         failureAria = "Failure",
+    ),
+    settings = SettingsStrings(
+        listTitle = "Settings",
+        selectSectionAria = "Select settings section",
+        sectionTitles = mapOf(
+            "appearance" to "Appearance",
+            "mcp" to "MCP servers",
+            "models" to "Model providers",
+            "roleplay" to "Roleplay",
+            "characters" to "Characters",
+            "lorebooks" to "Lorebooks",
+            "personas" to "Personas",
+        ),
+        appearanceBaseColorSchemeTitle = "Base color scheme",
+        appearanceBaseColorSchemeDescription = "The color scheme used for the application.",
+        appearanceBaseColorSchemeOptionDark = "Dark",
+        appearanceBaseColorSchemeOptionLight = "Light",
+        appearanceBaseColorSchemeOptionSystem = "Adapt to system",
     ),
 )
