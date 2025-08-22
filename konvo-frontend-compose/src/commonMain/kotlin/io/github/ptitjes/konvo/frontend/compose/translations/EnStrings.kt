@@ -2,6 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.translations
 
 import cafe.adriel.lyricist.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
+import io.github.ptitjes.konvo.frontend.compose.models.*
 
 @LyricistStrings(languageTag = "en-US", default = true)
 internal val EnStrings = Strings(
@@ -12,5 +13,29 @@ internal val EnStrings = Strings(
                 AgentType.Roleplay -> "Role-play"
             }
         }
+    ),
+    models = ModelStrings(
+        configuredProvidersTitle = "Configured providers",
+        configuredProvidersDescription = "Add, remove, and edit model providers.",
+        addProviderAria = "Add provider",
+        noProvidersMessage = "No model providers configured.",
+        dragHandleAria = "Drag handle",
+        editProviderAria = "Edit provider",
+        deleteProviderAria = "Delete provider",
+        deleteProviderDialogTitle = "Delete provider?",
+        deleteProviderDialogText = { name -> "Are you sure you want to delete \"$name\"? This cannot be undone." },
+        deleteConfirm = "Delete",
+        cancel = "Cancel",
+        nameLabel = "Name",
+        typeLabel = "Type",
+        removeProviderAria = "Remove provider",
+        ollamaBaseUrlLabel = "Ollama base URL",
+        anthropicApiKeyLabel = "Anthropic API key",
+        openAiApiKeyLabel = "OpenAI API key",
+        googleApiKeyLabel = "Google API key",
+        nameEmptyError = "Name cannot be empty",
+        nameUniqueError = "Name must be unique",
+        addProviderConfirmAria = "Add provider",
+        modelLabel = "Model",
     )
 )

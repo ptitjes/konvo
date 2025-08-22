@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.core.models.providers.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import sh.calvin.reorderable.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,19 +55,19 @@ fun ModelProviderSettingsPanel(
     var providerPendingDeletionIndex by remember { mutableStateOf<Int?>(null) }
 
     SettingsBox(
-        title = "Configured providers",
-        description = "Add, remove, and edit model providers.",
+        title = strings.models.configuredProvidersTitle,
+        description = strings.models.configuredProvidersDescription,
         trailingContent = {
             FilledTonalIconButton(
                 onClick = { sheetState = ModelProvidersSheetState.Adding },
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
+                Icon(imageVector = Icons.Default.Add, contentDescription = strings.models.addProviderAria)
             }
         },
         bottomContent = {
             if (settings.providers.isEmpty()) {
                 Text(
-                    text = "No model providers configured.",
+                    text = strings.models.noProvidersMessage,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -94,7 +95,7 @@ fun ModelProviderSettingsPanel(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.DragHandle,
-                                            contentDescription = "Drag handle",
+                                            contentDescription = strings.models.dragHandleAria,
                                         )
                                     }
 
@@ -114,7 +115,7 @@ fun ModelProviderSettingsPanel(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit provider",
+                                            contentDescription = strings.models.editProviderAria,
                                         )
                                     }
 
@@ -123,7 +124,7 @@ fun ModelProviderSettingsPanel(
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete provider",
+                                            contentDescription = strings.models.deleteProviderAria,
                                         )
                                     }
                                 }
@@ -137,11 +138,11 @@ fun ModelProviderSettingsPanel(
 
     // Deletion confirmation dialog
     providerPendingDeletionIndex?.let { indexToDelete ->
-        val nameToDelete = settings.providers.getOrNull(indexToDelete)?.name ?: "this provider"
+        val nameToDelete = settings.providers.getOrNull(indexToDelete)?.name ?: strings.models.nameLabel.lowercase()
         AlertDialog(
             onDismissRequest = { providerPendingDeletionIndex = null },
-            title = { Text("Delete provider?") },
-            text = { Text("Are you sure you want to delete \"$nameToDelete\"? This cannot be undone.") },
+            title = { Text(strings.models.deleteProviderDialogTitle) },
+            text = { Text(strings.models.deleteProviderDialogText(nameToDelete)) },
             confirmButton = {
                 TextButton(onClick = {
                     // Confirm deletion
@@ -152,11 +153,11 @@ fun ModelProviderSettingsPanel(
                         sheetState = ModelProvidersSheetState.Closed
                     }
                 }) {
-                    Text("Delete")
+                    Text(strings.models.deleteConfirm)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { providerPendingDeletionIndex = null }) { Text("Cancel") }
+                TextButton(onClick = { providerPendingDeletionIndex = null }) { Text(strings.models.cancel) }
             },
         )
     }
@@ -215,14 +216,14 @@ private fun EditProviderSheetContent(
                 modifier = Modifier.weight(1f),
                 value = provider.name,
                 onValueChange = { newName -> onChange(provider.copy(name = newName)) },
-                label = { Text("Name") },
+                label = { Text(strings.models.nameLabel) },
                 isError = provider.name.isBlank() || otherNames.contains(provider.name),
                 singleLine = true,
             )
 
             var type by remember(provider.configuration) { mutableStateOf(provider.configuration.toType()) }
             GenericSelector(
-                label = "Type",
+                label = strings.models.typeLabel,
                 selectedItem = type,
                 onSelectItem = { selected ->
                     type = selected
@@ -238,7 +239,7 @@ private fun EditProviderSheetContent(
                 modifier = Modifier.offset(y = 4.dp),
                 onClick = onRemove,
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove provider")
+                Icon(imageVector = Icons.Default.Delete, contentDescription = strings.models.removeProviderAria)
             }
         }
 
@@ -247,7 +248,7 @@ private fun EditProviderSheetContent(
                 OutlinedTextField(
                     value = conf.url,
                     onValueChange = { newUrl -> onChange(provider.copy(configuration = conf.copy(url = newUrl))) },
-                    label = { Text("Ollama base URL") },
+                    label = { Text(strings.models.ollamaBaseUrlLabel) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -257,7 +258,7 @@ private fun EditProviderSheetContent(
                 OutlinedTextField(
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
-                    label = { Text("Anthropic API key") },
+                    label = { Text(strings.models.anthropicApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -268,7 +269,7 @@ private fun EditProviderSheetContent(
                 OutlinedTextField(
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
-                    label = { Text("OpenAI API key") },
+                    label = { Text(strings.models.openAiApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -279,7 +280,7 @@ private fun EditProviderSheetContent(
                 OutlinedTextField(
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
-                    label = { Text("Google API key") },
+                    label = { Text(strings.models.googleApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -290,13 +291,13 @@ private fun EditProviderSheetContent(
         // Optional helper text for name validity
         if (provider.name.isBlank()) {
             Text(
-                text = "Name cannot be empty",
+                text = strings.models.nameEmptyError,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )
         } else if (otherNames.contains(provider.name)) {
             Text(
-                text = "Name must be unique",
+                text = strings.models.nameUniqueError,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -361,13 +362,13 @@ private fun AddProviderSheetContent(
                 modifier = Modifier.weight(1f),
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") },
+                label = { Text(strings.models.nameLabel) },
                 singleLine = true,
                 isError = name.isBlank() || existingNames.contains(name),
             )
 
             GenericSelector(
-                label = "Type",
+                label = strings.models.typeLabel,
                 selectedItem = type,
                 onSelectItem = { type = it },
                 options = ProviderType.entries,
@@ -393,7 +394,7 @@ private fun AddProviderSheetContent(
                 },
                 enabled = isValid(),
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add provider")
+                Icon(imageVector = Icons.Default.Add, contentDescription = strings.models.addProviderConfirmAria)
             }
         }
 
@@ -402,7 +403,7 @@ private fun AddProviderSheetContent(
                 OutlinedTextField(
                     value = ollamaUrl,
                     onValueChange = { ollamaUrl = it },
-                    label = { Text("Ollama base URL") },
+                    label = { Text(strings.models.ollamaBaseUrlLabel) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -412,7 +413,7 @@ private fun AddProviderSheetContent(
                 OutlinedTextField(
                     value = anthropicKey,
                     onValueChange = { anthropicKey = it },
-                    label = { Text("Anthropic API key") },
+                    label = { Text(strings.models.anthropicApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -423,7 +424,7 @@ private fun AddProviderSheetContent(
                 OutlinedTextField(
                     value = openAIKey,
                     onValueChange = { openAIKey = it },
-                    label = { Text("OpenAI API key") },
+                    label = { Text(strings.models.openAiApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -434,7 +435,7 @@ private fun AddProviderSheetContent(
                 OutlinedTextField(
                     value = googleKey,
                     onValueChange = { googleKey = it },
-                    label = { Text("Google API key") },
+                    label = { Text(strings.models.googleApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
@@ -444,13 +445,13 @@ private fun AddProviderSheetContent(
 
         if (name.isBlank()) {
             Text(
-                text = "Name cannot be empty",
+                text = strings.models.nameEmptyError,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
         } else if (existingNames.contains(name)) {
             Text(
-                text = "Name must be unique",
+                text = strings.models.nameUniqueError,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )

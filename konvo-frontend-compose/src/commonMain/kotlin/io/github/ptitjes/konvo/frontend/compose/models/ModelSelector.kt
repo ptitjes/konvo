@@ -8,6 +8,7 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for models.
@@ -19,7 +20,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
  */
 @Composable
 fun ModelSelector(
-    label: String? = "Model",
+    label: String? = null,
     selectedModel: ModelCard,
     onModelSelected: (ModelCard) -> Unit,
     models: List<ModelCard>,
@@ -27,7 +28,7 @@ fun ModelSelector(
 ) {
     GenericSelector(
         modifier = modifier,
-        label = label,
+        label = label ?: strings.models.modelLabel,
         selectedItem = selectedModel,
         onSelectItem = onModelSelected,
         options = models,
