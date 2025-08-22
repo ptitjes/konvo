@@ -104,10 +104,7 @@ internal class DefaultAgent(
 
         mcpHostSession?.addServers(mcpServerNames)
         val tools = mcpHostSession?.tools?.first()
-        val toolRegistry = tools
-            ?.filter { it.name in mcpServerNames }
-            ?.map { it.toTool() }
-            .let { ToolRegistry { if (it != null) tools(it) } }
+        val toolRegistry = tools?.map { it.toTool() }.let { ToolRegistry { if (it != null) tools(it) } }
 
         try {
             conversation.events.buffer(Channel.UNLIMITED).collect { event ->
