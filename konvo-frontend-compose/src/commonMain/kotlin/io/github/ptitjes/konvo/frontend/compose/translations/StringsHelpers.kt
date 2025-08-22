@@ -7,6 +7,7 @@ import cafe.adriel.lyricist.*
 internal val translations: Map<LanguageTag, Strings> = mapOf(
     "en-US" to EnStrings,
     "fr-FR" to FrStrings,
+    "zh-CN" to ZhStrings,
 )
 
 internal val LocalStrings: ProvidableCompositionLocal<Strings> =
