@@ -13,6 +13,13 @@ kotlin {
     jvmToolchain(17)
 }
 
+tasks.withType<AbstractTestTask>().configureEach {
+    reports {
+        html.required.set(true)
+        junitXml.required.set(true)
+    }
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
