@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalComposeLibrary::class)
+
+import org.jetbrains.compose.*
+
 plugins {
     id("buildsrc.convention.kotlin-multiplatform")
     alias(libs.plugins.kotlinPluginAtomicfu)
@@ -8,6 +12,11 @@ plugins {
 
 kotlin {
     jvm()
+
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("androidx.compose.ui.test.ExperimentalTestApi")
+    }
 
     sourceSets {
         commonMain {
@@ -27,6 +36,7 @@ kotlin {
                 implementation(libs.kodeinCompose)
 
                 implementation(libs.lyricist)
+                implementation(libs.humanReadable)
 
                 implementation(libs.markdownRenderer)
                 implementation(libs.markdownRendererCoil)
@@ -42,6 +52,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
+                implementation(compose.uiTest)
             }
         }
 

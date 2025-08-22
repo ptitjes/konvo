@@ -25,6 +25,7 @@ material3Adaptive = "1.1.2"
 androidxLifecycleViewmodel = "2.9.1"
 
 lyricist = "1.7.0"
+humanReadable = "1.12.0"
 
 markdownRenderer = "0.35.0"
 fileKit = "0.8.8"
@@ -74,6 +75,7 @@ androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecy
 kodeinCompose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
 
 lyricist = { module = "cafe.adriel.lyricist:lyricist", version.ref = "lyricist" }
+humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "humanReadable" }
 
 markdownRenderer = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
 markdownRendererCoil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdownRenderer" }

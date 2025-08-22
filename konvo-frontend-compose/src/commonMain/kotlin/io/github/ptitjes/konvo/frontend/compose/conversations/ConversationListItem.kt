@@ -24,6 +24,7 @@ fun ConversationListItem(
     onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val timestampFormatter = rememberRelativeTimestampFormatter()
     var showConfirm by remember { mutableStateOf(false) }
 
     val openConversationAria = strings.conversations.openConversationAria
@@ -73,7 +74,7 @@ fun ConversationListItem(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = TextFormatters.formatTimestampRelative(conversation.updatedAt),
+                    text = timestampFormatter.format(conversation.updatedAt),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

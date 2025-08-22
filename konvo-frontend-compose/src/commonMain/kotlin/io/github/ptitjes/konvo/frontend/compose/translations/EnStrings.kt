@@ -9,6 +9,7 @@ import io.github.ptitjes.konvo.frontend.compose.models.*
 import io.github.ptitjes.konvo.frontend.compose.prompts.*
 import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
 import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "en-US", default = true)
@@ -195,4 +196,7 @@ internal val EnStrings = Strings(
             AppState.Settings -> "Settings"
         }
     },
+    formats = FormatStrings(
+        now = "now",
+    ),
 )

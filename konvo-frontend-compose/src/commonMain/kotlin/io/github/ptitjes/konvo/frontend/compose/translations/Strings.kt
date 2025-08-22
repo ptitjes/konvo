@@ -8,6 +8,7 @@ import io.github.ptitjes.konvo.frontend.compose.models.*
 import io.github.ptitjes.konvo.frontend.compose.prompts.*
 import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
 import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 internal data class Strings(
@@ -20,4 +21,5 @@ internal data class Strings(
     val conversations: ConversationStrings,
     val settings: SettingsStrings,
     val navigationDestinationTitles: (AppState) -> String,
+    val formats: FormatStrings,
 )
