@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.frontend.discord
 
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.prompts.*
 import io.github.ptitjes.konvo.core.roleplay.*

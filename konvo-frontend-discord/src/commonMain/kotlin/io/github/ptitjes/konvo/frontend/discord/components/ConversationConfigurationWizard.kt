@@ -6,7 +6,7 @@ import dev.kord.core.behavior.*
 import dev.kord.core.behavior.interaction.response.*
 import dev.kord.rest.builder.message.*
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.conversation.*
+import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.frontend.discord.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*
 

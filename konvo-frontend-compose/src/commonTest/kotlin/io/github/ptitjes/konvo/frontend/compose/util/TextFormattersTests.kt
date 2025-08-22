@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.util
 
+import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
 import kotlin.test.*
 import kotlin.time.*
 
@@ -21,10 +22,10 @@ class TextFormattersTests {
     @Test
     @OptIn(ExperimentalTime::class)
     fun `formatTimestampRelative returns minutes and hours for recent times`() {
-        val base = kotlin.time.Instant.fromEpochMilliseconds(1_000_000L)
-        val oneMinuteLater = kotlin.time.Instant.fromEpochMilliseconds(1_000_000L + 60_000L)
-        val fiftyNineMinutesLater = kotlin.time.Instant.fromEpochMilliseconds(1_000_000L + 59 * 60_000L)
-        val twoHoursLater = kotlin.time.Instant.fromEpochMilliseconds(1_000_000L + 2 * 60L * 60_000L)
+        val base = Instant.fromEpochMilliseconds(1_000_000L)
+        val oneMinuteLater = Instant.fromEpochMilliseconds(1_000_000L + 60_000L)
+        val fiftyNineMinutesLater = Instant.fromEpochMilliseconds(1_000_000L + 59 * 60_000L)
+        val twoHoursLater = Instant.fromEpochMilliseconds(1_000_000L + 2 * 60L * 60_000L)
 
         assertEquals("now", TextFormatters.formatTimestampRelative(base) { base })
         assertEquals("1m", TextFormatters.formatTimestampRelative(base) { oneMinuteLater })
@@ -35,8 +36,8 @@ class TextFormattersTests {
     @Test
     @OptIn(ExperimentalTime::class)
     fun `formatTimestampRelative returns ISO date for older times`() {
-        val base = kotlin.time.Instant.fromEpochMilliseconds(0L)
-        val twoDaysLater = kotlin.time.Instant.fromEpochMilliseconds(2 * 24L * 60L * 60L * 1000L)
+        val base = Instant.fromEpochMilliseconds(0L)
+        val twoDaysLater = Instant.fromEpochMilliseconds(2 * 24L * 60L * 60L * 1000L)
         val formatted = TextFormatters.formatTimestampRelative(base) { twoDaysLater }
         // Expect YYYY-MM-DD
         assertEquals("1970-01-01", formatted)

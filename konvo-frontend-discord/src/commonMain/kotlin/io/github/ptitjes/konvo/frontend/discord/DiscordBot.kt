@@ -17,10 +17,10 @@ import dev.kord.rest.builder.interaction.*
 import dev.kord.rest.builder.message.*
 import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.core.conversation.model.Event
-import io.github.ptitjes.konvo.core.conversation.storage.*
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.Event
+import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
 import io.github.ptitjes.konvo.frontend.discord.toolkit.*

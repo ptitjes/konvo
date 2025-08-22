@@ -1,9 +1,9 @@
 package io.github.ptitjes.konvo
 
 import io.github.ptitjes.konvo.core.*
-import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.storage.*
-import io.github.ptitjes.konvo.core.conversation.storage.files.*
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.storage.*
+import io.github.ptitjes.konvo.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.models.providers.*

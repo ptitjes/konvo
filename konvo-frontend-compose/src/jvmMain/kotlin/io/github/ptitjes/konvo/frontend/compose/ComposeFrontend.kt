@@ -5,10 +5,10 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.core.conversation.storage.*
-import io.github.ptitjes.konvo.core.conversation.storage.files.*
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.storage.*
+import io.github.ptitjes.konvo.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.platform.*
@@ -17,7 +17,8 @@ import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.roleplay.providers.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.kodein.di.*

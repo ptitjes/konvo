@@ -3,7 +3,9 @@ package io.github.ptitjes.konvo.frontend.compose.settings
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
+import io.github.ptitjes.konvo.frontend.compose.mcp.*
+import io.github.ptitjes.konvo.frontend.compose.models.*
+import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 
 val defaultSettingsSections = listOf(
     SettingsSection.WithKey(

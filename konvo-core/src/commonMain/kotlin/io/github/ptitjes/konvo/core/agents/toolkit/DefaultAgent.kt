@@ -12,9 +12,9 @@ import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
 import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.core.conversation.model.Attachment
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.Attachment
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*

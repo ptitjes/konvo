@@ -1,8 +1,9 @@
 package io.github.ptitjes.konvo.frontend.compose.viewmodels
 
-import io.github.ptitjes.konvo.core.conversation.model.*
-import io.github.ptitjes.konvo.core.conversation.storage.*
-import io.github.ptitjes.konvo.core.conversation.storage.inmemory.*
+import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.storage.*
+import io.github.ptitjes.konvo.core.conversations.storage.inmemory.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import kotlin.test.*

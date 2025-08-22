@@ -9,8 +9,8 @@ import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.markdown.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
-import io.github.ptitjes.konvo.core.conversation.*
-import io.github.ptitjes.konvo.core.conversation.model.*
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.tools.*

@@ -8,10 +8,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import androidx.window.core.layout.*
-import io.github.ptitjes.konvo.frontend.compose.components.*
-import io.github.ptitjes.konvo.frontend.compose.theme.*
-import io.github.ptitjes.konvo.frontend.compose.util.*
-import io.github.ptitjes.konvo.frontend.compose.viewmodels.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.images.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.theme.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 
 @Composable
 fun App(
