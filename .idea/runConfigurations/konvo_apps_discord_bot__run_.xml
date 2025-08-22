@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="konvo:samples:standalone-compose-app [run]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="konvo:apps:discord-bot [run]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
-      <option name="externalProjectPath" value="$PROJECT_DIR$/samples/standalone-compose-app" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$/apps/discord-bot" />
       <option name="externalSystemIdString" value="GRADLE" />
       <option name="scriptParameters" value="" />
       <option name="taskDescriptions">
@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":samples:standalone-compose-app:run" />
+          <option value=":apps:discord-bot:run" />
         </list>
       </option>
       <option name="vmOptions" />

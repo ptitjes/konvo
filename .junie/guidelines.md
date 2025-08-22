@@ -13,9 +13,9 @@ Konvo is a Kotlin Multiplatform project with JVM as the primary target. The proj
 - `konvo-frontend-compose`: Compose UI frontend implementation
 - `konvo-mcp-prompt-collection`: MCP (Model Context Protocol) prompt collection
 - `konvo-mcp-web-tools`: Web tools for MCP
-- `samples`: Sample applications
-  - `samples/discord-bot`: Discord bot sample application
-  - `samples/standalone-compose-app`: Standalone Compose UI application
+- `apps`: Applications
+  - `apps/discord-bot`: Discord bot application
+  - `apps/desktop-app`: Desktop application
 
 ### Build Setup
 
@@ -43,13 +43,13 @@ Each sample application has its own configuration:
 2. Start the Discord bot application with:
 
 ```bash
-./gradlew :samples:discord-bot:run
+./gradlew :apps:discord-bot:run
 ```
 
 3. Start the Compose UI application with:
 
 ```bash
-./gradlew :samples:standalone-compose-app:run
+./gradlew :apps:desktop-app:run
 ```
 
 ## Testing Information
@@ -189,7 +189,7 @@ The project uses the Lyricist library for translations:
 ### Debugging
 
 1. Enable more verbose logging by configuring the logger level in the sample application's `src/main/resources/simplelogger.properties`
-2. Use the `--debug` flag with Gradle for build debugging: `./gradlew --debug :samples:discord-bot:run` or `./gradlew --debug :samples:standalone-compose-app:run`
+2. Use the `--debug` flag with Gradle for build debugging: `./gradlew --debug :apps:discord-bot:run` or `./gradlew --debug :apps:desktop-app:run`
 
 ### Working with AI Models
 
