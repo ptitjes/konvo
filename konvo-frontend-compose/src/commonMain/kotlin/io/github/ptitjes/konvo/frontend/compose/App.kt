@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.images.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.theme.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun App(
@@ -22,45 +23,49 @@ fun App(
 
     CoilImageLoader()
 
-    KonvoTheme {
-        NavigationSuiteScaffold(
-            layoutType = suiteTypeFromAdaptiveInfo(adaptiveInfo),
-            navigationSuiteItems = {
-                AppState.entries.forEach { state ->
-                    item(
-                        selected = appViewModel.state == state,
-                        onClick = { appViewModel.select(state) },
-                        icon = {
-                            Icon(
-                                imageVector = state.icon,
-                                contentDescription = state.contentDescription,
-                            )
-                        },
-                        badge = {},
+    val lyricist = rememberStrings()
+
+    ProvideStrings(lyricist) {
+        KonvoTheme {
+            NavigationSuiteScaffold(
+                layoutType = suiteTypeFromAdaptiveInfo(adaptiveInfo),
+                navigationSuiteItems = {
+                    AppState.entries.forEach { state ->
+                        item(
+                            selected = appViewModel.state == state,
+                            onClick = { appViewModel.select(state) },
+                            icon = {
+                                Icon(
+                                    imageVector = state.icon,
+                                    contentDescription = state.contentDescription,
+                                )
+                            },
+                            badge = {},
+                        )
+                    }
+                },
+            ) {
+                when (appViewModel.state) {
+                    AppState.Conversations -> ConversationsListDetailPane(
+                        adaptiveInfo = adaptiveInfo,
+                    )
+
+                    AppState.Archive -> Text(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                        text = "Archive",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+
+                    AppState.KnowledgeBases -> Text(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                        text = "Knowledge Bases",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+
+                    AppState.Settings -> SettingsListDetailPane(
+                        adaptiveInfo = adaptiveInfo,
                     )
                 }
-            },
-        ) {
-            when (appViewModel.state) {
-                AppState.Conversations -> ConversationsListDetailPane(
-                    adaptiveInfo = adaptiveInfo,
-                )
-
-                AppState.Archive -> Text(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                    text = "Archive",
-                    style = MaterialTheme.typography.titleLarge,
-                )
-
-                AppState.KnowledgeBases -> Text(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-                    text = "Knowledge Bases",
-                    style = MaterialTheme.typography.titleLarge,
-                )
-
-                AppState.Settings -> SettingsListDetailPane(
-                    adaptiveInfo = adaptiveInfo,
-                )
             }
         }
     }

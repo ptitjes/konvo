@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for agent types.
@@ -32,14 +33,14 @@ fun AgentTypeSelector(
                 FilterChip(
                     selected = selectedAgentType == agentType,
                     onClick = { onSelectAgentType(agentType) },
-                    label = { Text(agentType.displayName) }
+                    label = { Text(strings.agents.agentTypeDisplayName(agentType)) }
                 )
             }
         }
     }
 }
 
-enum class AgentType(val displayName: String) {
-    QuestionAnswer("Question & Answer"),
-    Roleplay("Role-play")
+enum class AgentType {
+    QuestionAnswer,
+    Roleplay,
 }

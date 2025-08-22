@@ -155,6 +155,27 @@ The project uses Jetpack Compose for UI development:
 - Compose Foundation is used for layout components
 - Compose Tooling is used for debugging
 
+### Translations
+
+The project uses the Lyricist library for translations:
+- Translations are defined in code in the `io.github.ptitjes.konvo.frontend.compose.translations` package
+- The `Strings` data class (and its nested data classes) is used to define translations
+- `Strings` nested data classes are organized by translated package
+  - E.g., the translation strings definitions for the `io.github.ptitjes.konvo.frontend.compose.agents` package are
+    defined in the `io.github.ptitjes.konvo.frontend.compose.agents.AgentStrings` data class and is referenced in the
+    root `Strings` data class with the `agents` property.
+- Each language has its own translation in the same package
+  - E.g., English is in the `io.github.ptitjes.konvo.frontend.compose.translations.EnStrings` property
+  - E.g., French is in the `io.github.ptitjes.konvo.frontend.compose.translations.FrStrings` property
+- Each property of the `Strings` data class and the nested `XxxStrings` data classes can be:
+  - a simple String property, if the translated item is a simple string
+  - a lambda function, if the translated item is a complex string with placeholders
+  - etc.
+- Properties of the `Strings` data classes are referenced in the code using the `strings` globally-provided property
+  - E.g., `strings.agents.agentName`
+- When there is a `// not-translated` comment in the line before or in the same line as a string,
+  then that string must not be extracted for translation.
+
 ### File Storage
 
 - When creating Data Transfer Objects (DTOs) for JSON serialization, use Kotlin serialization

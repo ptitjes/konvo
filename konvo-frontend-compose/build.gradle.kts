@@ -26,6 +26,8 @@ kotlin {
                 implementation(libs.androidxLifecycleViewmodel)
                 implementation(libs.kodeinCompose)
 
+                implementation(libs.lyricist)
+
                 implementation(libs.markdownRenderer)
                 implementation(libs.markdownRendererCoil)
                 implementation(libs.markdownRendererCode)
