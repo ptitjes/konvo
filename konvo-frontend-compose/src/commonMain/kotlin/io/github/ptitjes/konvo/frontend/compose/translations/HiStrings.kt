@@ -1,0 +1,198 @@
+package io.github.ptitjes.konvo.frontend.compose.translations
+
+import cafe.adriel.lyricist.*
+import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.frontend.compose.agents.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.*
+import io.github.ptitjes.konvo.frontend.compose.mcp.*
+import io.github.ptitjes.konvo.frontend.compose.models.*
+import io.github.ptitjes.konvo.frontend.compose.prompts.*
+import io.github.ptitjes.konvo.frontend.compose.roleplay.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
+import io.github.ptitjes.konvo.frontend.compose.tools.*
+
+@LyricistStrings(languageTag = "hi-IN")
+internal val HiStrings = Strings(
+    agents = AgentStrings(
+        agentTypeDisplayName = {
+            when (it) {
+                AgentType.QuestionAnswer -> "प्रश्न और उत्तर"
+                AgentType.Roleplay -> "भूमिका निभाना"
+            }
+        }
+    ),
+    models = ModelStrings(
+        configuredProvidersTitle = "कॉन्फ़िगर किए गए प्रदाता",
+        configuredProvidersDescription = "मॉडल प्रदाताओं को जोड़ें, हटाएँ और संपादित करें।",
+        addProviderAria = "प्रदाता जोड़ें",
+        noProvidersMessage = "कोई मॉडल प्रदाता कॉन्फ़िगर नहीं है।",
+        dragHandleAria = "खींचने का हैंडल",
+        editProviderAria = "प्रदाता संपादित करें",
+        deleteProviderAria = "प्रदाता हटाएँ",
+        deleteProviderDialogTitle = "प्रदाता हटाएँ?",
+        deleteProviderDialogText = { name -> "क्या आप वाकई \"$name\" को हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।" },
+        deleteConfirm = "हटाएँ",
+        cancel = "रद्द करें",
+        nameLabel = "नाम",
+        typeLabel = "प्रकार",
+        removeProviderAria = "प्रदाता हटाएँ",
+        ollamaBaseUrlLabel = "Ollama बेस URL",
+        anthropicApiKeyLabel = "Anthropic API कुंजी",
+        openAiApiKeyLabel = "OpenAI API कुंजी",
+        googleApiKeyLabel = "Google API कुंजी",
+        nameEmptyError = "नाम खाली नहीं हो सकता",
+        nameUniqueError = "नाम अद्वितीय होना चाहिए",
+        addProviderConfirmAria = "प्रदाता जोड़ें",
+        modelLabel = "मॉडल",
+    ),
+    mcp = McpStrings(
+        configuredServersTitle = "कॉन्फ़िगर किए गए MCP सर्वर",
+        configuredServersDescription = "MCP सर्वरों को जोड़ें, हटाएँ और संपादित करें।",
+        addServerAria = "सर्वर जोड़ें",
+        noServersMessage = "कोई MCP सर्वर कॉन्फ़िगर नहीं है।",
+        editServerAria = "सर्वर संपादित करें",
+        deleteServerAria = "सर्वर हटाएँ",
+        deleteServerDialogTitle = "सर्वर हटाएँ?",
+        deleteServerDialogText = { name -> "क्या आप वाकई \"$name\" को हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।" },
+        deleteConfirm = "हटाएँ",
+        cancel = "रद्द करें",
+        nameLabel = "नाम",
+        transportLabel = "परिवहन",
+        removeServerAria = "सर्वर हटाएँ",
+        sseUrlLabel = "SSE URL",
+        reconnectionTimeLabel = "पुन:कनेक्शन समय (सेकंड)",
+        runAsProcessLabel = "प्रोसेस के रूप में चलाएँ",
+        commandLabel = "कमांड (स्पेस से अलग)",
+        environmentLabel = "पर्यावरण (key=value; key2=value2)",
+        selectorLabel = "MCP सर्वर",
+        selectorEmpty = "कोई MCP सर्वर उपलब्ध नहीं",
+    ),
+    prompts = PromptStrings(
+        selectorLabel = "प्रॉम्प्ट",
+    ),
+    roleplay = RoleplayStrings(
+        deleteConfirm = "हटाएँ",
+        cancel = "रद्द करें",
+        personaLabel = "व्यक्तित्व",
+        personasTitle = "व्यक्तित्व",
+        personasDescription = "व्यक्तित्व जोड़ें, हटाएँ और संपादित करें।",
+        addPersonaAria = "व्यक्तित्व जोड़ें",
+        noPersonasConfigured = "कोई व्यक्तित्व कॉन्फ़िगर नहीं है।",
+        nicknamePrefix = { nickname -> "उपनाम: $nickname" },
+        withLorebook = "लोरबुक के साथ",
+        editPersonaAria = "व्यक्तित्व संपादित करें",
+        deletePersonaAria = "व्यक्तित्व हटाएँ",
+        deletePersonaDialogTitle = "व्यक्तित्व हटाएँ?",
+        deletePersonaDialogText = { name -> "क्या आप वाकई \"$name\" को हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।" },
+        nameLabel = "नाम",
+        nicknameLabel = "उपनाम",
+        defaultLorebookLabel = "डिफ़ॉल्ट लोरबुक",
+        saveAction = "सहेजें",
+        addAction = "जोड़ें",
+        removePersonaAria = "व्यक्तित्व हटाएँ",
+        lorebookLabel = "लोरबुक",
+        lorebookNone = "कोई नहीं",
+        lorebookUnnamed = "अनाम लोरबुक",
+        importedLorebooksTitle = "आयातित लोरबुक",
+        importedLorebooksDescription = "लोरबुक आयात करें, सूचीबद्ध करें और हटाएँ।",
+        importLorebookAria = "लोरबुक आयात करें",
+        failedToLoadLorebooks = { msg -> "लोरबुक लोड करने में विफल: $msg" },
+        noLorebooksAvailable = "कोई लोरबुक उपलब्ध नहीं।",
+        deleteLorebookDialogTitle = "लोरबुक हटाएँ?",
+        deleteLorebookDialogText = { name -> "क्या आप वाकई \"$name\" को हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।" },
+        deleteLorebookAria = "लोरबुक हटाएँ",
+        characterTagsFilterTitle = "चरित्र टैग फ़िल्टर",
+        characterTagsFilterDescription = "यहाँ सूचीबद्ध टैग चरित्र दिखाते समय बाहर कर दिए जाएँगे। टैग को अल्पविराम से अलग करें।",
+        characterTagsPlaceholder = "जैसे: nsfw, beta, wip",
+        importedCharactersTitle = "आयातित चरित्र",
+        importedCharactersDescription = "चरित्र आयात करें, सूचीबद्ध करें और हटाएँ।",
+        importCharactersAria = "चरित्र आयात करें",
+        failedToLoadCharacters = { msg -> "चरित्र लोड करने में विफल: $msg" },
+        noCharactersAvailable = "कोई चरित्र उपलब्ध नहीं।",
+        deleteCharacterDialogTitle = "चरित्र हटाएँ?",
+        deleteCharacterDialogText = { name -> "क्या आप वाकई \"$name\" को हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।" },
+        deleteCharacterAria = "चरित्र हटाएँ",
+        hasCharacterBookAria = "चरित्र पुस्तक है",
+        defaultPersonaTitle = "डिफ़ॉल्ट व्यक्तित्व",
+        defaultPersonaDescription = "नई भूमिका निभाने वाली बातचीत में आपके व्यक्तित्व के रूप में उपयोग किया जाता है।",
+        noPersonaDefined = "अभी तक कोई व्यक्तित्व परिभाषित नहीं",
+        defaultPreferredModelTitle = "डिफ़ॉल्ट पसंदीदा मॉडल",
+        defaultPreferredModelDescription = "नई भूमिका निभाने वाली बातचीत के लिए डिफ़ॉल्ट रूप से उपयोग किया जाने वाला मॉडल।",
+        noAvailableModels = "कोई मॉडल उपलब्ध नहीं",
+        defaultSystemPromptTitle = "डिफ़ॉल्ट सिस्टम प्रॉम्प्ट",
+        defaultSystemPromptDescription = "जब चरित्र कार्ड अपना सिस्टम प्रॉम्प्ट परिभाषित नहीं करता तब उपयोग किया जाता है।",
+        defaultLorebookSettingsTitle = "डिफ़ॉल्ट लोरबुक सेटिंग्स",
+        defaultLorebookSettingsDescription = "जब चरित्र कार्ड अपनी लोरबुक विन्यास परिभाषित नहीं करता तब उपयोग किया जाता है।",
+        scanDepthLabel = "स्कैन गहराई",
+        tokenBudgetLabel = "टोकन बजट",
+        recursiveScanningLabel = "पुनरावर्ती स्कैनिंग",
+        greetingLabel = "अभिवादन",
+        randomGreeting = "यादृच्छिक अभिवादन",
+        greetingOptionLabel = { index, preview -> "अभिवादन ${index + 1}: $preview" },
+    ),
+    tools = ToolStrings(
+        panelLabel = "उपकरण",
+        emptyMessage = "कोई उपकरण उपलब्ध नहीं",
+    ),
+    conversations = ConversationStrings(
+        backAria = "वापस",
+        settingsAria = "सेटिंग्स",
+        listTitle = "वार्तालाप",
+        newConversationAria = "नया वार्तालाप",
+        emptyTitle = "अभी तक कोई वार्तालाप नहीं",
+        emptyBody = "यहाँ देखने के लिए नया वार्तालाप शुरू करें।",
+        startNewButton = "नया वार्तालाप शुरू करें",
+        openConversationAria = "वार्तालाप खोलें",
+        conversationAria = "वार्तालाप",
+        deleteConversationAria = "वार्तालाप हटाएँ",
+        deleteDialogTitle = "वार्तालाप हटाएँ?",
+        deleteDialogText = { title -> "क्या आप वाकई \"$title\" को हटाना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।" },
+        deleteConfirm = "हटाएँ",
+        cancel = "रद्द करें",
+        newConversationTitle = "नया वार्तालाप",
+        createAria = "बनाएँ",
+        qaNoModels = "कोई मॉडल उपलब्ध नहीं",
+        qaNoToolModels = "टूल समर्थन वाले कोई मॉडल उपलब्ध नहीं",
+        rpNoCharactersOrModels = "कोई चरित्र या मॉडल उपलब्ध नहीं",
+        personaSettingsAria = "व्यक्तित्व सेटिंग्स",
+        additionalLorebookLabel = "अतिरिक्त लोरबुक",
+        newConversationIconAria = "नया वार्तालाप",
+        inputPlaceholder = "संदेश लिखें",
+        sendMessageAria = "संदेश भेजें",
+        addAttachmentAria = "संलग्नक जोड़ें",
+        newMessagesLabel = "नया",
+        toolUseVettingTitle = "उपकरण उपयोग सत्यापन",
+        agentCalledToolPrefix = "एजेंट ने उपकरण कॉल किया: ",
+        detailsLabel = "विवरण",
+        collapseAria = "समेटें",
+        expandAria = "फैलाएँ",
+        successAria = "सफलता",
+        failureAria = "विफलता",
+    ),
+    settings = SettingsStrings(
+        listTitle = "सेटिंग्स",
+        selectSectionAria = "सेटिंग्स अनुभाग चुनें",
+        sectionTitles = mapOf(
+            "appearance" to "रूप-रंग",
+            "mcp" to "MCP सर्वर",
+            "models" to "मॉडल प्रदाता",
+            "roleplay" to "भूमिका निभाना",
+            "characters" to "चरित्र",
+            "lorebooks" to "लोरबुक",
+            "personas" to "व्यक्तित्व",
+        ),
+        appearanceBaseColorSchemeTitle = "मूल रंग योजना",
+        appearanceBaseColorSchemeDescription = "एप्लिकेशन में उपयोग की जाने वाली रंग योजना।",
+        appearanceBaseColorSchemeOptionDark = "डार्क",
+        appearanceBaseColorSchemeOptionLight = "लाइट",
+        appearanceBaseColorSchemeOptionSystem = "सिस्टम के अनुसार",
+    ),
+    navigationDestinationTitles = { state ->
+        when (state) {
+            AppState.Conversations -> "वार्तालाप"
+            AppState.Archive -> "आर्काइव"
+            AppState.KnowledgeBases -> "नॉलेज बेस"
+            AppState.Settings -> "सेटिंग्स"
+        }
+    },
+)

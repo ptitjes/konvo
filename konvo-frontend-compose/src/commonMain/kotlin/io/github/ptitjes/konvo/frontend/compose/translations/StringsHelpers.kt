@@ -8,6 +8,7 @@ internal val translations: Map<LanguageTag, Strings> = mapOf(
     "en-US" to EnStrings,
     "fr-FR" to FrStrings,
     "zh-CN" to ZhStrings,
+    "hi-IN" to HiStrings,
 )
 
 internal val LocalStrings: ProvidableCompositionLocal<Strings> =
