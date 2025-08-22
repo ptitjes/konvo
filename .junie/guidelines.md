@@ -175,6 +175,7 @@ The project uses the Lyricist library for translations:
   - E.g., `strings.agents.agentName`
 - When there is a `// not-translated` comment in the line before or in the same line as a string,
   then that string must not be extracted for translation.
+- We do not localize the exception messages.
 
 ### File Storage
 

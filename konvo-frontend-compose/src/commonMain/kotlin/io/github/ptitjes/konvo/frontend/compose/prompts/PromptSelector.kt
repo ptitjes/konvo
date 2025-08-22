@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.core.prompts.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for prompts.
@@ -21,7 +22,7 @@ fun PromptSelector(
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(
-        label = "Prompt",
+        label = strings.prompts.selectorLabel,
         selectedItem = selectedPrompt,
         onSelectItem = onPromptSelected,
         options = prompts,

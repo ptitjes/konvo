@@ -7,6 +7,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for tools.
@@ -25,12 +26,12 @@ fun ToolSelector(
     modifier: Modifier = Modifier,
 ) {
     OutlineBox(
-        label = "Tools",
+        label = strings.tools.panelLabel,
         modifier = modifier,
     ) {
         if (tools.isEmpty()) {
             Text(
-                text = "No tools available",
+                text = strings.tools.emptyMessage,
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         } else {

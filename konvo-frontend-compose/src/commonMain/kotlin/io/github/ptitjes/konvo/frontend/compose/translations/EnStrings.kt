@@ -4,6 +4,8 @@ import cafe.adriel.lyricist.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
+import io.github.ptitjes.konvo.frontend.compose.prompts.*
+import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "en-US", default = true)
 internal val EnStrings = Strings(
@@ -60,5 +62,12 @@ internal val EnStrings = Strings(
         environmentLabel = "Environment (key=value; key2=value2)",
         selectorLabel = "MCP Servers",
         selectorEmpty = "No MCP servers available",
+    ),
+    prompts = PromptStrings(
+        selectorLabel = "Prompt",
+    ),
+    tools = ToolsStrings(
+        panelLabel = "Tools",
+        emptyMessage = "No tools available",
     ),
 )
