@@ -4,15 +4,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.text.intl.*
 import cafe.adriel.lyricist.*
 
-internal val translations: Map<LanguageTag, Strings> = mapOf(
-    "en-US" to EnStrings,
-    "fr-FR" to FrStrings,
-    "zh-CN" to ZhStrings,
-    "hi-IN" to HiStrings,
-    "es-ES" to EsStrings,
-    "ar-SA" to ArStrings,
-)
-
 internal val LocalStrings: ProvidableCompositionLocal<Strings> =
     staticCompositionLocalOf { EnStrings }
 
