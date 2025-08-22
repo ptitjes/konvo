@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,17 +46,17 @@ fun McpSettingsPanel(
     var serverPendingDeletion by remember { mutableStateOf<String?>(null) }
 
     SettingsBox(
-        title = "Configured MCP servers",
-        description = "Add, remove, and edit MCP servers.",
+        title = strings.mcp.configuredServersTitle,
+        description = strings.mcp.configuredServersDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { sheetState = McpServersSheetState.Adding }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add server")
+                Icon(imageVector = Icons.Default.Add, contentDescription = strings.mcp.addServerAria)
             }
         },
         bottomContent = {
             if (settings.servers.isEmpty()) {
                 Text(
-                    text = "No MCP servers configured.",
+                    text = strings.mcp.noServersMessage,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -83,11 +84,17 @@ fun McpSettingsPanel(
                                 }
 
                                 IconButton(onClick = { sheetState = McpServersSheetState.Editing(name) }) {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit server")
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = strings.mcp.editServerAria
+                                    )
                                 }
 
                                 IconButton(onClick = { serverPendingDeletion = name }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete server")
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = strings.mcp.deleteServerAria
+                                    )
                                 }
                             }
                         }
@@ -101,8 +108,8 @@ fun McpSettingsPanel(
     serverPendingDeletion?.let { nameToDelete ->
         AlertDialog(
             onDismissRequest = { serverPendingDeletion = null },
-            title = { Text("Delete server?") },
-            text = { Text("Are you sure you want to delete \"$nameToDelete\"? This cannot be undone.") },
+            title = { Text(strings.mcp.deleteServerDialogTitle) },
+            text = { Text(strings.mcp.deleteServerDialogText(nameToDelete)) },
             confirmButton = {
                 TextButton(onClick = {
                     removeServer(nameToDelete)
@@ -112,11 +119,11 @@ fun McpSettingsPanel(
                         sheetState = McpServersSheetState.Closed
                     }
                 }) {
-                    Text("Delete")
+                    Text(strings.mcp.deleteConfirm)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { serverPendingDeletion = null }) { Text("Cancel") }
+                TextButton(onClick = { serverPendingDeletion = null }) { Text(strings.mcp.cancel) }
             },
         )
     }
@@ -188,7 +195,7 @@ private fun EditServerSheetContent(
                 modifier = Modifier.weight(1f),
                 value = name,
                 onValueChange = { newName -> onRename(newName) },
-                label = { Text("Name") },
+                label = { Text(strings.mcp.nameLabel) },
                 isError = name.isBlank() || otherNames.contains(element = name),
                 singleLine = true,
             )
@@ -198,7 +205,7 @@ private fun EditServerSheetContent(
             }
 
             GenericSelector(
-                label = "Transport",
+                label = strings.mcp.transportLabel,
                 selectedItem = transportType,
                 onSelectItem = { selected ->
                     transportType = selected
@@ -220,7 +227,7 @@ private fun EditServerSheetContent(
                 modifier = Modifier.offset(y = 4.dp),
                 onClick = onRemove,
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Remove server")
+                Icon(imageVector = Icons.Default.Delete, contentDescription = strings.mcp.removeServerAria)
             }
         }
 
@@ -234,7 +241,7 @@ private fun EditServerSheetContent(
                     modifier = Modifier.fillMaxWidth(),
                     value = transport.url.orEmpty(),
                     onValueChange = { newUrl -> onChange(specification.copy(transport = transport.copy(url = newUrl))) },
-                    label = { Text("SSE URL") },
+                    label = { Text(strings.mcp.sseUrlLabel) },
                     singleLine = true,
                 )
 
@@ -253,7 +260,7 @@ private fun EditServerSheetContent(
                         val reconnectionTime = filtered.toLongOrNull()?.takeIf { it >= 0 }?.seconds
                         onChange(specification.copy(transport = transport.copy(reconnectionTime = reconnectionTime)))
                     },
-                    label = { Text("Reconnection time (seconds)") },
+                    label = { Text(strings.mcp.reconnectionTimeLabel) },
                     singleLine = true,
                 )
             }
@@ -268,14 +275,15 @@ private fun EditServerSheetContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = "Run as process",
+                text = strings.mcp.runAsProcessLabel,
             )
             Switch(
                 checked = hasProcess, onCheckedChange = { enabled ->
                     val newSpec = if (enabled) {
                         specification.copy(
                             process = ProcessSpecification(
-                                command = listOf("program"), environment = emptyMap()
+                                command = listOf(),
+                                environment = emptyMap(),
                             )
                         )
                     } else {
@@ -289,23 +297,22 @@ private fun EditServerSheetContent(
         if (hasProcess) {
             val process = specification.process!!
 
-            var commandText by remember(process) { mutableStateOf(process.command.joinToString(" ")) }
+            var commandText by remember(process) { mutableStateOf(process.command.buildCommandString()) }
 
             OutlinedTextField(
                 modifier = Modifier.fillMaxWidth(),
                 value = commandText,
                 onValueChange = { newValue ->
                     commandText = newValue
-                    val parts = newValue.split(" ").filter { it.isNotBlank() }
+                    val parts = newValue.parseCommandString()
                     onChange(specification.copy(process = process.copy(command = parts)))
                 },
-                label = { Text("Command (space-separated)") },
+                label = { Text(strings.mcp.commandLabel) },
                 singleLine = true,
             )
 
             var environmentText by remember(process) {
-                mutableStateOf(process.environment?.entries?.joinToString("; ") { "${it.key}=${it.value}" }
-                    .orEmpty())
+                mutableStateOf(process.environment?.buildEnvironmentString().orEmpty())
             }
 
             OutlinedTextField(
@@ -313,10 +320,10 @@ private fun EditServerSheetContent(
                 value = environmentText,
                 onValueChange = { newValue ->
                     environmentText = newValue
-                    val environmentMap = parseEnv(newValue)
-                    onChange(specification.copy(process = process.copy(environment = environmentMap.ifEmpty { null })))
+                    val environment = newValue.parseEnvironmentString().ifEmpty { null }
+                    onChange(specification.copy(process = process.copy(environment = environment)))
                 },
-                label = { Text("Environment (key=value; key2=value2)") },
+                label = { Text(strings.mcp.environmentLabel) },
                 singleLine = true,
             )
         }
@@ -356,13 +363,13 @@ private fun AddServerSheetContent(
                 modifier = Modifier.weight(1f),
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Name") },
+                label = { Text(strings.mcp.nameLabel) },
                 singleLine = true,
                 isError = name.isBlank() || existingNames.contains(name),
             )
 
             GenericSelector(
-                label = "Transport",
+                label = strings.mcp.transportLabel,
                 selectedItem = transportType,
                 onSelectItem = { transportType = it },
                 options = McpTransportType.entries,
@@ -381,11 +388,11 @@ private fun AddServerSheetContent(
                     }
 
                     val process = if (addProcess) {
-                        val cmd = commandText.split(" ").filter { it.isNotBlank() }
+                        val cmd = commandText.parseCommandString()
 
                         ProcessSpecification(
                             command = cmd,
-                            environment = parseEnv(environmentText).ifEmpty { null },
+                            environment = environmentText.parseEnvironmentString().ifEmpty { null },
                         )
                     } else null
 
@@ -405,7 +412,7 @@ private fun AddServerSheetContent(
                 },
                 enabled = isValid(),
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add server")
+                Icon(imageVector = Icons.Default.Add, contentDescription = strings.mcp.addServerAria)
             }
         }
 
@@ -414,7 +421,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.fillMaxWidth(),
                 value = sseUrl,
                 onValueChange = { sseUrl = it },
-                label = { Text("SSE URL") },
+                label = { Text(strings.mcp.sseUrlLabel) },
                 singleLine = true,
             )
 
@@ -422,7 +429,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.fillMaxWidth(),
                 value = sseReconnectionTimeText,
                 onValueChange = { sseReconnectionTimeText = it.filter { ch -> ch.isDigit() } },
-                label = { Text("Reconnection time (seconds)") },
+                label = { Text(strings.mcp.reconnectionTimeLabel) },
                 singleLine = true,
             )
         }
@@ -433,7 +440,7 @@ private fun AddServerSheetContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = "Run as process",
+                text = strings.mcp.runAsProcessLabel,
             )
             Switch(checked = addProcess, onCheckedChange = { addProcess = it })
         }
@@ -443,7 +450,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.fillMaxWidth(),
                 value = commandText,
                 onValueChange = { commandText = it },
-                label = { Text("Command (space-separated)") },
+                label = { Text(strings.mcp.commandLabel) },
                 singleLine = true,
             )
 
@@ -451,11 +458,36 @@ private fun AddServerSheetContent(
                 modifier = Modifier.fillMaxWidth(),
                 value = environmentText,
                 onValueChange = { environmentText = it },
-                label = { Text("Environment (key=value; key2=value2)") },
+                label = { Text(strings.mcp.environmentLabel) },
                 singleLine = true,
             )
         }
     }
+}
+
+private const val COMMAND_ELEMENTS_SEPARATOR = " "
+
+private fun List<String>.buildCommandString(): String = joinToString(COMMAND_ELEMENTS_SEPARATOR)
+
+private fun String.parseCommandString(): List<String> =
+    split(COMMAND_ELEMENTS_SEPARATOR).filter { it.isNotBlank() }
+
+private const val ENVIRONMENT_ELEMENTS_SEPARATOR = ";"
+
+private fun Map<String, String>.buildEnvironmentString(): String =
+    entries.joinToString("$ENVIRONMENT_ELEMENTS_SEPARATOR ") { "${it.key}=${it.value}" }
+
+private fun String.parseEnvironmentString(): Map<String, String> {
+    if (isBlank()) return emptyMap()
+    return split(ENVIRONMENT_ELEMENTS_SEPARATOR).mapNotNull { entry ->
+        val trimmed = entry.trim()
+        if (trimmed.isBlank()) return@mapNotNull null
+        val index = trimmed.indexOf('=')
+        if (index <= 0 || index >= trimmed.lastIndex) return@mapNotNull null
+        val key = trimmed.take(index).trim()
+        val value = trimmed.substring(index + 1).trim()
+        if (key.isEmpty()) null else key to value
+    }.toMap()
 }
 
 private enum class McpTransportType { Stdio, Sse }
@@ -469,17 +501,4 @@ private sealed interface McpServersSheetState {
 private fun TransportSpecification.toType(): McpTransportType = when (this) {
     TransportSpecification.Stdio -> McpTransportType.Stdio
     is TransportSpecification.Sse -> McpTransportType.Sse
-}
-
-private fun parseEnv(text: String): Map<String, String> {
-    if (text.isBlank()) return emptyMap()
-    return text.split(';').mapNotNull { entry ->
-        val trimmed = entry.trim()
-        if (trimmed.isBlank()) return@mapNotNull null
-        val index = trimmed.indexOf('=')
-        if (index <= 0 || index >= trimmed.lastIndex) return@mapNotNull null
-        val key = trimmed.take(index).trim()
-        val value = trimmed.substring(index + 1).trim()
-        if (key.isEmpty()) null else key to value
-    }.toMap()
 }

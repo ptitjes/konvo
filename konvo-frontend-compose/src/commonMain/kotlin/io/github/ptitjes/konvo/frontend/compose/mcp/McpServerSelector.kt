@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 /**
  * A selector for MCP servers.
@@ -24,12 +25,12 @@ fun McpServerSelector(
     modifier: Modifier = Modifier,
 ) {
     OutlineBox(
-        label = "MCP Servers",
+        label = strings.mcp.selectorLabel,
         modifier = modifier,
     ) {
         if (servers.isEmpty()) {
             Text(
-                text = "No MCP servers available",
+                text = strings.mcp.selectorEmpty,
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         } else {
