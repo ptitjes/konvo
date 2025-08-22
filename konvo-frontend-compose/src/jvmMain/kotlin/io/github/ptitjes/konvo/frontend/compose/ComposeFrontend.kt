@@ -20,7 +20,6 @@ import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
 import kotlinx.coroutines.*
-import kotlinx.io.files.*
 import org.kodein.di.*
 import org.kodein.di.compose.*
 import kotlin.coroutines.*
@@ -29,8 +28,7 @@ fun runComposeFrontend() = application {
     var di by remember { mutableStateOf<DI?>(null) }
 
     LaunchedEffect(Unit) {
-        val configuration = KonvoAppConfiguration.readConfiguration(Path("config/konvo.json5"))
-        di = buildDi(configuration)
+        di = buildDi()
         // We need a slight delay, otherwise the recomposition is cancelled
         delay(100)
     }
@@ -56,7 +54,7 @@ fun runComposeFrontend() = application {
     }
 }
 
-fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
+fun CoroutineScope.buildDi() = DI {
     bindSet<PromptProvider>()
     bindSet<ToolProvider>()
     bindSet<CharacterProvider>()
@@ -64,7 +62,24 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
 
     bindSingleton<StoragePaths> { LinuxXdgHomeStoragePaths() }
 
-    import(configurationProviders(configuration))
+    inBindSet<PromptProvider> {
+        add { singleton { McpPromptProvider(instance()) } }
+    }
+
+    inBindSet<ToolProvider> {
+        add { singleton { McpToolProvider(instance(), permissions = null) } }
+    }
+
+    bindSingletonOf(::FileSystemCharacterProvider)
+    bindSingletonOf(::FileSystemLorebookProvider)
+
+    inBindSet<CharacterProvider> {
+        add { singleton { instance<FileSystemCharacterProvider>() } }
+    }
+
+    inBindSet<LorebookProvider> {
+        add { singleton { instance<FileSystemLorebookProvider>() } }
+    }
 
     bind<McpServerSpecificationsManager> {
         singleton {
@@ -126,28 +141,3 @@ fun CoroutineScope.buildDi(configuration: KonvoAppConfiguration) = DI {
         ConversationViewModel(instance(), instance(), initialConversation)
     }
 }
-
-fun CoroutineScope.configurationProviders(configuration: KonvoAppConfiguration) = DI.Module("providers") {
-    bindConstant(tag = DataDirectory) { configuration.dataDirectory }
-
-    inBindSet<PromptProvider> {
-        add { singleton { McpPromptProvider(instance()) } }
-    }
-
-    inBindSet<ToolProvider> {
-        add { singleton { McpToolProvider(instance(), configuration.mcp.toolPermissions) } }
-    }
-
-    bindSingletonOf(::FileSystemCharacterProvider)
-    bindSingletonOf(::FileSystemLorebookProvider)
-
-    inBindSet<CharacterProvider> {
-        add { singleton { instance<FileSystemCharacterProvider>() } }
-    }
-
-    inBindSet<LorebookProvider> {
-        add { singleton { instance<FileSystemLorebookProvider>() } }
-    }
-}
-
-object DataDirectory
