@@ -63,7 +63,7 @@ fun CoroutineScope.buildDi() = DI {
     bindSet<CharacterProvider>()
     bindSet<LorebookProvider>()
 
-    bindSingleton<StoragePaths> { LinuxXdgHomeStoragePaths() }
+    bindSingleton<StoragePaths> { DesktopHomeStoragePaths() }
 
     inBindSet<PromptProvider> {
         add { singleton { McpPromptProvider(instance()) } }
