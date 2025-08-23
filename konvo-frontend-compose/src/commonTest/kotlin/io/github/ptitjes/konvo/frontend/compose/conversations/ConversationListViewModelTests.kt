@@ -13,7 +13,7 @@ class ConversationListViewModelTests {
     @OptIn(kotlin.time.ExperimentalTime::class)
     fun `view model exposes conversations from repository`() = runTest {
         val conversations = listOf(
-            Conversation(
+            ConversationDigest(
                 id = "1",
                 title = "First",
                 createdAt = kotlin.time.Instant.fromEpochMilliseconds(0),
@@ -22,7 +22,7 @@ class ConversationListViewModelTests {
                 lastMessagePreview = "Hello",
                 messageCount = 1,
             ),
-            Conversation(
+            ConversationDigest(
                 id = "2",
                 title = "Test conversation",
                 createdAt = kotlin.time.Instant.fromEpochMilliseconds(0),
@@ -34,7 +34,7 @@ class ConversationListViewModelTests {
         )
         val repo: ConversationRepository = InMemoryConversationRepository()
         // Seed the in-memory repository with the expected conversations in order
-        conversations.forEach { convo -> repo.createConversation(convo) }
+        conversations.forEach { convo -> repo.create(convo) }
         val vm = ConversationListViewModel(repo)
         val loaded = vm.conversations.first { it.isNotEmpty() }
         assertEquals(conversations, loaded)

@@ -149,7 +149,7 @@ internal sealed class AgentConfigurationDto {
 
 internal object DtoMappers {
     @OptIn(ExperimentalTime::class)
-    fun toDto(conv: Conversation): ConversationDto = ConversationDto(
+    fun toDto(conv: ConversationDigest): ConversationDto = ConversationDto(
         id = conv.id,
         title = conv.title,
         createdAt = conv.createdAt,
@@ -176,7 +176,7 @@ internal object DtoMappers {
         },
     )
 
-    fun fromDto(dto: ConversationDto): Conversation = Conversation(
+    fun fromDto(dto: ConversationDto): ConversationDigest = ConversationDigest(
         id = dto.id,
         title = dto.title,
         createdAt = dto.createdAt,

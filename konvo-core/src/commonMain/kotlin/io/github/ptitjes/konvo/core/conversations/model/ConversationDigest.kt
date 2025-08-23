@@ -10,7 +10,7 @@ import kotlin.time.*
  * but only a summary is kept here to avoid loading all events when listing conversations.
  */
 @OptIn(ExperimentalTime::class)
-data class Conversation(
+data class ConversationDigest(
     val id: String,
     val title: String,
     val createdAt: Instant,

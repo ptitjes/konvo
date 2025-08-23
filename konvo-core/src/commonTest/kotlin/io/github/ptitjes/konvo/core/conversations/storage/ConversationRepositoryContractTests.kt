@@ -35,8 +35,8 @@ abstract class ConversationRepositoryContractTests {
         id: String = "conversation-1",
         title: String = "Test",
         timestamp: Instant,
-    ): Conversation {
-        return Conversation(
+    ): ConversationDigest {
+        return ConversationDigest(
             id = id,
             title = title,
             createdAt = timestamp,
@@ -74,8 +74,8 @@ abstract class ConversationRepositoryContractTests {
     @Test
     fun `create and get conversation`() = runRepositoryTest { timeProvider, repository ->
         val conversation = newConversation(timestamp = timeProvider.now())
-        repository.createConversation(conversation)
-        val loaded = repository.getConversation(conversation.id).firstOrNull()
+        repository.create(conversation)
+        val loaded = repository.getDigest(conversation.id).firstOrNull()
         assertNotNull(loaded)
         assertEquals(conversation.id, loaded.id)
         assertEquals(0, loaded.messageCount)
@@ -84,7 +84,7 @@ abstract class ConversationRepositoryContractTests {
     @Test
     fun `append user message updates preview and count`() = runRepositoryTest { timeProvider, repository ->
         val conversation = newConversation(timestamp = timeProvider.now())
-        repository.createConversation(conversation)
+        repository.create(conversation)
         val event = Event.UserMessage(
             id = "e1",
             timestamp = timeProvider.now(),
@@ -93,7 +93,7 @@ abstract class ConversationRepositoryContractTests {
             attachments = emptyList()
         )
         repository.appendEvent(conversation.id, event)
-        val updated = repository.getConversation(conversation.id).first()
+        val updated = repository.getDigest(conversation.id).first()
         assertEquals(1, updated.messageCount)
         assertEquals("Hello world", updated.lastMessagePreview)
         val events = repository.getEvents(conversation.id).first()
@@ -103,14 +103,14 @@ abstract class ConversationRepositoryContractTests {
     @Test
     fun `CRUD basics and timestamps`() = runRepositoryTest { timeProvider, repository ->
         val conversation = newConversation("c1", title = "First", timeProvider.now())
-        repository.createConversation(conversation)
-        val created = repository.getConversation(conversation.id).first()
+        repository.create(conversation)
+        val created = repository.getDigest(conversation.id).first()
         assertEquals(conversation.id, created.id)
         assertEquals(conversation.createdAt, created.createdAt)
         assertEquals(conversation.updatedAt, created.updatedAt)
         assertEquals(0, created.messageCount)
 
-        val loaded = repository.getConversation("c1").first()
+        val loaded = repository.getDigest("c1").first()
         assertEquals("First", loaded.title)
     }
 
@@ -118,42 +118,42 @@ abstract class ConversationRepositoryContractTests {
     fun `append updates updatedAt, lastMessagePreview and messageCount`() =
         runRepositoryTest { timeProvider, repository ->
             val conversation = newConversation("c1", timestamp = timeProvider.now())
-            repository.createConversation(conversation)
+            repository.create(conversation)
             val beforeUpdatedAt = conversation.updatedAt
             val u1 = userMessage("e1", "Hello world", timeProvider.now())
             repository.appendEvent("c1", u1)
-            val after1 = repository.getConversation("c1").first()
+            val after1 = repository.getDigest("c1").first()
             assertEquals(1, after1.messageCount)
             assertEquals("Hello world", after1.lastMessagePreview)
             assertTrue(after1.updatedAt >= beforeUpdatedAt)
 
             val a1 = assistantMessage("e2", "Hi!", timeProvider.now())
             repository.appendEvent("c1", a1)
-            val after2 = repository.getConversation("c1").first()
+            val after2 = repository.getDigest("c1").first()
             assertEquals(2, after2.messageCount)
             assertEquals("Hi!", after2.lastMessagePreview)
         }
 
     @Test
     fun `listConversations default is UpdatedDesc`() = runRepositoryTest { timeProvider, repository ->
-        repository.createConversation(newConversation("c1", "A", timeProvider.now()))
+        repository.create(newConversation("c1", "A", timeProvider.now()))
         // ensure different updatedAt by appending to c2 later
-        repository.createConversation(newConversation("c2", "B", timeProvider.now()))
+        repository.create(newConversation("c2", "B", timeProvider.now()))
 
         advanceTimeBy(1.seconds)
         // append to c2 to bump updatedAt
         repository.appendEvent("c2", userMessage("e1", "msg", timeProvider.now()))
 
-        val listed = repository.getConversations().first()
+        val listed = repository.getDigests().first()
         assertEquals(listOf("c2", "c1"), listed.map { it.id })
     }
 
     @Test
     fun `updateConversation persists title changes and updatedAt`() = runRepositoryTest { timeProvider, repository ->
-        repository.createConversation(newConversation("c1", "Old", timeProvider.now()))
-        val before = repository.getConversation("c1").first().updatedAt
-        repository.updateConversation(repository.getConversation("c1").first().copy(title = "New"))
-        val changed = repository.getConversation("c1").first()
+        repository.create(newConversation("c1", "Old", timeProvider.now()))
+        val before = repository.getDigest("c1").first().updatedAt
+        repository.updateDigest(repository.getDigest("c1").first().copy(title = "New"))
+        val changed = repository.getDigest("c1").first()
         assertEquals("New", changed.title)
         assertTrue(changed.updatedAt >= before)
     }
@@ -161,18 +161,18 @@ abstract class ConversationRepositoryContractTests {
     @Test
     fun `deleteConversation removes metadata and events and deleteAll clears everything`() =
         runRepositoryTest { timeProvider, repository ->
-            repository.createConversation(newConversation("c1", timestamp = timeProvider.now()))
-            repository.createConversation(newConversation("c2", timestamp = timeProvider.now()))
+            repository.create(newConversation("c1", timestamp = timeProvider.now()))
+            repository.create(newConversation("c2", timestamp = timeProvider.now()))
             repository.appendEvent("c1", userMessage("e1", "one", timestamp = timeProvider.now()))
             repository.appendEvent("c2", userMessage("e2", "two", timestamp = timeProvider.now()))
 
             // delete one
-            repository.deleteConversation("c1")
-            assertEquals(listOf("c2"), repository.getConversations().first().map { it.id })
+            repository.delete("c1")
+            assertEquals(listOf("c2"), repository.getDigests().first().map { it.id })
 
             // delete all
             repository.deleteAll()
-            assertTrue(repository.getConversations().first().isEmpty())
+            assertTrue(repository.getDigests().first().isEmpty())
         }
 
     @Test
@@ -183,7 +183,7 @@ abstract class ConversationRepositoryContractTests {
     @Test
     fun `transcript reader returns all events in order`() = runRepositoryTest { timeProvider, repository ->
         val c = newConversation("c1", timestamp = timeProvider.now())
-        repository.createConversation(c)
+        repository.create(c)
         // append 5 messages alternating user/assistant
         repository.appendEvent("c1", userMessage("e1", "m1", timestamp = timeProvider.now()))
         repository.appendEvent("c1", assistantMessage("e2", "m2", timestamp = timeProvider.now()))

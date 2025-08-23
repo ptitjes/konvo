@@ -34,6 +34,7 @@ markdownRenderer = "0.35.0"
 fileKit = "0.8.8"
 coil = "3.3.0"
 reorderable = "3.0.0"
+placeholder = "1.0.11"
 
 # Discord Frontend
 kord = "feat-components-v2-didier-SNAPSHOT"
@@ -87,6 +88,7 @@ fileKit = { module = "io.github.vinceglb:filekit-compose", version.ref = "fileKi
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coilKtor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
+placeholder = { module = "com.eygraber:compose-placeholder-material3", version.ref = "placeholder"}
 
 # Discord Frontend
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }

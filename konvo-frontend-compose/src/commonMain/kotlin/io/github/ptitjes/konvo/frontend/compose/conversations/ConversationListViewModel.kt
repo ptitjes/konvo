@@ -15,11 +15,11 @@ class ConversationListViewModel(
     private val repository: ConversationRepository,
 ) : ViewModel() {
 
-    private val _conversations = MutableStateFlow<List<Conversation>>(emptyList())
-    val conversations: StateFlow<List<Conversation>> = _conversations.asStateFlow()
+    private val _conversations = MutableStateFlow<List<ConversationDigest>>(emptyList())
+    val conversations: StateFlow<List<ConversationDigest>> = _conversations.asStateFlow()
 
-    private val _selectedConversation = MutableStateFlow<Conversation?>(null)
-    val selectedConversation: StateFlow<Conversation?> = _selectedConversation.asStateFlow()
+    private val _selectedConversation = MutableStateFlow<ConversationDigest?>(null)
+    val selectedConversation: StateFlow<ConversationDigest?> = _selectedConversation.asStateFlow()
 
     private val _newConversation = MutableStateFlow(false)
     val newConversation: StateFlow<Boolean> = _newConversation.asStateFlow()
@@ -36,7 +36,7 @@ class ConversationListViewModel(
             _isLoading.value = true
             _error.value = null
             repository
-                .getConversations(sort = Sort.UpdatedDesc)
+                .getDigests(sort = Sort.UpdatedDesc)
                 .catch { e -> _error.value = e.message ?: "Failed to load conversations" }
                 .onEach { list ->
                     _conversations.value = list
@@ -46,17 +46,17 @@ class ConversationListViewModel(
         }
     }
 
-    fun select(conversation: Conversation?) {
+    fun select(conversation: ConversationDigest?) {
         _selectedConversation.value = conversation
         _newConversation.value = false
     }
 
-    fun delete(conversation: Conversation) {
+    fun delete(conversation: ConversationDigest) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
-                repository.deleteConversation(conversation.id)
+                repository.delete(conversation.id)
                 if (_selectedConversation.value?.id == conversation.id) {
                     _selectedConversation.value = null
                 }

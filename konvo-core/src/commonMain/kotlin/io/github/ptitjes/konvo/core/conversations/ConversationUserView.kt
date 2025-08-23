@@ -8,20 +8,10 @@ import kotlinx.coroutines.flow.*
  * This interface allows UI components to send user events into a conversation.
  */
 interface ConversationUserView {
-    /**
-     * Reference to the parent conversation.
-     */
-    val conversation: LiveConversation
 
-    val transcript: Transcript
+    val state: StateFlow<ConversationState>
 
-    val events: SharedFlow<Event>
-
-    /**
-     * The index of the last read message in the current UI transcript, or -1 if none read.
-     * This is a live state that can be observed to update UI markers.
-     */
-    val lastReadMessageIndex: StateFlow<Int>
+    suspend fun updateTitle(title: String)
 
     /**
      * Update the last read message index.

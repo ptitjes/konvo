@@ -86,7 +86,8 @@ internal class DefaultAgent(
 
     @OptIn(ExperimentalTime::class)
     override suspend fun joinConversation(conversation: ConversationAgentView) = coroutineScope {
-        if (conversation.transcript.events.isEmpty()) {
+        val conversationJustStarted = prompt.messages.size == 1
+        if (conversationJustStarted) {
             welcomeMessage?.let { content ->
                 conversation.sendMessage(content)
                 prompt = prompt(prompt) {

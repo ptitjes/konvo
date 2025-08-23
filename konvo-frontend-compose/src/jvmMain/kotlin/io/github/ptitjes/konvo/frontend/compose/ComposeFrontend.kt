@@ -124,7 +124,7 @@ fun CoroutineScope.buildDi() = DI {
         )
     }
 
-    bindSingleton { LiveConversationsManager(coroutineContext, instance(), instance()) }
+    bindSingleton { ConversationsManager(coroutineContext, instance(), instance()) }
 
     bindSingletonOf(::ConversationListViewModel)
     bind {
@@ -140,7 +140,7 @@ fun CoroutineScope.buildDi() = DI {
         }
     }
     bindSingletonOf(::AppViewModel)
-    bindFactory { initialConversation: Conversation ->
-        ConversationViewModel(instance(), instance(), initialConversation)
+    bindFactory { initialConversation: ConversationDigest ->
+        ConversationViewModel(instance(), initialConversation)
     }
 }

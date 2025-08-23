@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.*
 import kotlin.time.*
 
 /**
- * Repository abstraction for persisting [Conversation] metadata and full [Event] transcripts.
+ * Repository abstraction for persisting [ConversationDigest] metadata and full [Event] transcripts.
  *
  * Thread-safety: Implementations must be safe to call from multiple coroutines concurrently.
  * Error semantics: Methods should throw meaningful exceptions on unrecoverable errors (e.g., unknown id),
@@ -14,33 +14,33 @@ import kotlin.time.*
 @OptIn(ExperimentalTime::class)
 interface ConversationRepository {
 
-    /** Create a new conversation. The [initial] fields id/createdAt/updatedAt must be set by the caller. */
-    suspend fun createConversation(initial: Conversation)
-
-    /** Stream a conversation by id; completes if the conversation is deleted. */
-    fun getConversation(id: String): Flow<Conversation>
-
     /**
      * Stream all conversations ordered by [sort].
      */
-    fun getConversations(sort: Sort = Sort.UpdatedDesc): Flow<List<Conversation>>
+    fun getDigests(sort: Sort = Sort.UpdatedDesc): Flow<List<ConversationDigest>>
 
-    /** Append an [event] to the conversation identified by [conversationId], updating its metadata accordingly. */
-    suspend fun appendEvent(conversationId: String, event: Event)
-
-    /** Update a conversation's metadata such as title; [updatedAt] must be updated by implementation. */
-    suspend fun updateConversation(conversation: Conversation)
-
-    /** Delete a conversation and its events. */
-    suspend fun deleteConversation(id: String)
-
-    /** Delete all conversations and events. */
-    suspend fun deleteAll()
+    /** Stream a conversation by id; completes if the conversation is deleted. */
+    fun getDigest(id: String): Flow<ConversationDigest>
 
     /**
      * Stream all events for a conversation, in chronological order.
      */
     fun getEvents(conversationId: String): Flow<List<Event>>
+
+    /** Create a new conversation. The [initial] fields id/createdAt/updatedAt must be set by the caller. */
+    suspend fun create(initial: ConversationDigest)
+
+    /** Update a conversation's metadata such as title; [updatedAt] must be updated by implementation. */
+    suspend fun updateDigest(conversation: ConversationDigest)
+
+    /** Append an [event] to the conversation identified by [conversationId], updating its metadata accordingly. */
+    suspend fun appendEvent(conversationId: String, event: Event)
+
+    /** Delete a conversation and its events. */
+    suspend fun delete(id: String)
+
+    /** Delete all conversations and events. */
+    suspend fun deleteAll()
 }
 
 /** Sorting options for listing conversations. */

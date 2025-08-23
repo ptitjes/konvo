@@ -102,8 +102,8 @@ private fun ConversationListPanelPreview() {
 
     // Seed preview data
     LaunchedEffect(Unit) {
-        repo.createConversation(
-            Conversation(
+        repo.create(
+            ConversationDigest(
                 id = "1",
                 title = "First",
                 createdAt = Instant.fromEpochMilliseconds(0),
@@ -113,8 +113,8 @@ private fun ConversationListPanelPreview() {
                 messageCount = 1,
             )
         )
-        repo.createConversation(
-            Conversation(
+        repo.create(
+            ConversationDigest(
                 id = "2",
                 title = "Second",
                 createdAt = Instant.fromEpochMilliseconds(0),

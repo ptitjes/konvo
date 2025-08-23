@@ -246,12 +246,12 @@ class NewConversationViewModel(
     }
 
     @OptIn(ExperimentalTime::class)
-    fun createConversation(onConversationCreated: (Conversation) -> Unit) = viewModelScope.launch {
+    fun createConversation(onConversationCreated: (ConversationDigest) -> Unit) = viewModelScope.launch {
         val agentConfiguration = createAgentConfiguration()
 
         val now = SystemTimeProvider.now()
 
-        val conversation = Conversation(
+        val conversation = ConversationDigest(
             id = UuidIdGenerator.newId(),
             title = "Untitled conversation",
             createdAt = now,
@@ -262,7 +262,7 @@ class NewConversationViewModel(
             agentConfiguration = agentConfiguration,
         )
 
-        conversationRepository.createConversation(conversation)
+        conversationRepository.create(conversation)
 
         onConversationCreated(conversation)
     }

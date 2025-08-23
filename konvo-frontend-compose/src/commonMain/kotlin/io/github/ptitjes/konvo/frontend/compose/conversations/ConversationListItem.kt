@@ -19,7 +19,7 @@ import kotlin.time.*
 @OptIn(ExperimentalTime::class)
 @Composable
 fun ConversationListItem(
-    conversation: Conversation,
+    conversation: ConversationDigest,
     selected: Boolean,
     onClick: () -> Unit,
     onDelete: () -> Unit,

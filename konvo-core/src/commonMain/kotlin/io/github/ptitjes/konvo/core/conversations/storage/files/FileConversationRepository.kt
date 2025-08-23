@@ -94,7 +94,7 @@ class FileConversationRepository(
         return idx
     }
 
-    override suspend fun createConversation(initial: Conversation) {
+    override suspend fun create(initial: ConversationDigest) {
         // Create directories
         FileIo.ensureDirectoryExists(conversationsDir, fileSystem)
         val dir = conversationDir(initial.id)
@@ -126,7 +126,7 @@ class FileConversationRepository(
         changeTicker.value = changeTicker.value + 1
     }
 
-    private fun readConversation(id: String): Conversation? {
+    private fun readConversation(id: String): ConversationDigest? {
         val meta = metaPath(id)
         if (!fileSystem.exists(meta)) return null
         return try {
@@ -139,17 +139,17 @@ class FileConversationRepository(
         }
     }
 
-    override fun getConversation(id: String): Flow<Conversation> =
+    override fun getDigest(id: String): Flow<ConversationDigest> =
         changeTicker.map { readConversation(id) }.onStart { emit(readConversation(id)) }.filterNotNull()
             .distinctUntilChanged()
 
     private fun readConversations(
         sort: Sort,
-    ): List<Conversation> {
+    ): List<ConversationDigest> {
         val idx = loadIndex() ?: rebuildIndex()
         val list = idx.conversations.map { e ->
             // Participants are not part of index; load minimal Conversation without participants
-            Conversation(
+            ConversationDigest(
                 id = e.id,
                 title = e.title,
                 createdAt = e.createdAt,
@@ -170,7 +170,7 @@ class FileConversationRepository(
         }
     }
 
-    override fun getConversations(sort: Sort): Flow<List<Conversation>> =
+    override fun getDigests(sort: Sort): Flow<List<ConversationDigest>> =
         changeTicker.map { readConversations(sort) }.onStart { emit(readConversations(sort)) }.distinctUntilChanged()
 
     override suspend fun appendEvent(conversationId: String, event: Event) {
@@ -225,7 +225,7 @@ class FileConversationRepository(
         changeTicker.value = changeTicker.value + 1
     }
 
-    override suspend fun updateConversation(conversation: Conversation) {
+    override suspend fun updateDigest(conversation: ConversationDigest) {
         val existing = readConversation(conversation.id)
             ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
         val updated = conversation.copy(
@@ -255,7 +255,7 @@ class FileConversationRepository(
         changeTicker.value = changeTicker.value + 1
     }
 
-    override suspend fun deleteConversation(id: String) {
+    override suspend fun delete(id: String) {
         val dir = conversationDir(id)
         if (fileSystem.exists(dir)) {
             // Delete files if present, then dir
@@ -282,7 +282,7 @@ class FileConversationRepository(
             for (child in fileSystem.list(conversationsDir)) {
                 try {
                     val id = child.name
-                    deleteConversation(id)
+                    delete(id)
                 } catch (_: Throwable) {
                     // continue
                 }

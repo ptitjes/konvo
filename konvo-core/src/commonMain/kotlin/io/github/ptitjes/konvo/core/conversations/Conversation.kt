@@ -11,8 +11,19 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 import kotlin.time.*
+import kotlin.time.Duration.Companion.milliseconds
 
-class LiveConversation(
+sealed interface ConversationState {
+    object Loading : ConversationState
+    data class Loaded(
+        val digest: ConversationDigest,
+        val transcript: List<Event>,
+        val processing: Boolean,
+    ) : ConversationState
+}
+
+@OptIn(FlowPreview::class)
+class Conversation(
     coroutineContext: CoroutineContext,
     private val conversationId: String,
     private val repository: ConversationRepository,
@@ -30,99 +41,96 @@ class LiveConversation(
         logger.error(exception) { "Exception caught in conversation" }
     }
 
-    private val coroutineScope = CoroutineScope(coroutineContext + job + handler)
+    private val coroutineScope = CoroutineScope(coroutineContext + Dispatchers.Default + job + handler)
 
-    private val loaded = CompletableDeferred<Unit>()
-    suspend fun awaitLoaded() = loaded.await()
+    private fun newId(): String = idGenerator.newId()
+    private fun newTimestamp(): Instant = timeProvider.now()
+
+    private val _state = MutableStateFlow<ConversationState>(ConversationState.Loading)
+    private val _events = MutableSharedFlow<Event>()
+    private val _titleUpdates = MutableSharedFlow<String>(extraBufferCapacity = 64)
+    private val _lastReadMessageIndexUpdates = MutableSharedFlow<Int>()
+
+    private val userMember = Participant.User(id = newId(), name = "user")
+    private val agentMember = Participant.Agent(id = newId(), name = "agent")
+    val participants = listOf(userMember, agentMember)
 
     init {
         coroutineScope.launch {
-            val conversation = repository.getConversation(conversationId).firstOrNull() ?: error("Invalid state")
-            val events = repository.getEvents(conversationId).first()
+            val digest = repository.getDigest(conversationId).stateIn(this)
+            val transcript = repository.getEvents(conversationId).stateIn(this)
 
-            // Restore transcript
-            this@LiveConversation.transcript.clear()
-            events.forEach { event ->
-                this@LiveConversation.transcript.append(event)
-            }
-            _lastReadMessageIndex.value = conversation.lastReadMessageIndex
-            _unreadMessageCount.value = conversation.unreadMessageCount
+            val processing = transcript
+                .mapNotNull { it.lastOrNull() }
+                .filterIsInstance<Event.AssistantProcessing>()
+                .map { it.isProcessing }
+                .onStart { emit(false) }
 
-            // Persist new events
+            // Process repository changes
             launch {
-                this@LiveConversation.events.collect { event ->
-                    this@LiveConversation.transcript.append(event)
+                combine(digest, transcript, processing) { digest, transcript, processing ->
+                    ConversationState.Loaded(
+                        digest = digest,
+                        transcript = transcript,
+                        processing = processing,
+                    )
+                }.collect { _state.value = it }
+            }
+
+            // Observe new events
+            launch {
+                _events.collect { event ->
+                    // Persist new events to repository
                     repository.appendEvent(conversationId, event)
                 }
             }
 
-            // Recompute unread count when the last read index changes and persist to repository
+            // Observe and persist title updates
             launch {
-                this@LiveConversation.lastReadMessageIndex.collect { lastReadMessageIndex ->
-                    val lastViewItemIndex = transcript.events.count { it.isViewItem() } - 1
-                    val unread = (lastViewItemIndex - lastReadMessageIndex).coerceAtLeast(0)
-                    _unreadMessageCount.emit(unread)
-                    // Persist last read index and unread count in conversation metadata
-                    val current = repository.getConversation(conversationId).first()
-                    if (current.lastReadMessageIndex != lastReadMessageIndex || current.unreadMessageCount != unread) {
-                        repository.updateConversation(
-                            current.copy(
+                _titleUpdates
+                    .debounce(500.milliseconds)
+                    .distinctUntilChanged()
+                    .collect { newTitle ->
+                        val current = digest.value
+                        if (current.title != newTitle) {
+                            repository.updateDigest(current.copy(title = newTitle))
+                        }
+                    }
+            }
+
+            // Observe and persist last read message index updates
+            launch {
+                _lastReadMessageIndexUpdates.collect { lastReadMessageIndex ->
+                    val lastMessageIndex = transcript.value.count { it.isViewItem() } - 1
+                    val unreadMessageCount = (lastMessageIndex - lastReadMessageIndex).coerceAtLeast(0)
+
+                    val currentDigest = digest.value
+                    if (currentDigest.lastReadMessageIndex != lastReadMessageIndex
+                        || currentDigest.unreadMessageCount != unreadMessageCount
+                    ) {
+                        repository.updateDigest(
+                            currentDigest.copy(
                                 lastReadMessageIndex = lastReadMessageIndex,
-                                unreadMessageCount = unread,
+                                unreadMessageCount = unreadMessageCount,
                             )
                         )
                     }
                 }
             }
 
-            // Also recompute unread count when new events are added
-            launch {
-                this@LiveConversation.events.collect {
-                    val lastViewItemIndex = transcript.events.count { it.isViewItem() } - 1
-                    val unread = (lastViewItemIndex - _lastReadMessageIndex.value).coerceAtLeast(0)
-                    _unreadMessageCount.emit(unread)
-                }
-            }
-
             // Restore agent
-            val agentConfiguration = conversation.agentConfiguration
+            val agentConfiguration = digest.value.agentConfiguration
             val agent = agentFactory.createAgent(agentConfiguration)
-            agent.restorePrompt(events)
+            agent.restorePrompt(transcript.value)
 
             launch {
                 agent.joinConversation(newAgentView())
             }
-
-            loaded.complete(Unit)
         }
     }
 
     override fun close() {
         job.cancel()
-    }
-
-    private fun newId(): String = idGenerator.newId()
-    private fun newTimestamp(): Instant = timeProvider.now()
-
-    private val userMember = Participant.User(id = newId(), name = "user")
-    private val agentMember = Participant.Agent(id = newId(), name = "agent")
-    val participants = listOf(userMember, agentMember)
-
-    val transcript = Transcript()
-
-    // Last read message index, -1 means nothing has been read yet
-    private val _lastReadMessageIndex = MutableStateFlow(-1)
-    val lastReadMessageIndex: StateFlow<Int> = _lastReadMessageIndex
-
-    // Unread message count (only counting view items). Updated whenever read index or events change.
-    private val _unreadMessageCount = MutableStateFlow(0)
-    val unreadMessageCount: StateFlow<Int> = _unreadMessageCount.asStateFlow()
-
-    private val _events = MutableSharedFlow<Event>()
-    val events: SharedFlow<Event> = _events
-
-    private suspend fun emitEvent(event: Event) {
-        _events.emit(event)
     }
 
     private fun Event.isViewItem(): Boolean =
@@ -134,16 +142,11 @@ class LiveConversation(
     private inner class AgentViewImpl(
         val participant: Participant,
     ) : ConversationAgentView {
-        override val conversation: LiveConversation = this@LiveConversation
 
-        override val transcript: Transcript
-            get() = conversation.transcript
-
-        override val events: SharedFlow<Event>
-            get() = conversation.events
+        override val events: SharedFlow<Event> get() = _events
 
         override suspend fun sendProcessing(isProcessing: Boolean) {
-            emitEvent(
+            _events.emit(
                 Event.AssistantProcessing(
                     id = newId(),
                     timestamp = newTimestamp(),
@@ -154,7 +157,7 @@ class LiveConversation(
         }
 
         override suspend fun sendMessage(content: String) {
-            emitEvent(
+            _events.emit(
                 Event.AssistantMessage(
                     id = newId(),
                     timestamp = newTimestamp(),
@@ -171,7 +174,7 @@ class LiveConversation(
                 source = participant,
                 calls = calls
             )
-            emitEvent(event)
+            _events.emit(event)
             return event
         }
 
@@ -179,7 +182,7 @@ class LiveConversation(
             call: ToolCall,
             result: ToolCallResult,
         ) {
-            emitEvent(
+            _events.emit(
                 Event.ToolUseNotification(
                     id = newId(),
                     timestamp = newTimestamp(),
@@ -194,29 +197,23 @@ class LiveConversation(
     private inner class UserViewImpl(
         val participant: Participant,
     ) : ConversationUserView {
-        override val conversation: LiveConversation = this@LiveConversation
 
-        override val transcript: Transcript
-            get() = conversation.transcript
+        override val state: StateFlow<ConversationState>
+            get() = _state
 
-        override val events: SharedFlow<Event>
-            get() = conversation.events
-
-        override val lastReadMessageIndex: StateFlow<Int>
-            get() = conversation.lastReadMessageIndex
+        override suspend fun updateTitle(title: String) {
+            _titleUpdates.emit(title)
+        }
 
         override suspend fun updateLastReadMessageIndex(index: Int) {
-            val clamped = index.coerceIn(-1, transcript.events.size - 1)
-            if (clamped > _lastReadMessageIndex.value) {
-                _lastReadMessageIndex.emit(clamped)
-            }
+            _lastReadMessageIndexUpdates.emit(index)
         }
 
         override suspend fun sendMessage(
             content: String,
             attachments: List<Attachment>,
         ) {
-            emitEvent(
+            _events.emit(
                 Event.UserMessage(
                     id = newId(),
                     timestamp = newTimestamp(),
@@ -231,7 +228,7 @@ class LiveConversation(
             vetting: Event.ToolUseVetting,
             approvals: Map<ToolCall, Boolean>,
         ) {
-            emitEvent(
+            _events.emit(
                 Event.ToolUseApproval(
                     id = newId(),
                     timestamp = newTimestamp(),

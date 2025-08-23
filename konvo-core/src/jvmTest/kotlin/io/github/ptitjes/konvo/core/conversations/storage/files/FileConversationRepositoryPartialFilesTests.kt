@@ -21,8 +21,8 @@ class FileConversationRepositoryPartialFilesTests {
         id: String = "c1",
         title: String = "Test",
         now: Instant = Clock.System.now(),
-    ): Conversation =
-        Conversation(
+    ): ConversationDigest =
+        ConversationDigest(
             id = id,
             title = title,
             createdAt = now,
@@ -50,7 +50,7 @@ class FileConversationRepositoryPartialFilesTests {
 
         // Create conversation and append two valid events
         val conversation = newConversation()
-        repo.createConversation(conversation)
+        repo.create(conversation)
         repo.appendEvent(conversation.id, userMessage("e1", "Hello"))
         repo.appendEvent(conversation.id, userMessage("e2", "World"))
 

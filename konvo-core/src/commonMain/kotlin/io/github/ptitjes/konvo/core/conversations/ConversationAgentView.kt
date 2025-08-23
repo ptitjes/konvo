@@ -8,13 +8,7 @@ import kotlinx.coroutines.flow.*
  * This interface allows agents to send assistant events into a conversation.
  */
 interface ConversationAgentView {
-    /**
-     * Reference to the parent conversation.
-     */
-    val conversation: LiveConversation
 
-    val transcript: Transcript
-    
     val events: SharedFlow<Event>
 
     suspend fun sendProcessing(isProcessing: Boolean)

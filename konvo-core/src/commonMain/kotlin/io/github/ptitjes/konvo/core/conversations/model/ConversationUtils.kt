@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.core.conversations.model
 
 /**
- * Utilities related to [Conversation] derived values.
+ * Utilities related to [ConversationDigest] derived values.
  */
 object ConversationUtils {
 

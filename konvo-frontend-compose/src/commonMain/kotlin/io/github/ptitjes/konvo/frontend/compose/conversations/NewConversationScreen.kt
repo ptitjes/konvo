@@ -32,7 +32,7 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 @Composable
 fun NewConversationScreen(
     viewModel: NewConversationViewModel = viewModel(),
-    onConversationCreated: (Conversation) -> Unit,
+    onConversationCreated: (ConversationDigest) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

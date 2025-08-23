@@ -46,6 +46,7 @@ kotlin {
                 implementation(libs.coil)
                 implementation(libs.coilKtor)
                 implementation(libs.reorderable)
+                implementation(libs.placeholder)
             }
         }
 
