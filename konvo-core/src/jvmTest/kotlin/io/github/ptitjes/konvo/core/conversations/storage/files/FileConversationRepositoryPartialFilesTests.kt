@@ -17,7 +17,11 @@ import kotlin.time.*
 
 class FileConversationRepositoryPartialFilesTests {
 
-    private fun newConversation(id: String = "c1", title: String = "Test", now: Instant = Clock.System.now()): Conversation =
+    private fun newConversation(
+        id: String = "c1",
+        title: String = "Test",
+        now: Instant = Clock.System.now(),
+    ): Conversation =
         Conversation(
             id = id,
             title = title,
@@ -45,18 +49,18 @@ class FileConversationRepositoryPartialFilesTests {
         val repo = FileConversationRepository(root)
 
         // Create conversation and append two valid events
-        val conv = newConversation()
-        repo.createConversation(conv)
-        repo.appendEvent(conv.id, userMessage("e1", "Hello"))
-        repo.appendEvent(conv.id, userMessage("e2", "World"))
+        val conversation = newConversation()
+        repo.createConversation(conversation)
+        repo.appendEvent(conversation.id, userMessage("e1", "Hello"))
+        repo.appendEvent(conversation.id, userMessage("e2", "World"))
 
         // Sanity: we should have two events
-        val before = repo.getEvents(conv.id).first()
+        val before = repo.getEvents(conversation.id).first()
         assertEquals(2, before.size)
 
         // Corrupt the events file by appending a truncated JSON line (no newline)
         val conversationsDir = Path(root, FilesLayout.CONVERSATIONS_DIR)
-        val eventsPath = Path(Path(conversationsDir, conv.id), FilesLayout.EVENTS_FILE)
+        val eventsPath = Path(Path(conversationsDir, conversation.id), FilesLayout.EVENTS_FILE)
         val fs: FileSystem = defaultFileSystem
 
         // Read existing content
@@ -72,7 +76,7 @@ class FileConversationRepositoryPartialFilesTests {
         }
 
         // Act: list events should skip the bad line and still return the two valid ones
-        val events = repo.getEvents(conv.id).first()
+        val events = repo.getEvents(conversation.id).first()
 
         // Assert
         assertEquals(2, events.size)

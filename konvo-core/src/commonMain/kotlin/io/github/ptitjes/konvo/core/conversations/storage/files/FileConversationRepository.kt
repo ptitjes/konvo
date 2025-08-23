@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core.conversations.storage.files
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.platform.*
+import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
@@ -21,6 +22,7 @@ import kotlin.time.*
 class FileConversationRepository(
     private val rootPath: Path,
     private val fileSystem: FileSystem = defaultFileSystem,
+    private val timeProvider: TimeProvider = SystemTimeProvider,
 ) : ConversationRepository {
 
     constructor(
@@ -187,7 +189,7 @@ class FileConversationRepository(
         // Update meta and index
         val current =
             readConversation(conversationId) ?: throw NoSuchElementException("Unknown conversation: $conversationId")
-        val now = Clock.System.now()
+        val now = timeProvider.now()
         // Compute new preview from full transcript (skip non-message events)
         val events = readEvents(conversationId)
         val newPreview = ConversationUtils.computeLastMessagePreview(events)
@@ -230,7 +232,7 @@ class FileConversationRepository(
             createdAt = existing.createdAt,
             messageCount = existing.messageCount,
             lastMessagePreview = conversation.lastMessagePreview ?: existing.lastMessagePreview,
-            updatedAt = Clock.System.now(),
+            updatedAt = timeProvider.now(),
         )
         // Write meta
         FileIo.atomicWrite(metaPath(updated.id), fileSystem) { sink ->
