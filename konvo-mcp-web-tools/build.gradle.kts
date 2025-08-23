@@ -40,9 +40,6 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        all {
-            languageSettings.enableLanguageFeature("MultiDollarInterpolation")
-        }
     }
 }
 

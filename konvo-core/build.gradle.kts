@@ -30,8 +30,5 @@ kotlin {
                 implementation(libs.kotlinxCoroutinesTest)
             }
         }
-        all {
-            languageSettings.enableLanguageFeature("WhenGuards")
-        }
     }
 }

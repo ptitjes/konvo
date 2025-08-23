@@ -1,11 +1,9 @@
 package io.github.ptitjes.konvo.frontend.compose.toolkit.text
 
 import kotlin.test.*
-import kotlin.time.*
 
 class TextFormattersTests {
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun `truncatePreview collapses whitespace and adds ellipsis when needed`() {
         val text =

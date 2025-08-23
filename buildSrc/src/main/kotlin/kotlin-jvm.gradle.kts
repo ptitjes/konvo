@@ -8,6 +8,13 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+
+    sourceSets.all {
+        languageSettings.enableLanguageFeature("WhenGuards")
+        languageSettings.enableLanguageFeature("MultiDollarInterpolation")
+        languageSettings.optIn("kotlin.time.ExperimentalTime")
+        languageSettings.optIn("kotlin.uuid.ExperimentalUuidApi")
+    }
 }
 
 tasks.withType<Test>().configureEach {

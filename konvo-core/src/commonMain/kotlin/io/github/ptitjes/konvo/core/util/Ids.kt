@@ -9,7 +9,6 @@ interface IdGenerator {
     fun newId(): String
 }
 
-@OptIn(ExperimentalUuidApi::class)
 object UuidIdGenerator : IdGenerator {
     override fun newId(): String = Uuid.random().toString()
 }

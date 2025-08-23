@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.io.files.*
 import kotlin.coroutines.*
-import kotlin.time.*
 import kotlin.time.Clock
 import ai.koog.prompt.message.Attachment as KoogAttachment
 
@@ -84,7 +83,6 @@ internal class DefaultAgent(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun joinConversation(conversation: ConversationAgentView) = coroutineScope {
         val conversationJustStarted = prompt.messages.size == 1
         if (conversationJustStarted) {
@@ -126,7 +124,6 @@ internal class DefaultAgent(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private suspend fun Event.UserMessage.toUserMessage(): Message.User =
         Message.User(
             content = content,
@@ -136,7 +133,6 @@ internal class DefaultAgent(
             ),
         )
 
-    @OptIn(ExperimentalTime::class)
     private fun Event.AssistantMessage.toAssistantMessage(): Message.Assistant =
         Message.Assistant(
             content = content,

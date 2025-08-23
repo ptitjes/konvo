@@ -5,12 +5,10 @@ import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.flow.*
-import kotlin.time.*
 
 /**
  * In-memory implementation of [ConversationRepository] using atomic, lock-free snapshot updates.
  */
-@OptIn(ExperimentalTime::class)
 class InMemoryConversationRepository(
     private val timeProvider: TimeProvider = SystemTimeProvider,
 ) : ConversationRepository {

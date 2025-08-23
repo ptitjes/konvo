@@ -9,7 +9,6 @@ import kotlin.time.*
  * The full transcript (list of [Event]) is persisted and accessed via repository backends,
  * but only a summary is kept here to avoid loading all events when listing conversations.
  */
-@OptIn(ExperimentalTime::class)
 data class ConversationDigest(
     val id: String,
     val title: String,

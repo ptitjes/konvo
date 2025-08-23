@@ -14,9 +14,7 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
-import kotlin.time.*
 
-@OptIn(ExperimentalTime::class)
 @Composable
 fun ConversationListItem(
     conversation: ConversationDigest,

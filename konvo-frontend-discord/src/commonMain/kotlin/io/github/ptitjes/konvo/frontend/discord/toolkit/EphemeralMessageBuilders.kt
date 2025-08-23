@@ -150,7 +150,6 @@ class HandlerScope<I : ComponentInteraction> internal constructor(
         }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private fun newHandlerId(): String = Uuid.random().toString()
 
 @KordDsl

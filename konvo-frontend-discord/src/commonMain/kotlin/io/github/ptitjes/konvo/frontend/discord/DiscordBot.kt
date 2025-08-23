@@ -146,7 +146,6 @@ class KonvoBot(
     val liveConversationsManager: LiveConversationsManager by instance()
     val perChannelConversation = mutableMapOf<Snowflake, LiveConversation>()
 
-    @OptIn(ExperimentalTime::class)
     private suspend fun initiateConversation(
         channel: MessageChannelBehavior,
         configuration: ConversationConfiguration,
@@ -222,7 +221,6 @@ class KonvoBot(
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private fun newChannelName(): String = "ai-${Uuid.random()}"
 
 private fun MessageBuilder.conversationStartMessage(

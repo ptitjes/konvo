@@ -2,7 +2,6 @@ package io.github.ptitjes.konvo.core.conversations.model
 
 import kotlin.time.*
 
-@OptIn(ExperimentalTime::class)
 sealed interface Event {
 
     val id: String

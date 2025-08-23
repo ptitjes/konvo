@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
-import kotlin.time.*
 
 /**
  * File-backed implementation of ConversationRepository using Kotlinx IO and Kotlinx Serialization.
@@ -18,7 +17,6 @@ import kotlin.time.*
  * - conversations/<id>/meta.json (ConversationDto)
  * - conversations/<id>/events.ndjson (one EventDto per line)
  */
-@OptIn(ExperimentalTime::class)
 class FileConversationRepository(
     private val rootPath: Path,
     private val fileSystem: FileSystem = defaultFileSystem,

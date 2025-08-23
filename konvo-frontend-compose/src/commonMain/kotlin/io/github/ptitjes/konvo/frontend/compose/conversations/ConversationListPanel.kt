@@ -96,7 +96,6 @@ fun ConversationListPanel(
 
 @Preview
 @Composable
-@OptIn(ExperimentalTime::class)
 private fun ConversationListPanelPreview() {
     val repo = remember { InMemoryConversationRepository() }
 

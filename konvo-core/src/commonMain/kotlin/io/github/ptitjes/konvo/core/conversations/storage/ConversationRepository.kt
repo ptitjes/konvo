@@ -2,7 +2,6 @@ package io.github.ptitjes.konvo.core.conversations.storage
 
 import io.github.ptitjes.konvo.core.conversations.model.*
 import kotlinx.coroutines.flow.*
-import kotlin.time.*
 
 /**
  * Repository abstraction for persisting [ConversationDigest] metadata and full [Event] transcripts.
@@ -11,7 +10,6 @@ import kotlin.time.*
  * Error semantics: Methods should throw meaningful exceptions on unrecoverable errors (e.g., unknown id),
  * and never leave partial state visible to subsequent readers.
  */
-@OptIn(ExperimentalTime::class)
 interface ConversationRepository {
 
     /**

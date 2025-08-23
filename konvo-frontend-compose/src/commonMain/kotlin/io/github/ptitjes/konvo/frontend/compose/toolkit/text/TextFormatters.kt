@@ -2,7 +2,6 @@ package io.github.ptitjes.konvo.frontend.compose.toolkit.text
 
 import kotlinx.datetime.*
 import nl.jacobras.humanreadable.*
-import kotlin.time.*
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -19,7 +18,6 @@ object TextFormatters {
      * - If within the last month: "X weeks"
      * - Else: "YYYY-MM-DD"
      */
-    @OptIn(ExperimentalTime::class)
     fun formatTimestampRelative(
         instant: Instant,
         nowProvider: () -> Instant = { Instant.fromEpochMilliseconds(Clock.System.now().toEpochMilliseconds()) },

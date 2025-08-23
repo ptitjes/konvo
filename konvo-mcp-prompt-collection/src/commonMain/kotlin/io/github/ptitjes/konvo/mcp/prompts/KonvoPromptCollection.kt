@@ -5,6 +5,7 @@ import io.github.ptitjes.konvo.mcp.prompts.utils.*
 import io.modelcontextprotocol.kotlin.sdk.server.*
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
+import kotlin.time.Clock
 
 fun Server.addKonvoPromptCollection() {
     addKoogPrompt(
@@ -80,7 +81,7 @@ fun Server.addKonvoPromptCollection() {
 }
 
 private val dateFormat = LocalDate.Format {
-    dayOfMonth()
+    day()
     char(' ')
     monthName(MonthNames.ENGLISH_FULL)
     char(' ')

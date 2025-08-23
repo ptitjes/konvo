@@ -13,7 +13,6 @@ import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlin.time.*
 
 /**
  * ViewModel for the NewConversationScreen that encapsulates all the mutable state.
@@ -245,7 +244,6 @@ class NewConversationViewModel(
         it.copy(selectedLorebook = lorebook)
     }
 
-    @OptIn(ExperimentalTime::class)
     fun createConversation(onConversationCreated: (ConversationDigest) -> Unit) = viewModelScope.launch {
         val agentConfiguration = createAgentConfiguration()
 

@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.coroutines.*
-import kotlin.time.*
 import kotlin.time.Clock
 import kotlin.uuid.*
 
@@ -79,7 +78,6 @@ fun buildQuestionAnswerAgent(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 private fun buildSystemPrompt(): Prompt {
     val dateString = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.format(dateFormat)
 
@@ -177,5 +175,4 @@ private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
     edge(toolResultsRequest forwardTo processResponses)
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private fun newUniqueId(): String = Uuid.random().toString()
