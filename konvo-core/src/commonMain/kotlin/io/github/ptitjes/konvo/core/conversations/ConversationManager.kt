@@ -7,7 +7,7 @@ import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
-class ConversationsManager(
+class ConversationManager(
     coroutineContext: CoroutineContext,
     private val conversationRepository: ConversationRepository,
     private val agentFactory: AgentFactory,
@@ -26,11 +26,9 @@ class ConversationsManager(
     private val conversations = atomic(mapOf<String, Conversation>())
 
     fun getConversation(conversationId: String): Conversation {
-        val updatedLiveConversations = conversations.updateAndGet { lc ->
-            if (lc.containsKey(conversationId)) lc
-            else {
-                lc + (conversationId to buildLiveConversation(conversationId))
-            }
+        val updatedLiveConversations = conversations.updateAndGet {
+            if (it.containsKey(conversationId)) it
+            else it + (conversationId to buildLiveConversation(conversationId))
         }
 
         return updatedLiveConversations[conversationId] ?: error("Invalid state")

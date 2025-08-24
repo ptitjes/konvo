@@ -21,10 +21,10 @@ import com.mikepenz.markdown.model.State as MarkdownViewState
  */
 @OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
-    conversationsManager: ConversationsManager,
+    conversationManager: ConversationManager,
     initialConversation: ConversationDigest,
 ) : ViewModel() {
-    private val liveConversation = conversationsManager.getConversation(initialConversation.id)
+    private val liveConversation = conversationManager.getConversation(initialConversation.id)
     private val conversationUserView = liveConversation.newUserView()
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)

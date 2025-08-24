@@ -124,7 +124,7 @@ fun CoroutineScope.buildDi() = DI {
         )
     }
 
-    bindSingleton { ConversationsManager(coroutineContext, instance(), instance()) }
+    bindSingleton { ConversationManager(coroutineContext, instance(), instance()) }
 
     bindSingletonOf(::ConversationListViewModel)
     bind {
