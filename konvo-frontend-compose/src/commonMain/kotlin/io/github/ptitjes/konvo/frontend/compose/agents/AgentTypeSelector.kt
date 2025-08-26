@@ -30,10 +30,10 @@ fun AgentTypeSelector(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             agentTypes.forEach { agentType ->
-                FilterChip(
+                ElevatedFilterChip(
                     selected = selectedAgentType == agentType,
                     onClick = { onSelectAgentType(agentType) },
-                    label = { Text(strings.agents.agentTypeDisplayName(agentType)) }
+                    label = { Text(strings.agents.agentTypeDisplayName(agentType)) },
                 )
             }
         }

@@ -75,7 +75,7 @@ fun SettingsListScreen(
                 val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
 
                 Surface(
-                    color = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
+                    color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                     shape = MaterialTheme.shapes.extraSmall,
                 ) {
                     Row(

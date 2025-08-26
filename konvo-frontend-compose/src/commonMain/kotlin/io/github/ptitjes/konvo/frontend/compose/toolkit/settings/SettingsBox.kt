@@ -15,18 +15,21 @@ fun SettingsBox(
     bottomContent: @Composable () -> Unit = {},
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.padding(bottom = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                Text(text = title)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,

@@ -28,7 +28,7 @@ fun ConversationListItem(
     val openConversationAria = strings.conversations.openConversationAria
 
     Surface(
-        color = if (selected) MaterialTheme.colorScheme.surfaceContainerHighest else Color.Transparent,
+        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
         shape = MaterialTheme.shapes.extraSmall,
     ) {
         val hasLastMessagePreview = !conversation.lastMessagePreview.isNullOrBlank()
@@ -96,7 +96,6 @@ fun ConversationListItem(
                 )
             }
         }
-
     }
 
     if (showConfirm) {

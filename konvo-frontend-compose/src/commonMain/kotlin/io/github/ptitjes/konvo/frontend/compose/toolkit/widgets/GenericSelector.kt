@@ -26,9 +26,7 @@ fun <T> GenericSelector(
         modifier = modifier,
     ) {
         OutlinedTextField(
-            label = {
-                if (label != null) Text(text = label)
-            },
+            label = { if (label != null) Text(text = label) },
             value = itemLabeler(selectedItem),
             onValueChange = {},
             readOnly = true,

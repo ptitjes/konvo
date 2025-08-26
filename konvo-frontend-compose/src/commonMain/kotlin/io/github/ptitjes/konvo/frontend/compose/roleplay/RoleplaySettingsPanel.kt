@@ -39,7 +39,7 @@ fun RoleplaySettingsPanel(
                     personaSettings.firstOrNull { it.name == settings.defaultPersonaName } ?: personaSettings.first()
                 }
                 PersonaSelector(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     label = null,
                     selectedPersona = selectedPersona,
                     onPersonaSelected = { persona ->
@@ -70,7 +70,7 @@ fun RoleplaySettingsPanel(
                 }
 
                 ModelSelector(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     label = null,
                     selectedModel = selectedModel,
                     onModelSelected = { model ->
@@ -88,7 +88,8 @@ fun RoleplaySettingsPanel(
         description = strings.roleplay.defaultSystemPromptDescription,
         bottomContent = {
             OutlinedTextField(
-                modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth().heightIn(min = 120.dp),
+                label = {},
+                modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
                 value = settings.defaultSystemPrompt,
                 onValueChange = { newValue ->
                     updateSettings { previous -> previous.copy(defaultSystemPrompt = newValue) }

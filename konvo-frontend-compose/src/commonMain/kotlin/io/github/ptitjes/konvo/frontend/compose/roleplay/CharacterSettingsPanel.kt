@@ -43,7 +43,8 @@ fun CharacterSettingsPanel(
         description = strings.roleplay.characterTagsFilterDescription,
         bottomContent = {
             OutlinedTextField(
-                modifier = Modifier.padding(vertical = 8.dp).height(64.dp).fillMaxWidth(),
+                label = {},
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = text,
                 onValueChange = { newValue ->
                     text = newValue
