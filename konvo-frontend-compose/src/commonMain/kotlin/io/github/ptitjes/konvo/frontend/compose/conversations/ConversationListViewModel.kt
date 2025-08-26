@@ -18,9 +18,6 @@ class ConversationListViewModel(
     private val _conversations = MutableStateFlow<List<ConversationDigest>>(emptyList())
     val conversations: StateFlow<List<ConversationDigest>> = _conversations.asStateFlow()
 
-    private val _selectedConversation = MutableStateFlow<ConversationDigest?>(null)
-    val selectedConversation: StateFlow<ConversationDigest?> = _selectedConversation.asStateFlow()
-
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -44,19 +41,12 @@ class ConversationListViewModel(
         }
     }
 
-    fun select(conversation: ConversationDigest?) {
-        _selectedConversation.value = conversation
-    }
-
     fun delete(conversation: ConversationDigest) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
             try {
                 repository.delete(conversation.id)
-                if (_selectedConversation.value?.id == conversation.id) {
-                    _selectedConversation.value = null
-                }
             } catch (e: Throwable) {
                 _error.value = e.message ?: "Failed to delete conversation"
             } finally {

@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.inmemory.*
 import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.utils.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
@@ -36,11 +37,11 @@ fun ConversationListScreen(
     ConversationListScreen(
         modifier = modifier,
         viewModel = viewModel,
+        selectedConversationId = navigator.selectedConversationId,
         onCreateConversation = { navigator.navigateToNewConversation() },
         onSelectConversation = { navigator.navigateToConversation(it) },
         onDeleteConversation = {
-            val destination = navigator.backStack.last()
-            if (destination is Destination.Conversation.Selected && destination.id == it) {
+            if (navigator.selectedConversationId == it) {
                 navigator.navigateToNewConversation()
             }
         }
@@ -52,6 +53,7 @@ fun ConversationListScreen(
  */
 @Composable
 fun ConversationListScreen(
+    selectedConversationId: String?,
     onCreateConversation: () -> Unit,
     onSelectConversation: (id: String) -> Unit,
     onDeleteConversation: (id: String) -> Unit,
@@ -59,7 +61,6 @@ fun ConversationListScreen(
     modifier: Modifier = Modifier,
 ) {
     val conversations by viewModel.conversations.collectAsState()
-    val selectedConversation by viewModel.selectedConversation.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
 
@@ -88,8 +89,18 @@ fun ConversationListScreen(
                             style = MaterialTheme.typography.titleLarge,
                         )
 
+                        val listState = rememberLazyListState()
+
+                        LaunchedEffect(selectedConversationId) {
+                            if (selectedConversationId != null) {
+                                val index = conversations.indexOfFirst { it.id == selectedConversationId }
+                                listState.reveal(index)
+                            }
+                        }
+
                         LazyColumn(
                             modifier = Modifier.weight(1f),
+                            state = listState,
                             contentPadding = PaddingValues(
                                 start = 8.dp,
                                 end = 8.dp,
@@ -101,11 +112,8 @@ fun ConversationListScreen(
                             items(conversations, key = { it.id }) { conversation ->
                                 ConversationListItem(
                                     conversation = conversation,
-                                    selected = conversation.id == selectedConversation?.id,
-                                    onClick = {
-                                        viewModel.select(conversation)
-                                        onSelectConversation(conversation.id)
-                                    },
+                                    selected = conversation.id == selectedConversationId,
+                                    onClick = { onSelectConversation(conversation.id) },
                                     onDelete = {
                                         viewModel.delete(conversation)
                                         onDeleteConversation(conversation.id)
@@ -116,10 +124,7 @@ fun ConversationListScreen(
                     }
 
                     FloatingActionButton(
-                        onClick = {
-                            viewModel.select(null)
-                            onCreateConversation()
-                        },
+                        onClick = { onCreateConversation() },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(16.dp),
@@ -172,6 +177,7 @@ private fun ConversationListPanelPreview() {
     ConversationListScreen(
         viewModel = vm,
         modifier = Modifier.fillMaxSize(),
+        selectedConversationId = null,
         onCreateConversation = {},
         onSelectConversation = {},
         onDeleteConversation = {},

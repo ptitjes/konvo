@@ -23,20 +23,12 @@ fun SettingsListScreen(
 
     val paneType = LocalListDetailPaneType.current
     LaunchedEffect(paneType) {
-        if (paneType == ListDetailPaneType.TwoPane
-            && navigator.backStack.last() == Destination.Setting.List
-        ) {
-            navigator.backStack.add(Destination.Setting.Section(sections.first().titleKey))
+        if (paneType == ListDetailPaneType.TwoPane && navigator.backStack.last() == Destination.Setting.List) {
+            navigator.navigateToSettingSection(sections.first().titleKey)
         }
     }
 
-    val selectedSection = remember(navigator.backStack.toList()) {
-        val lastOrNull = navigator.backStack.lastOrNull()
-        println("Last back stack item: $lastOrNull")
-        if (lastOrNull != null && lastOrNull is Destination.Setting.Section) {
-            sections.findSectionByTitleKey(lastOrNull.key)!!
-        } else null
-    }
+    val selectedSection = navigator.selectedSettingSectionKey?.let { key -> sections.findSectionByTitleKey(key) }
 
     SettingsListScreen(
         sections = sections,

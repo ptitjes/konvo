@@ -121,6 +121,9 @@ class Navigator(val backStack: SnapshotStateList<Destination>) {
         backStack.navigate(Destination.Conversation.Selected(conversationId), popUpTo = Destination.Conversation.List)
     }
 
+    val selectedConversationId: String?
+        get() = (backStack.lastOrNull() as? Destination.Conversation.Selected)?.id
+
     fun navigateToNewConversation() {
         backStack.navigate(Destination.Conversation.New, popUpTo = Destination.Conversation.List)
     }
@@ -128,6 +131,9 @@ class Navigator(val backStack: SnapshotStateList<Destination>) {
     fun navigateToSettingSection(titleKey: String) {
         backStack.navigate(Destination.Setting.Section(titleKey), popUpTo = Destination.Setting.List)
     }
+
+    val selectedSettingSectionKey: String?
+        get() = (backStack.lastOrNull() as? Destination.Setting.Section)?.key
 }
 
 private fun <T : NavKey> SnapshotStateList<T>.navigate(
