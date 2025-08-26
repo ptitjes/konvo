@@ -190,10 +190,10 @@ internal val ArStrings = Strings(
     ),
     navigationDestinationTitles = { state ->
         when (state) {
-            AppState.Conversations -> "المحادثات"
-            AppState.Archive -> "الأرشيف"
-            AppState.KnowledgeBases -> "قواعد المعرفة"
-            AppState.Settings -> "الإعدادات"
+            MainDestination.Conversations -> "المحادثات"
+            MainDestination.Archive -> "الأرشيف"
+            MainDestination.KnowledgeBases -> "قواعد المعرفة"
+            MainDestination.Settings -> "الإعدادات"
         }
     },
     formats = FormatStrings(

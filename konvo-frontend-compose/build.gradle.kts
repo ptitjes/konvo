@@ -34,6 +34,7 @@ kotlin {
                 implementation(compose.uiTooling)
 
                 implementation(libs.androidxLifecycleViewmodel)
+                implementation(libs.androidxCollection)
                 implementation(libs.kodeinCompose)
 
                 implementation(libs.lyricist)

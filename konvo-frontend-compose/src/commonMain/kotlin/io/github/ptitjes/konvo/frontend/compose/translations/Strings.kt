@@ -20,6 +20,6 @@ internal data class Strings(
     val roleplay: RoleplayStrings,
     val conversations: ConversationStrings,
     val settings: SettingsStrings,
-    val navigationDestinationTitles: (AppState) -> String,
+    val navigationDestinationTitles: (MainDestination) -> String,
     val formats: FormatStrings,
 )

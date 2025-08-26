@@ -9,10 +9,44 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
-fun SettingsListPanel(
+fun SettingsListScreen(
+    navigator: Navigator,
+    viewModel: SettingsListViewModel = viewModel(),
+) {
+    val sections by viewModel.sections.collectAsState()
+
+    val paneType = LocalListDetailPaneType.current
+    LaunchedEffect(paneType) {
+        if (paneType == ListDetailPaneType.TwoPane
+            && navigator.backStack.last() == Destination.Setting.List
+        ) {
+            navigator.backStack.add(Destination.Setting.Section(sections.first().titleKey))
+        }
+    }
+
+    val selectedSection = remember(navigator.backStack.toList()) {
+        val lastOrNull = navigator.backStack.lastOrNull()
+        println("Last back stack item: $lastOrNull")
+        if (lastOrNull != null && lastOrNull is Destination.Setting.Section) {
+            sections.findSectionByTitleKey(lastOrNull.key)!!
+        } else null
+    }
+
+    SettingsListScreen(
+        sections = sections,
+        selectedSection = selectedSection,
+        onSelectSection = { navigator.navigateToSettingSection(it.titleKey) }
+    )
+}
+
+@Composable
+fun SettingsListScreen(
     sections: List<SettingsSection>,
     selectedSection: SettingsSection?,
     onSelectSection: (SettingsSection) -> Unit,

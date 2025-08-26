@@ -1,8 +1,10 @@
 package io.github.ptitjes.konvo.frontend.compose.toolkit.widgets
 
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.unit.*
 import kotlin.math.*
 
 /**
@@ -23,7 +25,7 @@ fun OutlinedIntegerField(
     var text by remember(value) { mutableStateOf(value.toString()) }
 
     OutlinedTextField(
-        modifier = modifier,
+        modifier = modifier.height(64.dp),
         value = text,
         onValueChange = { newValue ->
             val filtered = newValue.filter { it.isDigit() }

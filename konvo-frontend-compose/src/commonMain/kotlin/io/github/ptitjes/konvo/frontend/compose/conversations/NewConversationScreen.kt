@@ -8,9 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
+import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
@@ -20,6 +20,20 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+
+@Composable
+fun NewConversationScreen(
+    viewModel: NewConversationViewModel = viewModel(),
+    navigator: Navigator,
+    modifier: Modifier = Modifier,
+) {
+    NewConversationScreen(
+        viewModel = viewModel,
+        onConversationCreated = { navigator.navigateToConversation(it) },
+        onBackClick = { navigator.navigateBack() },
+        modifier = modifier,
+    )
+}
 
 /**
  * A screen that allows creating a new conversation.
@@ -32,7 +46,7 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 @Composable
 fun NewConversationScreen(
     viewModel: NewConversationViewModel = viewModel(),
-    onConversationCreated: (ConversationDigest) -> Unit,
+    onConversationCreated: (id: String) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

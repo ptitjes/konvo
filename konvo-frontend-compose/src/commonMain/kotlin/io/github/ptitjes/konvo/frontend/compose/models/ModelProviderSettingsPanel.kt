@@ -213,7 +213,7 @@ private fun EditProviderSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedTextField(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.height(64.dp).weight(1f),
                 value = provider.name,
                 onValueChange = { newName -> onChange(provider.copy(name = newName)) },
                 label = { Text(strings.models.nameLabel) },
@@ -246,44 +246,44 @@ private fun EditProviderSheetContent(
         when (val conf = provider.configuration) {
             is Ollama -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = conf.url,
                     onValueChange = { newUrl -> onChange(provider.copy(configuration = conf.copy(url = newUrl))) },
                     label = { Text(strings.models.ollamaBaseUrlLabel) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             is Anthropic -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
                     label = { Text(strings.models.anthropicApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             is OpenAI -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
                     label = { Text(strings.models.openAiApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             is Google -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = conf.apiKey,
                     onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
                     label = { Text(strings.models.googleApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
@@ -359,7 +359,7 @@ private fun AddProviderSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedTextField(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { name = it },
                 label = { Text(strings.models.nameLabel) },
@@ -401,44 +401,44 @@ private fun AddProviderSheetContent(
         when (type) {
             ProviderType.Ollama -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = ollamaUrl,
                     onValueChange = { ollamaUrl = it },
                     label = { Text(strings.models.ollamaBaseUrlLabel) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             ProviderType.Anthropic -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = anthropicKey,
                     onValueChange = { anthropicKey = it },
                     label = { Text(strings.models.anthropicApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             ProviderType.OpenAI -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = openAIKey,
                     onValueChange = { openAIKey = it },
                     label = { Text(strings.models.openAiApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             ProviderType.Google -> {
                 OutlinedTextField(
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = googleKey,
                     onValueChange = { googleKey = it },
                     label = { Text(strings.models.googleApiKeyLabel) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }

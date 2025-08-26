@@ -22,15 +22,16 @@ import com.mikepenz.markdown.model.State as MarkdownViewState
 @OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
     conversationManager: ConversationManager,
-    initialConversation: ConversationDigest,
+    private val conversationId: String,
 ) : ViewModel() {
-    private val liveConversation = conversationManager.getConversation(initialConversation.id)
+    private val liveConversation = conversationManager.getConversation(conversationId)
     private val conversationUserView = liveConversation.newUserView()
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
     val state: StateFlow<ConversationViewState> = _state
 
     init {
+        println("Initializing ConversationViewModel(${this.conversationId})")
         viewModelScope.launch {
             launch {
                 var previousTranscript: List<Event> = emptyList()
@@ -54,6 +55,11 @@ class ConversationViewModel(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        println("Cleared ConversationViewModel(${this.conversationId})")
     }
 
     private fun Event.isViewItem(): Boolean =

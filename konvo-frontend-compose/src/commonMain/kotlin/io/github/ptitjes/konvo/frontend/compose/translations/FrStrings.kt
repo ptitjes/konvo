@@ -190,10 +190,10 @@ internal val FrStrings = Strings(
     ),
     navigationDestinationTitles = { state ->
         when (state) {
-            AppState.Conversations -> "Conversations"
-            AppState.Archive -> "Archives"
-            AppState.KnowledgeBases -> "Bases de connaissances"
-            AppState.Settings -> "Paramètres"
+            MainDestination.Conversations -> "Conversations"
+            MainDestination.Archive -> "Archives"
+            MainDestination.KnowledgeBases -> "Bases de connaissances"
+            MainDestination.Settings -> "Paramètres"
         }
     },
     formats = FormatStrings(

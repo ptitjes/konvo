@@ -11,19 +11,52 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.inmemory.*
+import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlin.time.*
 
+@Composable
+fun ConversationListScreen(
+    viewModel: ConversationListViewModel = viewModel(),
+    navigator: Navigator,
+    modifier: Modifier = Modifier,
+) {
+    val paneType = LocalListDetailPaneType.current
+    LaunchedEffect(paneType) {
+        if (paneType == ListDetailPaneType.TwoPane
+            && navigator.backStack.last() == Destination.Conversation.List
+        ) {
+            navigator.backStack.add(Destination.Conversation.New)
+        }
+    }
+
+    ConversationListScreen(
+        modifier = modifier,
+        viewModel = viewModel,
+        onCreateConversation = { navigator.navigateToNewConversation() },
+        onSelectConversation = { navigator.navigateToConversation(it) },
+        onDeleteConversation = {
+            val destination = navigator.backStack.last()
+            if (destination is Destination.Conversation.Selected && destination.id == it) {
+                navigator.navigateToNewConversation()
+            }
+        }
+    )
+}
+
 /**
  * Conversation list panel.
  */
 @Composable
-fun ConversationListPanel(
+fun ConversationListScreen(
+    onCreateConversation: () -> Unit,
+    onSelectConversation: (id: String) -> Unit,
+    onDeleteConversation: (id: String) -> Unit,
     viewModel: ConversationListViewModel = viewModel(),
     modifier: Modifier = Modifier,
-    onCreateConversation: () -> Unit,
 ) {
     val conversations by viewModel.conversations.collectAsState()
     val selectedConversation by viewModel.selectedConversation.collectAsState()
@@ -69,15 +102,24 @@ fun ConversationListPanel(
                                 ConversationListItem(
                                     conversation = conversation,
                                     selected = conversation.id == selectedConversation?.id,
-                                    onClick = { viewModel.select(conversation) },
-                                    onDelete = { viewModel.delete(conversation) },
+                                    onClick = {
+                                        viewModel.select(conversation)
+                                        onSelectConversation(conversation.id)
+                                    },
+                                    onDelete = {
+                                        viewModel.delete(conversation)
+                                        onDeleteConversation(conversation.id)
+                                    },
                                 )
                             }
                         }
                     }
 
                     FloatingActionButton(
-                        onClick = onCreateConversation,
+                        onClick = {
+                            viewModel.select(null)
+                            onCreateConversation()
+                        },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(16.dp),
@@ -127,8 +169,11 @@ private fun ConversationListPanelPreview() {
 
     val vm = remember { ConversationListViewModel(repo) }
 
-    ConversationListPanel(
+    ConversationListScreen(
         viewModel = vm,
         modifier = Modifier.fillMaxSize(),
-    ) { }
+        onCreateConversation = {},
+        onSelectConversation = {},
+        onDeleteConversation = {},
+    )
 }

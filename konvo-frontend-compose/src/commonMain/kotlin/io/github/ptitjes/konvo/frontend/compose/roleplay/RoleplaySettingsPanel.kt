@@ -88,7 +88,7 @@ fun RoleplaySettingsPanel(
         description = strings.roleplay.defaultSystemPromptDescription,
         bottomContent = {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).heightIn(min = 120.dp),
+                modifier = Modifier.padding(vertical = 8.dp).fillMaxWidth().heightIn(min = 120.dp),
                 value = settings.defaultSystemPrompt,
                 onValueChange = { newValue ->
                     updateSettings { previous -> previous.copy(defaultSystemPrompt = newValue) }

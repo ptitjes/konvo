@@ -219,7 +219,7 @@ private fun PersonaEditor(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedTextField(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { name = it },
                 label = { Text(strings.roleplay.nameLabel) },
@@ -241,7 +241,7 @@ private fun PersonaEditor(
         }
 
         OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.height(64.dp).fillMaxWidth(),
             value = nickname,
             onValueChange = { nickname = it },
             label = { Text(strings.roleplay.nicknameLabel) },

@@ -190,10 +190,10 @@ internal val ZhStrings = Strings(
     ),
     navigationDestinationTitles = { state ->
         when (state) {
-            AppState.Conversations -> "会话"
-            AppState.Archive -> "归档"
-            AppState.KnowledgeBases -> "知识库"
-            AppState.Settings -> "设置"
+            MainDestination.Conversations -> "会话"
+            MainDestination.Archive -> "归档"
+            MainDestination.KnowledgeBases -> "知识库"
+            MainDestination.Settings -> "设置"
         }
     },
     formats = FormatStrings(

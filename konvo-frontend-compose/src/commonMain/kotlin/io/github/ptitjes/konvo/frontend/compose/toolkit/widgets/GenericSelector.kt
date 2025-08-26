@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
+import androidx.compose.ui.unit.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,9 +32,10 @@ fun <T> GenericSelector(
             value = itemLabeler(selectedItem),
             onValueChange = {},
             readOnly = true,
-            maxLines = 1,
+            singleLine = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
+                .height(64.dp)
                 .fillMaxWidth()
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
         )

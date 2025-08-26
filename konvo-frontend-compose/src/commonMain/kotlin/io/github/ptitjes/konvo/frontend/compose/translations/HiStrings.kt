@@ -190,10 +190,10 @@ internal val HiStrings = Strings(
     ),
     navigationDestinationTitles = { state ->
         when (state) {
-            AppState.Conversations -> "वार्तालाप"
-            AppState.Archive -> "आर्काइव"
-            AppState.KnowledgeBases -> "नॉलेज बेस"
-            AppState.Settings -> "सेटिंग्स"
+            MainDestination.Conversations -> "वार्तालाप"
+            MainDestination.Archive -> "आर्काइव"
+            MainDestination.KnowledgeBases -> "नॉलेज बेस"
+            MainDestination.Settings -> "सेटिंग्स"
         }
     },
     formats = FormatStrings(

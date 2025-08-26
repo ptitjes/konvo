@@ -190,10 +190,10 @@ internal val EsStrings = Strings(
     ),
     navigationDestinationTitles = { state ->
         when (state) {
-            AppState.Conversations -> "Conversaciones"
-            AppState.Archive -> "Archivo"
-            AppState.KnowledgeBases -> "Bases de conocimiento"
-            AppState.Settings -> "Ajustes"
+            MainDestination.Conversations -> "Conversaciones"
+            MainDestination.Archive -> "Archivo"
+            MainDestination.KnowledgeBases -> "Bases de conocimiento"
+            MainDestination.Settings -> "Ajustes"
         }
     },
     formats = FormatStrings(

@@ -21,9 +21,6 @@ class ConversationListViewModel(
     private val _selectedConversation = MutableStateFlow<ConversationDigest?>(null)
     val selectedConversation: StateFlow<ConversationDigest?> = _selectedConversation.asStateFlow()
 
-    private val _newConversation = MutableStateFlow(false)
-    val newConversation: StateFlow<Boolean> = _newConversation.asStateFlow()
-
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -31,6 +28,7 @@ class ConversationListViewModel(
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
+        println("Initializing ConversationListViewModel")
         // Subscribe to repository conversations stream
         viewModelScope.launch {
             _isLoading.value = true
@@ -48,7 +46,6 @@ class ConversationListViewModel(
 
     fun select(conversation: ConversationDigest?) {
         _selectedConversation.value = conversation
-        _newConversation.value = false
     }
 
     fun delete(conversation: ConversationDigest) {
@@ -66,14 +63,5 @@ class ConversationListViewModel(
                 _isLoading.value = false
             }
         }
-    }
-
-    fun createNewConversation() {
-        _newConversation.value = true
-        _selectedConversation.value = null
-    }
-
-    fun cancelNewConversation() {
-        _newConversation.value = false
     }
 }

@@ -375,7 +375,7 @@ private fun JsonStringEditor(
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.height(64.dp).fillMaxWidth(),
         label = { if (label != null) Text(label) },
         value = value.content,
         onValueChange = { newValue -> onValueChange(JsonPrimitive(newValue)) },
@@ -416,7 +416,7 @@ private fun JsonIntegerEditor(
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.height(64.dp).fillMaxWidth(),
         label = { if (label != null) Text(label) },
         value = value.long.toString(),
         onValueChange = { newValue ->
@@ -433,7 +433,7 @@ private fun JsonNumberEditor(
     modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.height(64.dp).fillMaxWidth(),
         label = { if (label != null) Text(label) },
         value = value.double.toString(),
         onValueChange = { newValue ->

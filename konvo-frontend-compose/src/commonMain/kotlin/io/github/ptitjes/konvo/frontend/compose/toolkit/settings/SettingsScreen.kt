@@ -8,7 +8,34 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
+
+@Composable
+fun SettingsScreen(
+    titleKey: String,
+    navigator: Navigator,
+    viewModel: SettingsListViewModel = viewModel(),
+) {
+    key(titleKey) {
+        val sections by viewModel.sections.collectAsState()
+        val section = remember { sections.findSectionByTitleKey(titleKey)!! }
+        val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
+
+        SettingsScreen(
+            title = localizedTitle,
+            onBackClick = { navigator.navigateBack() },
+        ) {
+            when (section) {
+                is SettingsSection.WithoutKey -> SettingsPanelWithoutKey(section)
+                is SettingsSection.WithKey<*> -> SettingsPanelWithKey(section)
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

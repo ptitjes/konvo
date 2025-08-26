@@ -10,11 +10,26 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.eygraber.compose.placeholder.*
 import com.eygraber.compose.placeholder.material3.*
-import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+
+@Composable
+fun ConversationScreen(
+    conversationId: String,
+    viewModel: ConversationViewModel = viewModel(key = conversationId),
+    navigator: Navigator,
+    modifier: Modifier = Modifier,
+) {
+    ConversationScreen(
+        modifier = modifier,
+        conversationId = conversationId,
+        viewModel = viewModel,
+        onBackClick = { navigator.navigateBack() },
+    )
+}
 
 /**
  * A screen that displays a conversation with a top app bar.
@@ -26,8 +41,8 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationScreen(
-    initialConversation: ConversationDigest,
-    viewModel: ConversationViewModel = viewModel(initialConversation),
+    conversationId: String,
+    viewModel: ConversationViewModel = viewModel(key = conversationId),
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

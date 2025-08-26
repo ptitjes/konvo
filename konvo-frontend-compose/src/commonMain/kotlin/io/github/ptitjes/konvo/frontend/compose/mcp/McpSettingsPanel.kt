@@ -192,7 +192,7 @@ private fun EditServerSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedTextField(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { newName -> onRename(newName) },
                 label = { Text(strings.mcp.nameLabel) },
@@ -238,7 +238,7 @@ private fun EditServerSheetContent(
 
             is TransportSpecification.Sse -> {
                 OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = transport.url.orEmpty(),
                     onValueChange = { newUrl -> onChange(specification.copy(transport = transport.copy(url = newUrl))) },
                     label = { Text(strings.mcp.sseUrlLabel) },
@@ -252,7 +252,7 @@ private fun EditServerSheetContent(
                 }
 
                 OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = reconnectionTimeText,
                     onValueChange = { newValue ->
                         val filtered = newValue.filter { it.isDigit() }
@@ -300,7 +300,7 @@ private fun EditServerSheetContent(
             var commandText by remember(process) { mutableStateOf(process.command.buildCommandString()) }
 
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = commandText,
                 onValueChange = { newValue ->
                     commandText = newValue
@@ -316,7 +316,7 @@ private fun EditServerSheetContent(
             }
 
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = environmentText,
                 onValueChange = { newValue ->
                     environmentText = newValue
@@ -360,7 +360,7 @@ private fun AddServerSheetContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             OutlinedTextField(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { name = it },
                 label = { Text(strings.mcp.nameLabel) },
@@ -418,7 +418,7 @@ private fun AddServerSheetContent(
 
         if (transportType == McpTransportType.Sse) {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = sseUrl,
                 onValueChange = { sseUrl = it },
                 label = { Text(strings.mcp.sseUrlLabel) },
@@ -426,7 +426,7 @@ private fun AddServerSheetContent(
             )
 
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = sseReconnectionTimeText,
                 onValueChange = { sseReconnectionTimeText = it.filter { ch -> ch.isDigit() } },
                 label = { Text(strings.mcp.reconnectionTimeLabel) },
@@ -447,7 +447,7 @@ private fun AddServerSheetContent(
 
         if (addProcess) {
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = commandText,
                 onValueChange = { commandText = it },
                 label = { Text(strings.mcp.commandLabel) },
@@ -455,7 +455,7 @@ private fun AddServerSheetContent(
             )
 
             OutlinedTextField(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = environmentText,
                 onValueChange = { environmentText = it },
                 label = { Text(strings.mcp.environmentLabel) },

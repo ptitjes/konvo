@@ -2,11 +2,11 @@ package io.github.ptitjes.konvo.frontend.compose
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
-import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.core.mcp.*
@@ -51,7 +51,10 @@ fun runComposeFrontend() = application {
                     }
                 },
             ) {
-                App()
+                val windowInfo = LocalWindowInfo.current
+                if (windowInfo.containerSize != IntSize(0, 0)) {
+                    App()
+                }
             }
         }
     }
@@ -102,9 +105,6 @@ fun CoroutineScope.buildDi() = DI {
 
     bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
 
-    bind { singleton { SettingsListViewModel() } }
-    bind { singleton { SettingsViewModel(instance()) } }
-
     bind {
         singleton {
             AgentFactory(
@@ -126,21 +126,12 @@ fun CoroutineScope.buildDi() = DI {
 
     bindSingleton { ConversationManager(coroutineContext, instance(), instance()) }
 
-    bindSingletonOf(::ConversationListViewModel)
-    bind {
-        singleton {
-            NewConversationViewModel(
-                modelManager = instance(),
-                characterManager = instance(),
-                lorebookManager = instance(),
-                mcpServerSpecificationsManager = instance(),
-                conversationRepository = instance(),
-                settingsRepository = instance(),
-            )
-        }
-    }
-    bindSingletonOf(::AppViewModel)
-    bindFactory { initialConversation: ConversationDigest ->
-        ConversationViewModel(instance(), initialConversation)
+    bindProviderOf(::SettingsListViewModel)
+    bindProviderOf(::SettingsViewModel)
+    bindProviderOf(::ConversationListViewModel)
+    bindProviderOf(::NewConversationViewModel)
+    bindProviderOf(::MainScreenViewModel)
+    bindFactory { conversationId: String ->
+        ConversationViewModel(instance(), conversationId)
     }
 }

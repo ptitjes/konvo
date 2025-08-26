@@ -40,6 +40,7 @@ class NewConversationViewModel(
     val roleplay = _roleplay.asStateFlow()
 
     init {
+        println("Initializing NewConversationViewModel")
         viewModelScope.launch {
             val availableModels = modelManager.models.first()
             val availableMcpServerNames = mcpServerNames.first()
@@ -91,6 +92,11 @@ class NewConversationViewModel(
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        println("Cleared NewConversationViewModel")
     }
 
     private fun updateQuestionAnswerState(
@@ -244,25 +250,27 @@ class NewConversationViewModel(
         it.copy(selectedLorebook = lorebook)
     }
 
-    fun createConversation(onConversationCreated: (ConversationDigest) -> Unit) = viewModelScope.launch {
-        val agentConfiguration = createAgentConfiguration()
+    fun createConversation(onConversationCreated: (id: String) -> Unit) {
+        viewModelScope.launch {
+            val agentConfiguration = createAgentConfiguration()
 
-        val now = SystemTimeProvider.now()
+            val now = SystemTimeProvider.now()
 
-        val conversation = ConversationDigest(
-            id = UuidIdGenerator.newId(),
-            title = "Untitled conversation",
-            createdAt = now,
-            updatedAt = now,
-            participants = listOf(),
-            lastMessagePreview = null,
-            messageCount = 0,
-            agentConfiguration = agentConfiguration,
-        )
+            val conversation = ConversationDigest(
+                id = UuidIdGenerator.newId(),
+                title = "Untitled conversation",
+                createdAt = now,
+                updatedAt = now,
+                participants = listOf(),
+                lastMessagePreview = null,
+                messageCount = 0,
+                agentConfiguration = agentConfiguration,
+            )
 
-        conversationRepository.create(conversation)
+            conversationRepository.create(conversation)
 
-        onConversationCreated(conversation)
+            onConversationCreated(conversation.id)
+        }
     }
 
     private fun createAgentConfiguration(): AgentConfiguration {

@@ -10,15 +10,13 @@ class SettingsListViewModel() : ViewModel() {
     private val _sections = MutableStateFlow(defaultSettingsSections)
     val sections: StateFlow<List<SettingsSection>> = _sections.asStateFlow()
 
-    private val _selectedSection = MutableStateFlow<SettingsSection?>(null)
-    val selectedSection: StateFlow<SettingsSection?> = _selectedSection.asStateFlow()
-
-    fun selectSection(section: SettingsSection) {
-        _selectedSection.value = section
+    init {
+        println("Initializing SettingsListViewModel")
     }
 
-    fun unselectSection() {
-        _selectedSection.value = null
+    override fun onCleared() {
+        super.onCleared()
+        println("Cleared SettingsListViewModel")
     }
 }
 
@@ -41,4 +39,16 @@ sealed interface SettingsSection {
         val panel: @Composable (settings: T, updateSettings: ((T) -> T) -> Unit) -> Unit,
         override val children: List<SettingsSection> = emptyList(),
     ) : SettingsSection
+}
+
+fun List<SettingsSection>.findSectionByTitleKey(titleKey: String): SettingsSection? {
+    fun List<SettingsSection>.findSectionByTitleKey(): SettingsSection? {
+        forEach { section ->
+            if (section.titleKey == titleKey) return section
+            section.children.findSectionByTitleKey()?.let { return it }
+        }
+        return null
+    }
+
+    return findSectionByTitleKey()
 }

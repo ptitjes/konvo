@@ -38,14 +38,14 @@ fun ListDetailPane(
             ListDetailLayout(
                 paneType = paneType,
                 paneChoice = paneChoice,
-                list = list,
-                detail = detail,
+                listContent = list,
+                detailContent = detail,
             )
         }
     }
 }
 
-private fun paneTypeFromAdaptiveInfo(
+internal fun paneTypeFromAdaptiveInfo(
     adaptiveInfo: WindowAdaptiveInfo,
 ): ListDetailPaneType {
     return with(adaptiveInfo) {
@@ -57,21 +57,21 @@ private fun paneTypeFromAdaptiveInfo(
 }
 
 @Composable
-private fun ListDetailLayout(
+internal fun ListDetailLayout(
     paneType: ListDetailPaneType,
     paneChoice: ListDetailPaneChoice,
-    list: @Composable () -> Unit,
-    detail: @Composable () -> Unit,
+    listContent: @Composable () -> Unit,
+    detailContent: @Composable () -> Unit,
 ) {
     val maxListWidth = with(LocalDensity.current) { 300.dp.toPx().toInt() }
 
     Layout(
         content = {
             Box(Modifier.layoutId(ListTag)) {
-                list()
+                listContent()
             }
             Box(Modifier.layoutId(DetailTag)) {
-                detail()
+                detailContent()
             }
         }
     ) { measurables, constraints ->
