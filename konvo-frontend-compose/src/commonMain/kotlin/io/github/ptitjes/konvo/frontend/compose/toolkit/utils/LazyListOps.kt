@@ -36,10 +36,10 @@ suspend fun LazyListState.reveal(index: Int) {
         // Item not visible
         if (index < firstVisible) {
             // Above: place it at the top (just after top padding)
-            scrollToItem(index, beforePadding)
+            animateScrollToItem(index, beforePadding)
         } else if (index > lastVisible) {
             // Below: first bring it into view near the top, then adjust to bottom
-            scrollToItem(index, beforePadding)
+            animateScrollToItem(index, beforePadding)
 
             // Recompute info and push it down to bottom if possible
             val info = currentItemInfo() ?: return
@@ -47,7 +47,7 @@ suspend fun LazyListState.reveal(index: Int) {
             val deltaToBottom = availableBottom - bottomEdge
             if (deltaToBottom > 0) {
                 // Scroll down to align the item bottom with available bottom
-                scrollBy(deltaToBottom.toFloat())
+                animateScrollBy(deltaToBottom.toFloat())
             }
         }
     } else {
@@ -59,13 +59,13 @@ suspend fun LazyListState.reveal(index: Int) {
             topEdge < availableTop -> {
                 // Scroll down to reveal the top
                 val delta = (topEdge - availableTop).toFloat()
-                scrollBy(delta)
+                animateScrollBy(delta)
             }
 
             bottomEdge > availableBottom -> {
                 // Scroll up to reveal the bottom
                 val delta = (bottomEdge - availableBottom).toFloat()
-                scrollBy(delta)
+                animateScrollBy(delta)
             }
 
             else -> {
