@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.roleplay.providers.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
@@ -23,7 +24,7 @@ private val logger = KotlinLogging.logger {}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LorebooksSettingsPanel() {
+fun SettingsPanelScope.LorebooksSettingsPanel() {
     val provider by rememberInstance<FileSystemLorebookProvider>()
     val scope = rememberCoroutineScope()
 
@@ -45,9 +46,6 @@ fun LorebooksSettingsPanel() {
 
     LaunchedEffect(Unit) { reload() }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    SnackbarHost(snackbarHostState)
-
     val importLauncher = rememberFilePickerLauncher(
         mode = PickerMode.Multiple(),
         type = PickerType.File(extensions = listOf("json")),
@@ -55,13 +53,12 @@ fun LorebooksSettingsPanel() {
         if (files.isNullOrEmpty()) return@rememberFilePickerLauncher
         scope.launch {
             files.forEach { file ->
-                val result = runCatching { file.importLorebook(provider) }
-                if (result.isFailure) {
-                    logger.error(result.exceptionOrNull()) { "Failed to import file: $file" }
-                    snackbarHostState.showSnackbar("Failed to import file: ${file.name}")
-                } else {
-                    reload()
-                }
+                runCatching { file.importLorebook(provider) }
+                    .onSuccess { reload() }
+                    .onFailure { exception ->
+                        logger.error(exception) { "Failed to import lorebook" }
+                        showSnackbar("Failed to import lorebook:\n${exception.message ?: "Unknown error"}")
+                    }
             }
         }
     }
@@ -108,7 +105,10 @@ fun LorebooksSettingsPanel() {
                                     }
                                 }
                                 IconButton(onClick = { pendingDelete = lorebook }) {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = strings.roleplay.deleteLorebookAria)
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = strings.roleplay.deleteLorebookAria
+                                    )
                                 }
                             }
                         }
@@ -127,9 +127,13 @@ fun LorebooksSettingsPanel() {
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
-                        runCatching { provider.delete(toDelete) }
                         pendingDelete = null
-                        reload()
+                        runCatching { provider.delete(toDelete) }
+                            .onSuccess { reload() }
+                            .onFailure { exception ->
+                                logger.error(exception) { "Failed to delete lorebook" }
+                                showSnackbar("Failed to delete lorebook:\n${exception.message ?: "Unknown error"}")
+                            }
                     }
                 }) { Text(strings.roleplay.deleteConfirm) }
             },

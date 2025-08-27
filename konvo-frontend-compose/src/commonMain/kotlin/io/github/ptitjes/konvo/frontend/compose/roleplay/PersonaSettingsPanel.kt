@@ -11,34 +11,34 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import io.github.ptitjes.konvo.frontend.compose.utils.*
 import org.kodein.di.compose.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonaSettingsPanel(
-    settings: PersonaSettings,
-    updateSettings: (updater: (previous: PersonaSettings) -> PersonaSettings) -> Unit,
-) {
+fun PersonaSettingsPanel() {
+    var settings by rememberMutableSettings(PersonaSettingsKey)
+
     val lorebookManager by rememberInstance<LorebookManager>()
     val lorebooks by lorebookManager.lorebooks.collectAsState(initial = emptyList())
 
     fun addPersona(persona: Persona) {
-        updateSettings { prev -> prev.copy(personas = prev.personas + persona) }
+        settings = settings.copy(personas = settings.personas + persona)
     }
 
     fun updatePersona(oldName: String, transform: (Persona) -> Persona) {
-        updateSettings { prev ->
-            val list = prev.personas.toMutableList()
-            val index = list.indexOfFirst { it.name == oldName }
-            if (index >= 0) {
-                list[index] = transform(list[index])
-                prev.copy(personas = list)
-            } else prev
-        }
+        settings = settings.copy(
+            personas = settings.personas.mutate {
+                val index = indexOfFirst { it.name == oldName }
+                if (index >= 0) {
+                    set(index, transform(get(index)))
+                }
+            }
+        )
     }
 
     fun removePersona(name: String) {
-        updateSettings { prev -> prev.copy(personas = prev.personas.filterNot { it.name == name }) }
+        settings = settings.copy(personas = settings.personas.filterNot { it.name == name })
     }
 
     var openSheet by remember { mutableStateOf<PersonaSheetState>(PersonaSheetState.Closed) }

@@ -14,10 +14,9 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 import org.kodein.di.compose.*
 
 @Composable
-fun RoleplaySettingsPanel(
-    settings: RoleplaySettings,
-    updateSettings: (updater: (previous: RoleplaySettings) -> RoleplaySettings) -> Unit,
-) {
+fun RoleplaySettingsPanel() {
+    var settings by rememberMutableSettings(RoleplaySettingsKey)
+
     // We need models to offer a selector for the default preferred model
     val modelManager by rememberInstance<ModelManager>()
     val models by modelManager.models.collectAsState(initial = emptyList())
@@ -43,7 +42,7 @@ fun RoleplaySettingsPanel(
                     label = null,
                     selectedPersona = selectedPersona,
                     onPersonaSelected = { persona ->
-                        updateSettings { previous -> previous.copy(defaultPersonaName = persona.name) }
+                        settings = settings.copy(defaultPersonaName = persona.name)
                     },
                     personas = personaSettings,
                 )
@@ -74,7 +73,7 @@ fun RoleplaySettingsPanel(
                     label = null,
                     selectedModel = selectedModel,
                     onModelSelected = { model ->
-                        updateSettings { previous -> previous.copy(defaultPreferredModelName = model.name) }
+                        settings = settings.copy(defaultPreferredModelName = model.name)
                     },
                     models = models,
                 )
@@ -92,7 +91,7 @@ fun RoleplaySettingsPanel(
                 modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
                 value = settings.defaultSystemPrompt,
                 onValueChange = { newValue ->
-                    updateSettings { previous -> previous.copy(defaultSystemPrompt = newValue) }
+                    settings = settings.copy(defaultSystemPrompt = newValue)
                 },
             )
         }
@@ -114,7 +113,7 @@ fun RoleplaySettingsPanel(
                         modifier = Modifier.weight(1f),
                         value = settings.defaultScanDepth,
                         onValueChange = { value ->
-                            updateSettings { previous -> previous.copy(defaultScanDepth = value) }
+                            settings = settings.copy(defaultScanDepth = value)
                         },
                         label = strings.roleplay.scanDepthLabel,
                     )
@@ -123,7 +122,7 @@ fun RoleplaySettingsPanel(
                         modifier = Modifier.weight(1f),
                         value = settings.defaultTokenBudget,
                         onValueChange = { value ->
-                            updateSettings { previous -> previous.copy(defaultTokenBudget = value) }
+                            settings = settings.copy(defaultTokenBudget = value)
                         },
                         label = strings.roleplay.tokenBudgetLabel,
                     )
@@ -141,7 +140,7 @@ fun RoleplaySettingsPanel(
                     Switch(
                         checked = settings.defaultRecursiveScanning,
                         onCheckedChange = { checked ->
-                            updateSettings { previous -> previous.copy(defaultRecursiveScanning = checked) }
+                            settings = settings.copy(defaultRecursiveScanning = checked)
                         },
                     )
                 }

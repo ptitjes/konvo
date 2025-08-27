@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.toolkit.settings
 
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.automirrored.filled.*
@@ -27,13 +28,9 @@ fun SettingsScreen(
 
         SettingsScreen(
             title = localizedTitle,
+            section = section,
             onBackClick = { navigator.navigateBack() },
-        ) {
-            when (section) {
-                is SettingsSection.WithoutKey -> SettingsPanelWithoutKey(section)
-                is SettingsSection.WithKey<*> -> SettingsPanelWithKey(section)
-            }
-        }
+        )
     }
 }
 
@@ -41,11 +38,13 @@ fun SettingsScreen(
 @Composable
 fun SettingsScreen(
     title: String,
+    section: SettingsSection,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
 ) {
     val paneType = LocalListDetailPaneType.current
+
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
         modifier = modifier,
@@ -75,7 +74,8 @@ fun SettingsScreen(
                     }
                 },
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
@@ -85,7 +85,22 @@ fun SettingsScreen(
                 modifier = Modifier.widthIn(max = 800.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                content()
+                val baseModifier = if (section.scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
+                Column(modifier = baseModifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
+                    val scope = remember {
+                        object : SettingsPanelScope {
+                            override suspend fun showSnackbar(
+                                message: String,
+                                actionLabel: String?,
+                                withDismissAction: Boolean,
+                                duration: SnackbarDuration,
+                            ): SnackbarResult =
+                                snackbarHostState.showSnackbar(message, actionLabel, withDismissAction, duration)
+                        }
+                    }
+
+                    section.panel(scope)
+                }
             }
         }
     }

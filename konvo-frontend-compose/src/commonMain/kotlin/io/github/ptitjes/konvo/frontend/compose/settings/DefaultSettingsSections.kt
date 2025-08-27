@@ -1,48 +1,39 @@
 package io.github.ptitjes.konvo.frontend.compose.settings
 
-import io.github.ptitjes.konvo.core.mcp.*
-import io.github.ptitjes.konvo.core.models.*
-import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
 import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 
 val defaultSettingsSections = listOf(
-    SettingsSection.WithKey(
+    SettingsSection(
         titleKey = "appearance",
-        key = AppearanceSettingsKey,
-        panel = ::AppearanceSettingsPanel,
+        panel = { AppearanceSettingsPanel() },
     ),
-    SettingsSection.WithKey(
+    SettingsSection(
         titleKey = "mcp",
-        key = McpSettingsKey,
-        panel = ::McpSettingsPanel,
+        panel = { McpSettingsPanel() },
     ),
-    SettingsSection.WithKey(
+    SettingsSection(
         titleKey = "models",
-        key = ModelProviderSettingsKey,
-        panel = ::ModelProviderSettingsPanel,
+        panel = { ModelProviderSettingsPanel() },
     ),
-    SettingsSection.WithKey(
+    SettingsSection(
         titleKey = "roleplay",
-        key = RoleplaySettingsKey,
-        panel = ::RoleplaySettingsPanel,
+        panel = { RoleplaySettingsPanel() },
         children = listOf(
-            SettingsSection.WithKey(
+            SettingsSection(
                 titleKey = "characters",
                 scrollable = false,
-                key = CharacterSettingsKey,
-                panel = ::CharacterSettingsPanel,
+                panel = { CharacterSettingsPanel() },
             ),
-            SettingsSection.WithoutKey(
+            SettingsSection(
                 titleKey = "lorebooks",
-                panel = ::LorebooksSettingsPanel,
+                panel = { LorebooksSettingsPanel() },
                 children = emptyList(),
             ),
-            SettingsSection.WithKey(
+            SettingsSection(
                 titleKey = "personas",
-                key = PersonaSettingsKey,
-                panel = ::PersonaSettingsPanel,
+                panel = { PersonaSettingsPanel() },
             ),
         ),
     ),

@@ -8,10 +8,9 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
-fun AppearanceSettingsPanel(
-    settings: AppearanceSettings,
-    updateSettings: ((AppearanceSettings) -> AppearanceSettings) -> Unit,
-) {
+fun SettingsPanelScope.AppearanceSettingsPanel() {
+    var settings by rememberMutableSettings(AppearanceSettingsKey)
+
     SettingsBox(
         title = strings.settings.appearanceBaseColorSchemeTitle,
         description = strings.settings.appearanceBaseColorSchemeDescription,
@@ -23,7 +22,7 @@ fun AppearanceSettingsPanel(
             GenericSelector(
                 modifier = Modifier.fillMaxWidth(),
                 selectedItem = settings.baseColorScheme,
-                onSelectItem = { updateSettings { previous -> previous.copy(baseColorScheme = it) } },
+                onSelectItem = { settings = settings.copy(baseColorScheme = it) },
                 options = BaseColorScheme.entries,
                 itemLabeler = {
                     when (it) {

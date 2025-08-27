@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.roleplay.providers.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
@@ -22,19 +23,18 @@ import org.kodein.di.compose.*
  * Settings panel for character-related preferences.
  */
 @Composable
-fun CharacterSettingsPanel(
-    settings: CharacterSettings,
-    updateSettings: ((CharacterSettings) -> CharacterSettings) -> Unit,
-) {
-    var text by remember(settings.filteredTags) {
+fun SettingsPanelScope.CharacterSettingsPanel() {
+    var settings by rememberMutableSettings(CharacterSettingsKey)
+
+    var filteredTagsText by remember(settings.filteredTags) {
         mutableStateOf(settings.filteredTags.joinToString(separator = ", "))
     }
 
     // Keep local text in sync if settings are externally updated
     LaunchedEffect(settings.filteredTags) {
         val joined = settings.filteredTags.joinToString(separator = ", ")
-        if (joined != text) {
-            text = joined
+        if (joined != filteredTagsText) {
+            filteredTagsText = joined
         }
     }
 
@@ -45,13 +45,13 @@ fun CharacterSettingsPanel(
             OutlinedTextField(
                 label = {},
                 modifier = Modifier.height(64.dp).fillMaxWidth(),
-                value = text,
+                value = filteredTagsText,
                 onValueChange = { newValue ->
-                    text = newValue
+                    filteredTagsText = newValue
                     val parsed = newValue.split(',')
                         .map { it.trim() }
                         .filter { it.isNotEmpty() }
-                    updateSettings { previous -> previous.copy(filteredTags = parsed) }
+                    settings = settings.copy(filteredTags = parsed)
                 },
                 singleLine = true,
                 placeholder = { Text(strings.roleplay.characterTagsPlaceholder) },
@@ -66,7 +66,7 @@ private val logger = KotlinLogging.logger {}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ImportedCharactersSettingsBox() {
+private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
     val provider by rememberInstance<FileSystemCharacterProvider>()
     val scope = rememberCoroutineScope()
 
@@ -88,23 +88,19 @@ private fun ImportedCharactersSettingsBox() {
 
     LaunchedEffect(Unit) { reload() }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    SnackbarHost(snackbarHostState)
-
     val importLauncher = rememberFilePickerLauncher(
         mode = PickerMode.Multiple(),
-        type = PickerType.File(extensions = listOf("json", "png")),
+        type = PickerType.File(extensions = listOf("png", "json")),
     ) { files ->
         if (files.isNullOrEmpty()) return@rememberFilePickerLauncher
         scope.launch {
             files.forEach { file ->
-                val result = runCatching { file.importCharacter(provider) }
-                if (result.isFailure) {
-                    logger.error(result.exceptionOrNull()) { "Failed to import file: $file" }
-                    snackbarHostState.showSnackbar("Failed to import file: ${file.name}")
-                } else {
-                    reload()
-                }
+                runCatching { file.importCharacter(provider) }
+                    .onSuccess { reload() }
+                    .onFailure { exception ->
+                        logger.error(exception) { "Failed to import character" }
+                        showSnackbar("Failed to import character:\n${exception.message ?: "Unknown error"}")
+                    }
             }
         }
     }
@@ -114,7 +110,10 @@ private fun ImportedCharactersSettingsBox() {
         description = strings.roleplay.importedCharactersDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
-                Icon(imageVector = Icons.Default.FileDownload, contentDescription = strings.roleplay.importCharactersAria)
+                Icon(
+                    imageVector = Icons.Default.FileDownload,
+                    contentDescription = strings.roleplay.importCharactersAria
+                )
             }
         },
         bottomContent = {
@@ -146,9 +145,13 @@ private fun ImportedCharactersSettingsBox() {
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
-                        runCatching { provider.delete(toDelete) }
                         pendingDelete = null
-                        reload()
+                        runCatching { provider.delete(toDelete) }
+                            .onSuccess { reload() }
+                            .onFailure { exception ->
+                                logger.error(exception) { "Failed to delete character" }
+                                showSnackbar("Failed to delete character:\n${exception.message ?: "Unknown error"}")
+                            }
                     }
                 }) { Text(strings.roleplay.deleteConfirm) }
             },

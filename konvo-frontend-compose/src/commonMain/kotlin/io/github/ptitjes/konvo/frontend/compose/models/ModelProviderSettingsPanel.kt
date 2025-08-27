@@ -14,41 +14,39 @@ import io.github.ptitjes.konvo.core.models.providers.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import io.github.ptitjes.konvo.frontend.compose.utils.*
 import sh.calvin.reorderable.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModelProviderSettingsPanel(
-    settings: ModelProviderSettings,
-    updateSettings: (updater: (previous: ModelProviderSettings) -> ModelProviderSettings) -> Unit,
-) {
+fun ModelProviderSettingsPanel() {
+    var settings by rememberMutableSettings(ModelProviderSettingsKey)
+
     fun addProvider(newProvider: NamedModelProvider) {
-        updateSettings { previous -> previous.copy(providers = previous.providers + newProvider) }
+        settings = settings.copy(providers = settings.providers + newProvider)
     }
 
     fun updateProvider(index: Int, transform: (previous: NamedModelProvider) -> NamedModelProvider) {
-        updateSettings { previous ->
-            previous.copy(providers = previous.providers.mapIndexed { i, provider ->
+        settings = settings.copy(
+            providers = settings.providers.mapIndexed { i, provider ->
                 if (i == index) transform(provider) else provider
-            })
-        }
+            }
+        )
     }
 
     fun removeProvider(index: Int) {
-        updateSettings { previous ->
-            previous.copy(providers = previous.providers.filterIndexed { i, _ -> i != index })
-        }
+        settings = settings.copy(providers = settings.providers.filterIndexed { i, _ -> i != index })
     }
 
     fun moveProvider(fromIndex: Int, toIndex: Int) {
         if (fromIndex == toIndex) return
-        updateSettings { previous ->
-            val list = previous.providers.toMutableList()
-            val item = list.removeAt(fromIndex)
-            val target = toIndex.coerceIn(0, list.size)
-            list.add(target, item)
-            previous.copy(providers = list)
-        }
+        settings = settings.copy(
+            providers = settings.providers.mutate {
+                val provider = removeAt(fromIndex)
+                val targetIndex = toIndex.coerceIn(0, size)
+                add(targetIndex, provider)
+            }
+        )
     }
 
     var sheetState by remember { mutableStateOf<ModelProvidersSheetState>(ModelProvidersSheetState.Closed) }

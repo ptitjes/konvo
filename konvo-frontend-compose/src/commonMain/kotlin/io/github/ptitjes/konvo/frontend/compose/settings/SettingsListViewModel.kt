@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo.frontend.compose.settings
 
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
-import io.github.ptitjes.konvo.core.settings.*
 import kotlinx.coroutines.flow.*
 
 class SettingsListViewModel() : ViewModel() {
@@ -20,25 +20,21 @@ class SettingsListViewModel() : ViewModel() {
     }
 }
 
-sealed interface SettingsSection {
-    val titleKey: String
-    val scrollable: Boolean
-    val children: List<SettingsSection>
+data class SettingsSection(
+    val titleKey: String,
+    val panel: @Composable SettingsPanelScope.() -> Unit,
+    val scrollable: Boolean = true,
+    val children: List<SettingsSection> = emptyList(),
+)
 
-    data class WithoutKey(
-        override val titleKey: String,
-        override val scrollable: Boolean = true,
-        val panel: @Composable () -> Unit,
-        override val children: List<SettingsSection>,
-    ) : SettingsSection
-
-    data class WithKey<T>(
-        override val titleKey: String,
-        override val scrollable: Boolean = true,
-        val key: SettingsKey<T>,
-        val panel: @Composable (settings: T, updateSettings: ((T) -> T) -> Unit) -> Unit,
-        override val children: List<SettingsSection> = emptyList(),
-    ) : SettingsSection
+interface SettingsPanelScope {
+    suspend fun showSnackbar(
+        message: String,
+        actionLabel: String? = null,
+        withDismissAction: Boolean = false,
+        duration: SnackbarDuration =
+            if (actionLabel == null) SnackbarDuration.Short else SnackbarDuration.Indefinite
+    ): SnackbarResult
 }
 
 fun List<SettingsSection>.findSectionByTitleKey(titleKey: String): SettingsSection? {

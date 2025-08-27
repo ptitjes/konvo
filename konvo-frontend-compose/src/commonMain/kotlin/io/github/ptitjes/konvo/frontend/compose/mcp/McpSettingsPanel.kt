@@ -15,31 +15,26 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun McpSettingsPanel(
-    settings: McpSettings,
-    updateSettings: (updater: (previous: McpSettings) -> McpSettings) -> Unit,
-) {
+fun McpSettingsPanel() {
+    var settings by rememberMutableSettings(McpSettingsKey)
+
     fun addServer(newName: String, newSpec: ServerSpecification) {
-        updateSettings { previous -> previous.copy(servers = previous.servers + (newName to newSpec)) }
+        settings = settings.copy(servers = settings.servers + (newName to newSpec))
     }
 
     fun updateServer(name: String, transform: (ServerSpecification) -> ServerSpecification) {
-        updateSettings { previous ->
-            val current = previous.servers[name] ?: return@updateSettings previous
-            previous.copy(servers = previous.servers + (name to transform(current)))
-        }
+        val currentSpecification = settings.servers[name] ?: return
+        settings = settings.copy(servers = settings.servers + (name to transform(currentSpecification)))
     }
 
     fun renameServer(oldName: String, newName: String) {
         if (newName.isBlank() || oldName == newName) return
-        updateSettings { previous ->
-            val spec = previous.servers[oldName] ?: return@updateSettings previous
-            previous.copy(servers = previous.servers - oldName + (newName to spec))
-        }
+        val specification = settings.servers[oldName] ?: return
+        settings = settings.copy(servers = settings.servers - oldName + (newName to specification))
     }
 
     fun removeServer(name: String) {
-        updateSettings { previous -> previous.copy(servers = previous.servers - name) }
+        settings = settings.copy(servers = settings.servers - name)
     }
 
     var sheetState by remember { mutableStateOf<McpServersSheetState>(McpServersSheetState.Closed) }
