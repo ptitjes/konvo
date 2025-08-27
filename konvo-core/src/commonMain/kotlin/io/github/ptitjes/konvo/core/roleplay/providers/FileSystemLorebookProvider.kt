@@ -20,21 +20,25 @@ class FileSystemLorebookProvider(
     private val path = Path(storagePaths.dataDirectory, "lorebooks")
 
     override suspend fun query(): List<Lorebook> = withContext(Dispatchers.IO) {
-        val jsonFileCards = defaultFileSystem.jsonFileLorebooks(path)
-        jsonFileCards.sortedBy { it.name }
+        defaultFileSystem.jsonFileLorebooks(path).sortedBy { it.name }
     }
 
     suspend fun add(sourcePath: Path) = withContext(Dispatchers.IO) {
+        defaultFileSystem.readJsonFileLorebook(sourcePath)
         defaultFileSystem.copy(sourcePath, Path(path, sourcePath.name))
     }
 
     suspend fun delete(lorebook: Lorebook) = withContext(Dispatchers.IO) {
-        defaultFileSystem.delete(Path(path, "${lorebook.id}.json"))
+        defaultFileSystem.delete(Path(path, lorebook.id!!))
+    }
+}
+
+private fun FileSystem.jsonFileLorebooks(path: Path): List<Lorebook> =
+    loadFiles(path, "json") { path ->
+        readJsonFileLorebook(path)
     }
 
-    private fun FileSystem.jsonFileLorebooks(path: Path): List<Lorebook> =
-        loadFiles(path, "json") { path ->
-            val json = Json.decodeFromString<JsonObject>(readText(path))
-            json.parseLorebook(path.name.removeSuffix(".json"))
-        }
+private fun FileSystem.readJsonFileLorebook(path: Path): Lorebook {
+    val json = Json.decodeFromString<JsonObject>(readText(path))
+    return json.parseLorebook(path.name)
 }

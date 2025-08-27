@@ -15,28 +15,34 @@ class FileSystemCharacterProvider(
     private val path = Path(storagePaths.dataDirectory, "characters")
 
     override suspend fun query(): List<CharacterCard> = withContext(Dispatchers.IO) {
-        val jsonFileCards = defaultFileSystem.jsonFileCards(path)
-        val pngFileCards = defaultFileSystem.pngFileCards(path)
-        (jsonFileCards + pngFileCards).sortedBy { it.name }
+        defaultFileSystem.readFileCards(path).sortedBy { it.name }
     }
 
     suspend fun add(sourcePath: Path) = withContext(Dispatchers.IO) {
+        defaultFileSystem.readFileCard(sourcePath)
         defaultFileSystem.copy(sourcePath, Path(path, sourcePath.name))
     }
 
     suspend fun delete(character: CharacterCard) = withContext(Dispatchers.IO) {
-        defaultFileSystem.delete(Path(path, "${character.id}.json"))
+        defaultFileSystem.delete(Path(path, character.id))
     }
 }
 
-private fun FileSystem.jsonFileCards(path: Path): List<CharacterCard> =
-    loadFiles(path, "json") { path ->
-        val json = Json.decodeFromString<JsonObject>(readText(path))
-        json.parseCharacterCard(path.name.removeSuffix(".json"))
-    }
+private fun FileSystem.readFileCards(path: Path): List<CharacterCard> =
+    loadFiles(path, listOf("json", "png")) { readFileCard(it) }
 
-private fun FileSystem.pngFileCards(path: Path): List<CharacterCard> =
-    loadFiles(path, "png") { path ->
-        val bytes = readBytes(path)
-        bytes.extractCharacterCard(path.name.removeSuffix(".png"))
-    }
+private fun FileSystem.readFileCard(path: Path): CharacterCard = when (path.extension) {
+    "json" -> readJsonFileCard(path)
+    "png" -> readPngFileCard(path)
+    else -> error("Unknown character card format")
+}
+
+private fun FileSystem.readJsonFileCard(path: Path): CharacterCard {
+    val json = Json.decodeFromString<JsonObject>(readText(path))
+    return json.parseCharacterCard(path.name)
+}
+
+private fun FileSystem.readPngFileCard(path: Path): CharacterCard {
+    val bytes = readBytes(path)
+    return bytes.extractCharacterCard(path.name)
+}

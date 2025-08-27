@@ -11,10 +11,16 @@ internal fun <T> FileSystem.loadFiles(
     directory: Path,
     extension: String,
     loader: FileSystem.(Path) -> T,
+): List<T> = loadFiles(directory, listOf(extension), loader)
+
+internal fun <T> FileSystem.loadFiles(
+    directory: Path,
+    extensions: List<String>,
+    loader: FileSystem.(Path) -> T,
 ): List<T> {
     if (!exists(directory)) return listOf()
     return list(directory)
-        .filter { it.name.endsWith(".$extension") }
+        .filter { it.extension in extensions }
         .mapNotNull {
             val result = runCatching { loader(it) }
             if (result.isFailure) logger.error(result.exceptionOrNull()) { "Failed to load file: $it" }
@@ -38,3 +44,5 @@ internal fun FileSystem.copy(sourcePath: Path, destinationPath: Path) {
         }
     }
 }
+
+internal val Path.extension: String get() = name.substringAfterLast('.', "")
