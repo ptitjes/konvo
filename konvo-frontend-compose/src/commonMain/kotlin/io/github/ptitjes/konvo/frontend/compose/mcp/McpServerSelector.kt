@@ -39,7 +39,7 @@ fun McpServerSelector(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 servers.sortedBy { it }.forEach { server ->
-                    FilterChip(
+                    ElevatedFilterChip(
                         selected = selectedServers.contains(server),
                         onClick = {
                             if (selectedServers.contains(server)) {

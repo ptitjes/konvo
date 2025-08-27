@@ -1,12 +1,9 @@
 package io.github.ptitjes.konvo.frontend.compose
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.material3.adaptive.navigationsuite.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.unit.*
 import androidx.window.core.layout.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
@@ -77,23 +74,37 @@ private fun EntryProviderBuilder<Destination>.conversationEntries(navigator: Nav
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 private fun EntryProviderBuilder<Destination>.archiveEntries(navigator: Navigator) {
     entry<Destination.Archive> {
-        Text(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-            text = strings.navigationDestinationTitles(MainDestination.Archive),
-            style = MaterialTheme.typography.titleLarge,
-        )
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = strings.navigationDestinationTitles(MainDestination.Archive),
+                        )
+                    },
+                )
+            }
+        ) { }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 private fun EntryProviderBuilder<Destination>.knowledgeBaseEntries(navigator: Navigator) {
     entry<Destination.KnowledgeBase> {
-        Text(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
-            text = strings.navigationDestinationTitles(MainDestination.KnowledgeBases),
-            style = MaterialTheme.typography.titleLarge,
-        )
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = strings.navigationDestinationTitles(MainDestination.KnowledgeBases),
+                        )
+                    },
+                )
+            }
+        ) { }
     }
 }
 

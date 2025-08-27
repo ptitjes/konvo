@@ -37,6 +37,7 @@ fun SettingsListScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsListScreen(
     sections: List<SettingsSection>,
@@ -44,19 +45,22 @@ fun SettingsListScreen(
     onSelectSection: (SettingsSection) -> Unit,
     modifier: Modifier = Modifier.Companion,
 ) {
-    Column(
-        modifier = modifier.fillMaxSize().padding(horizontal = 8.dp),
-    ) {
-        Text(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
-            text = strings.settings.listTitle,
-            style = MaterialTheme.typography.titleLarge,
-        )
-
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = strings.settings.listTitle,
+                    )
+                },
+            )
+        },
+    ) { paddingValues ->
         val flattenedSections = remember(sections) { sections.flatten() }
 
         LazyColumn(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.padding(paddingValues).fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {

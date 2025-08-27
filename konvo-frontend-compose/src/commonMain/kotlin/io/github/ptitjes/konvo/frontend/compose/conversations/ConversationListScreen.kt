@@ -51,6 +51,7 @@ fun ConversationListScreen(
 /**
  * Conversation list panel.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationListScreen(
     selectedConversationId: String?,
@@ -71,73 +72,71 @@ fun ConversationListScreen(
         }
     }
 
-    Surface(
-        modifier = modifier.fillMaxSize().padding(horizontal = 8.dp),
-    ) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = strings.conversations.listTitle,
+                    )
+                },
+            )
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onCreateConversation() },
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = strings.conversations.newConversationAria,
+                )
+            }
+        }
+    ) { paddingValues ->
         when {
-            isLoading -> FullSizeProgressIndicator()
+            isLoading -> FullSizeProgressIndicator(modifier = Modifier.padding(paddingValues))
             conversations.isEmpty() -> EmptyConversationListPanel(
+                modifier = Modifier.padding(paddingValues),
                 onNewClick = onCreateConversation,
             )
 
-            else ->
-                Box(Modifier.fillMaxSize()) {
-                    Column(Modifier.fillMaxSize()) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 16.dp),
-                            text = strings.conversations.listTitle,
-                            style = MaterialTheme.typography.titleLarge,
-                        )
+            else -> {
+                val listState = rememberLazyListState()
 
-                        val listState = rememberLazyListState()
-
-                        LaunchedEffect(selectedConversationId) {
-                            if (selectedConversationId != null) {
-                                val index = conversations.indexOfFirst { it.id == selectedConversationId }
-                                listState.reveal(index)
-                            }
-                        }
-
-                        LazyColumn(
-                            modifier = Modifier.weight(1f),
-                            state = listState,
-                            contentPadding = PaddingValues(
-                                start = 8.dp,
-                                end = 8.dp,
-                                top = 8.dp,
-                                bottom = 64.dp,
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            items(conversations, key = { it.id }) { conversation ->
-                                ConversationListItem(
-                                    conversation = conversation,
-                                    selected = conversation.id == selectedConversationId,
-                                    onClick = { onSelectConversation(conversation.id) },
-                                    onDelete = {
-                                        viewModel.delete(conversation)
-                                        onDeleteConversation(conversation.id)
-                                    },
-                                )
-                            }
-                        }
+                LaunchedEffect(selectedConversationId) {
+                    if (selectedConversationId != null) {
+                        val index = conversations.indexOfFirst { it.id == selectedConversationId }
+                        listState.reveal(index)
                     }
+                }
 
-                    FloatingActionButton(
-                        onClick = { onCreateConversation() },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(16.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Create,
-                            contentDescription = strings.conversations.newConversationAria,
+                LazyColumn(
+                    modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        start = 8.dp,
+                        end = 8.dp,
+                        top = 8.dp,
+                        bottom = 64.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(conversations, key = { it.id }) { conversation ->
+                        ConversationListItem(
+                            conversation = conversation,
+                            selected = conversation.id == selectedConversationId,
+                            onClick = { onSelectConversation(conversation.id) },
+                            onDelete = {
+                                viewModel.delete(conversation)
+                                onDeleteConversation(conversation.id)
+                            },
                         )
                     }
                 }
+            }
         }
-
-        SnackbarHost(hostState = snackbarHostState)
     }
 }
 

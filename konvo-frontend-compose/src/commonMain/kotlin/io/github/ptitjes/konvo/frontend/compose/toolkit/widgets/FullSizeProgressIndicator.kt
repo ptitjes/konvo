@@ -6,9 +6,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 
 @Composable
-fun FullSizeProgressIndicator() {
+fun FullSizeProgressIndicator(
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
