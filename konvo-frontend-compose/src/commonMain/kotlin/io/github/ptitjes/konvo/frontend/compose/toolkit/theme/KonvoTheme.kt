@@ -11,8 +11,8 @@ fun KonvoTheme(
     colorSchemeOverride: BaseColorScheme? = null,
     content: @Composable () -> Unit,
 ) {
-    val colorSchemeSetting by rememberSetting(AppearanceSettingsKey, null) { it.baseColorScheme }
-    val colorScheme = colorSchemeOverride ?: colorSchemeSetting ?: System
+    val colorSchemeSetting by rememberSetting(AppearanceSettingsKey) { it.baseColorScheme }
+    val colorScheme = colorSchemeOverride ?: colorSchemeSetting
     val isDarkTheme = when (colorScheme) {
         Dark -> true
         Light -> false
