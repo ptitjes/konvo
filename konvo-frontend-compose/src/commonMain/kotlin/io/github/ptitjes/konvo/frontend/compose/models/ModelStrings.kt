@@ -10,6 +10,9 @@ internal data class ModelStrings(
     val noProvidersMessage: String,
     val dragHandleAria: String,
     val editProviderAria: String,
+    val testProviderAria: String,
+    val testProviderSuccessAria: String,
+    val testProviderFailureAria: String,
     val deleteProviderAria: String,
     val deleteProviderDialogTitle: String,
     val deleteProviderDialogText: (String) -> String,
@@ -26,4 +29,10 @@ internal data class ModelStrings(
     val nameUniqueError: String,
     val addProviderConfirmAria: String,
     val modelLabel: String,
+    // New labels for bottom sheet actions and feedback
+    val testAction: String,
+    val addAction: String,
+    val saveAction: String,
+    val deleteAction: String,
+    val testFailedMessage: (String) -> String,
 )

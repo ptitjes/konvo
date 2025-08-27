@@ -39,7 +39,8 @@ fun runComposeFrontend() = application {
         withDI(it) {
             Window(
                 title = "Konvo",
-                state = rememberWindowState(width = 1280.dp, height = 720.dp),
+                state = rememberWindowState(width = 375.dp, height = 667.dp),
+//                state = rememberWindowState(width = 1280.dp, height = 720.dp),
                 icon = painterResource(Res.drawable.ic_icon),
                 onCloseRequest = ::exitApplication,
                 onKeyEvent = { event ->

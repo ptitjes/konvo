@@ -24,37 +24,37 @@ class SettingsBasedModelProviderManager(
         withContext(Dispatchers.Default) {
             settings.providers.flatMap { providerSettings ->
                 modelCache.getOrPut(providerSettings.configuration) {
-                    loadModels(providerSettings.name, providerSettings.configuration)
+                    providerSettings.loadModels()
                 }
             }
         }
 
-    private suspend fun loadModels(
-        name: String,
-        configuration: ModelProviderConfiguration,
-    ): List<ModelCard> {
-        val provider = when (configuration) {
-            is ModelProviderConfiguration.Anthropic -> AnthropicModelProvider(
-                name = name,
-                apiKey = configuration.apiKey,
-            )
+}
 
-            is ModelProviderConfiguration.Ollama -> OllamaModelProvider(
-                name = name,
-                baseUrl = configuration.url,
-            )
+suspend fun NamedModelProvider.test() = runCatching { loadModels().let { } }
 
-            is ModelProviderConfiguration.OpenAI -> OpenAIModelProvider(
-                name = name,
-                apiKey = configuration.apiKey,
-            )
+private suspend fun NamedModelProvider.loadModels(): List<ModelCard> = withContext(Dispatchers.IO) {
+    buildModelProvider().query()
+}
 
-            is ModelProviderConfiguration.Google -> GoogleModelProvider(
-                name = name,
-                apiKey = configuration.apiKey,
-            )
-        }
+private fun NamedModelProvider.buildModelProvider(): ModelProvider = when (configuration) {
+    is ModelProviderConfiguration.Anthropic -> AnthropicModelProvider(
+        name = name,
+        apiKey = configuration.apiKey,
+    )
 
-        return provider.query()
-    }
+    is ModelProviderConfiguration.Ollama -> OllamaModelProvider(
+        name = name,
+        baseUrl = configuration.url,
+    )
+
+    is ModelProviderConfiguration.OpenAI -> OpenAIModelProvider(
+        name = name,
+        apiKey = configuration.apiKey,
+    )
+
+    is ModelProviderConfiguration.Google -> GoogleModelProvider(
+        name = name,
+        apiKey = configuration.apiKey,
+    )
 }

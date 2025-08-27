@@ -11,15 +11,17 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.core.models.providers.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.ptitjes.konvo.frontend.compose.utils.*
+import kotlinx.coroutines.*
 import sh.calvin.reorderable.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModelProviderSettingsPanel() {
+fun SettingsPanelScope.ModelProviderSettingsPanel() {
     var settings by rememberMutableSettings(ModelProviderSettingsKey)
 
     fun addProvider(newProvider: NamedModelProvider) {
@@ -179,10 +181,13 @@ fun ModelProviderSettingsPanel() {
                 is ModelProvidersSheetState.Editing -> {
                     val index = sheet.index
                     EditProviderSheetContent(
-                        provider = settings.providers[sheet.index],
+                        initialProvider = settings.providers[sheet.index],
                         otherNames = settings.providers.map { it.name }.toSet() - settings.providers[index].name,
-                        onChange = { updated -> updateProvider(index) { _ -> updated } },
-                        onRemove = {
+                        onSave = { updated ->
+                            updateProvider(index) { _ -> updated }
+                            sheetState = ModelProvidersSheetState.Closed
+                        },
+                        onDelete = {
                             providerPendingDeletionIndex = index
                         },
                     )
@@ -194,138 +199,85 @@ fun ModelProviderSettingsPanel() {
     }
 }
 
-@Composable
-private fun EditProviderSheetContent(
-    provider: NamedModelProvider,
-    otherNames: Set<String>,
-    onChange: (NamedModelProvider) -> Unit,
-    onRemove: () -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            OutlinedTextField(
-                modifier = Modifier.height(64.dp).weight(1f),
-                value = provider.name,
-                onValueChange = { newName -> onChange(provider.copy(name = newName)) },
-                label = { Text(strings.models.nameLabel) },
-                isError = provider.name.isBlank() || otherNames.contains(provider.name),
-                singleLine = true,
-            )
-
-            var type by remember(provider.configuration) { mutableStateOf(provider.configuration.toType()) }
-            GenericSelector(
-                label = strings.models.typeLabel,
-                selectedItem = type,
-                onSelectItem = { selected ->
-                    type = selected
-                    val newConfig = buildNewConfiguration(selected, provider)
-                    onChange(provider.copy(configuration = newConfig))
-                },
-                options = ProviderType.entries,
-                itemLabeler = { it.name },
-                modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
-            )
-
-            IconButton(
-                modifier = Modifier.offset(y = 4.dp),
-                onClick = onRemove,
-            ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = strings.models.removeProviderAria)
-            }
-        }
-
-        when (val conf = provider.configuration) {
-            is Ollama -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = conf.url,
-                    onValueChange = { newUrl -> onChange(provider.copy(configuration = conf.copy(url = newUrl))) },
-                    label = { Text(strings.models.ollamaBaseUrlLabel) },
-                    singleLine = true,
-                )
-            }
-
-            is Anthropic -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = conf.apiKey,
-                    onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
-                    label = { Text(strings.models.anthropicApiKeyLabel) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-            }
-
-            is OpenAI -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = conf.apiKey,
-                    onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
-                    label = { Text(strings.models.openAiApiKeyLabel) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-            }
-
-            is Google -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = conf.apiKey,
-                    onValueChange = { newKey -> onChange(provider.copy(configuration = conf.copy(apiKey = newKey))) },
-                    label = { Text(strings.models.googleApiKeyLabel) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-            }
-        }
-
-        // Optional helper text for name validity
-        if (provider.name.isBlank()) {
-            Text(
-                text = strings.models.nameEmptyError,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        } else if (otherNames.contains(provider.name)) {
-            Text(
-                text = strings.models.nameUniqueError,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error
-            )
-        }
-    }
+private sealed interface ModelProvidersSheetState {
+    data object Closed : ModelProvidersSheetState
+    data object Adding : ModelProvidersSheetState
+    data class Editing(val index: Int) : ModelProvidersSheetState
 }
 
-private fun buildNewConfiguration(
-    selected: ProviderType,
-    provider: NamedModelProvider,
-): ModelProviderConfiguration = when (selected) {
-    ProviderType.Ollama -> when (val configuration = provider.configuration) {
-        is Ollama -> configuration
-        else -> Ollama(url = DEFAULT_OLLAMA_URL)
-    }
+@Composable
+private fun EditProviderSheetContent(
+    initialProvider: NamedModelProvider,
+    otherNames: Set<String>,
+    onSave: (NamedModelProvider) -> Unit,
+    onDelete: () -> Unit,
+) {
+    var draft by remember { mutableStateOf(initialProvider) }
+    var type by remember(draft.configuration) { mutableStateOf(draft.configuration.toType()) }
 
-    ProviderType.Anthropic -> when (val configuration = provider.configuration) {
-        is Anthropic -> configuration
-        else -> Anthropic(apiKey = "")
-    }
+    ModelProviderSheetLayout(
+        name = draft.name,
+        onNameChange = { newName -> draft = draft.copy(name = newName) },
+        type = type,
+        onTypeChange = { newType ->
+            if (type != newType) {
+                type = newType
+                draft = draft.copy(configuration = newType.newConfiguration())
+            }
+        },
+        typeSpecificField = {
+            when (val conf = draft.configuration) {
+                is Ollama -> {
+                    OutlinedUrlField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = conf.url,
+                        onValueChange = { newUrl -> draft = draft.copy(configuration = conf.copy(url = newUrl)) },
+                        label = { Text(strings.models.ollamaBaseUrlLabel) },
+                    )
+                }
 
-    ProviderType.OpenAI -> when (val configuration = provider.configuration) {
-        is OpenAI -> configuration
-        else -> OpenAI(apiKey = "")
-    }
+                is Anthropic -> {
+                    OutlinedApiKeyField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = conf.apiKey,
+                        onValueChange = { newKey -> draft = draft.copy(configuration = conf.copy(apiKey = newKey)) },
+                        label = { Text(strings.models.anthropicApiKeyLabel) },
+                    )
+                }
 
-    ProviderType.Google -> when (val configuration = provider.configuration) {
-        is Google -> configuration
-        else -> Google(apiKey = "")
-    }
+                is OpenAI -> {
+                    OutlinedApiKeyField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = conf.apiKey,
+                        onValueChange = { newKey -> draft = draft.copy(configuration = conf.copy(apiKey = newKey)) },
+                        label = { Text(strings.models.openAiApiKeyLabel) },
+                    )
+                }
+
+                is Google -> {
+                    OutlinedApiKeyField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = conf.apiKey,
+                        onValueChange = { newKey -> draft = draft.copy(configuration = conf.copy(apiKey = newKey)) },
+                        label = { Text(strings.models.googleApiKeyLabel) },
+                    )
+                }
+            }
+        },
+        uniqueNames = otherNames,
+        buildProvider = { draft },
+        startActions = { _, testResult, runTest ->
+            TestButton(result = testResult, onClick = runTest)
+            DeleteButton(onClick = onDelete)
+        },
+        endActions = { canSave, _, _ ->
+            AddSaveButton(
+                actionType = AddSaveActionType.Save,
+                onClick = { onSave(draft) },
+                enabled = canSave,
+            )
+        },
+    )
 }
 
 @Composable
@@ -335,17 +287,140 @@ private fun AddProviderSheetContent(
 ) {
     var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf(ProviderType.Ollama) }
+
     var ollamaUrl by remember { mutableStateOf(DEFAULT_OLLAMA_URL) }
     var anthropicKey by remember { mutableStateOf("") }
     var openAIKey by remember { mutableStateOf("") }
     var googleKey by remember { mutableStateOf("") }
 
-    fun isValid(): Boolean = name.isNotBlank() && !existingNames.contains(name) && when (type) {
-        ProviderType.Ollama -> ollamaUrl.isNotBlank()
-        ProviderType.Anthropic -> anthropicKey.isNotBlank()
-        ProviderType.OpenAI -> openAIKey.isNotBlank()
-        ProviderType.Google -> googleKey.isNotBlank()
+    fun buildProvider(): NamedModelProvider = NamedModelProvider(
+        name = name,
+        configuration = when (type) {
+            ProviderType.Ollama -> Ollama(url = ollamaUrl)
+            ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
+            ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
+            ProviderType.Google -> Google(apiKey = googleKey)
+        },
+    )
+
+    ModelProviderSheetLayout(
+        name = name,
+        onNameChange = { name = it },
+        type = type,
+        onTypeChange = { type = it },
+        typeSpecificField = {
+            when (type) {
+                ProviderType.Ollama -> {
+                    OutlinedUrlField(
+                        value = ollamaUrl,
+                        onValueChange = { ollamaUrl = it },
+                        label = { Text(strings.models.ollamaBaseUrlLabel) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                ProviderType.Anthropic -> {
+                    OutlinedApiKeyField(
+                        value = anthropicKey,
+                        onValueChange = { anthropicKey = it },
+                        label = { Text(strings.models.anthropicApiKeyLabel) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                ProviderType.OpenAI -> {
+                    OutlinedApiKeyField(
+                        value = openAIKey,
+                        onValueChange = { openAIKey = it },
+                        label = { Text(strings.models.openAiApiKeyLabel) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                ProviderType.Google -> {
+                    OutlinedApiKeyField(
+                        value = googleKey,
+                        onValueChange = { googleKey = it },
+                        label = { Text(strings.models.googleApiKeyLabel) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        },
+        uniqueNames = existingNames,
+        buildProvider = { buildProvider() },
+        startActions = { _, testResult, runTest ->
+            TestButton(result = testResult, onClick = runTest)
+        },
+        endActions = { canSave, _, _ ->
+            AddSaveButton(
+                actionType = AddSaveActionType.Add,
+                onClick = { onAdd(buildProvider()) },
+                enabled = canSave,
+            )
+        },
+    )
+}
+
+private fun ModelProviderConfiguration.toType(): ProviderType = when (this) {
+    is Ollama -> ProviderType.Ollama
+    is Anthropic -> ProviderType.Anthropic
+    is OpenAI -> ProviderType.OpenAI
+    is Google -> ProviderType.Google
+}
+
+private fun ModelProviderConfiguration.isValid(): Boolean = when (this) {
+    is Ollama -> this.url.isNotBlank()
+    is Anthropic -> this.apiKey.isNotBlank()
+    is OpenAI -> this.apiKey.isNotBlank()
+    is Google -> this.apiKey.isNotBlank()
+}
+
+private fun ProviderType.newConfiguration(): ModelProviderConfiguration {
+    return when (this) {
+        ProviderType.Ollama -> Ollama(url = DEFAULT_OLLAMA_URL)
+        ProviderType.Anthropic -> Anthropic(apiKey = "")
+        ProviderType.OpenAI -> OpenAI(apiKey = "")
+        ProviderType.Google -> Google(apiKey = "")
     }
+}
+
+private fun NamedModelProvider.isValid(): Boolean = name.isNotBlank() && configuration.isValid()
+
+@Composable
+private fun ModelProviderSheetLayout(
+    name: String,
+    onNameChange: (String) -> Unit,
+    type: ProviderType,
+    onTypeChange: (ProviderType) -> Unit,
+    typeSpecificField: @Composable () -> Unit,
+    uniqueNames: Set<String>,
+    buildProvider: () -> NamedModelProvider,
+    startActions: @Composable RowScope.(canSave: Boolean, testResult: TestResult, runTest: () -> Unit) -> Unit,
+    endActions: @Composable RowScope.(canSave: Boolean, testResult: TestResult, runTest: () -> Unit) -> Unit,
+) {
+    var testResult by remember { mutableStateOf<TestResult>(TestResult.Unknown) }
+    val scope = rememberCoroutineScope()
+
+    val nameErrorText = when {
+        name.isBlank() -> strings.models.nameEmptyError
+        uniqueNames.contains(name) -> strings.models.nameUniqueError
+        else -> null
+    }
+
+    fun runTest() {
+        testResult = TestResult.Pending
+        val provider = buildProvider()
+        scope.launch {
+            provider.test()
+                .onSuccess { testResult = TestResult.Success }
+                .onFailure { throwable ->
+                    testResult = TestResult.Failure(throwable.message ?: "Unknown error")
+                }
+        }
+    }
+
+    val canSave = (nameErrorText == null) && buildProvider().isValid()
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -356,118 +431,198 @@ private fun AddProviderSheetContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            OutlinedTextField(
-                modifier = Modifier.height(64.dp).weight(1f),
+            OutlinedNameField(
+                modifier = Modifier.weight(1f),
                 value = name,
-                onValueChange = { name = it },
-                label = { Text(strings.models.nameLabel) },
-                singleLine = true,
-                isError = name.isBlank() || existingNames.contains(name),
+                onValueChange = onNameChange,
+                isError = nameErrorText != null,
             )
 
-            GenericSelector(
-                label = strings.models.typeLabel,
-                selectedItem = type,
-                onSelectItem = { type = it },
-                options = ProviderType.entries,
-                itemLabeler = { it.name },
+            ModelProviderTypeSelector(
                 modifier = Modifier.widthIn(min = 180.dp).weight(0.7f),
+                selected = type,
+                onSelected = onTypeChange,
             )
-
-            FilledTonalIconButton(
-                modifier = Modifier.offset(y = 4.dp),
-                onClick = {
-                    val configuration: ModelProviderConfiguration = when (type) {
-                        ProviderType.Ollama -> Ollama(url = ollamaUrl)
-                        ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
-                        ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
-                        ProviderType.Google -> Google(apiKey = googleKey)
-                    }
-                    onAdd(
-                        NamedModelProvider(
-                            name = name,
-                            configuration = configuration,
-                        )
-                    )
-                },
-                enabled = isValid(),
-            ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = strings.models.addProviderConfirmAria)
-            }
         }
 
-        when (type) {
-            ProviderType.Ollama -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = ollamaUrl,
-                    onValueChange = { ollamaUrl = it },
-                    label = { Text(strings.models.ollamaBaseUrlLabel) },
-                    singleLine = true,
-                )
-            }
+        typeSpecificField()
 
-            ProviderType.Anthropic -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = anthropicKey,
-                    onValueChange = { anthropicKey = it },
-                    label = { Text(strings.models.anthropicApiKeyLabel) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-            }
-
-            ProviderType.OpenAI -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = openAIKey,
-                    onValueChange = { openAIKey = it },
-                    label = { Text(strings.models.openAiApiKeyLabel) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-            }
-
-            ProviderType.Google -> {
-                OutlinedTextField(
-                    modifier = Modifier.height(64.dp).fillMaxWidth(),
-                    value = googleKey,
-                    onValueChange = { googleKey = it },
-                    label = { Text(strings.models.googleApiKeyLabel) },
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                )
-            }
-        }
-
-        if (name.isBlank()) {
+        nameErrorText?.let {
             Text(
-                text = strings.models.nameEmptyError,
+                text = it,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error,
             )
-        } else if (existingNames.contains(name)) {
-            Text(
-                text = strings.models.nameUniqueError,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            startActions(canSave, testResult, ::runTest)
+            Spacer(Modifier.weight(1f))
+            endActions(canSave, testResult, ::runTest)
+        }
+
+        when (val result = testResult) {
+            is TestResult.Failure -> {
+                Text(
+                    text = strings.models.testFailedMessage(result.error),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            else -> {}
         }
     }
 }
 
-private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
-
-private sealed interface ModelProvidersSheetState {
-    data object Closed : ModelProvidersSheetState
-    data object Adding : ModelProvidersSheetState
-    data class Editing(val index: Int) : ModelProvidersSheetState
+@Composable
+private fun OutlinedNameField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    isError: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        modifier = modifier.height(64.dp),
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(strings.models.nameLabel) },
+        singleLine = true,
+        isError = isError,
+    )
 }
 
-private fun ModelProviderConfiguration.toType(): ProviderType = when (this) {
-    is Ollama -> ProviderType.Ollama
-    is Anthropic -> ProviderType.Anthropic
-    is OpenAI -> ProviderType.OpenAI
-    is Google -> ProviderType.Google
+private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
+
+@Composable
+private fun ModelProviderTypeSelector(
+    selected: ProviderType,
+    onSelected: (ProviderType) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    GenericSelector(
+        label = strings.models.typeLabel,
+        selectedItem = selected,
+        onSelectItem = onSelected,
+        options = ProviderType.entries,
+        itemLabeler = { it.name },
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun OutlinedUrlField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        modifier = modifier.height(64.dp),
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        singleLine = true,
+    )
+}
+
+@Composable
+private fun OutlinedApiKeyField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        modifier = modifier.height(64.dp),
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        singleLine = true,
+        visualTransformation = PasswordVisualTransformation(),
+    )
+}
+
+private sealed class TestResult {
+    data object Unknown : TestResult()
+    data object Pending : TestResult()
+    data object Success : TestResult()
+    data class Failure(val error: String) : TestResult()
+}
+
+@Composable
+private fun TestButton(
+    result: TestResult,
+    onClick: () -> Unit,
+) {
+    FilledTonalActionButton(
+        onClick = onClick,
+        enabled = result !is TestResult.Pending,
+        content = {
+            when (result) {
+                is TestResult.Pending -> {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                }
+
+                is TestResult.Success -> {
+                    Icon(imageVector = Icons.Default.Check, contentDescription = strings.models.testProviderSuccessAria)
+                }
+
+                is TestResult.Failure -> {
+                    Icon(imageVector = Icons.Default.Error, contentDescription = strings.models.testProviderFailureAria)
+                }
+
+                is TestResult.Unknown -> {
+                    Icon(imageVector = Icons.Default.Try, contentDescription = strings.models.testProviderAria)
+                }
+            }
+        },
+        label = { Text(strings.models.testAction) },
+    )
+}
+
+@Composable
+private fun DeleteButton(
+    onClick: () -> Unit,
+) {
+    OutlinedActionButton(
+        onClick = onClick,
+        icon = { Icon(imageVector = Icons.Default.Delete, contentDescription = strings.models.deleteProviderAria) },
+        label = { Text(strings.models.deleteAction) },
+    )
+}
+
+private enum class AddSaveActionType { Add, Save }
+
+@Composable
+private fun AddSaveButton(
+    actionType: AddSaveActionType,
+    onClick: () -> Unit,
+    enabled: Boolean,
+) {
+    when (actionType) {
+        AddSaveActionType.Add -> FilledActionButton(
+            onClick = onClick,
+            enabled = enabled,
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = strings.models.addProviderConfirmAria
+                )
+            },
+            label = { Text(strings.models.addAction) },
+        )
+
+        AddSaveActionType.Save -> FilledActionButton(
+            onClick = onClick,
+            enabled = enabled,
+            icon = { Icon(imageVector = Icons.Default.Save, contentDescription = strings.models.saveAction) },
+            label = { Text(strings.models.saveAction) },
+        )
+    }
 }
