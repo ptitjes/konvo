@@ -11,11 +11,11 @@ const val DEFAULT_OLLAMA_URL = "http://localhost:11434"
 
 class OllamaModelProvider(
     override val name: String,
-    baseUrl: String = DEFAULT_OLLAMA_URL,
+    private val baseUrl: String = DEFAULT_OLLAMA_URL,
 ) : ModelProvider {
     private val client by lazy { OllamaClient(baseUrl) }
 
-    override suspend fun query(): List<ModelCard> = withContext(Dispatchers.IO) {
+    override suspend fun queryModels(): List<ModelCard> = withContext(Dispatchers.IO) {
         client.getModels()
             .filter { LLMCapability.Completion in it.capabilities }
             .sortedBy { it.name }

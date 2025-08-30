@@ -94,7 +94,9 @@ fun CoroutineScope.buildDi() = DI {
         }
     }
 
-    bind<ModelManager> { singleton { SettingsBasedModelProviderManager(coroutineContext, instance()) } }
+    bind<SettingsBasedModelManager> { singleton { SettingsBasedModelManager(coroutineContext, instance()) } }
+    bind<ModelManager> { singleton { instance<SettingsBasedModelManager>() } }
+
     bind<PromptManager> { singleton { DiPromptManager(coroutineContext, instance()) } }
     bind<ToolManager> { singleton { DiToolManager(coroutineContext, instance()) } }
     bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }

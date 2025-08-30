@@ -1,11 +1,13 @@
 package io.github.ptitjes.konvo.frontend.compose.models
 
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.models.*
@@ -17,12 +19,16 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.ptitjes.konvo.frontend.compose.utils.*
 import kotlinx.coroutines.*
+import org.kodein.di.compose.*
 import sh.calvin.reorderable.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsPanelScope.ModelProviderSettingsPanel() {
     var settings by rememberMutableSettings(ModelProviderSettingsKey)
+    val modelManager by rememberInstance<SettingsBasedModelManager>()
+
+    val providerStatuses by modelManager.providerStatuses.collectAsState()
 
     fun addProvider(newProvider: NamedModelProvider) {
         settings = settings.copy(providers = settings.providers + newProvider)
@@ -104,10 +110,53 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                             text = provider.name,
                                             style = MaterialTheme.typography.titleMedium,
                                         )
-                                        Text(
-                                            text = provider.configuration.toType().name,
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Text(
+                                                text = provider.configuration.toType().name,
+                                                style = MaterialTheme.typography.bodySmall,
+                                            )
+                                            Spacer(Modifier.width(8.dp))
+
+                                            Box(
+                                                modifier = Modifier.size(16.dp).clickable {
+                                                    modelManager.reloadModelProvider(provider.name)
+                                                },
+                                            ) {
+                                                when (val status = providerStatuses[provider.name]) {
+                                                    is ModelProviderStatus.Pending -> {
+                                                        CircularProgressIndicator(
+                                                            strokeWidth = 2.dp
+                                                        )
+                                                    }
+
+                                                    is ModelProviderStatus.Available -> {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Check,
+                                                            contentDescription = strings.models.testProviderSuccessAria,
+                                                            tint = Color.Green,
+                                                        )
+                                                    }
+
+                                                    is ModelProviderStatus.Unavailable -> {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Error,
+                                                            contentDescription = strings.models.testProviderFailureAria,
+                                                            tint = Color.Red,
+                                                        )
+                                                    }
+
+                                                    null -> {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Try,
+                                                            contentDescription = strings.models.testProviderAria,
+                                                            tint = Color.Gray,
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
 
                                     IconButton(
@@ -138,7 +187,8 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
 
     // Deletion confirmation dialog
     providerPendingDeletionIndex?.let { indexToDelete ->
-        val nameToDelete = settings.providers.getOrNull(indexToDelete)?.name ?: strings.models.nameLabel.lowercase()
+        val nameToDelete =
+            settings.providers.getOrNull(indexToDelete)?.name ?: strings.models.nameLabel.lowercase()
         AlertDialog(
             onDismissRequest = { providerPendingDeletionIndex = null },
             title = { Text(strings.models.deleteProviderDialogTitle) },
@@ -180,9 +230,14 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
 
                 is ModelProvidersSheetState.Editing -> {
                     val index = sheet.index
+                    val provider = settings.providers[sheet.index]
+                    val status = providerStatuses[provider.name]
+
                     EditProviderSheetContent(
-                        initialProvider = settings.providers[sheet.index],
-                        otherNames = settings.providers.map { it.name }.toSet() - settings.providers[index].name,
+                        initialProvider = provider,
+                        initialTestResult = status?.toTestResult() ?: TestResult.Unknown,
+                        existingNames = settings.providers.map { it.name }
+                            .toSet() - settings.providers[index].name,
                         onSave = { updated ->
                             updateProvider(index) { _ -> updated }
                             sheetState = ModelProvidersSheetState.Closed
@@ -208,30 +263,37 @@ private sealed interface ModelProvidersSheetState {
 @Composable
 private fun EditProviderSheetContent(
     initialProvider: NamedModelProvider,
-    otherNames: Set<String>,
+    initialTestResult: TestResult,
+    existingNames: Set<String>,
     onSave: (NamedModelProvider) -> Unit,
     onDelete: () -> Unit,
 ) {
-    var draft by remember { mutableStateOf(initialProvider) }
-    var type by remember(draft.configuration) { mutableStateOf(draft.configuration.toType()) }
+    var provider by remember { mutableStateOf(initialProvider) }
+    var testResult by remember { mutableStateOf(initialTestResult) }
+
+    fun updateDraft(update: (NamedModelProvider) -> NamedModelProvider) {
+        provider = update(provider)
+        testResult = TestResult.Unknown
+    }
 
     ModelProviderSheetLayout(
-        name = draft.name,
-        onNameChange = { newName -> draft = draft.copy(name = newName) },
-        type = type,
+        sheetType = SheetType.Edit,
+        provider = provider,
+        onNameChange = { newName -> updateDraft { it.copy(name = newName) } },
         onTypeChange = { newType ->
-            if (type != newType) {
-                type = newType
-                draft = draft.copy(configuration = newType.newConfiguration())
+            if (provider.configuration.toType() != newType) {
+                updateDraft { it.copy(configuration = newType.newConfiguration()) }
             }
         },
-        typeSpecificField = {
-            when (val conf = draft.configuration) {
+        configurationForm = {
+            when (val conf = provider.configuration) {
                 is Ollama -> {
                     OutlinedUrlField(
                         modifier = Modifier.fillMaxWidth(),
                         value = conf.url,
-                        onValueChange = { newUrl -> draft = draft.copy(configuration = conf.copy(url = newUrl)) },
+                        onValueChange = { newUrl ->
+                            updateDraft { it.copy(configuration = conf.copy(url = newUrl)) }
+                        },
                         label = { Text(strings.models.ollamaBaseUrlLabel) },
                     )
                 }
@@ -240,7 +302,9 @@ private fun EditProviderSheetContent(
                     OutlinedApiKeyField(
                         modifier = Modifier.fillMaxWidth(),
                         value = conf.apiKey,
-                        onValueChange = { newKey -> draft = draft.copy(configuration = conf.copy(apiKey = newKey)) },
+                        onValueChange = { newKey ->
+                            updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
+                        },
                         label = { Text(strings.models.anthropicApiKeyLabel) },
                     )
                 }
@@ -249,7 +313,9 @@ private fun EditProviderSheetContent(
                     OutlinedApiKeyField(
                         modifier = Modifier.fillMaxWidth(),
                         value = conf.apiKey,
-                        onValueChange = { newKey -> draft = draft.copy(configuration = conf.copy(apiKey = newKey)) },
+                        onValueChange = { newKey ->
+                            updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
+                        },
                         label = { Text(strings.models.openAiApiKeyLabel) },
                     )
                 }
@@ -258,25 +324,19 @@ private fun EditProviderSheetContent(
                     OutlinedApiKeyField(
                         modifier = Modifier.fillMaxWidth(),
                         value = conf.apiKey,
-                        onValueChange = { newKey -> draft = draft.copy(configuration = conf.copy(apiKey = newKey)) },
+                        onValueChange = { newKey ->
+                            updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
+                        },
                         label = { Text(strings.models.googleApiKeyLabel) },
                     )
                 }
             }
         },
-        uniqueNames = otherNames,
-        buildProvider = { draft },
-        startActions = { _, testResult, runTest ->
-            TestButton(result = testResult, onClick = runTest)
-            DeleteButton(onClick = onDelete)
-        },
-        endActions = { canSave, _, _ ->
-            AddSaveButton(
-                actionType = AddSaveActionType.Save,
-                onClick = { onSave(draft) },
-                enabled = canSave,
-            )
-        },
+        testResult = testResult,
+        onTestResultChange = { testResult = it },
+        uniqueProviderNames = existingNames,
+        onDelete = { onDelete() },
+        onAddSave = { onSave(provider) },
     )
 }
 
@@ -293,22 +353,26 @@ private fun AddProviderSheetContent(
     var openAIKey by remember { mutableStateOf("") }
     var googleKey by remember { mutableStateOf("") }
 
-    fun buildProvider(): NamedModelProvider = NamedModelProvider(
-        name = name,
-        configuration = when (type) {
-            ProviderType.Ollama -> Ollama(url = ollamaUrl)
-            ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
-            ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
-            ProviderType.Google -> Google(apiKey = googleKey)
-        },
-    )
+    val provider = remember(name, type, ollamaUrl, anthropicKey, openAIKey, googleKey) {
+        NamedModelProvider(
+            name = name,
+            configuration = when (type) {
+                ProviderType.Ollama -> Ollama(url = ollamaUrl)
+                ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
+                ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
+                ProviderType.Google -> Google(apiKey = googleKey)
+            },
+        )
+    }
+
+    var testResult by remember(provider) { mutableStateOf<TestResult>(TestResult.Unknown) }
 
     ModelProviderSheetLayout(
-        name = name,
+        sheetType = SheetType.Add,
+        provider = provider,
         onNameChange = { name = it },
-        type = type,
         onTypeChange = { type = it },
-        typeSpecificField = {
+        configurationForm = {
             when (type) {
                 ProviderType.Ollama -> {
                     OutlinedUrlField(
@@ -347,18 +411,10 @@ private fun AddProviderSheetContent(
                 }
             }
         },
-        uniqueNames = existingNames,
-        buildProvider = { buildProvider() },
-        startActions = { _, testResult, runTest ->
-            TestButton(result = testResult, onClick = runTest)
-        },
-        endActions = { canSave, _, _ ->
-            AddSaveButton(
-                actionType = AddSaveActionType.Add,
-                onClick = { onAdd(buildProvider()) },
-                enabled = canSave,
-            )
-        },
+        testResult = testResult,
+        onTestResultChange = { testResult = it },
+        uniqueProviderNames = existingNames,
+        onAddSave = { onAdd(provider) },
     )
 }
 
@@ -387,40 +443,33 @@ private fun ProviderType.newConfiguration(): ModelProviderConfiguration {
 
 private fun NamedModelProvider.isValid(): Boolean = name.isNotBlank() && configuration.isValid()
 
+private enum class SheetType { Add, Edit }
+
 @Composable
 private fun ModelProviderSheetLayout(
-    name: String,
+    sheetType: SheetType,
+    provider: NamedModelProvider,
     onNameChange: (String) -> Unit,
-    type: ProviderType,
     onTypeChange: (ProviderType) -> Unit,
-    typeSpecificField: @Composable () -> Unit,
-    uniqueNames: Set<String>,
-    buildProvider: () -> NamedModelProvider,
-    startActions: @Composable RowScope.(canSave: Boolean, testResult: TestResult, runTest: () -> Unit) -> Unit,
-    endActions: @Composable RowScope.(canSave: Boolean, testResult: TestResult, runTest: () -> Unit) -> Unit,
+    configurationForm: @Composable () -> Unit,
+    testResult: TestResult,
+    onTestResultChange: (TestResult) -> Unit,
+    uniqueProviderNames: Set<String>,
+    onDelete: () -> Unit = {},
+    onAddSave: () -> Unit,
 ) {
-    var testResult by remember { mutableStateOf<TestResult>(TestResult.Unknown) }
-    val scope = rememberCoroutineScope()
+    val name = provider.name
+    val type = provider.configuration.toType()
+
+    val runTest = rememberProviderTester(provider) {
+        onTestResultChange(it)
+    }
 
     val nameErrorText = when {
         name.isBlank() -> strings.models.nameEmptyError
-        uniqueNames.contains(name) -> strings.models.nameUniqueError
+        uniqueProviderNames.contains(name) -> strings.models.nameUniqueError
         else -> null
     }
-
-    fun runTest() {
-        testResult = TestResult.Pending
-        val provider = buildProvider()
-        scope.launch {
-            provider.test()
-                .onSuccess { testResult = TestResult.Success }
-                .onFailure { throwable ->
-                    testResult = TestResult.Failure(throwable.message ?: "Unknown error")
-                }
-        }
-    }
-
-    val canSave = (nameErrorText == null) && buildProvider().isValid()
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -445,7 +494,7 @@ private fun ModelProviderSheetLayout(
             )
         }
 
-        typeSpecificField()
+        configurationForm()
 
         nameErrorText?.let {
             Text(
@@ -461,21 +510,52 @@ private fun ModelProviderSheetLayout(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            startActions(canSave, testResult, ::runTest)
+            TestButton(result = testResult, onClick = runTest)
+            if (sheetType == SheetType.Edit) DeleteButton(onClick = onDelete)
+
             Spacer(Modifier.weight(1f))
-            endActions(canSave, testResult, ::runTest)
+
+            AddSaveButton(
+                actionType = when (sheetType) {
+                    SheetType.Edit -> AddSaveActionType.Save
+                    SheetType.Add -> AddSaveActionType.Add
+                },
+                onClick = { onAddSave() },
+                enabled = provider.isValid() && provider.name !in uniqueProviderNames,
+            )
         }
 
-        when (val result = testResult) {
+        when (testResult) {
             is TestResult.Failure -> {
                 Text(
-                    text = strings.models.testFailedMessage(result.error),
+                    text = strings.models.testFailedMessage(testResult.error),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
             }
 
             else -> {}
+        }
+    }
+}
+
+@Composable
+private fun rememberProviderTester(
+    provider: NamedModelProvider,
+    onTestResultChange: (TestResult) -> Unit,
+): () -> Unit {
+    val scope = rememberCoroutineScope()
+
+    return remember(provider) {
+        {
+            onTestResultChange(TestResult.Pending)
+            scope.launch {
+                provider.test()
+                    .onSuccess { onTestResultChange(TestResult.Success) }
+                    .onFailure { throwable ->
+                        onTestResultChange(TestResult.Failure(throwable.message ?: "Unknown error"))
+                    }
+            }
         }
     }
 }
@@ -555,6 +635,12 @@ private sealed class TestResult {
     data class Failure(val error: String) : TestResult()
 }
 
+private fun ModelProviderStatus.toTestResult() = when (this) {
+    is ModelProviderStatus.Pending -> TestResult.Pending
+    is ModelProviderStatus.Available -> TestResult.Success
+    is ModelProviderStatus.Unavailable -> TestResult.Failure(this.reason)
+}
+
 @Composable
 private fun TestButton(
     result: TestResult,
@@ -570,15 +656,26 @@ private fun TestButton(
                 }
 
                 is TestResult.Success -> {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = strings.models.testProviderSuccessAria)
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = strings.models.testProviderSuccessAria,
+                        tint = Color.Green,
+                    )
                 }
 
                 is TestResult.Failure -> {
-                    Icon(imageVector = Icons.Default.Error, contentDescription = strings.models.testProviderFailureAria)
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = strings.models.testProviderFailureAria,
+                        tint = Color.Red,
+                    )
                 }
 
                 is TestResult.Unknown -> {
-                    Icon(imageVector = Icons.Default.Try, contentDescription = strings.models.testProviderAria)
+                    Icon(
+                        imageVector = Icons.Default.Cached,
+                        contentDescription = strings.models.testProviderAria,
+                    )
                 }
             }
         },

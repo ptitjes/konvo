@@ -16,6 +16,6 @@ class DiModelManager(
     private val coroutineScope = CoroutineScope(coroutineContext + job)
 
     override val models: Flow<List<ModelCard>> =
-        flow { emit(providers.flatMap { it.query() }) }
+        flow { emit(providers.flatMap { it.queryModels() }) }
             .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
 }
