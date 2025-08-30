@@ -87,7 +87,7 @@ fun ConversationListItem(
             }
             if (hasLastMessagePreview) {
                 Text(
-                    text = TextFormatters.truncatePreview(conversation.lastMessagePreview!!, maxChars = 160),
+                    text = conversation.lastMessagePreview!!,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
