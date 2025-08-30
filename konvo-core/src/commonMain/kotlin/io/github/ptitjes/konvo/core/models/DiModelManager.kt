@@ -18,4 +18,6 @@ class DiModelManager(
     override val models: Flow<List<ModelCard>> =
         flow { emit(providers.flatMap { it.queryModels() }) }
             .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
+
+    override val providersInError: Flow<List<String>?> = flow { }
 }

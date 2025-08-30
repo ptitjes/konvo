@@ -20,6 +20,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.kodein.di.compose.*
 
 @Composable
 fun NewConversationScreen(
@@ -31,6 +32,7 @@ fun NewConversationScreen(
         viewModel = viewModel,
         onConversationCreated = { navigator.navigateToConversation(it) },
         onBackClick = { navigator.navigateBack() },
+        onProviderSettingsClick = { navigator.navigateToSettingSection("models") },
         modifier = modifier,
     )
 }
@@ -48,6 +50,7 @@ fun NewConversationScreen(
     viewModel: NewConversationViewModel = viewModel(),
     onConversationCreated: (id: String) -> Unit,
     onBackClick: () -> Unit,
+    onProviderSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val paneType = LocalListDetailPaneType.current
@@ -59,6 +62,27 @@ fun NewConversationScreen(
     val canCreate = when (selectedAgentType) {
         AgentType.QuestionAnswer -> questionAnswer.canCreate
         AgentType.Roleplay -> roleplay.canCreate
+    }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+
+    val modelManager by rememberInstance<ModelManager>()
+
+    LaunchedEffect(Unit) {
+        modelManager.providersInError.collect { providers ->
+            if (providers != null) {
+                val providerNames = providers.joinToString(", ")
+                val result = snackBarHostState.showSnackbar(
+                    message = "Failed to load models from $providerNames",
+                    actionLabel = "Settings",
+                    withDismissAction = true,
+                    duration = SnackbarDuration.Indefinite,
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    onProviderSettingsClick()
+                }
+            }
+        }
     }
 
     Scaffold(
@@ -77,9 +101,9 @@ fun NewConversationScreen(
                     if (paneType == ListDetailPaneType.OnePane) {
                         IconButton(onClick = onBackClick) {
                             Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = strings.conversations.backAria
-                        )
+                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                contentDescription = strings.conversations.backAria
+                            )
                         }
                     } else {
                         Icon(
@@ -102,7 +126,8 @@ fun NewConversationScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
     ) { paddingValues ->
         Column(
             modifier = Modifier

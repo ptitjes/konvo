@@ -103,6 +103,14 @@ class SettingsBasedModelManager(
         }
             .filterNotNull()
             .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
+
+    override val providersInError: Flow<List<String>?> =
+        providerStatuses.map { providerStatuses ->
+            providerStatuses.mapNotNull { (name, status) ->
+                if (status is ModelProviderStatus.Unavailable) name else null
+            }.takeIf { it.isNotEmpty() }
+        }
+            .shareIn(coroutineScope, SharingStarted.Eagerly, replay = 1)
 }
 
 private sealed interface ReloadAction {

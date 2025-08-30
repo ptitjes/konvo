@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.*
 interface ModelManager {
     /** A flow of the available model cards. */
     val models: Flow<List<ModelCard>>
+
+    val providersInError: Flow<List<String>?>
 }
 
 /**
