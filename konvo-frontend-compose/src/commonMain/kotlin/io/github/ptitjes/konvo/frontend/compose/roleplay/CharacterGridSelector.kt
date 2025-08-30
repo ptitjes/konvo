@@ -155,6 +155,7 @@ private fun CharacterGridItem(
                     model = character.avatarUrl,
                     contentDescription = character.name,
                     contentScale = ContentScale.Crop,
+                    filterQuality = FilterQuality.High,
                     modifier = Modifier.fillMaxSize(),
                 )
             } else {

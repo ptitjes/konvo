@@ -3,8 +3,11 @@ package io.github.ptitjes.konvo.frontend.compose.toolkit.widgets
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
-import com.mikepenz.markdown.coil3.*
+import androidx.compose.ui.graphics.painter.*
+import coil3.compose.*
+import coil3.request.*
 import com.mikepenz.markdown.compose.components.*
 import com.mikepenz.markdown.compose.elements.*
 import com.mikepenz.markdown.m3.*
@@ -41,7 +44,7 @@ fun MarkdownContent(
         animations = markdownAnimations(
             animateTextSize = { this }
         ),
-        imageTransformer = Coil3ImageTransformerImpl,
+        imageTransformer = CustomCoil3ImageTransformer,
         components = markdownComponents(
             codeBlock = {
                 MarkdownHighlightedCodeBlock(
@@ -62,3 +65,27 @@ fun MarkdownContent(
     )
 }
 
+private object CustomCoil3ImageTransformer : ImageTransformer {
+
+    @Composable
+    override fun transform(link: String): ImageData {
+        return rememberAsyncImagePainter(
+            model = ImageRequest.Builder(LocalPlatformContext.current)
+                .data(link)
+//                .size(coil3.size.Size.ORIGINAL)
+                .build(),
+            filterQuality = FilterQuality.High,
+        ).let { ImageData(it) }
+    }
+
+    @Composable
+    override fun intrinsicSize(painter: Painter): Size {
+        var size by remember(painter) { mutableStateOf(painter.intrinsicSize) }
+        if (painter is AsyncImagePainter) {
+            val painterState = painter.state.collectAsState()
+            val intrinsicSize = painterState.value.painter?.intrinsicSize
+            intrinsicSize?.also { size = it }
+        }
+        return size
+    }
+}
