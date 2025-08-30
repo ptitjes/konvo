@@ -26,7 +26,7 @@ class McpPromptProvider(
         }
     }
 
-    private inner class McpPromptCard(
+    private class McpPromptCard(
         val clientName: String,
         val client: Client,
         val prompt: Prompt,
@@ -47,7 +47,7 @@ class McpPromptProvider(
                             when (content) {
                                 is TextContent -> content.text?.let { text(it) }
                                 is ImageContent -> TODO()
-//                                is AudioContent -> TODO()
+                                is AudioContent -> TODO()
                                 is EmbeddedResource -> TODO()
                                 is UnknownContent -> error("Unsupported content")
                             }

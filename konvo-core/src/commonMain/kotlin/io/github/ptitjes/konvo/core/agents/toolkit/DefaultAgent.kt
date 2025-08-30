@@ -4,8 +4,8 @@ import ai.koog.agents.core.agent.*
 import ai.koog.agents.core.agent.config.*
 import ai.koog.agents.core.agent.entity.*
 import ai.koog.agents.core.feature.*
+import ai.koog.agents.core.feature.config.*
 import ai.koog.agents.core.tools.*
-import ai.koog.agents.features.common.config.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
