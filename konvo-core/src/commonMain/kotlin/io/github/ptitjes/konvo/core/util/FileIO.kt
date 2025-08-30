@@ -33,6 +33,9 @@ internal fun FileSystem.readText(path: Path): String = source(path).buffered().u
 internal fun FileSystem.readBytes(path: Path): ByteString = source(path).buffered().use { it.readByteString() }
 
 internal fun FileSystem.copy(sourcePath: Path, destinationPath: Path) {
+    val destinationDirectory = destinationPath.parent!!
+    if (!exists(destinationDirectory)) createDirectories(destinationDirectory)
+
     source(sourcePath).use { source ->
         sink(destinationPath).use { sink ->
             val buffer = Buffer()
