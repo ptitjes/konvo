@@ -2,8 +2,8 @@ package io.github.ptitjes.konvo.core.agents.toolkit
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.environment.*
-import ai.koog.agents.core.tools.*
 import ai.koog.prompt.message.*
+import kotlinx.serialization.json.*
 
 @AIAgentBuilderDslMarker
 fun AIAgentSubgraphBuilderBase<*, *>.dumpToPrompt(
@@ -52,7 +52,7 @@ fun AIAgentSubgraphBuilderBase<*, *>.nodeExecuteVettedToolCalls(
             id = it.call.id,
             tool = it.call.tool,
             content = "Tool call was rejected by user",
-            result = ToolResult.Text("Tool call was rejected by user"),
+            result = JsonPrimitive("Tool call was rejected by user"),
         )
     }
 

@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core.agents
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
 import ai.koog.agents.core.tools.*
+import ai.koog.agents.core.tools.annotations.*
 import ai.koog.agents.features.eventHandler.feature.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
@@ -22,6 +23,7 @@ import kotlin.coroutines.*
 import kotlin.time.Clock
 import kotlin.uuid.*
 
+@OptIn(InternalAgentToolsApi::class)
 fun buildQuestionAnswerAgent(
     model: ModelCard,
     mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
@@ -40,36 +42,33 @@ fun buildQuestionAnswerAgent(
         mcpSessionFactory = mcpSessionFactory,
         mcpServerNames = mcpServerNames,
     ) { conversationView ->
-        install(EventHandler) {
-            onToolValidationError { eventContext ->
-                @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
+        handleEvents {
+            onToolValidationFailed { eventContext ->
                 conversationView.sendToolUseResult(
                     call = ToolCall(
                         id = eventContext.toolCallId ?: newUniqueId(),
-                        tool = broaderTool.name,
-                        arguments = broaderTool.encodeArgs(eventContext.toolArgs)
+                        tool = eventContext.tool.name,
+                        arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
                     ),
                     result = ToolCallResult.ExecutionFailure(eventContext.error),
                 )
             }
-            onToolCallResult { eventContext ->
-                @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
+            onToolCallCompleted { eventContext ->
                 conversationView.sendToolUseResult(
                     call = ToolCall(
                         id = eventContext.toolCallId ?: newUniqueId(),
-                        tool = broaderTool.name,
-                        arguments = broaderTool.encodeArgs(eventContext.toolArgs)
+                        tool = eventContext.tool.name,
+                        arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
                     ),
-                    result = ToolCallResult.Success(eventContext.result.toResultText()),
+                    result = ToolCallResult.Success(eventContext.tool.encodeResultToStringUnsafe(eventContext.result)),
                 )
             }
-            onToolCallFailure { eventContext ->
-                @Suppress("UNCHECKED_CAST") val broaderTool = eventContext.tool as Tool<ToolArgs, ToolResult>
+            onToolCallFailed { eventContext ->
                 conversationView.sendToolUseResult(
                     call = ToolCall(
                         id = eventContext.toolCallId ?: newUniqueId(),
-                        tool = broaderTool.name,
-                        arguments = broaderTool.encodeArgs(eventContext.toolArgs)
+                        tool = eventContext.tool.name,
+                        arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
                     ),
                     result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
                 )

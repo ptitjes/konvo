@@ -13,8 +13,8 @@ ktor = "3.2.3"
 kotlinLogging = "7.0.7"
 slf4j = "2.0.17"
 
-koog = "0.4.1"
-mcp = "0.6.0"
+koog = "0.5.4"
+mcp = "0.7.2"
 xemanticJsonSchema = "1.1.2"
 uriKmp = "0.0.20"
 kodein = "7.25.0"
@@ -62,6 +62,8 @@ ktorClientCore = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktorClientLogging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktorClientCio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
 
+ktorServerCio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
+
 kotlinLogging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlinLogging" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
@@ -90,7 +92,7 @@ fileKit = { module = "io.github.vinceglb:filekit-compose", version.ref = "fileKi
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coilKtor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
-placeholder = { module = "com.eygraber:compose-placeholder-material3", version.ref = "placeholder"}
+placeholder = { module = "com.eygraber:compose-placeholder-material3", version.ref = "placeholder" }
 
 # Discord Frontend
 kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
