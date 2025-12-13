@@ -14,7 +14,7 @@ inline fun <reified I> Server.addStringTool(
         description = description,
         inputSchema = jsonToolInputOf<I>(),
     ) { request ->
-        val decodedRequest = Json.decodeFromJsonElement<I>(request.arguments)
+        val decodedRequest = Json.decodeFromJsonElement<I>(request.arguments ?: JsonNull)
         val result = handler(decodedRequest)
         CallToolResult(content = listOf(TextContent(result)))
     }
@@ -29,9 +29,14 @@ inline fun <reified I, reified O> Server.addJsonTool(
         name = name,
         description = description,
         inputSchema = jsonToolInputOf<I>(),
+        outputSchema = jsonToolOutputOf<O>(),
     ) { request ->
         val decodedRequest = Json.decodeFromJsonElement<I>(request.arguments)
-        val encodedResult = handler(decodedRequest)
-        CallToolResult(content = listOf(JsonContent(encodedResult)))
+        val decodedResult = handler(decodedRequest)
+        val encodedResult = Json.encodeToJsonElement(decodedResult)
+        CallToolResult(
+            content = listOf(TextContent(encodedResult.toString())),
+            structuredContent = encodedResult.jsonObject,
+        )
     }
 }

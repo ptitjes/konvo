@@ -15,9 +15,7 @@ object TextFormatters {
         val cut = normalized.take(maxChars)
         val lastSpace = cut.lastIndexOf(' ')
         val base = if (lastSpace > maxChars * 2 / 3) cut.take(lastSpace) else cut
-        val result = base.trimEnd() + "…"
-        println(result)
-        return result
+        return base.trimEnd() + "…"
     }
 
     private fun stripMarkdown(input: String): String {

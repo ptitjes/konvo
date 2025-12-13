@@ -185,7 +185,7 @@ fun ConversationAssistantToolUseResultPanel(
                     when (result) {
                         is ToolCallResult.Success -> {
                             Markdown(
-                                content = result.text,
+                                content = "```json\n${result.text}\n```",
                                 colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
                                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                             )

@@ -156,14 +156,14 @@ class McpHostSession(
                         val serverCapabilities = client.serverCapabilities
                         if (serverCapabilities == null || serverCapabilities.tools == null) return@flatMap emptyList()
 
-                        client.listTools()?.tools?.map { tool ->
+                        client.listTools().tools.map { tool ->
                             McpToolCard(
                                 clientName = clientName,
                                 client = client,
-                                tool = tool,
+                                sdkTool = tool,
                                 permissions = ToolPermissions(default = ToolPermission.ALLOW),
                             )
-                        } ?: emptyList()
+                        }
                     }
             }
 }

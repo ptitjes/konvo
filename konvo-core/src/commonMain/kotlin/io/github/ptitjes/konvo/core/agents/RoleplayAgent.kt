@@ -73,7 +73,7 @@ fun buildRoleplayAgent(
     )
 }
 
-private fun AIAgentStrategyBuilder<Message.User, List<Message.Assistant>>.executeRoleplayRequest(
+private fun AIAgentSubgraphBuilderBase<*, *>.executeRoleplayRequest(
     roleplaySettings: RoleplaySettings,
     roleplayConfiguration: RoleplayAgentConfiguration,
     character: CharacterCard,

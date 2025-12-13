@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.mcp.web
 
 import com.fleeksoft.ksoup.*
 import com.xemantic.ai.tool.schema.meta.*
-import io.github.ptitjes.konvo.mcp.web.utils.HtmlToMarkdown
+import io.github.ptitjes.konvo.mcp.web.utils.*
 import io.ktor.client.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
@@ -96,13 +96,33 @@ class DuckDuckGoEngine(
 
     @Suppress("unused")
     @Serializable
+    @Description("The time frame to search in.")
     enum class TimeFrame(val value: String) {
+        @Description("Any time frame.")
+        @SerialName("any-time")
         AnyTime(""),
+
+        @Description("During the past day.")
+        @SerialName("past-day")
         PastDay("d"),
+
+        @Description("During the past week.")
+        @SerialName("past-week")
         PastWeek("w"),
+
+        @Description("During the past month.")
+        @SerialName("past-month")
         PastMonth("m"),
+
+        @Description("During the past year.")
+        @SerialName("past-year")
         PastYear("y"),
     }
+
+    @Serializable
+    data class SearchResponse(
+        val results: List<SearchResult>,
+    )
 
     @Serializable
     data class SearchResult(
@@ -111,7 +131,7 @@ class DuckDuckGoEngine(
         val snippet: String,
     )
 
-    suspend fun search(request: SearchRequest): List<SearchResult> {
+    suspend fun search(request: SearchRequest): SearchResponse {
         val response = client.submitForm(
             url = "https://lite.duckduckgo.com/lite/",
             formParameters = parameters {
@@ -132,14 +152,16 @@ class DuckDuckGoEngine(
         val lastTable = document.select("table").last()!!
         val resultRows = lastTable.select("tr").chunked(4)
 
-        return resultRows.mapNotNull { rows ->
-            if (rows.size != 4) return@mapNotNull null
+        return SearchResponse(
+            results = resultRows.mapNotNull { rows ->
+                if (rows.size != 4) return@mapNotNull null
 
-            val link = rows[0].select("a")
-            val title = link.text()
-            val url = link.attr("href")
-            val snippet = converter.convert(rows[1].select("td.result-snippet").html()).trim()
-            SearchResult(title, url, snippet)
-        }
+                val link = rows[0].select("a")
+                val title = link.text()
+                val url = link.attr("href")
+                val snippet = converter.convert(rows[1].select("td.result-snippet").html()).trim()
+                SearchResult(title, url, snippet)
+            },
+        )
     }
 }

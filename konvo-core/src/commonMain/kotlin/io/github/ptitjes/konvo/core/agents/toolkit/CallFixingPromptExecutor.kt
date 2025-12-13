@@ -5,6 +5,7 @@ import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
+import ai.koog.prompt.streaming.*
 import io.github.ptitjes.konvo.core.agents.toolkit.python.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.json.*
@@ -16,11 +17,16 @@ class CallFixingPromptExecutor(private val delegate: PromptExecutor) : PromptExe
     override suspend fun execute(prompt: Prompt, model: LLModel, tools: List<ToolDescriptor>): List<Message.Response> =
         delegate.execute(prompt, model, tools).maybeFixToolCalls()
 
-    override suspend fun executeStreaming(prompt: Prompt, model: LLModel): Flow<String> =
-        delegate.executeStreaming(prompt, model)
+    override fun executeStreaming(
+        prompt: Prompt,
+        model: LLModel,
+        tools: List<ToolDescriptor>,
+    ): Flow<StreamFrame> = delegate.executeStreaming(prompt, model, tools)
 
     override suspend fun moderate(prompt: Prompt, model: LLModel): ModerationResult =
         delegate.moderate(prompt, model)
+
+    override fun close() = delegate.close()
 }
 
 /**

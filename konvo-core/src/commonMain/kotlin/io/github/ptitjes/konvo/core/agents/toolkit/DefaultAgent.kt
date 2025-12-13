@@ -5,6 +5,7 @@ import ai.koog.agents.core.agent.config.*
 import ai.koog.agents.core.agent.entity.*
 import ai.koog.agents.core.feature.*
 import ai.koog.agents.core.feature.config.*
+import ai.koog.agents.core.feature.pipeline.*
 import ai.koog.agents.core.tools.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
@@ -14,7 +15,6 @@ import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.Attachment
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*
@@ -28,7 +28,6 @@ import kotlinx.datetime.*
 import kotlinx.io.files.*
 import kotlin.coroutines.*
 import kotlin.time.Clock
-import ai.koog.prompt.message.Attachment as KoogAttachment
 
 internal class DefaultAgent(
     private val systemPrompt: Prompt,
@@ -36,10 +35,10 @@ internal class DefaultAgent(
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
-    private val strategy: (ConversationAgentView) -> AIAgentStrategy<Message.User, List<Message.Assistant>>,
+    private val strategy: (ConversationAgentView) -> AIAgentGraphStrategy<Message.User, List<Message.Assistant>>,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
     private val mcpServerNames: Set<String> = emptySet(),
-    private val installFeatures: AIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
+    private val installFeatures: GraphAIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
 ) : Agent {
     private var prompt: Prompt = systemPrompt
 
@@ -64,6 +63,7 @@ internal class DefaultAgent(
                         prompt = newPrompt
                     }
                 }
+
                 installFeatures(conversation)
             },
         )
@@ -126,8 +126,7 @@ internal class DefaultAgent(
 
     private suspend fun Event.UserMessage.toUserMessage(): Message.User =
         Message.User(
-            content = content,
-            attachments = attachments.map { it.toKoogAttachment() },
+            parts = listOf(ContentPart.Text(content)) + attachments.map { it.toKoogAttachment() },
             metaInfo = RequestMetaInfo(
                 timestamp = timestamp.toDeprecatedInstant(),
             ),
@@ -156,33 +155,33 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Attachment.toKoogAttachment(): KoogAttachment {
+    private suspend fun Attachment.toKoogAttachment(): ContentPart {
         val bytes = loadContent()
         val content = AttachmentContent.Binary.Bytes(bytes)
 
         return when (type) {
-            Attachment.Type.Audio -> KoogAttachment.Audio(
+            Attachment.Type.Audio -> ContentPart.Audio(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Image -> KoogAttachment.Image(
+            Attachment.Type.Image -> ContentPart.Image(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Video -> KoogAttachment.Video(
+            Attachment.Type.Video -> ContentPart.Video(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Document -> KoogAttachment.File(
+            Attachment.Type.Document -> ContentPart.File(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
@@ -193,19 +192,20 @@ internal class DefaultAgent(
 }
 
 private class PromptCollector {
-    companion object Feature : AIAgentFeature<PromptCollectorConfig, PromptCollector> {
+    companion object Feature : AIAgentGraphFeature<PromptCollectorConfig, PromptCollector> {
         override val key: AIAgentStorageKey<PromptCollector> =
             AIAgentStorageKey("agents-features-prompt-collector")
 
         override fun createInitialConfig(): PromptCollectorConfig = PromptCollectorConfig()
 
-        override fun install(config: PromptCollectorConfig, pipeline: AIAgentPipeline) {
-            val featureImpl = PromptCollector()
-            val interceptContext = InterceptContext(this, featureImpl)
+        override fun install(config: PromptCollectorConfig, pipeline: AIAgentGraphPipeline): PromptCollector {
+            val promptCollector = PromptCollector()
 
-            pipeline.interceptAfterNode(interceptContext) { eventContext ->
+            pipeline.interceptNodeExecutionCompleted(this) { eventContext ->
                 config.collectPrompt(eventContext.context.llm.readSession { prompt })
             }
+
+            return promptCollector
         }
     }
 }
