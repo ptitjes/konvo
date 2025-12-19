@@ -149,7 +149,7 @@ class Conversation(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
-                    source = participant,
+                    sender = participant,
                     payload = Event.AssistantProcessing(
                         isProcessing = isProcessing,
                     )
@@ -162,7 +162,7 @@ class Conversation(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
-                    source = participant,
+                    sender = participant,
                     payload = Event.AssistantMessage(
                         content = content
                     )
@@ -178,7 +178,7 @@ class Conversation(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
-                    source = participant,
+                    sender = participant,
                     payload = details
                 )
             )
@@ -193,7 +193,7 @@ class Conversation(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
-                    source = participant,
+                    sender = participant,
                     payload = Event.ToolUseNotification(
                         call = call,
                         result = result
@@ -226,7 +226,7 @@ class Conversation(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
-                    source = participant,
+                    sender = participant,
                     payload = Event.UserMessage(
                         content = content,
                         attachments = attachments
@@ -243,7 +243,7 @@ class Conversation(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
-                    source = participant,
+                    sender = participant,
                     payload = Event.ToolUseApproval(
                         vetting = vetting,
                         approvals = approvals,

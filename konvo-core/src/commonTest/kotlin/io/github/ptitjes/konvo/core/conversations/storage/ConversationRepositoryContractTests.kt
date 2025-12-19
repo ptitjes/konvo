@@ -55,7 +55,7 @@ abstract class ConversationRepositoryContractTests {
     ): Event = Event(
         id = id,
         timestamp = timestamp,
-        source = Participant.User("u1", "user"),
+        sender = Participant.User("u1", "user"),
         payload = Event.UserMessage(
             content = content,
             attachments = emptyList(),
@@ -69,7 +69,7 @@ abstract class ConversationRepositoryContractTests {
     ): Event = Event(
         id = id,
         timestamp = timestamp,
-        source = Participant.Agent("a1", "agent"),
+        sender = Participant.Agent("a1", "agent"),
         payload = Event.AssistantMessage(
             content = content,
         )
@@ -92,7 +92,7 @@ abstract class ConversationRepositoryContractTests {
         val event = Event(
             id = "e1",
             timestamp = timeProvider.now(),
-            source = Participant.User("u1", "user"),
+            sender = Participant.User("u1", "user"),
             payload = Event.UserMessage(
                 content = "Hello world",
                 attachments = emptyList()
