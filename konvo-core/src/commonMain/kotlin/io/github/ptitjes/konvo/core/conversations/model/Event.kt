@@ -12,9 +12,8 @@ data class Event(
 
     interface Payload
 
-    data class UserMessage(
-        val content: String,
-        val attachments: List<Attachment>,
+    data class Message(
+        val content: List<ContentPart>,
     ) : Payload
 
     data class ToolUseApproval(
@@ -24,10 +23,6 @@ data class Event(
 
     data class AssistantProcessing(
         val isProcessing: Boolean,
-    ) : Payload
-
-    data class AssistantMessage(
-        val content: String,
     ) : Payload
 
     data class ToolUseVetting(

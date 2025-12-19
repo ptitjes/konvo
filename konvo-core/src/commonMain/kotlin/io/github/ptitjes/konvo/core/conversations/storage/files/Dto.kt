@@ -36,15 +36,56 @@ internal sealed class EventDto {
 }
 
 @Serializable
-@SerialName("user-message")
-internal data class UserMessageDto(
+@SerialName("message")
+internal data class MessageDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
     override val sender: ParticipantDto,
     override val recipients: Set<ParticipantDto>? = null,
-    val content: String,
-    val attachments: List<AttachmentDto>,
+    val content: List<ContentPartDto>,
 ) : EventDto()
+
+@Serializable
+internal sealed class ContentPartDto {
+    @Serializable
+    @SerialName("text")
+    data class Text(
+        val text: String,
+        val mimeType: String? = null,
+    ) : ContentPartDto()
+
+    @Serializable
+    @SerialName("image")
+    data class Image(
+        val mimeType: String,
+        val filename: String?,
+        val media: AttachmentDto,
+    ) : ContentPartDto()
+
+    @Serializable
+    @SerialName("video")
+    data class Video(
+        val mimeType: String,
+        val filename: String?,
+        val media: AttachmentDto,
+    ) : ContentPartDto()
+
+    @Serializable
+    @SerialName("audio")
+    data class Audio(
+        val mimeType: String,
+        val filename: String?,
+        val media: AttachmentDto,
+    ) : ContentPartDto()
+
+    @Serializable
+    @SerialName("file")
+    data class File(
+        val mimeType: String,
+        val filename: String?,
+        val media: AttachmentDto,
+    ) : ContentPartDto()
+}
 
 @Serializable
 @SerialName("tool-use-approval")
@@ -55,16 +96,6 @@ internal data class ToolUseApprovalDto(
     override val recipients: Set<ParticipantDto>? = null,
     val vetting: ToolUseVettingDto,
     val approvals: Map<ToolCallDto, Boolean>,
-) : EventDto()
-
-@Serializable
-@SerialName("assistant-message")
-internal data class AssistantMessageDto(
-    override val id: String,
-    @Contextual override val timestamp: Instant,
-    override val sender: ParticipantDto,
-    override val recipients: Set<ParticipantDto>? = null,
-    val content: String,
 ) : EventDto()
 
 @Serializable
@@ -230,13 +261,13 @@ internal object DtoMappers {
     }
 
     fun toDto(e: Event): EventDto = when (val details = e.payload) {
-        is Event.UserMessage -> UserMessageDto(
+        is Event.Message -> MessageDto(
             e.id,
             e.timestamp,
             toDto(e.sender),
             e.recipients?.map { toDto(it) }?.toSet(),
-            details.content,
-            details.attachments.map { toDto(it) })
+            details.content.map { toDto(it) }
+        )
 
         is Event.ToolUseApproval -> ToolUseApprovalDto(
             e.id,
@@ -245,14 +276,6 @@ internal object DtoMappers {
             e.recipients?.map { toDto(it) }?.toSet(),
             toDto(Event(e.id, e.timestamp, e.sender, e.recipients, details.vetting)) as ToolUseVettingDto,
             details.approvals.mapKeys { toDto(it.key) }
-        )
-
-        is Event.AssistantMessage -> AssistantMessageDto(
-            e.id,
-            e.timestamp,
-            toDto(e.sender),
-            e.recipients?.map { toDto(it) }?.toSet(),
-            details.content
         )
 
         is Event.AssistantProcessing -> AssistantProcessingDto(
@@ -283,12 +306,12 @@ internal object DtoMappers {
     }
 
     fun fromDto(e: EventDto): Event = when (e) {
-        is UserMessageDto -> Event(
+        is MessageDto -> Event(
             e.id,
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.UserMessage(e.content, e.attachments.map { fromDto(it) })
+            Event.Message(e.content.map { fromDto(it) })
         )
 
         is ToolUseApprovalDto -> Event(
@@ -300,14 +323,6 @@ internal object DtoMappers {
                 (fromDto(e.vetting).payload as Event.ToolUseVetting),
                 e.approvals.mapKeys { fromDto(it.key) }
             )
-        )
-
-        is AssistantMessageDto -> Event(
-            e.id,
-            e.timestamp,
-            fromDto(e.sender),
-            e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.AssistantMessage(e.content)
         )
 
         is AssistantProcessingDto -> Event(
@@ -333,6 +348,23 @@ internal object DtoMappers {
             e.recipients?.map { fromDto(it) }?.toSet(),
             Event.ToolUseNotification(fromDto(e.call), fromDto(e.result))
         )
+    }
+
+    fun toDto(cp: ContentPart): ContentPartDto = when (cp) {
+        is ContentPart.Text -> ContentPartDto.Text(cp.text, cp.mimeType)
+        is ContentPart.Image -> ContentPartDto.Image(cp.mimeType, cp.filename, toDto(cp.media))
+        is ContentPart.Video -> ContentPartDto.Video(cp.mimeType, cp.filename, toDto(cp.media))
+        is ContentPart.Audio -> ContentPartDto.Audio(cp.mimeType, cp.filename, toDto(cp.media))
+        is ContentPart.File -> ContentPartDto.File(cp.mimeType, cp.filename, toDto(cp.media))
+        is ContentPart.Embed<*> -> error("Serialization of Embed is not yet supported")
+    }
+
+    fun fromDto(cp: ContentPartDto): ContentPart = when (cp) {
+        is ContentPartDto.Text -> ContentPart.Text(cp.text, cp.mimeType)
+        is ContentPartDto.Image -> ContentPart.Image(cp.mimeType, cp.filename, fromDto(cp.media))
+        is ContentPartDto.Video -> ContentPart.Video(cp.mimeType, cp.filename, fromDto(cp.media))
+        is ContentPartDto.Audio -> ContentPart.Audio(cp.mimeType, cp.filename, fromDto(cp.media))
+        is ContentPartDto.File -> ContentPart.File(cp.mimeType, cp.filename, fromDto(cp.media))
     }
 
     fun toDto(a: Attachment): AttachmentDto = AttachmentDto(

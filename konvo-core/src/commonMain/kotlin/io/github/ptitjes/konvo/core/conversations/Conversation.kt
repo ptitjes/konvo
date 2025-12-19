@@ -157,13 +157,13 @@ class Conversation(
             )
         }
 
-        override suspend fun sendMessage(content: String) {
+        override suspend fun sendMessage(content: List<ContentPart>) {
             _events.emit(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
-                    payload = Event.AssistantMessage(
+                    payload = Event.Message(
                         content = content
                     )
                 )
@@ -218,18 +218,14 @@ class Conversation(
             _lastReadMessageIndexUpdates.emit(index)
         }
 
-        override suspend fun sendMessage(
-            content: String,
-            attachments: List<Attachment>,
-        ) {
+        override suspend fun sendMessage(content: List<ContentPart>) {
             _events.emit(
                 Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
-                    payload = Event.UserMessage(
+                    payload = Event.Message(
                         content = content,
-                        attachments = attachments
                     )
                 )
             )

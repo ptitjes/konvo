@@ -192,8 +192,7 @@ class FileConversationRepository(
         val events = readEvents(conversationId)
         val newPreview = ConversationUtils.computeLastMessagePreview(events)
         val (delta, deltaUnread) = when (event.payload) {
-            is Event.UserMessage -> 1 to 1
-            is Event.AssistantMessage -> 1 to 1
+            is Event.Message -> 1 to 1
             else -> 0 to 0
         }
         val updated = current.copy(

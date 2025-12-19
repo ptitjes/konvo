@@ -20,8 +20,7 @@ interface ConversationUserView {
     suspend fun updateLastReadMessageIndex(index: Int)
 
     suspend fun sendMessage(
-        content: String,
-        attachments: List<Attachment> = emptyList(),
+        content: List<ContentPart>,
     )
 
     suspend fun sendToolUseApproval(

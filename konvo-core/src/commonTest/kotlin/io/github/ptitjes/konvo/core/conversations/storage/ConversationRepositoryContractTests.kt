@@ -56,9 +56,8 @@ abstract class ConversationRepositoryContractTests {
         id = id,
         timestamp = timestamp,
         sender = Participant.User("u1", "user"),
-        payload = Event.UserMessage(
-            content = content,
-            attachments = emptyList(),
+        payload = Event.Message(
+            content = listOf(ContentPart.Text(content)),
         )
     )
 
@@ -70,8 +69,8 @@ abstract class ConversationRepositoryContractTests {
         id = id,
         timestamp = timestamp,
         sender = Participant.Agent("a1", "agent"),
-        payload = Event.AssistantMessage(
-            content = content,
+        payload = Event.Message(
+            content = listOf(ContentPart.Text(content)),
         )
     )
 
@@ -93,9 +92,8 @@ abstract class ConversationRepositoryContractTests {
             id = "e1",
             timestamp = timeProvider.now(),
             sender = Participant.User("u1", "user"),
-            payload = Event.UserMessage(
-                content = "Hello world",
-                attachments = emptyList()
+            payload = Event.Message(
+                content = listOf(ContentPart.Text("Hello world")),
             )
         )
         repository.appendEvent(conversation.id, event)

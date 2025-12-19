@@ -13,7 +13,7 @@ interface ConversationAgentView {
 
     suspend fun sendProcessing(isProcessing: Boolean)
 
-    suspend fun sendMessage(content: String)
+    suspend fun sendMessage(content: List<ContentPart>)
 
     suspend fun sendToolUseVetting(
         calls: List<ToolCall>,
