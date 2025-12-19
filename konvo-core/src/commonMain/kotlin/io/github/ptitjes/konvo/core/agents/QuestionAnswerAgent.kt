@@ -140,7 +140,7 @@ private suspend fun ConversationAgentView.vetToolCalls(
 
     sendProcessing(false)
 
-    val approvalsEvent = events.filterIsInstance<Event.ToolUseApproval>().first { it.vetting == vettingEvent }
+    val approvalsEvent = events.mapNotNull { it.payload as? Event.ToolUseApproval }.first { it.vetting == vettingEvent }
     val approvalsByCall = approvalsEvent.approvals
 
     vetoableToolCalls.forEach { (index, call) ->

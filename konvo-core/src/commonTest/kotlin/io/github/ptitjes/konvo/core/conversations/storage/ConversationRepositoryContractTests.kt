@@ -52,23 +52,27 @@ abstract class ConversationRepositoryContractTests {
         id: String,
         content: String,
         timestamp: Instant,
-    ): Event.UserMessage = Event.UserMessage(
+    ): Event = Event(
         id = id,
         timestamp = timestamp,
         source = Participant.User("u1", "user"),
-        content = content,
-        attachments = emptyList(),
+        payload = Event.UserMessage(
+            content = content,
+            attachments = emptyList(),
+        )
     )
 
     protected fun assistantMessage(
         id: String,
         content: String,
         timestamp: Instant,
-    ): Event.AssistantMessage = Event.AssistantMessage(
+    ): Event = Event(
         id = id,
         timestamp = timestamp,
         source = Participant.Agent("a1", "agent"),
-        content = content,
+        payload = Event.AssistantMessage(
+            content = content,
+        )
     )
 
     @Test
@@ -85,12 +89,14 @@ abstract class ConversationRepositoryContractTests {
     fun `append user message updates preview and count`() = runRepositoryTest { timeProvider, repository ->
         val conversation = newConversation(timestamp = timeProvider.now())
         repository.create(conversation)
-        val event = Event.UserMessage(
+        val event = Event(
             id = "e1",
             timestamp = timeProvider.now(),
             source = Participant.User("u1", "user"),
-            content = "Hello world",
-            attachments = emptyList()
+            payload = Event.UserMessage(
+                content = "Hello world",
+                attachments = emptyList()
+            )
         )
         repository.appendEvent(conversation.id, event)
         val updated = repository.getDigest(conversation.id).first()

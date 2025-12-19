@@ -61,8 +61,7 @@ class Conversation(
             val transcript = repository.getEvents(conversationId).stateIn(this)
 
             val processing = transcript
-                .mapNotNull { it.lastOrNull() }
-                .filterIsInstance<Event.AssistantProcessing>()
+                .mapNotNull { it.lastOrNull()?.payload as? Event.AssistantProcessing }
                 .map { it.isProcessing }
                 .onStart { emit(false) }
 
@@ -134,7 +133,7 @@ class Conversation(
     }
 
     private fun Event.isViewItem(): Boolean =
-        this !is Event.AssistantProcessing && this !is Event.ToolUseApproval
+        payload !is Event.AssistantProcessing && payload !is Event.ToolUseApproval
 
     fun newUserView(): ConversationUserView = UserViewImpl(userMember)
     private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
@@ -147,35 +146,43 @@ class Conversation(
 
         override suspend fun sendProcessing(isProcessing: Boolean) {
             _events.emit(
-                Event.AssistantProcessing(
+                Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
-                    isProcessing = isProcessing,
+                    payload = Event.AssistantProcessing(
+                        isProcessing = isProcessing,
+                    )
                 )
             )
         }
 
         override suspend fun sendMessage(content: String) {
             _events.emit(
-                Event.AssistantMessage(
+                Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
-                    content = content
+                    payload = Event.AssistantMessage(
+                        content = content
+                    )
                 )
             )
         }
 
         override suspend fun sendToolUseVetting(calls: List<ToolCall>): Event.ToolUseVetting {
-            val event = Event.ToolUseVetting(
-                id = newId(),
-                timestamp = newTimestamp(),
-                source = participant,
+            val details = Event.ToolUseVetting(
                 calls = calls
             )
-            _events.emit(event)
-            return event
+            _events.emit(
+                Event(
+                    id = newId(),
+                    timestamp = newTimestamp(),
+                    source = participant,
+                    payload = details
+                )
+            )
+            return details
         }
 
         override suspend fun sendToolUseResult(
@@ -183,12 +190,14 @@ class Conversation(
             result: ToolCallResult,
         ) {
             _events.emit(
-                Event.ToolUseNotification(
+                Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
-                    call = call,
-                    result = result
+                    payload = Event.ToolUseNotification(
+                        call = call,
+                        result = result
+                    )
                 )
             )
         }
@@ -214,12 +223,14 @@ class Conversation(
             attachments: List<Attachment>,
         ) {
             _events.emit(
-                Event.UserMessage(
+                Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
-                    content = content,
-                    attachments = attachments
+                    payload = Event.UserMessage(
+                        content = content,
+                        attachments = attachments
+                    )
                 )
             )
         }
@@ -229,12 +240,14 @@ class Conversation(
             approvals: Map<ToolCall, Boolean>,
         ) {
             _events.emit(
-                Event.ToolUseApproval(
+                Event(
                     id = newId(),
                     timestamp = newTimestamp(),
                     source = participant,
-                    vetting = vetting,
-                    approvals = approvals,
+                    payload = Event.ToolUseApproval(
+                        vetting = vetting,
+                        approvals = approvals,
+                    )
                 )
             )
         }

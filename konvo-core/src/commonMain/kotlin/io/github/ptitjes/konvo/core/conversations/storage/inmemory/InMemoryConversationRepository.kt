@@ -63,7 +63,7 @@ class InMemoryConversationRepository(
         conversations.updateAndGet { prev ->
             val existing = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
             val now = timeProvider.now()
-            val (newPreview, deltaCount, deltaUnread) = when (event) {
+            val (newPreview, deltaCount, deltaUnread) = when (event.payload) {
                 is Event.UserMessage -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
                 is Event.AssistantMessage -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
                 else -> Triple(existing.lastMessagePreview, 0, 0)

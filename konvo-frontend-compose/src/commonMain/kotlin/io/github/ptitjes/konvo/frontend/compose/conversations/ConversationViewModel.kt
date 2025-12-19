@@ -63,21 +63,23 @@ class ConversationViewModel(
     }
 
     private fun Event.isViewItem(): Boolean =
-        this !is Event.AssistantProcessing && this !is Event.ToolUseApproval
+        payload !is Event.AssistantProcessing && payload !is Event.ToolUseApproval
 
-    private suspend fun Event.toEventViewState(): EventViewState = when (this) {
+    private suspend fun Event.toEventViewState(): EventViewState = when (val details = this.payload) {
         is Event.UserMessage -> EventViewState.UserMessage(
             event = this,
-            markdownState = parseMarkdown(content),
+            details = details,
+            markdownState = parseMarkdown(details.content),
         )
 
         is Event.AssistantMessage -> EventViewState.AssistantMessage(
             event = this,
-            markdownState = parseMarkdown(content),
+            details = details,
+            markdownState = parseMarkdown(details.content),
         )
 
-        is Event.ToolUseVetting -> EventViewState.ToolUseVetting(this)
-        is Event.ToolUseNotification -> EventViewState.ToolUseNotification(this)
+        is Event.ToolUseVetting -> EventViewState.ToolUseVetting(this, details)
+        is Event.ToolUseNotification -> EventViewState.ToolUseNotification(this, details)
         else -> error("Not a view item: $this")
     }
 
@@ -133,21 +135,25 @@ sealed interface EventViewState {
     val id: String get() = event.id
 
     data class UserMessage(
-        override val event: Event.UserMessage,
+        override val event: Event,
+        val details: Event.UserMessage,
         val markdownState: MarkdownViewState,
     ) : EventViewState
 
     data class AssistantMessage(
-        override val event: Event.AssistantMessage,
+        override val event: Event,
+        val details: Event.AssistantMessage,
         val markdownState: MarkdownViewState,
     ) : EventViewState
 
     data class ToolUseVetting(
-        override val event: Event.ToolUseVetting,
+        override val event: Event,
+        val details: Event.ToolUseVetting,
     ) : EventViewState
 
     data class ToolUseNotification(
-        override val event: Event.ToolUseNotification,
+        override val event: Event,
+        val details: Event.ToolUseNotification,
     ) : EventViewState
 }
 

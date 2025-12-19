@@ -32,13 +32,15 @@ class FileConversationRepositoryPartialFilesTests {
             messageCount = 0,
         )
 
-    private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Event.UserMessage =
-        Event.UserMessage(
+    private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Event =
+        Event(
             id = id,
             timestamp = ts,
             source = Participant.User("u1", "user"),
-            content = content,
-            attachments = emptyList(),
+            payload = Event.UserMessage(
+                content = content,
+                attachments = emptyList(),
+            )
         )
 
     @Test
@@ -80,7 +82,7 @@ class FileConversationRepositoryPartialFilesTests {
 
         // Assert
         assertEquals(2, events.size)
-        assertTrue(events.all { it is Event.UserMessage })
+        assertTrue(events.all { it.payload is Event.UserMessage })
         assertEquals(listOf("e1", "e2"), events.map { it.id })
     }
 }

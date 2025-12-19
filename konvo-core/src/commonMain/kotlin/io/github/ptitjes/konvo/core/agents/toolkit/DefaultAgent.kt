@@ -72,9 +72,9 @@ internal class DefaultAgent(
 
     override suspend fun restorePrompt(events: List<Event>) {
         val messages = events.mapNotNull { event ->
-            when (event) {
-                is Event.UserMessage -> event.toUserMessage()
-                is Event.AssistantMessage -> event.toAssistantMessage()
+            when (val details = event.payload) {
+                is Event.UserMessage -> event.toUserMessage(details)
+                is Event.AssistantMessage -> event.toAssistantMessage(details)
                 else -> null
             }
         }
@@ -108,11 +108,11 @@ internal class DefaultAgent(
 
         try {
             conversation.events.buffer(Channel.UNLIMITED).collect { event ->
-                when (event) {
+                when (val details = event.payload) {
                     is Event.UserMessage -> {
                         conversation.sendProcessing(true)
                         val agent = buildAgent(toolRegistry, conversation)
-                        val result = agent.run(event.toUserMessage())
+                        val result = agent.run(event.toUserMessage(details))
                         result.forEach { conversation.sendMessage(it.content) }
                         conversation.sendProcessing(false)
                     }
@@ -125,17 +125,17 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Event.UserMessage.toUserMessage(): Message.User =
+    private suspend fun Event.toUserMessage(details: Event.UserMessage): Message.User =
         Message.User(
-            parts = listOf(KoogContentPart.Text(content)) + attachments.map { it.toKoogAttachment() },
+            parts = listOf(KoogContentPart.Text(details.content)) + details.attachments.map { it.toKoogAttachment() },
             metaInfo = RequestMetaInfo(
                 timestamp = timestamp.toDeprecatedInstant(),
             ),
         )
 
-    private fun Event.AssistantMessage.toAssistantMessage(): Message.Assistant =
+    private fun Event.toAssistantMessage(details: Event.AssistantMessage): Message.Assistant =
         Message.Assistant(
-            content = content,
+            content = details.content,
             metaInfo = ResponseMetaInfo(
                 timestamp = timestamp.toDeprecatedInstant(),
             ),
