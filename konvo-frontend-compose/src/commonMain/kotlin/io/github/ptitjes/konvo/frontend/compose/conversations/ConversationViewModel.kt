@@ -66,17 +66,22 @@ class ConversationViewModel(
         payload !is Event.AssistantProcessing && payload !is Event.ToolUseApproval
 
     private suspend fun Event.toEventViewState(): EventViewState = when (val details = this.payload) {
-        is Event.UserMessage -> EventViewState.UserMessage(
-            event = this,
-            details = details,
-            markdownState = parseMarkdown(details.content),
-        )
-
-        is Event.AssistantMessage -> EventViewState.AssistantMessage(
-            event = this,
-            details = details,
-            markdownState = parseMarkdown(details.content),
-        )
+        is Event.Message -> {
+            val content = details.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
+            if (sender is Participant.User) {
+                EventViewState.UserMessage(
+                    event = this,
+                    details = details,
+                    markdownState = parseMarkdown(content),
+                )
+            } else {
+                EventViewState.AssistantMessage(
+                    event = this,
+                    details = details,
+                    markdownState = parseMarkdown(content),
+                )
+            }
+        }
 
         is Event.ToolUseVetting -> EventViewState.ToolUseVetting(this, details)
         is Event.ToolUseNotification -> EventViewState.ToolUseNotification(this, details)
@@ -86,7 +91,8 @@ class ConversationViewModel(
     /**
      * Send a user message to the conversation.
      *
-     * @param message The message to send
+     * @param content The message content to send
+     * @param attachments The attachments to send
      */
     fun sendUserMessage(
         content: String,
@@ -96,8 +102,14 @@ class ConversationViewModel(
 
         viewModelScope.launch {
             conversationUserView.sendMessage(
-                content = content,
-                attachments = attachments,
+                content = listOf(ContentPart.Text(content)) + attachments.map { attachment ->
+                    when (attachment.type) {
+                        Attachment.Type.Image -> ContentPart.Image(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Video -> ContentPart.Video(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Audio -> ContentPart.Audio(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Document -> ContentPart.File(attachment.mimeType, attachment.name, attachment)
+                    }
+                },
             )
         }
     }
@@ -136,13 +148,13 @@ sealed interface EventViewState {
 
     data class UserMessage(
         override val event: Event,
-        val details: Event.UserMessage,
+        val details: Event.Message,
         val markdownState: MarkdownViewState,
     ) : EventViewState
 
     data class AssistantMessage(
         override val event: Event,
-        val details: Event.AssistantMessage,
+        val details: Event.Message,
         val markdownState: MarkdownViewState,
     ) : EventViewState
 

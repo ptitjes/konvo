@@ -51,8 +51,8 @@ fun ConversationUserMessagePanel(
                         )
                     }
 
-                    eventViewState.details.attachments.forEach { attachment ->
-                        AttachmentView(attachment)
+                    eventViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
+                        AttachmentView(media.media)
                     }
                 }
             }
@@ -69,11 +69,17 @@ fun ConversationAgentMessagePanel(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = horizontalArrangement,
     ) {
-        SelectionContainer {
-            MarkdownContent(
-                state = eventViewState.markdownState,
-                textColor = MaterialTheme.colorScheme.onBackground,
-            )
+        Column {
+            SelectionContainer {
+                MarkdownContent(
+                    state = eventViewState.markdownState,
+                    textColor = MaterialTheme.colorScheme.onBackground,
+                )
+            }
+
+            eventViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
+                AttachmentView(media.media)
+            }
         }
     }
 }

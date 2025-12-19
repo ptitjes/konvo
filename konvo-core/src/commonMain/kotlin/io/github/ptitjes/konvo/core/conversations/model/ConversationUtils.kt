@@ -11,18 +11,11 @@ object ConversationUtils {
      */
     fun computeLastMessagePreview(events: List<Event>, maxLength: Int = 500): String? {
         val lastMsg = events.asReversed().firstOrNull { e ->
-            when (e.payload) {
-                is Event.UserMessage -> true
-                is Event.AssistantMessage -> true
-                else -> false
-            }
+            e.payload is Event.Message
         } ?: return null
 
-        val text = when (val details = lastMsg.payload) {
-            is Event.UserMessage -> details.content
-            is Event.AssistantMessage -> details.content
-            else -> ""
-        }
+        val details = lastMsg.payload as Event.Message
+        val text = details.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
 
         return TextFormatters.truncatePreview(text, maxLength)
     }

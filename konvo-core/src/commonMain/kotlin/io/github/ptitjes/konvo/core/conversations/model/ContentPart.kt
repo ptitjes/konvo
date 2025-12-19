@@ -8,24 +8,34 @@ sealed interface ContentPart {
         val mimeType: String? = null,
     ) : ContentPart
 
-    sealed interface Media : ContentPart
+    sealed interface Media : ContentPart {
+        val mimeType: String
+        val filename: String?
+        val media: Attachment
+    }
 
     data class Image(
-        val mimeType: String,
-        val filename: String?,
-        val media: Attachment,
+        override val mimeType: String,
+        override val filename: String?,
+        override val media: Attachment,
     ) : Media
 
     data class Video(
-        val mimeType: String,
-        val filename: String?,
-        val media: Attachment,
+        override val mimeType: String,
+        override val filename: String?,
+        override val media: Attachment,
     ) : Media
 
     data class Audio(
-        val mimeType: String,
-        val filename: String?,
-        val media: Attachment,
+        override val mimeType: String,
+        override val filename: String?,
+        override val media: Attachment,
+    ) : Media
+
+    data class File(
+        override val mimeType: String,
+        override val filename: String?,
+        override val media: Attachment,
     ) : Media
 
     data class Embed<Payload>(

@@ -195,27 +195,35 @@ class KonvoBot(
         val conversationView = conversation.newUserView()
 
         conversationView.sendMessage(
-            content = message.content,
-            attachments = message.attachments.map { attachment ->
+            content = listOf(ContentPart.Text(message.content)) + message.attachments.map { attachment ->
                 val fileName = attachment.filename
                 val format = fileName.substringAfterLast('.')
                 val isImage = attachment.isImage
                 val contentType = attachment.contentType
                 val isAudio = contentType?.startsWith("audio/") ?: false
 
-                Attachment(
-                    type = when {
-                        isImage -> Attachment.Type.Image
-                        isAudio -> Attachment.Type.Audio
-                        else -> Attachment.Type.Document
-                    },
+                val type = when {
+                    isImage -> Attachment.Type.Image
+                    isAudio -> Attachment.Type.Audio
+                    else -> Attachment.Type.Document
+                }
+                val mimeType = contentType ?: when {
+                    isImage -> "image/$format"
+                    else -> "application/$format"
+                }
+                val konvoAttachment = Attachment(
+                    type = type,
                     url = attachment.url,
                     name = fileName,
-                    mimeType = contentType ?: when {
-                        isImage -> "image/$format"
-                        else -> "application/$format"
-                    },
+                    mimeType = mimeType,
                 )
+
+                when (type) {
+                    Attachment.Type.Image -> ContentPart.Image(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Audio -> ContentPart.Audio(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Video -> ContentPart.Video(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Document -> ContentPart.File(mimeType, fileName, konvoAttachment)
+                }
             }
         )
     }
@@ -314,15 +322,19 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
         val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
         conversation.events.collect { event ->
-            when (val details = event.details) {
+            when (val details = event.payload) {
                 is Event.AssistantProcessing ->
                     if (details.isProcessing) assistantProcessing.start()
                     else assistantProcessing.stop()
 
-                is Event.AssistantMessage -> {
-                    val content = details.content.maybeSplitDiscordContent()
-                    content.forEach { createMessage(it) }
-                    assistantProcessing.maybeRestart()
+                is Event.Message -> {
+                    if (event.sender is Participant.Agent) {
+                        val textContent =
+                            details.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
+                        val content = textContent.maybeSplitDiscordContent()
+                        content.forEach { createMessage(it) }
+                        assistantProcessing.maybeRestart()
+                    }
                 }
 
                 is Event.ToolUseVetting -> {

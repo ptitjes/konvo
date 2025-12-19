@@ -15,6 +15,7 @@ import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.ContentPart
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*
@@ -73,8 +74,7 @@ internal class DefaultAgent(
     override suspend fun restorePrompt(events: List<Event>) {
         val messages = events.mapNotNull { event ->
             when (val details = event.payload) {
-                is Event.UserMessage -> event.toUserMessage(details)
-                is Event.AssistantMessage -> event.toAssistantMessage(details)
+                is Event.Message -> event.toKoogMessage(details)
                 else -> null
             }
         }
@@ -88,7 +88,7 @@ internal class DefaultAgent(
         val conversationJustStarted = prompt.messages.size == 1
         if (conversationJustStarted) {
             welcomeMessage?.let { content ->
-                conversation.sendMessage(content)
+                conversation.sendMessage(listOf(ContentPart.Text(content)))
                 prompt = prompt(prompt) {
                     message(
                         Message.Assistant(
@@ -109,12 +109,14 @@ internal class DefaultAgent(
         try {
             conversation.events.buffer(Channel.UNLIMITED).collect { event ->
                 when (val details = event.payload) {
-                    is Event.UserMessage -> {
-                        conversation.sendProcessing(true)
-                        val agent = buildAgent(toolRegistry, conversation)
-                        val result = agent.run(event.toUserMessage(details))
-                        result.forEach { conversation.sendMessage(it.content) }
-                        conversation.sendProcessing(false)
+                    is Event.Message -> {
+                        if (event.sender is Participant.User) {
+                            conversation.sendProcessing(true)
+                            val agent = buildAgent(toolRegistry, conversation)
+                            val result = agent.run(event.toKoogMessage(details) as Message.User)
+                            result.forEach { conversation.sendMessage(listOf(ContentPart.Text(it.content))) }
+                            conversation.sendProcessing(false)
+                        }
                     }
 
                     else -> {}
@@ -125,21 +127,27 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Event.toUserMessage(details: Event.UserMessage): Message.User =
-        Message.User(
-            parts = listOf(KoogContentPart.Text(details.content)) + details.attachments.map { it.toKoogAttachment() },
-            metaInfo = RequestMetaInfo(
-                timestamp = timestamp.toDeprecatedInstant(),
-            ),
-        )
+    private suspend fun Event.toKoogMessage(details: Event.Message): Message =
+        when (sender) {
+            is Participant.User -> Message.User(
+                parts = details.content.map { it.toKoogContentPart() },
+                metaInfo = RequestMetaInfo(timestamp = timestamp.toDeprecatedInstant())
+            )
 
-    private fun Event.toAssistantMessage(details: Event.AssistantMessage): Message.Assistant =
-        Message.Assistant(
-            content = details.content,
-            metaInfo = ResponseMetaInfo(
-                timestamp = timestamp.toDeprecatedInstant(),
-            ),
-        )
+            is Participant.Agent -> Message.Assistant(
+                parts = details.content.map { it.toKoogContentPart() },
+                metaInfo = ResponseMetaInfo(timestamp = timestamp.toDeprecatedInstant())
+            )
+        }
+
+    private suspend fun ContentPart.toKoogContentPart(): KoogContentPart = when (this) {
+        is ContentPart.Text -> KoogContentPart.Text(text)
+        is ContentPart.Image -> media.toKoogAttachment()
+        is ContentPart.Video -> media.toKoogAttachment()
+        is ContentPart.Audio -> media.toKoogAttachment()
+        is ContentPart.File -> media.toKoogAttachment()
+        is ContentPart.Embed<*> -> error("Embed content part is not supported for Koog")
+    }
 
     private val httpClient = HttpClient(CIO)
 

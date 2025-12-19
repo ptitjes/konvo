@@ -37,9 +37,8 @@ class FileConversationRepositoryPartialFilesTests {
             id = id,
             timestamp = ts,
             sender = Participant.User("u1", "user"),
-            payload = Event.UserMessage(
-                content = content,
-                attachments = emptyList(),
+            payload = Event.Message(
+                content = listOf(ContentPart.Text(content)),
             )
         )
 
@@ -82,7 +81,7 @@ class FileConversationRepositoryPartialFilesTests {
 
         // Assert
         assertEquals(2, events.size)
-        assertTrue(events.all { it.payload is Event.UserMessage })
+        assertTrue(events.all { it.payload is Event.Message })
         assertEquals(listOf("e1", "e2"), events.map { it.id })
     }
 }
