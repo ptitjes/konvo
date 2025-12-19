@@ -28,6 +28,7 @@ import kotlinx.datetime.*
 import kotlinx.io.files.*
 import kotlin.coroutines.*
 import kotlin.time.Clock
+import ai.koog.prompt.message.ContentPart as KoogContentPart
 
 internal class DefaultAgent(
     private val systemPrompt: Prompt,
@@ -126,7 +127,7 @@ internal class DefaultAgent(
 
     private suspend fun Event.UserMessage.toUserMessage(): Message.User =
         Message.User(
-            parts = listOf(ContentPart.Text(content)) + attachments.map { it.toKoogAttachment() },
+            parts = listOf(KoogContentPart.Text(content)) + attachments.map { it.toKoogAttachment() },
             metaInfo = RequestMetaInfo(
                 timestamp = timestamp.toDeprecatedInstant(),
             ),
@@ -155,33 +156,33 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Attachment.toKoogAttachment(): ContentPart {
+    private suspend fun Attachment.toKoogAttachment(): KoogContentPart {
         val bytes = loadContent()
         val content = AttachmentContent.Binary.Bytes(bytes)
 
         return when (type) {
-            Attachment.Type.Audio -> ContentPart.Audio(
+            Attachment.Type.Audio -> KoogContentPart.Audio(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Image -> ContentPart.Image(
+            Attachment.Type.Image -> KoogContentPart.Image(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Video -> ContentPart.Video(
+            Attachment.Type.Video -> KoogContentPart.Video(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Document -> ContentPart.File(
+            Attachment.Type.Document -> KoogContentPart.File(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
