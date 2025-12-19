@@ -22,8 +22,8 @@ import kotlinx.serialization.json.*
 fun ConversationEventPanel(eventViewState: EventViewState) = when (eventViewState) {
     is EventViewState.UserMessage -> ConversationUserMessagePanel(eventViewState)
     is EventViewState.AssistantMessage -> ConversationAgentMessagePanel(eventViewState)
-    is EventViewState.ToolUseNotification -> ConversationAssistantToolUseResultPanel(eventViewState.event)
-    is EventViewState.ToolUseVetting -> ConversationAssistantToolUseVettingPanel(eventViewState.event)
+    is EventViewState.ToolUseNotification -> ConversationAssistantToolUseResultPanel(eventViewState.event, eventViewState.details)
+    is EventViewState.ToolUseVetting -> ConversationAssistantToolUseVettingPanel(eventViewState.details)
 }
 
 @Composable
@@ -51,7 +51,7 @@ fun ConversationUserMessagePanel(
                         )
                     }
 
-                    eventViewState.event.attachments.forEach { attachment ->
+                    eventViewState.details.attachments.forEach { attachment ->
                         AttachmentView(attachment)
                     }
                 }
@@ -80,7 +80,7 @@ fun ConversationAgentMessagePanel(
 
 @Composable
 fun ConversationAssistantToolUseVettingPanel(
-    event: Event.ToolUseVetting,
+    details: Event.ToolUseVetting,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -99,7 +99,7 @@ fun ConversationAssistantToolUseVettingPanel(
                 Spacer(Modifier.height(8.dp))
 
                 val json = Json { prettyPrint = true }
-                event.calls.forEach { call ->
+                details.calls.forEach { call ->
                     Text(
                         text = "• ${call.tool} (id=${call.id})",
                         style = MaterialTheme.typography.bodyMedium,
@@ -122,7 +122,8 @@ fun ConversationAssistantToolUseVettingPanel(
 
 @Composable
 fun ConversationAssistantToolUseResultPanel(
-    event: Event.ToolUseNotification,
+    event: Event,
+    details: Event.ToolUseNotification,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -136,7 +137,7 @@ fun ConversationAssistantToolUseResultPanel(
             color = MaterialTheme.colorScheme.background,
         ) {
             var expanded by remember { mutableStateOf(false) }
-            val result = event.result
+            val result = details.result
 
             Column(modifier = Modifier) {
                 TextButton(
@@ -156,7 +157,7 @@ fun ConversationAssistantToolUseResultPanel(
                             text = buildAnnotatedString {
                                 append(strings.conversations.agentCalledToolPrefix)
                                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append(event.call.tool)
+                                    append(details.call.tool)
                                 }
                             },
                             style = MaterialTheme.typography.titleSmall,
@@ -178,7 +179,7 @@ fun ConversationAssistantToolUseResultPanel(
 
                 if (expanded) {
                     ToolArgumentsTable(
-                        arguments = event.call.arguments,
+                        arguments = details.call.arguments,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
 

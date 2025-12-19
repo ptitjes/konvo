@@ -45,6 +45,16 @@ internal data class UserMessageDto(
 ) : EventDto()
 
 @Serializable
+@SerialName("tool-use-approval")
+internal data class ToolUseApprovalDto(
+    override val id: String,
+    @Contextual override val timestamp: Instant,
+    override val source: ParticipantDto,
+    val vetting: ToolUseVettingDto,
+    val approvals: Map<ToolCallDto, Boolean>,
+) : EventDto()
+
+@Serializable
 @SerialName("assistant-message")
 internal data class AssistantMessageDto(
     override val id: String,
@@ -212,45 +222,85 @@ internal object DtoMappers {
         is ParticipantDto.Agent -> Participant.Agent(p.id, p.name)
     }
 
-    fun toDto(e: Event): EventDto = when (e) {
+    fun toDto(e: Event): EventDto = when (val details = e.payload) {
         is Event.UserMessage -> UserMessageDto(
             e.id,
             e.timestamp,
             toDto(e.source),
-            e.content,
-            e.attachments.map { toDto(it) })
+            details.content,
+            details.attachments.map { toDto(it) })
 
-        is Event.AssistantMessage -> AssistantMessageDto(e.id, e.timestamp, toDto(e.source), e.content)
-        is Event.AssistantProcessing -> AssistantProcessingDto(e.id, e.timestamp, toDto(e.source), e.isProcessing)
-        is Event.ToolUseVetting -> ToolUseVettingDto(e.id, e.timestamp, toDto(e.source), e.calls.map { toDto(it) })
+        is Event.ToolUseApproval -> ToolUseApprovalDto(
+            e.id,
+            e.timestamp,
+            toDto(e.source),
+            toDto(Event(e.id, e.timestamp, e.source, details.vetting)) as ToolUseVettingDto,
+            details.approvals.mapKeys { toDto(it.key) }
+        )
+
+        is Event.AssistantMessage -> AssistantMessageDto(e.id, e.timestamp, toDto(e.source), details.content)
+        is Event.AssistantProcessing -> AssistantProcessingDto(e.id, e.timestamp, toDto(e.source), details.isProcessing)
+        is Event.ToolUseVetting -> ToolUseVettingDto(
+            e.id,
+            e.timestamp,
+            toDto(e.source),
+            details.calls.map { toDto(it) })
+
         is Event.ToolUseNotification -> ToolUseNotificationDto(
             e.id,
             e.timestamp,
             toDto(e.source),
-            toDto(e.call),
-            toDto(e.result)
+            toDto(details.call),
+            toDto(details.result)
         )
 
-        else -> error("Unsupported event type: ${e::class}")
+        else -> error("Unsupported event type: ${e.payload::class}")
     }
 
     fun fromDto(e: EventDto): Event = when (e) {
-        is UserMessageDto -> Event.UserMessage(
+        is UserMessageDto -> Event(
             e.id,
             e.timestamp,
             fromDto(e.source),
-            e.content,
-            e.attachments.map { fromDto(it) })
+            Event.UserMessage(e.content, e.attachments.map { fromDto(it) })
+        )
 
-        is AssistantMessageDto -> Event.AssistantMessage(e.id, e.timestamp, fromDto(e.source), e.content)
-        is AssistantProcessingDto -> Event.AssistantProcessing(e.id, e.timestamp, fromDto(e.source), e.isProcessing)
-        is ToolUseVettingDto -> Event.ToolUseVetting(e.id, e.timestamp, fromDto(e.source), e.calls.map { fromDto(it) })
-        is ToolUseNotificationDto -> Event.ToolUseNotification(
+        is ToolUseApprovalDto -> Event(
             e.id,
             e.timestamp,
             fromDto(e.source),
-            fromDto(e.call),
-            fromDto(e.result)
+            Event.ToolUseApproval(
+                (fromDto(e.vetting).payload as Event.ToolUseVetting),
+                e.approvals.mapKeys { fromDto(it.key) }
+            )
+        )
+
+        is AssistantMessageDto -> Event(
+            e.id,
+            e.timestamp,
+            fromDto(e.source),
+            Event.AssistantMessage(e.content)
+        )
+
+        is AssistantProcessingDto -> Event(
+            e.id,
+            e.timestamp,
+            fromDto(e.source),
+            Event.AssistantProcessing(e.isProcessing)
+        )
+
+        is ToolUseVettingDto -> Event(
+            e.id,
+            e.timestamp,
+            fromDto(e.source),
+            Event.ToolUseVetting(e.calls.map { fromDto(it) })
+        )
+
+        is ToolUseNotificationDto -> Event(
+            e.id,
+            e.timestamp,
+            fromDto(e.source),
+            Event.ToolUseNotification(fromDto(e.call), fromDto(e.result))
         )
     }
 

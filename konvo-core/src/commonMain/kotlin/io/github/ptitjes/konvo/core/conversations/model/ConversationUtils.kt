@@ -11,16 +11,16 @@ object ConversationUtils {
      */
     fun computeLastMessagePreview(events: List<Event>, maxLength: Int = 500): String? {
         val lastMsg = events.asReversed().firstOrNull { e ->
-            when (e) {
+            when (e.payload) {
                 is Event.UserMessage -> true
                 is Event.AssistantMessage -> true
                 else -> false
             }
         } ?: return null
 
-        val text = when (lastMsg) {
-            is Event.UserMessage -> lastMsg.content
-            is Event.AssistantMessage -> lastMsg.content
+        val text = when (val details = lastMsg.payload) {
+            is Event.UserMessage -> details.content
+            is Event.AssistantMessage -> details.content
             else -> ""
         }
 

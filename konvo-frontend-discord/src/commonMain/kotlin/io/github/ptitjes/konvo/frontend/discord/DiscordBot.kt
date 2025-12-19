@@ -314,24 +314,24 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
         val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
         conversation.events.collect { event ->
-            when (event) {
+            when (val details = event.details) {
                 is Event.AssistantProcessing ->
-                    if (event.isProcessing) assistantProcessing.start()
+                    if (details.isProcessing) assistantProcessing.start()
                     else assistantProcessing.stop()
 
                 is Event.AssistantMessage -> {
-                    val content = event.content.maybeSplitDiscordContent()
+                    val content = details.content.maybeSplitDiscordContent()
                     content.forEach { createMessage(it) }
                     assistantProcessing.maybeRestart()
                 }
 
                 is Event.ToolUseVetting -> {
-                    askForToolUse(conversation, event)
+                    askForToolUse(conversation, details)
                     assistantProcessing.maybeRestart()
                 }
 
                 is Event.ToolUseNotification -> {
-                    notifyToolUse(event)
+                    notifyToolUse(details)
                     assistantProcessing.maybeRestart()
                 }
 
@@ -342,17 +342,17 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
 
 private suspend fun MessageChannelBehavior.askForToolUse(
     conversation: ConversationUserView,
-    event: Event.ToolUseVetting,
+    details: Event.ToolUseVetting,
 ) {
     val done = CompletableDeferred<Unit>()
-    val callsToCheck = event.calls.toMutableList()
+    val callsToCheck = details.calls.toMutableList()
     val approvals = mutableMapOf<ToolCall, Boolean>()
 
     createEphemeralMessage {
         suspend fun finished() {
             // Send approvals and close the ephemeral message
             conversation.sendToolUseApproval(
-                vetting = event,
+                vetting = details,
                 approvals = approvals.toMap(),
             )
             delete()
@@ -402,8 +402,8 @@ private suspend fun MessageChannelBehavior.askForToolUse(
     done.await()
 }
 
-private suspend fun MessageChannelBehavior.notifyToolUse(event: Event.ToolUseNotification) {
-    if (event.result is ToolCallResult.Success) {
+private suspend fun MessageChannelBehavior.notifyToolUse(details: Event.ToolUseNotification) {
+    if (details.result is ToolCallResult.Success) {
         createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }
 
@@ -412,8 +412,8 @@ private suspend fun MessageChannelBehavior.notifyToolUse(event: Event.ToolUseNot
 
                 textDisplay {
                     content = markdown {
-                        val tool = event.call.tool
-                        val arguments = event.call.arguments
+                        val tool = details.call.tool
+                        val arguments = details.call.arguments
 
                         subscript { text("Agent called tool"); space(); bold(tool) }
                         if (arguments.isNotEmpty()) blockquote {
