@@ -5,7 +5,8 @@ import kotlin.time.*
 data class Event(
     val id: String,
     val timestamp: Instant,
-    val source: Participant,
+    val sender: Participant,
+    val recipients: Set<Participant>? = null,
     val payload: Payload,
 ) {
 

@@ -31,7 +31,8 @@ internal sealed class EventDto {
 
     @Contextual
     abstract val timestamp: Instant
-    abstract val source: ParticipantDto
+    abstract val sender: ParticipantDto
+    abstract val recipients: Set<ParticipantDto>?
 }
 
 @Serializable
@@ -39,7 +40,8 @@ internal sealed class EventDto {
 internal data class UserMessageDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
-    override val source: ParticipantDto,
+    override val sender: ParticipantDto,
+    override val recipients: Set<ParticipantDto>? = null,
     val content: String,
     val attachments: List<AttachmentDto>,
 ) : EventDto()
@@ -49,7 +51,8 @@ internal data class UserMessageDto(
 internal data class ToolUseApprovalDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
-    override val source: ParticipantDto,
+    override val sender: ParticipantDto,
+    override val recipients: Set<ParticipantDto>? = null,
     val vetting: ToolUseVettingDto,
     val approvals: Map<ToolCallDto, Boolean>,
 ) : EventDto()
@@ -59,7 +62,8 @@ internal data class ToolUseApprovalDto(
 internal data class AssistantMessageDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
-    override val source: ParticipantDto,
+    override val sender: ParticipantDto,
+    override val recipients: Set<ParticipantDto>? = null,
     val content: String,
 ) : EventDto()
 
@@ -68,7 +72,8 @@ internal data class AssistantMessageDto(
 internal data class AssistantProcessingDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
-    override val source: ParticipantDto,
+    override val sender: ParticipantDto,
+    override val recipients: Set<ParticipantDto>? = null,
     val isProcessing: Boolean,
 ) : EventDto()
 
@@ -77,7 +82,8 @@ internal data class AssistantProcessingDto(
 internal data class ToolUseVettingDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
-    override val source: ParticipantDto,
+    override val sender: ParticipantDto,
+    override val recipients: Set<ParticipantDto>? = null,
     val calls: List<ToolCallDto>,
 ) : EventDto()
 
@@ -86,7 +92,8 @@ internal data class ToolUseVettingDto(
 internal data class ToolUseNotificationDto(
     override val id: String,
     @Contextual override val timestamp: Instant,
-    override val source: ParticipantDto,
+    override val sender: ParticipantDto,
+    override val recipients: Set<ParticipantDto>? = null,
     val call: ToolCallDto,
     val result: ToolCallResultDto,
 ) : EventDto()
@@ -226,30 +233,48 @@ internal object DtoMappers {
         is Event.UserMessage -> UserMessageDto(
             e.id,
             e.timestamp,
-            toDto(e.source),
+            toDto(e.sender),
+            e.recipients?.map { toDto(it) }?.toSet(),
             details.content,
             details.attachments.map { toDto(it) })
 
         is Event.ToolUseApproval -> ToolUseApprovalDto(
             e.id,
             e.timestamp,
-            toDto(e.source),
-            toDto(Event(e.id, e.timestamp, e.source, details.vetting)) as ToolUseVettingDto,
+            toDto(e.sender),
+            e.recipients?.map { toDto(it) }?.toSet(),
+            toDto(Event(e.id, e.timestamp, e.sender, e.recipients, details.vetting)) as ToolUseVettingDto,
             details.approvals.mapKeys { toDto(it.key) }
         )
 
-        is Event.AssistantMessage -> AssistantMessageDto(e.id, e.timestamp, toDto(e.source), details.content)
-        is Event.AssistantProcessing -> AssistantProcessingDto(e.id, e.timestamp, toDto(e.source), details.isProcessing)
+        is Event.AssistantMessage -> AssistantMessageDto(
+            e.id,
+            e.timestamp,
+            toDto(e.sender),
+            e.recipients?.map { toDto(it) }?.toSet(),
+            details.content
+        )
+
+        is Event.AssistantProcessing -> AssistantProcessingDto(
+            e.id,
+            e.timestamp,
+            toDto(e.sender),
+            e.recipients?.map { toDto(it) }?.toSet(),
+            details.isProcessing
+        )
+
         is Event.ToolUseVetting -> ToolUseVettingDto(
             e.id,
             e.timestamp,
-            toDto(e.source),
+            toDto(e.sender),
+            e.recipients?.map { toDto(it) }?.toSet(),
             details.calls.map { toDto(it) })
 
         is Event.ToolUseNotification -> ToolUseNotificationDto(
             e.id,
             e.timestamp,
-            toDto(e.source),
+            toDto(e.sender),
+            e.recipients?.map { toDto(it) }?.toSet(),
             toDto(details.call),
             toDto(details.result)
         )
@@ -261,14 +286,16 @@ internal object DtoMappers {
         is UserMessageDto -> Event(
             e.id,
             e.timestamp,
-            fromDto(e.source),
+            fromDto(e.sender),
+            e.recipients?.map { fromDto(it) }?.toSet(),
             Event.UserMessage(e.content, e.attachments.map { fromDto(it) })
         )
 
         is ToolUseApprovalDto -> Event(
             e.id,
             e.timestamp,
-            fromDto(e.source),
+            fromDto(e.sender),
+            e.recipients?.map { fromDto(it) }?.toSet(),
             Event.ToolUseApproval(
                 (fromDto(e.vetting).payload as Event.ToolUseVetting),
                 e.approvals.mapKeys { fromDto(it.key) }
@@ -278,28 +305,32 @@ internal object DtoMappers {
         is AssistantMessageDto -> Event(
             e.id,
             e.timestamp,
-            fromDto(e.source),
+            fromDto(e.sender),
+            e.recipients?.map { fromDto(it) }?.toSet(),
             Event.AssistantMessage(e.content)
         )
 
         is AssistantProcessingDto -> Event(
             e.id,
             e.timestamp,
-            fromDto(e.source),
+            fromDto(e.sender),
+            e.recipients?.map { fromDto(it) }?.toSet(),
             Event.AssistantProcessing(e.isProcessing)
         )
 
         is ToolUseVettingDto -> Event(
             e.id,
             e.timestamp,
-            fromDto(e.source),
+            fromDto(e.sender),
+            e.recipients?.map { fromDto(it) }?.toSet(),
             Event.ToolUseVetting(e.calls.map { fromDto(it) })
         )
 
         is ToolUseNotificationDto -> Event(
             e.id,
             e.timestamp,
-            fromDto(e.source),
+            fromDto(e.sender),
+            e.recipients?.map { fromDto(it) }?.toSet(),
             Event.ToolUseNotification(fromDto(e.call), fromDto(e.result))
         )
     }

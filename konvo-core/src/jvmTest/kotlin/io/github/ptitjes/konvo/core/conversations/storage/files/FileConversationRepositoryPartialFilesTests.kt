@@ -36,7 +36,7 @@ class FileConversationRepositoryPartialFilesTests {
         Event(
             id = id,
             timestamp = ts,
-            source = Participant.User("u1", "user"),
+            sender = Participant.User("u1", "user"),
             payload = Event.UserMessage(
                 content = content,
                 attachments = emptyList(),
