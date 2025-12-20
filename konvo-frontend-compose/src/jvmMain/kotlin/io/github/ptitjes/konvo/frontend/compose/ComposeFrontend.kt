@@ -73,8 +73,10 @@ fun CoroutineScope.buildDi() = DI {
         add { singleton { McpPromptProvider(instance()) } }
     }
 
+    bindSingleton { ToolPermissions(default = ToolPermission.ASK) }
+
     inBindSet<ToolProvider> {
-        add { singleton { McpToolProvider(instance(), permissions = null) } }
+        add { singleton { McpToolProvider(instance(), permissions = instance()) } }
     }
 
     bindSingletonOf(::FileSystemCharacterProvider)
@@ -103,7 +105,7 @@ fun CoroutineScope.buildDi() = DI {
     bind<LorebookManager> { singleton { DiLorebookManager(coroutineContext, instance()) } }
 
     bindFactory<CoroutineContext, McpHostSession> { coroutineContext: CoroutineContext ->
-        McpHostSession(coroutineContext, instance())
+        McpHostSession(coroutineContext, instance(), instance())
     }
 
     bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
