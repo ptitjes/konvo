@@ -11,6 +11,8 @@ interface ConversationUserView {
 
     val state: StateFlow<ConversationState>
 
+    val events: SharedFlow<Event>
+
     suspend fun updateTitle(title: String)
 
     /**
@@ -24,7 +26,8 @@ interface ConversationUserView {
     )
 
     suspend fun sendToolUseApproval(
-        vetting: Event.ToolUseVetting,
         approvals: Map<ToolCall, Boolean>,
     )
+
+    suspend fun send(payload: Event.User)
 }

@@ -45,6 +45,7 @@ internal data class ConversationStrings(
 
     // Tool use notifications
     val toolUseVettingTitle: String,
+    val agentWantsToCallToolPrefix: String,
     val agentCalledToolPrefix: String,
     val detailsLabel: String,
     val collapseAria: String,

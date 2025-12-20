@@ -14,7 +14,7 @@ import kotlin.time.*
 import kotlin.time.Duration.Companion.milliseconds
 
 sealed interface ConversationState {
-    object Loading : ConversationState
+    data object Loading : ConversationState
     data class Loaded(
         val digest: ConversationDigest,
         val transcript: List<Event>,
@@ -144,62 +144,20 @@ class Conversation(
 
         override val events: SharedFlow<Event> get() = _events
 
-        override suspend fun sendProcessing(isProcessing: Boolean) {
-            _events.emit(
-                Event(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    payload = Event.AssistantProcessing(
-                        isProcessing = isProcessing,
-                    )
-                )
-            )
-        }
+        override suspend fun sendProcessing(isProcessing: Boolean) =
+            send(Event.AssistantProcessing(isProcessing = isProcessing))
 
-        override suspend fun sendMessage(content: List<ContentPart>) {
-            _events.emit(
-                Event(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    payload = Event.Message(
-                        content = content
-                    )
-                )
-            )
-        }
+        override suspend fun sendMessage(content: List<ContentPart>) =
+            send(Event.Message(content = content))
 
-        override suspend fun sendToolUseVetting(calls: List<ToolCall>): Event.ToolUseVetting {
-            val details = Event.ToolUseVetting(
-                calls = calls
-            )
-            _events.emit(
-                Event(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    payload = details
-                )
-            )
-            return details
-        }
+        override suspend fun sendToolUseVetting(calls: List<ToolCall>) =
+            send(Event.ToolUseVetting(calls = calls))
 
-        override suspend fun sendToolUseResult(
-            call: ToolCall,
-            result: ToolCallResult,
-        ) {
-            _events.emit(
-                Event(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    payload = Event.ToolUseNotification(
-                        call = call,
-                        result = result
-                    )
-                )
-            )
+        override suspend fun sendToolUseResult(call: ToolCall, result: ToolCallResult) =
+            send(Event.ToolUseNotification(call = call, result = result))
+
+        override suspend fun send(payload: Event.Agent) {
+            _events.emit(Event(id = newId(), timestamp = newTimestamp(), sender = participant, payload = payload))
         }
     }
 
@@ -207,8 +165,9 @@ class Conversation(
         val participant: Participant,
     ) : ConversationUserView {
 
-        override val state: StateFlow<ConversationState>
-            get() = _state
+        override val state: StateFlow<ConversationState> get() = _state
+
+        override val events: SharedFlow<Event> get() = _events
 
         override suspend fun updateTitle(title: String) {
             _titleUpdates.emit(title)
@@ -218,34 +177,14 @@ class Conversation(
             _lastReadMessageIndexUpdates.emit(index)
         }
 
-        override suspend fun sendMessage(content: List<ContentPart>) {
-            _events.emit(
-                Event(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    payload = Event.Message(
-                        content = content,
-                    )
-                )
-            )
-        }
+        override suspend fun sendMessage(content: List<ContentPart>) =
+            send(Event.Message(content = content))
 
-        override suspend fun sendToolUseApproval(
-            vetting: Event.ToolUseVetting,
-            approvals: Map<ToolCall, Boolean>,
-        ) {
-            _events.emit(
-                Event(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    payload = Event.ToolUseApproval(
-                        vetting = vetting,
-                        approvals = approvals,
-                    )
-                )
-            )
+        override suspend fun sendToolUseApproval(approvals: Map<ToolCall, Boolean>) =
+            send(Event.ToolUseApproval(approvals = approvals))
+
+        override suspend fun send(payload: Event.User) {
+            _events.emit(Event(id = newId(), timestamp = newTimestamp(), sender = participant, payload = payload))
         }
     }
 }

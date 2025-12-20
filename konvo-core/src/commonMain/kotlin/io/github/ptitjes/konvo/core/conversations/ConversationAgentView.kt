@@ -17,10 +17,12 @@ interface ConversationAgentView {
 
     suspend fun sendToolUseVetting(
         calls: List<ToolCall>,
-    ): Event.ToolUseVetting
+    )
 
     suspend fun sendToolUseResult(
         call: ToolCall,
         result: ToolCallResult,
     )
+
+    suspend fun send(payload: Event.Agent)
 }
