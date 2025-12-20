@@ -11,6 +11,7 @@ import kotlin.coroutines.*
 class McpHostSession(
     coroutineContext: CoroutineContext,
     serverSettingsManager: McpServerSpecificationsManager,
+    private val permissions: ToolPermissions,
 ) : AutoCloseable {
     private companion object {
         private val logger = KotlinLogging.logger {}
@@ -161,7 +162,7 @@ class McpHostSession(
                                 clientName = clientName,
                                 client = client,
                                 sdkTool = tool,
-                                permissions = ToolPermissions(default = ToolPermission.ALLOW),
+                                permissions = permissions,
                             )
                         }
                     }
