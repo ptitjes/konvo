@@ -4,24 +4,17 @@ import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.core.tools.annotations.*
-import ai.koog.agents.features.eventHandler.feature.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.markdown.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
-import io.github.ptitjes.konvo.core.conversations.*
-import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
-import io.github.ptitjes.konvo.core.tools.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
 import kotlinx.datetime.format.*
 import kotlin.coroutines.*
 import kotlin.time.Clock
-import kotlin.uuid.*
 
 @OptIn(InternalAgentToolsApi::class)
 fun buildQuestionAnswerAgent(
@@ -33,48 +26,15 @@ fun buildQuestionAnswerAgent(
         systemPrompt = buildSystemPrompt(),
         model = model.toLLModel(),
         promptExecutor = CallFixingPromptExecutor(SingleLLMPromptExecutor(model.getLLMClient())),
-        strategy = { conversationView ->
+        strategy = {
             strategy("qa") {
-                val qa by qaWithTools { calls -> conversationView.vetToolCalls(calls, emptyList()) }
+                val qa by qaWithTools()
                 nodeStart then qa then nodeFinish
             }
         },
         mcpSessionFactory = mcpSessionFactory,
         mcpServerNames = mcpServerNames,
-    ) { conversationView ->
-        handleEvents {
-            onToolValidationFailed { eventContext ->
-                conversationView.sendToolUseResult(
-                    call = ToolCall(
-                        id = eventContext.toolCallId ?: newUniqueId(),
-                        tool = eventContext.tool.name,
-                        arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
-                    ),
-                    result = ToolCallResult.ExecutionFailure(eventContext.error),
-                )
-            }
-            onToolCallCompleted { eventContext ->
-                conversationView.sendToolUseResult(
-                    call = ToolCall(
-                        id = eventContext.toolCallId ?: newUniqueId(),
-                        tool = eventContext.tool.name,
-                        arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
-                    ),
-                    result = ToolCallResult.Success(eventContext.tool.encodeResultToStringUnsafe(eventContext.result)),
-                )
-            }
-            onToolCallFailed { eventContext ->
-                conversationView.sendToolUseResult(
-                    call = ToolCall(
-                        id = eventContext.toolCallId ?: newUniqueId(),
-                        tool = eventContext.tool.name,
-                        arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
-                    ),
-                    result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
-                )
-            }
-        }
-    }
+    )
 }
 
 private fun buildSystemPrompt(): Prompt {
@@ -114,51 +74,11 @@ private fun ToolResult?.toResultText(): String = when (this) {
     else -> "Tool succeeded"
 }
 
-private suspend fun ConversationAgentView.vetToolCalls(
-    calls: List<Message.Tool.Call>,
-    tools: List<ToolCard>,
-): List<Boolean> {
-    val vettedCalls = calls.map { CompletableDeferred<Boolean>() }
-
-    val (withVetting, withoutVetting) = calls.withIndex().partition { (_, call) ->
-        tools.firstOrNull { it.name == call.tool }?.requiresVetting ?: false
-    }
-
-    withoutVetting.forEach { (index, _) -> vettedCalls[index].complete(true) }
-
-    val vetoableToolCalls = withVetting.map { (index, call) ->
-        index to ToolCall(
-            id = call.id ?: newUniqueId(),
-            tool = call.tool,
-            arguments = call.contentJson,
-        )
-    }
-
-    if (vetoableToolCalls.isEmpty()) return vettedCalls.awaitAll()
-
-    val vettingEvent = sendToolUseVetting(vetoableToolCalls.map { it.second })
-
-    sendProcessing(false)
-
-    val approvalsEvent = events.mapNotNull { it.payload as? Event.ToolUseApproval }.first { it.vetting == vettingEvent }
-    val approvalsByCall = approvalsEvent.approvals
-
-    vetoableToolCalls.forEach { (index, call) ->
-        vettedCalls[index].complete(approvalsByCall[call] == true)
-    }
-
-    return vettedCalls.awaitAll().also {
-        sendProcessing(true)
-    }
-}
-
-private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
-    vetToolCalls: suspend (List<Message.Tool.Call>) -> List<Boolean>,
-) = subgraph<Message.User, List<Message.Assistant>> {
+private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools() = subgraph<Message.User, List<Message.Assistant>> {
     val dumpInitialRequest by dumpToPrompt()
     val initialRequest by requestLLM()
     val processResponses by nodeDoNothing<List<Message.Response>>()
-    val vetToolCalls by nodeVetToolCalls(vetToolCalls = vetToolCalls)
+    val vetToolCalls by nodeVetToolCalls()
     val executeTools by nodeExecuteVettedToolCalls(parallelTools = true)
     val toolResultsRequest by nodeLLMSendMultipleToolResults()
 
@@ -173,5 +93,3 @@ private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools(
     edge(executeTools forwardTo toolResultsRequest)
     edge(toolResultsRequest forwardTo processResponses)
 }
-
-private fun newUniqueId(): String = Uuid.random().toString()

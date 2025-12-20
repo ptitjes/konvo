@@ -7,6 +7,7 @@ import ai.koog.agents.core.feature.*
 import ai.koog.agents.core.feature.config.*
 import ai.koog.agents.core.feature.pipeline.*
 import ai.koog.agents.core.tools.*
+import ai.koog.agents.features.eventHandler.feature.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
@@ -17,6 +18,7 @@ import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.ContentPart
 import io.github.ptitjes.konvo.core.mcp.*
+import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
@@ -29,6 +31,7 @@ import kotlinx.datetime.*
 import kotlinx.io.files.*
 import kotlin.coroutines.*
 import kotlin.time.Clock
+import kotlin.uuid.*
 import ai.koog.prompt.message.ContentPart as KoogContentPart
 
 internal class DefaultAgent(
@@ -44,19 +47,27 @@ internal class DefaultAgent(
 ) : Agent {
     private var prompt: Prompt = systemPrompt
 
-    private fun buildAgent(
-        toolRegistry: ToolRegistry,
-        conversation: ConversationAgentView,
+    private suspend fun buildAgent(
+        tools: List<ToolCard>?,
+        conversationView: ConversationAgentView,
     ): AIAgent<Message.User, List<Message.Assistant>> {
+        val tools = tools ?: emptyList()
+
         val agentConfig = AIAgentConfig(
             prompt = prompt,
             model = model,
             maxAgentIterations = maxAgentIterations,
         )
 
+        val toolRegistry = tools.map { it.toTool() }.let { tools ->
+            ToolRegistry {
+                tools(tools)
+            }
+        }
+
         return AIAgent(
             promptExecutor = promptExecutor,
-            strategy = strategy(conversation),
+            strategy = strategy(conversationView),
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,
             installFeatures = {
@@ -66,7 +77,45 @@ internal class DefaultAgent(
                     }
                 }
 
-                installFeatures(conversation)
+                install(ConversationFeature) {
+                    conversationViewProvider = { conversationView }
+                    this.tools = tools
+                }
+
+                handleEvents {
+                    onToolValidationFailed { eventContext ->
+                        conversationView.sendToolUseResult(
+                            call = ToolCall(
+                                id = eventContext.toolCallId ?: newUniqueId(),
+                                tool = eventContext.tool.name,
+                                arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
+                            ),
+                            result = ToolCallResult.ExecutionFailure(eventContext.error),
+                        )
+                    }
+                    onToolCallCompleted { eventContext ->
+                        conversationView.sendToolUseResult(
+                            call = ToolCall(
+                                id = eventContext.toolCallId ?: newUniqueId(),
+                                tool = eventContext.tool.name,
+                                arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
+                            ),
+                            result = ToolCallResult.Success(eventContext.tool.encodeResultToStringUnsafe(eventContext.result)),
+                        )
+                    }
+                    onToolCallFailed { eventContext ->
+                        conversationView.sendToolUseResult(
+                            call = ToolCall(
+                                id = eventContext.toolCallId ?: newUniqueId(),
+                                tool = eventContext.tool.name,
+                                arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
+                            ),
+                            result = ToolCallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
+                        )
+                    }
+                }
+
+                installFeatures(conversationView)
             },
         )
     }
@@ -100,19 +149,16 @@ internal class DefaultAgent(
             }
         }
 
-        val mcpHostSession = mcpSessionFactory?.invoke(coroutineContext)
+        mcpSessionFactory?.invoke(coroutineContext).use { mcpHostSession ->
+            mcpHostSession?.addServers(mcpServerNames)
+            val tools = mcpHostSession?.tools?.first()
 
-        mcpHostSession?.addServers(mcpServerNames)
-        val tools = mcpHostSession?.tools?.first()
-        val toolRegistry = tools?.map { it.toTool() }.let { ToolRegistry { if (it != null) tools(it) } }
-
-        try {
             conversation.events.buffer(Channel.UNLIMITED).collect { event ->
                 when (val details = event.payload) {
                     is Event.Message -> {
                         if (event.sender is Participant.User) {
                             conversation.sendProcessing(true)
-                            val agent = buildAgent(toolRegistry, conversation)
+                            val agent = buildAgent(tools, conversation)
                             val result = agent.run(event.toKoogMessage(details) as Message.User)
                             result.forEach { conversation.sendMessage(listOf(ContentPart.Text(it.content))) }
                             conversation.sendProcessing(false)
@@ -122,8 +168,6 @@ internal class DefaultAgent(
                     else -> {}
                 }
             }
-        } finally {
-            mcpHostSession?.close()
         }
     }
 
@@ -222,3 +266,5 @@ private class PromptCollector {
 private class PromptCollectorConfig : FeatureConfig() {
     var collectPrompt: (Prompt) -> Unit = {}
 }
+
+private fun newUniqueId(): String = Uuid.random().toString()
