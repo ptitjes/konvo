@@ -94,8 +94,7 @@ internal data class ToolUseApprovalDto(
     @Contextual override val timestamp: Instant,
     override val sender: ParticipantDto,
     override val recipients: Set<ParticipantDto>? = null,
-    val vetting: ToolUseVettingDto,
-    val approvals: Map<ToolCallDto, Boolean>,
+    val approvals: List<Pair<ToolCallDto, Boolean>>,
 ) : EventDto()
 
 @Serializable
@@ -274,8 +273,7 @@ internal object DtoMappers {
             e.timestamp,
             toDto(e.sender),
             e.recipients?.map { toDto(it) }?.toSet(),
-            toDto(Event(e.id, e.timestamp, e.sender, e.recipients, details.vetting)) as ToolUseVettingDto,
-            details.approvals.mapKeys { toDto(it.key) }
+            details.approvals.map { toDto(it.key) to it.value }
         )
 
         is Event.AssistantProcessing -> AssistantProcessingDto(
@@ -320,8 +318,7 @@ internal object DtoMappers {
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
             Event.ToolUseApproval(
-                (fromDto(e.vetting).payload as Event.ToolUseVetting),
-                e.approvals.mapKeys { fromDto(it.key) }
+                e.approvals.associate { fromDto(it.first) to it.second }
             )
         )
 

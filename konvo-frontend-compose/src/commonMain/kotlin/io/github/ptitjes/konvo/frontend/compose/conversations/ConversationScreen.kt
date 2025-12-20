@@ -104,6 +104,7 @@ fun ConversationScreen(
                 modifier = Modifier.fillMaxSize().padding(paddingValues),
                 onSendMessage = viewModel::sendUserMessage,
                 onUpdateLastReadMessageIndex = viewModel::updateLastReadMessageIndex,
+                conversation = viewModel.conversation,
             )
         }
     }

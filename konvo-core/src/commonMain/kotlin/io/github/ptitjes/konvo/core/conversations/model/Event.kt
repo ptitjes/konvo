@@ -12,25 +12,29 @@ data class Event(
 
     interface Payload
 
+    interface Agent : Payload
+    interface User : Payload
+
     data class Message(
         val content: List<ContentPart>,
-    ) : Payload
-
-    data class ToolUseApproval(
-        val vetting: ToolUseVetting,
-        val approvals: Map<ToolCall, Boolean>,
-    ) : Payload
+    ) : Agent, User
 
     data class AssistantProcessing(
         val isProcessing: Boolean,
-    ) : Payload
+    ) : Agent
+
+    sealed interface ToolUsage : Payload
 
     data class ToolUseVetting(
         val calls: List<ToolCall>,
-    ) : Payload
+    ) : ToolUsage, Agent
+
+    data class ToolUseApproval(
+        val approvals: Map<ToolCall, Boolean>,
+    ) : ToolUsage, User
 
     data class ToolUseNotification(
         val call: ToolCall,
         val result: ToolCallResult,
-    ) : Payload
+    ) : ToolUsage, Agent
 }

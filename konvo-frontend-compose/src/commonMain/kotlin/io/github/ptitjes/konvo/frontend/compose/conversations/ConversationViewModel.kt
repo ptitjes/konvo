@@ -27,6 +27,8 @@ class ConversationViewModel(
     private val liveConversation = conversationManager.getConversation(conversationId)
     private val conversationUserView = liveConversation.newUserView()
 
+    val conversation: ConversationUserView get() = conversationUserView
+
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
     val state: StateFlow<ConversationViewState> = _state
 
@@ -34,58 +36,106 @@ class ConversationViewModel(
         println("Initializing ConversationViewModel(${this.conversationId})")
         viewModelScope.launch {
             launch {
-                var previousTranscript: List<Event> = emptyList()
-                var computedItems: List<EventViewState> = emptyList()
+                var previousTranscript: List<Event>? = null
 
                 conversationUserView.state.collect { state ->
-                    if (state is ConversationState.Loading) return@collect
-                    state as ConversationState.Loaded
+                    when (state) {
+                        is ConversationState.Loading -> {}
+                        is ConversationState.Loaded -> {
+                            val transcript = state.transcript
+                            if (transcript != previousTranscript) {
+                                val initial = ConversationViewState.Loaded(
+                                    conversation = state.digest,
+                                    items = emptyList(),
+                                    isProcessing = false,
+                                )
 
-                    val transcript = state.transcript
-                    if (transcript != previousTranscript) {
-                        computedItems = transcript.filter { it.isViewItem() }.map { it.toEventViewState() }
-                        previousTranscript = transcript
+                                val finalState = transcript.fold(initial) { state, event ->
+                                    updateState(state, event)
+                                }
+
+                                previousTranscript = transcript
+                                _state.value = finalState
+                            }
+                        }
                     }
-
-                    _state.value = ConversationViewState.Loaded(
-                        conversation = state.digest,
-                        items = computedItems,
-                        isProcessing = state.processing,
-                    )
                 }
             }
+        }
+    }
+
+    private suspend fun updateState(state: ConversationViewState.Loaded, event: Event): ConversationViewState.Loaded {
+        return when (val payload = event.payload) {
+            is Event.AssistantProcessing -> state.copy(isProcessing = payload.isProcessing)
+
+            is Event.Message -> {
+                val content = payload.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
+                val message = if (event.sender is Participant.User) {
+                    ItemViewState.UserMessage(
+                        id = event.id,
+                        details = payload,
+                        markdownState = parseMarkdown(content),
+                    )
+                } else {
+                    ItemViewState.AssistantMessage(
+                        id = event.id,
+                        details = payload,
+                        markdownState = parseMarkdown(content),
+                    )
+                }
+                state.copy(items = state.items + message)
+            }
+
+            is Event.ToolUseVetting -> {
+                state.copy(
+                    items = state.items + ItemViewState.ToolUseVetting(
+                        id = event.id,
+                        approvals = payload.calls.associateWith { ItemViewState.ToolUseVetting.ApprovalStatus.Pending },
+                    ),
+                )
+            }
+
+            is Event.ToolUseApproval -> {
+                val toolUseVettingIndex = state.items.indexOfLast {
+                    it is ItemViewState.ToolUseVetting && it.approvals.keys.containsAll(payload.approvals.keys)
+                }
+
+                require(toolUseVettingIndex != 0) { "No tool use vetting found for approval" }
+
+                val toolUseVetting = state.items[toolUseVettingIndex] as ItemViewState.ToolUseVetting
+                val updatedToolUseVetting = toolUseVetting.copy(
+                    approvals = payload.approvals.mapValues { (call, approval) ->
+                        when (approval) {
+                            true -> ItemViewState.ToolUseVetting.ApprovalStatus.Approved
+                            false -> ItemViewState.ToolUseVetting.ApprovalStatus.Denied("Not specified")
+                        }
+                    }
+                )
+
+                state.copy(
+                    items = state.items.mapIndexed { index, itemViewState ->
+                        if (index == toolUseVettingIndex) updatedToolUseVetting else itemViewState
+                    }
+                )
+            }
+
+            is Event.ToolUseNotification -> {
+                state.copy(
+                    items = state.items + ItemViewState.ToolUseNotification(
+                        id = event.id,
+                        call = payload.call,
+                        result = payload.result,
+                    )
+                )
+            }
+
+            else -> error("Not a view item: $event")
         }
     }
 
     override fun onCleared() {
         super.onCleared()
         println("Cleared ConversationViewModel(${this.conversationId})")
-    }
-
-    private fun Event.isViewItem(): Boolean =
-        payload !is Event.AssistantProcessing && payload !is Event.ToolUseApproval
-
-    private suspend fun Event.toEventViewState(): EventViewState = when (val details = this.payload) {
-        is Event.Message -> {
-            val content = details.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
-            if (sender is Participant.User) {
-                EventViewState.UserMessage(
-                    event = this,
-                    details = details,
-                    markdownState = parseMarkdown(content),
-                )
-            } else {
-                EventViewState.AssistantMessage(
-                    event = this,
-                    details = details,
-                    markdownState = parseMarkdown(content),
-                )
-            }
-        }
-
-        is Event.ToolUseVetting -> EventViewState.ToolUseVetting(this, details)
-        is Event.ToolUseNotification -> EventViewState.ToolUseNotification(this, details)
-        else -> error("Not a view item: $this")
     }
 
     /**
@@ -137,36 +187,42 @@ sealed interface ConversationViewState {
     data object Loading : ConversationViewState
     data class Loaded(
         val conversation: ConversationDigest,
-        val items: List<EventViewState>,
+        val items: List<ItemViewState>,
         val isProcessing: Boolean,
     ) : ConversationViewState
 }
 
-sealed interface EventViewState {
-    val event: Event
-    val id: String get() = event.id
+sealed interface ItemViewState {
+    val id: Any
 
     data class UserMessage(
-        override val event: Event,
+        override val id: Any,
         val details: Event.Message,
         val markdownState: MarkdownViewState,
-    ) : EventViewState
+    ) : ItemViewState
 
     data class AssistantMessage(
-        override val event: Event,
+        override val id: Any,
         val details: Event.Message,
         val markdownState: MarkdownViewState,
-    ) : EventViewState
+    ) : ItemViewState
 
     data class ToolUseVetting(
-        override val event: Event,
-        val details: Event.ToolUseVetting,
-    ) : EventViewState
+        override val id: Any,
+        val approvals: Map<ToolCall, ApprovalStatus>,
+    ) : ItemViewState {
+        sealed interface ApprovalStatus {
+            data object Pending : ApprovalStatus
+            data object Approved : ApprovalStatus
+            data class Denied(val reason: String) : ApprovalStatus
+        }
+    }
 
     data class ToolUseNotification(
-        override val event: Event,
-        val details: Event.ToolUseNotification,
-    ) : EventViewState
+        override val id: Any,
+        val call: ToolCall,
+        val result: ToolCallResult,
+    ) : ItemViewState
 }
 
 private suspend fun parseMarkdown(content: String): MarkdownViewState =

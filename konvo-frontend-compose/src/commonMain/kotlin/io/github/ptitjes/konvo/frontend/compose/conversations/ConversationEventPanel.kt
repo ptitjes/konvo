@@ -13,22 +13,23 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
+import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
-import kotlinx.serialization.json.*
+import kotlinx.coroutines.*
 
 @Composable
-fun ConversationEventPanel(eventViewState: EventViewState) = when (eventViewState) {
-    is EventViewState.UserMessage -> ConversationUserMessagePanel(eventViewState)
-    is EventViewState.AssistantMessage -> ConversationAgentMessagePanel(eventViewState)
-    is EventViewState.ToolUseNotification -> ConversationAssistantToolUseResultPanel(eventViewState.event, eventViewState.details)
-    is EventViewState.ToolUseVetting -> ConversationAssistantToolUseVettingPanel(eventViewState.details)
+fun ConversationEventPanel(itemViewState: ItemViewState, conversation: ConversationUserView) = when (itemViewState) {
+    is ItemViewState.UserMessage -> UserMessagePanel(itemViewState)
+    is ItemViewState.AssistantMessage -> AgentMessagePanel(itemViewState)
+    is ItemViewState.ToolUseVetting -> ToolUseVettingPanel(itemViewState, conversation)
+    is ItemViewState.ToolUseNotification -> ToolUseNotificationPanel(itemViewState)
 }
 
 @Composable
-fun ConversationUserMessagePanel(
-    eventViewState: EventViewState.UserMessage,
+private fun UserMessagePanel(
+    itemViewState: ItemViewState.UserMessage,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -45,13 +46,13 @@ fun ConversationUserMessagePanel(
                 Column {
                     SelectionContainer {
                         MarkdownContent(
-                            state = eventViewState.markdownState,
+                            state = itemViewState.markdownState,
                             textColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         )
                     }
 
-                    eventViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
+                    itemViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
                         AttachmentView(media.media)
                     }
                 }
@@ -61,8 +62,8 @@ fun ConversationUserMessagePanel(
 }
 
 @Composable
-fun ConversationAgentMessagePanel(
-    eventViewState: EventViewState.AssistantMessage,
+private fun AgentMessagePanel(
+    itemViewState: ItemViewState.AssistantMessage,
 ) {
     val horizontalArrangement = Arrangement.Start
     Row(
@@ -72,12 +73,12 @@ fun ConversationAgentMessagePanel(
         Column {
             SelectionContainer {
                 MarkdownContent(
-                    state = eventViewState.markdownState,
+                    state = itemViewState.markdownState,
                     textColor = MaterialTheme.colorScheme.onBackground,
                 )
             }
 
-            eventViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
+            itemViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
                 AttachmentView(media.media)
             }
         }
@@ -85,41 +86,97 @@ fun ConversationAgentMessagePanel(
 }
 
 @Composable
-fun ConversationAssistantToolUseVettingPanel(
-    details: Event.ToolUseVetting,
+private fun ToolUseVettingPanel(
+    viewState: ItemViewState.ToolUseVetting,
+    conversation: ConversationUserView,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start,
-    ) {
-        Surface(
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.background,
-        ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = strings.conversations.toolUseVettingTitle,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                Spacer(Modifier.height(8.dp))
+    BorderedPanel {
+        Column {
+            for ((call, status) in viewState.approvals) {
+                ExpandableBox(
+                    collapsable = status !is ItemViewState.ToolUseVetting.ApprovalStatus.Pending,
+                    header = {
+                        AskIcon()
 
-                val json = Json { prettyPrint = true }
-                details.calls.forEach { call ->
-                    Text(
-                        text = "• ${call.tool} (id=${call.id})",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
+                        Text(
+                            text = buildAnnotatedString {
+                                append(strings.conversations.agentWantsToCallToolPrefix)
+                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(call.tool)
+                                }
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.weight(1f),
+                        )
+
+                        when (status) {
+                            is ItemViewState.ToolUseVetting.ApprovalStatus.Pending -> {
+                                val coroutineScope = rememberCoroutineScope()
+
+                                TextButton(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            conversation.sendToolUseApproval(mapOf(call to false))
+                                        }
+                                    },
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                                ) {
+                                    FailureIcon()
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(text = "Deny")
+                                }
+
+                                TextButton(
+                                    onClick = {
+                                        coroutineScope.launch {
+                                            conversation.sendToolUseApproval(mapOf(call to true))
+                                        }
+                                    },
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                                ) {
+                                    SuccessIcon()
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(text = "Approve")
+                                }
+                            }
+
+                            is ItemViewState.ToolUseVetting.ApprovalStatus.Approved -> {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    SuccessIcon()
+                                    Text(
+                                        text = "Approved",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
+
+                            is ItemViewState.ToolUseVetting.ApprovalStatus.Denied -> {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    FailureIcon()
+                                    Text(
+                                        text = "Denied",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                }
+                            }
+                        }
+                    },
+                ) {
+                    ToolArgumentsTable(
+                        arguments = call.arguments,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     )
-                    val argsJson = json.encodeToString(
-                        JsonObject.serializer(),
-                        JsonObject(call.arguments)
-                    )
-                    Markdown(
-                        content = "```json\n$argsJson\n```",
-                        colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
-                    )
-                    Spacer(Modifier.height(8.dp))
                 }
             }
         }
@@ -127,10 +184,62 @@ fun ConversationAssistantToolUseVettingPanel(
 }
 
 @Composable
-fun ConversationAssistantToolUseResultPanel(
-    event: Event,
-    details: Event.ToolUseNotification,
+private fun ToolUseNotificationPanel(
+    viewState: ItemViewState.ToolUseNotification,
 ) {
+    BorderedPanel {
+        ExpandableBox(
+            header = {
+                ResultIcon(viewState.result)
+
+                Text(
+                    text = buildAnnotatedString {
+                        append(strings.conversations.agentCalledToolPrefix)
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append(viewState.call.tool)
+                        }
+                    },
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                )
+
+                Text(strings.conversations.detailsLabel)
+            },
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                ToolArgumentsTable(
+                    arguments = viewState.call.arguments,
+                )
+
+                when (val result = viewState.result) {
+                    is ToolCallResult.Success -> {
+                        Markdown(
+                            content = "```json\n${result.text}\n```",
+                            typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
+                            colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
+                        )
+                    }
+
+                    else -> {
+                        val failure = result as ToolCallResult.ExecutionFailure
+                        Markdown(
+                            content = "```\n${failure.reason}\n```",
+                            typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
+                            colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BorderedPanel(content: @Composable () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Start,
@@ -142,90 +251,87 @@ fun ConversationAssistantToolUseResultPanel(
             ),
             color = MaterialTheme.colorScheme.background,
         ) {
-            var expanded by remember { mutableStateOf(false) }
-            val result = details.result
+            content()
+        }
+    }
+}
 
-            Column(modifier = Modifier) {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    shape = RoundedCornerShape(4.dp),
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        ResultIcon(result)
+@Composable
+private fun ExpandableBox(
+    collapsable: Boolean = true,
+    modifier: Modifier = Modifier,
+    header: @Composable RowScope.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
 
-                        Text(
-                            text = buildAnnotatedString {
-                                append(strings.conversations.agentCalledToolPrefix)
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append(details.call.tool)
-                                }
-                            },
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.weight(1f),
-                        )
+    Column(modifier = modifier) {
+        TextButton(
+            onClick = { expanded = !expanded },
+            shape = RoundedCornerShape(4.dp),
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            enabled = collapsable,
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                header()
 
-                        Text(strings.conversations.detailsLabel)
-
-                        Icon(
-                            imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                            contentDescription =
-                                if (expanded) strings.conversations.collapseAria
-                                else strings.conversations.expandAria,
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                    }
-                }
-
-                if (expanded) {
-                    ToolArgumentsTable(
-                        arguments = details.call.arguments,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                if (collapsable) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription =
+                            if (expanded) strings.conversations.collapseAria
+                            else strings.conversations.expandAria,
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
-
-                    when (result) {
-                        is ToolCallResult.Success -> {
-                            Markdown(
-                                content = "```json\n${result.text}\n```",
-                                colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                            )
-                        }
-
-                        else -> {
-                            val failure = result as ToolCallResult.ExecutionFailure
-                            Markdown(
-                                content = "```\n${failure.reason}\n```",
-                                colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            )
-                        }
-                    }
                 }
+            }
+        }
+
+        if (!collapsable || expanded) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                content()
             }
         }
     }
 }
 
 @Composable
-fun ResultIcon(
+private fun ResultIcon(
     result: ToolCallResult,
     modifier: Modifier = Modifier,
 ) = when (result) {
-    is ToolCallResult.Success -> Icon(
+    is ToolCallResult.Success -> SuccessIcon(modifier)
+    is ToolCallResult.ExecutionFailure -> FailureIcon(modifier)
+}
+
+@Composable
+private fun AskIcon(modifier: Modifier = Modifier) {
+    Icon(
+        imageVector = Icons.Filled.QuestionMark,
+        contentDescription = "Question", // TODO
+        tint = MaterialTheme.colorScheme.primary,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun SuccessIcon(modifier: Modifier = Modifier) {
+    Icon(
         imageVector = Icons.Filled.CheckCircle,
         contentDescription = strings.conversations.successAria,
         tint = MaterialTheme.colorScheme.primary,
         modifier = modifier,
     )
+}
 
-    is ToolCallResult.ExecutionFailure -> Icon(
+@Composable
+private fun FailureIcon(modifier: Modifier = Modifier) {
+    Icon(
         imageVector = Icons.Filled.Error,
         contentDescription = strings.conversations.failureAria,
         tint = MaterialTheme.colorScheme.error,
