@@ -21,7 +21,7 @@ sealed interface ConversationState {
     data object Loading : ConversationState
     data class Loaded(
         val digest: ConversationDigest,
-        val transcript: List<Event>,
+        val transcript: List<Event<*>>,
         val processing: Boolean,
     ) : ConversationState
 }
@@ -51,7 +51,7 @@ class Conversation(
     private fun newTimestamp(): Instant = timeProvider.now()
 
     private val _state = MutableStateFlow<ConversationState>(ConversationState.Loading)
-    private val _events = MutableSharedFlow<Event>()
+    private val _events = MutableSharedFlow<Event<*>>()
     private val _titleUpdates = MutableSharedFlow<String>(extraBufferCapacity = 64)
     private val _lastReadMessageIndexUpdates = MutableSharedFlow<Int>()
 
@@ -136,7 +136,7 @@ class Conversation(
         job.cancel()
     }
 
-    private fun Event.isViewItem(): Boolean =
+    private fun Event<*>.isViewItem(): Boolean =
         payload !is AgentPresence.Processing && payload !is ToolUsage.Approval
 
     fun newUserView(): ConversationUserView = UserViewImpl(userMember)
@@ -146,7 +146,7 @@ class Conversation(
         val participant: Participant,
     ) : ConversationAgentView {
 
-        override val events: SharedFlow<Event> get() = _events
+        override val events: SharedFlow<Event<*>> get() = _events
 
         override suspend fun sendProcessing(isProcessing: Boolean) =
             send(AgentPresence.Processing(isProcessing = isProcessing))
@@ -171,7 +171,7 @@ class Conversation(
 
         override val state: StateFlow<ConversationState> get() = _state
 
-        override val events: SharedFlow<Event> get() = _events
+        override val events: SharedFlow<Event<*>> get() = _events
 
         override suspend fun updateTitle(title: String) {
             _titleUpdates.emit(title)

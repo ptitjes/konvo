@@ -23,7 +23,7 @@ interface ConversationRepository {
     /**
      * Stream all events for a conversation, in chronological order.
      */
-    fun getEvents(conversationId: String): Flow<List<Event>>
+    fun getEvents(conversationId: String): Flow<List<Event<*>>>
 
     /** Create a new conversation. The [initial] fields id/createdAt/updatedAt must be set by the caller. */
     suspend fun create(initial: ConversationDigest)
@@ -32,7 +32,7 @@ interface ConversationRepository {
     suspend fun updateDigest(conversation: ConversationDigest)
 
     /** Append an [event] to the conversation identified by [conversationId], updating its metadata accordingly. */
-    suspend fun appendEvent(conversationId: String, event: Event)
+    suspend fun appendEvent(conversationId: String, event: Event<*>)
 
     /** Delete a conversation and its events. */
     suspend fun delete(id: String)

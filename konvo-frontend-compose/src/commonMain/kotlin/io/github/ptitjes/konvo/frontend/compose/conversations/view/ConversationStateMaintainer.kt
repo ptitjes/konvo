@@ -3,7 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.conversations.view
 import io.github.ptitjes.konvo.core.conversations.model.Event
 import kotlin.reflect.KClass
 
-suspend fun ConversationStateMaintainer.handleTranscript(transcript: List<Event>) {
+suspend fun ConversationStateMaintainer.handleTranscript(transcript: List<Event<*>>) {
     for (element in transcript) handleEvent(element)
 }
 
@@ -14,24 +14,24 @@ class ConversationStateMaintainer(
         private set
 
     private val registeredStateUpdater =
-        mutableMapOf<KClass<out Event.Payload>, MutableList<suspend (ConversationViewState.Loaded, Event, Event.Payload) -> ConversationViewState.Loaded>>()
+        mutableMapOf<KClass<out Event.Payload>, MutableList<suspend (ConversationViewState.Loaded, Event<*>, Event.Payload) -> ConversationViewState.Loaded>>()
 
     inline fun <reified P : Event.Payload> addStateUpdater(
-        noinline handler: suspend (ConversationViewState.Loaded, Event, P) -> ConversationViewState.Loaded,
+        noinline handler: suspend (ConversationViewState.Loaded, Event<*>, P) -> ConversationViewState.Loaded,
     ): () -> Unit = addStateUpdater(P::class, handler)
 
     fun <P : Event.Payload> addStateUpdater(
         klass: KClass<out P>,
-        handler: suspend (ConversationViewState.Loaded, Event, P) -> ConversationViewState.Loaded,
+        handler: suspend (ConversationViewState.Loaded, Event<*>, P) -> ConversationViewState.Loaded,
     ): () -> Unit {
         registeredStateUpdater[klass] = (registeredStateUpdater[klass] ?: mutableListOf()).also {
             @Suppress("UNCHECKED_CAST")
-            it += handler as suspend (ConversationViewState.Loaded, Event, Event.Payload) -> ConversationViewState.Loaded
+            it += handler as suspend (ConversationViewState.Loaded, Event<*>, Event.Payload) -> ConversationViewState.Loaded
         }
         return { registeredStateUpdater[klass]?.remove(handler) }
     }
 
-    suspend fun handleEvent(event: Event) {
+    suspend fun handleEvent(event: Event<*>) {
         val payload = event.payload
         val updaters = this@ConversationStateMaintainer.registeredStateUpdater[payload::class]?.toList() ?: return
         state = updaters.fold(state) { state, updater -> updater(state, event, payload) }
@@ -42,7 +42,7 @@ class ConversationStateMaintainer(
 
     @EventContributionDslMarker
     inline fun <reified P : Event.Payload> onEvent(
-        crossinline action: suspend ContributionBuilderScope.(Event, P) -> Unit,
+        crossinline action: suspend ContributionBuilderScope.(Event<*>, P) -> Unit,
     ) {
         addStateUpdater<P> { state, event, payload ->
             val scope = ContributionBuilderScope(this, state)

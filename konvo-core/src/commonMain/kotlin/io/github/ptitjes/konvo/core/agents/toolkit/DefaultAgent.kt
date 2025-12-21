@@ -125,7 +125,7 @@ internal class DefaultAgent(
         )
     }
 
-    override suspend fun restorePrompt(events: List<Event>) {
+    override suspend fun restorePrompt(events: List<Event<*>>) {
         val messages = events.mapNotNull { event ->
             when (val details = event.payload) {
                 is EventMessage -> event.toKoogMessage(details)
@@ -176,7 +176,7 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Event.toKoogMessage(details: EventMessage): Message =
+    private suspend fun Event<*>.toKoogMessage(details: EventMessage): Message =
         when (sender) {
             is Participant.User -> Message.User(
                 parts = details.content.map { it.toKoogContentPart() },
