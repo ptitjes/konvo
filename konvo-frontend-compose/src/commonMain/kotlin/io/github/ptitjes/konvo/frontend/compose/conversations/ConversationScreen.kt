@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.*
 import com.eygraber.compose.placeholder.*
 import com.eygraber.compose.placeholder.material3.*
 import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
