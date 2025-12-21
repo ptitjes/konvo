@@ -14,11 +14,9 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversations.*
-import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
 import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.ItemViewState
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*

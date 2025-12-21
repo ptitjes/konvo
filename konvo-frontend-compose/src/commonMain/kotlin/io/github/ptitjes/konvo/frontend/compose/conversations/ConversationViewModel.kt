@@ -7,11 +7,12 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationStateMaintainer
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.ItemViewState
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.handleTranscript
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlin.reflect.*
 import kotlin.time.*
 import com.mikepenz.markdown.model.State as MarkdownViewState
 
@@ -56,7 +57,8 @@ class ConversationViewModel(
                                     isProcessing = false,
                                 )
 
-                                val stateUpdater = ConversationStateUpdater(initial)
+                                val stateUpdater = ConversationStateMaintainer(initial)
+                                stateUpdater.setupCoreContributors()
                                 stateUpdater.handleTranscript(transcript)
                                 val finalState = stateUpdater.state
 
@@ -120,221 +122,70 @@ class ConversationViewModel(
     }
 }
 
-suspend fun ConversationStateUpdater.handleTranscript(transcript: List<Event>) {
-    for (element in transcript) handleEvent(element)
-}
-
-class ConversationStateUpdater(
-    initialState: ConversationViewState.Loaded,
-) {
-    var state = initialState
-        private set
-
-    private val registeredStateUpdater =
-        mutableMapOf<KClass<out Event.Payload>, MutableList<suspend (ConversationViewState.Loaded, Event, Event.Payload) -> ConversationViewState.Loaded>>()
-
-    inline fun <reified P : Event.Payload> addStateUpdater(
-        noinline handler: suspend (ConversationViewState.Loaded, Event, P) -> ConversationViewState.Loaded,
-    ): () -> Unit = addStateUpdater(P::class, handler)
-
-    fun <P : Event.Payload> addStateUpdater(
-        klass: KClass<out P>,
-        handler: suspend (ConversationViewState.Loaded, Event, P) -> ConversationViewState.Loaded,
-    ): () -> Unit {
-        registeredStateUpdater[klass] = (registeredStateUpdater[klass] ?: mutableListOf()).also {
-            @Suppress("UNCHECKED_CAST")
-            it += handler as suspend (ConversationViewState.Loaded, Event, Event.Payload) -> ConversationViewState.Loaded
-        }
-        return { registeredStateUpdater[klass]?.remove(handler) }
+fun ConversationStateMaintainer.setupCoreContributors() {
+    addStateUpdater<AgentPresence.Processing> { state, event, payload ->
+        println("Processing state update for AssistantProcessing")
+        state.copy(isProcessing = payload.isProcessing)
     }
 
-    suspend fun handleEvent(event: Event) {
-        val payload = event.payload
-        val updaters = this@ConversationStateUpdater.registeredStateUpdater[payload::class]?.toList() ?: return
-        state = updaters.fold(state) { state, updater -> updater(state, event, payload) }
-    }
-
-    @DslMarker
-    annotation class EventContributionDslMarker
-
-    @EventContributionDslMarker
-    inline fun <reified P : Event.Payload> onEvent(
-        crossinline action: suspend ContributionBuilderScope.(Event, P) -> Unit,
-    ) {
-        addStateUpdater<P> { state, event, payload ->
-            val scope = ContributionBuilderScope(this, state)
-            scope.action(event, payload)
-            scope.state
-        }
-    }
-
-    @EventContributionDslMarker
-    class ContributionBuilderScope(
-        private val stateUpdater: ConversationStateUpdater,
-        initialState: ConversationViewState.Loaded,
-    ) {
-        var state: ConversationViewState.Loaded = initialState
-            private set
-
-        fun <S : ItemViewState> contributeItem(
-            initialViewState: S,
-            builder: HandlersBuilderScope<S>.() -> Unit = {},
-        ) {
-            state = state.copy(items = state.items + initialViewState)
-
-            HandlersBuilderScope(stateUpdater, initialViewState).builder()
-        }
-    }
-
-    @EventContributionDslMarker
-    class HandlersBuilderScope<S : ItemViewState>(
-        private val stateUpdater: ConversationStateUpdater,
-        private val initialViewState: S,
-    ) {
-        private val teardowns = mutableListOf<() -> Unit>()
-
-        private val handlerScope = object : HandlerBuilderScope() {
-            override fun freezeItem() {
-                this@HandlersBuilderScope.teardowns.forEach { it() }
+    onEvent<Messaging.Message> { event, payload ->
+        val content = payload.content.filterIsInstance<Part.Text>().joinToString("\n") { it.text }
+        contributeItem(
+            if (event.sender is Participant.User) {
+                ItemViewState.UserMessage(
+                    id = event.id,
+                    details = payload,
+                    markdownState = parseMarkdown(content),
+                )
+            } else {
+                ItemViewState.AssistantMessage(
+                    id = event.id,
+                    details = payload,
+                    markdownState = parseMarkdown(content),
+                )
             }
-        }
-
-        inline fun <reified Q : Event.Payload> onEvent(
-            noinline handler: suspend HandlerBuilderScope.(S, Q) -> S,
-        ) = onEvent(Q::class, handler)
-
-        fun <Q : Event.Payload> onEvent(
-            klass: KClass<Q>,
-            handler: suspend HandlerBuilderScope.(S, Q) -> S,
+        )
+    }
+    onEvent<ToolUsage.Vetting> { event, payload ->
+        contributeItem(
+            initialViewState = ItemViewState.ToolUseVetting(
+                id = event.id,
+                approvals = payload.calls.associateWith { ItemViewState.ToolUseVetting.ApprovalStatus.Pending },
+            ),
         ) {
-            teardowns += stateUpdater.addStateUpdater(klass) { state, event, payload ->
-                val itemViewStateIndex = state.items.indexOfLast { it.id == initialViewState.id }
-                require(itemViewStateIndex != -1) { "No view state found for initial view state" }
-                val itemViewState = state.items[itemViewStateIndex]
-
-                @Suppress("UNCHECKED_CAST")
-                val updatedItemViewState = handlerScope.handler(itemViewState as S, payload)
-                state.copy(
-                    items = state.items.mapIndexed { index, itemViewState ->
-                        if (index == itemViewStateIndex) updatedItemViewState else itemViewState
+            onEvent<ToolUsage.Approval> { state, approvalPayload ->
+                val changedApprovals = approvalPayload.approvals.keys.fold(state.approvals) { acc, key ->
+                    val newValue by lazy {
+                        val approved = approvalPayload.approvals[key]
+                        when (approved) {
+                            true -> ItemViewState.ToolUseVetting.ApprovalStatus.Approved
+                            false -> ItemViewState.ToolUseVetting.ApprovalStatus.Denied("Not specified")
+                            null -> ItemViewState.ToolUseVetting.ApprovalStatus.Pending
+                        }
                     }
+                    if (key in acc) acc + (key to newValue) else acc
+                }
+
+                val done =
+                    changedApprovals.values.all { it !is ItemViewState.ToolUseVetting.ApprovalStatus.Pending }
+
+                if (done) freezeItem()
+
+                state.copy(
+                    approvals = changedApprovals
                 )
             }
         }
     }
-
-    @EventContributionDslMarker
-    abstract class HandlerBuilderScope {
-        abstract fun freezeItem()
+    onEvent<ToolUsage.Notification> { event, payload ->
+        contributeItem(
+            ItemViewState.ToolUseNotification(
+                id = event.id,
+                call = payload.call,
+                result = payload.result,
+            ),
+        )
     }
-
-    init {
-        addStateUpdater<AgentPresence.Processing> { state, event, payload ->
-            println("Processing state update for AssistantProcessing")
-            state.copy(isProcessing = payload.isProcessing)
-        }
-
-        onEvent<Messaging.Message> { event, payload ->
-            val content = payload.content.filterIsInstance<Part.Text>().joinToString("\n") { it.text }
-            contributeItem(
-                if (event.sender is Participant.User) {
-                    ItemViewState.UserMessage(
-                        id = event.id,
-                        details = payload,
-                        markdownState = parseMarkdown(content),
-                    )
-                } else {
-                    ItemViewState.AssistantMessage(
-                        id = event.id,
-                        details = payload,
-                        markdownState = parseMarkdown(content),
-                    )
-                }
-            )
-        }
-        onEvent<ToolUsage.Vetting> { event, payload ->
-            contributeItem(
-                initialViewState = ItemViewState.ToolUseVetting(
-                    id = event.id,
-                    approvals = payload.calls.associateWith { ItemViewState.ToolUseVetting.ApprovalStatus.Pending },
-                ),
-            ) {
-                onEvent<ToolUsage.Approval> { state, approvalPayload ->
-                    val changedApprovals = approvalPayload.approvals.keys.fold(state.approvals) { acc, key ->
-                        val newValue by lazy {
-                            val approved = approvalPayload.approvals[key]
-                            when (approved) {
-                                true -> ItemViewState.ToolUseVetting.ApprovalStatus.Approved
-                                false -> ItemViewState.ToolUseVetting.ApprovalStatus.Denied("Not specified")
-                                null -> ItemViewState.ToolUseVetting.ApprovalStatus.Pending
-                            }
-                        }
-                        if (key in acc) acc + (key to newValue) else acc
-                    }
-
-                    val done =
-                        changedApprovals.values.all { it !is ItemViewState.ToolUseVetting.ApprovalStatus.Pending }
-
-                    if (done) freezeItem()
-
-                    state.copy(
-                        approvals = changedApprovals
-                    )
-                }
-            }
-        }
-        onEvent<ToolUsage.Notification> { event, payload ->
-            contributeItem(
-                ItemViewState.ToolUseNotification(
-                    id = event.id,
-                    call = payload.call,
-                    result = payload.result,
-                ),
-            )
-        }
-    }
-}
-
-sealed interface ConversationViewState {
-    data object Loading : ConversationViewState
-    data class Loaded(
-        val conversation: ConversationDigest,
-        val items: List<ItemViewState>,
-        val isProcessing: Boolean,
-    ) : ConversationViewState
-}
-
-sealed interface ItemViewState {
-    val id: Any
-
-    data class UserMessage(
-        override val id: Any,
-        val details: Messaging.Message,
-        val markdownState: MarkdownViewState,
-    ) : ItemViewState
-
-    data class AssistantMessage(
-        override val id: Any,
-        val details: Messaging.Message,
-        val markdownState: MarkdownViewState,
-    ) : ItemViewState
-
-    data class ToolUseVetting(
-        override val id: Any,
-        val approvals: Map<Call, ApprovalStatus>,
-    ) : ItemViewState {
-        sealed interface ApprovalStatus {
-            data object Pending : ApprovalStatus
-            data object Approved : ApprovalStatus
-            data class Denied(val reason: String) : ApprovalStatus
-        }
-    }
-
-    data class ToolUseNotification(
-        override val id: Any,
-        val call: Call,
-        val result: CallResult,
-    ) : ItemViewState
 }
 
 private suspend fun parseMarkdown(content: String): MarkdownViewState =
