@@ -172,7 +172,7 @@ class FileConversationRepository(
     override fun getDigests(sort: Sort): Flow<List<ConversationDigest>> =
         changeTicker.map { readConversations(sort) }.onStart { emit(readConversations(sort)) }.distinctUntilChanged()
 
-    override suspend fun appendEvent(conversationId: String, event: Event) {
+    override suspend fun appendEvent(conversationId: String, event: Event<*>) {
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
         // Append event to NDJSON by reading current content and rewriting (for portability)
@@ -294,10 +294,10 @@ class FileConversationRepository(
         changeTicker.value = changeTicker.value + 1
     }
 
-    private fun readEvents(conversationId: String): List<Event> {
+    private fun readEvents(conversationId: String): List<Event<*>> {
         val path = eventsPath(conversationId)
         if (!fileSystem.exists(path)) return emptyList()
-        val result = mutableListOf<Event>()
+        val result = mutableListOf<Event<*>>()
         fileSystem.source(path).buffered().use { src ->
             val content = src.readString()
             if (content.isEmpty()) return emptyList()
@@ -316,7 +316,7 @@ class FileConversationRepository(
         return result
     }
 
-    override fun getEvents(conversationId: String): Flow<List<Event>> =
+    override fun getEvents(conversationId: String): Flow<List<Event<*>>> =
         changeTicker.map { readEvents(conversationId) }.onStart { emit(readEvents(conversationId)) }
             .distinctUntilChanged()
 }

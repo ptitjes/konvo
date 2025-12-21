@@ -54,7 +54,7 @@ abstract class ConversationRepositoryContractTests {
         id: String,
         content: String,
         timestamp: Instant,
-    ): Event = Event(
+    ): Event<*> = Event(
         id = id,
         timestamp = timestamp,
         sender = Participant.User("u1", "user"),
@@ -67,7 +67,7 @@ abstract class ConversationRepositoryContractTests {
         id: String,
         content: String,
         timestamp: Instant,
-    ): Event = Event(
+    ): Event<*> = Event(
         id = id,
         timestamp = timestamp,
         sender = Participant.Agent("a1", "agent"),

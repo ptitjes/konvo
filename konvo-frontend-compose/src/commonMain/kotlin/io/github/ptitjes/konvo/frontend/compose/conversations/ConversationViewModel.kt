@@ -43,7 +43,7 @@ class ConversationViewModel(
         println("Initializing ConversationViewModel(${this.conversationId})")
         viewModelScope.launch {
             launch {
-                var previousTranscript: List<Event>? = null
+                var previousTranscript: List<Event<*>>? = null
 
                 conversationUserView.state.collect { state ->
                     when (state) {

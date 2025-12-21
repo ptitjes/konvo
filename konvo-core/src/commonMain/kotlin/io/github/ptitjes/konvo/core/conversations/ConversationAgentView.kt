@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.*
  */
 interface ConversationAgentView {
 
-    val events: SharedFlow<Event>
+    val events: SharedFlow<Event<*>>
 
     suspend fun sendProcessing(isProcessing: Boolean)
 

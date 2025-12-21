@@ -264,7 +264,7 @@ internal object DtoMappers {
         is ParticipantDto.Agent -> Participant.Agent(p.id, p.name)
     }
 
-    fun toDto(e: Event): EventDto = when (val details = e.payload) {
+    fun toDto(e: Event<*>): EventDto = when (val details = e.payload) {
         is Messaging.Message -> MessageDto(
             e.id,
             e.timestamp,
@@ -308,7 +308,7 @@ internal object DtoMappers {
         else -> error("Unsupported event type: ${e.payload::class}")
     }
 
-    fun fromDto(e: EventDto): Event = when (e) {
+    fun fromDto(e: EventDto): Event<*> = when (e) {
         is MessageDto -> Event(
             e.id,
             e.timestamp,

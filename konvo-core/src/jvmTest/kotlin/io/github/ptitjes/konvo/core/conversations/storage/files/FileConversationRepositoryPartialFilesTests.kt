@@ -34,7 +34,7 @@ class FileConversationRepositoryPartialFilesTests {
             messageCount = 0,
         )
 
-    private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Event =
+    private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Event<*> =
         Event(
             id = id,
             timestamp = ts,

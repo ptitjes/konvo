@@ -14,7 +14,7 @@ interface ConversationUserView {
 
     val state: StateFlow<ConversationState>
 
-    val events: SharedFlow<Event>
+    val events: SharedFlow<Event<*>>
 
     suspend fun updateTitle(title: String)
 

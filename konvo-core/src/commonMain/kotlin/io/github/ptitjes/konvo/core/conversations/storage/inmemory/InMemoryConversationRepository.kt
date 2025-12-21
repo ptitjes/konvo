@@ -18,11 +18,11 @@ class InMemoryConversationRepository(
     private val conversations = atomic<Map<String, ConversationDigest>>(emptyMap())
 
     // Conversation id -> Events list
-    private val events = atomic<Map<String, List<Event>>>(emptyMap())
+    private val events = atomic<Map<String, List<Event<*>>>>(emptyMap())
 
     // Reactive state
     private val conversationsState = MutableStateFlow<Map<String, ConversationDigest>>(emptyMap())
-    private val eventsState = MutableStateFlow<Map<String, List<Event>>>(emptyMap())
+    private val eventsState = MutableStateFlow<Map<String, List<Event<*>>>>(emptyMap())
 
     override suspend fun create(initial: ConversationDigest) {
         val newConversations = conversations.updateAndGet { prev ->
@@ -52,7 +52,7 @@ class InMemoryConversationRepository(
             }
         }.distinctUntilChanged()
 
-    override suspend fun appendEvent(conversationId: String, event: Event) {
+    override suspend fun appendEvent(conversationId: String, event: Event<*>) {
         // Append event first
         val updatedEvents = events.updateAndGet { prev ->
             val current = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
@@ -108,6 +108,6 @@ class InMemoryConversationRepository(
         eventsState.value = events.value
     }
 
-    override fun getEvents(conversationId: String): Flow<List<Event>> =
+    override fun getEvents(conversationId: String): Flow<List<Event<*>>> =
         eventsState.map { it[conversationId] ?: emptyList() }.distinctUntilChanged()
 }
