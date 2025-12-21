@@ -4,6 +4,11 @@ package io.github.ptitjes.konvo.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.time.*
@@ -260,7 +265,7 @@ internal object DtoMappers {
     }
 
     fun toDto(e: Event): EventDto = when (val details = e.payload) {
-        is Event.Message -> MessageDto(
+        is Messaging.Message -> MessageDto(
             e.id,
             e.timestamp,
             toDto(e.sender),
@@ -268,7 +273,7 @@ internal object DtoMappers {
             details.content.map { toDto(it) }
         )
 
-        is Event.ToolUseApproval -> ToolUseApprovalDto(
+        is ToolUsage.Approval -> ToolUseApprovalDto(
             e.id,
             e.timestamp,
             toDto(e.sender),
@@ -276,7 +281,7 @@ internal object DtoMappers {
             details.approvals.map { toDto(it.key) to it.value }
         )
 
-        is Event.AssistantProcessing -> AssistantProcessingDto(
+        is AgentPresence.Processing -> AssistantProcessingDto(
             e.id,
             e.timestamp,
             toDto(e.sender),
@@ -284,14 +289,14 @@ internal object DtoMappers {
             details.isProcessing
         )
 
-        is Event.ToolUseVetting -> ToolUseVettingDto(
+        is ToolUsage.Vetting -> ToolUseVettingDto(
             e.id,
             e.timestamp,
             toDto(e.sender),
             e.recipients?.map { toDto(it) }?.toSet(),
             details.calls.map { toDto(it) })
 
-        is Event.ToolUseNotification -> ToolUseNotificationDto(
+        is ToolUsage.Notification -> ToolUseNotificationDto(
             e.id,
             e.timestamp,
             toDto(e.sender),
@@ -309,7 +314,7 @@ internal object DtoMappers {
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.Message(e.content.map { fromDto(it) })
+            Messaging.Message(e.content.map { fromDto(it) })
         )
 
         is ToolUseApprovalDto -> Event(
@@ -317,7 +322,7 @@ internal object DtoMappers {
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.ToolUseApproval(
+            ToolUsage.Approval(
                 e.approvals.associate { fromDto(it.first) to it.second }
             )
         )
@@ -327,7 +332,7 @@ internal object DtoMappers {
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.AssistantProcessing(e.isProcessing)
+            AgentPresence.Processing(e.isProcessing)
         )
 
         is ToolUseVettingDto -> Event(
@@ -335,7 +340,7 @@ internal object DtoMappers {
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.ToolUseVetting(e.calls.map { fromDto(it) })
+            ToolUsage.Vetting(e.calls.map { fromDto(it) })
         )
 
         is ToolUseNotificationDto -> Event(
@@ -343,25 +348,25 @@ internal object DtoMappers {
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            Event.ToolUseNotification(fromDto(e.call), fromDto(e.result))
+            ToolUsage.Notification(fromDto(e.call), fromDto(e.result))
         )
     }
 
-    fun toDto(cp: ContentPart): ContentPartDto = when (cp) {
-        is ContentPart.Text -> ContentPartDto.Text(cp.text, cp.mimeType)
-        is ContentPart.Image -> ContentPartDto.Image(cp.mimeType, cp.filename, toDto(cp.media))
-        is ContentPart.Video -> ContentPartDto.Video(cp.mimeType, cp.filename, toDto(cp.media))
-        is ContentPart.Audio -> ContentPartDto.Audio(cp.mimeType, cp.filename, toDto(cp.media))
-        is ContentPart.File -> ContentPartDto.File(cp.mimeType, cp.filename, toDto(cp.media))
-        is ContentPart.Embed<*> -> error("Serialization of Embed is not yet supported")
+    fun toDto(cp: Part): ContentPartDto = when (cp) {
+        is Part.Text -> ContentPartDto.Text(cp.text, cp.mimeType)
+        is Part.Image -> ContentPartDto.Image(cp.mimeType, cp.filename, toDto(cp.media))
+        is Part.Video -> ContentPartDto.Video(cp.mimeType, cp.filename, toDto(cp.media))
+        is Part.Audio -> ContentPartDto.Audio(cp.mimeType, cp.filename, toDto(cp.media))
+        is Part.File -> ContentPartDto.File(cp.mimeType, cp.filename, toDto(cp.media))
+        is Part.Embed<*> -> error("Serialization of Embed is not yet supported")
     }
 
-    fun fromDto(cp: ContentPartDto): ContentPart = when (cp) {
-        is ContentPartDto.Text -> ContentPart.Text(cp.text, cp.mimeType)
-        is ContentPartDto.Image -> ContentPart.Image(cp.mimeType, cp.filename, fromDto(cp.media))
-        is ContentPartDto.Video -> ContentPart.Video(cp.mimeType, cp.filename, fromDto(cp.media))
-        is ContentPartDto.Audio -> ContentPart.Audio(cp.mimeType, cp.filename, fromDto(cp.media))
-        is ContentPartDto.File -> ContentPart.File(cp.mimeType, cp.filename, fromDto(cp.media))
+    fun fromDto(cp: ContentPartDto): Part = when (cp) {
+        is ContentPartDto.Text -> Part.Text(cp.text, cp.mimeType)
+        is ContentPartDto.Image -> Part.Image(cp.mimeType, cp.filename, fromDto(cp.media))
+        is ContentPartDto.Video -> Part.Video(cp.mimeType, cp.filename, fromDto(cp.media))
+        is ContentPartDto.Audio -> Part.Audio(cp.mimeType, cp.filename, fromDto(cp.media))
+        is ContentPartDto.File -> Part.File(cp.mimeType, cp.filename, fromDto(cp.media))
     }
 
     fun toDto(a: Attachment): AttachmentDto = AttachmentDto(
@@ -378,25 +383,25 @@ internal object DtoMappers {
         mimeType = a.mimeType,
     )
 
-    fun toDto(c: ToolCall): ToolCallDto = ToolCallDto(
+    fun toDto(c: Call): ToolCallDto = ToolCallDto(
         id = c.id,
         tool = c.tool,
         arguments = c.arguments,
     )
 
-    fun fromDto(c: ToolCallDto): ToolCall = ToolCall(
+    fun fromDto(c: ToolCallDto): Call = Call(
         id = c.id,
         tool = c.tool,
         arguments = c.arguments,
     )
 
-    fun toDto(r: ToolCallResult): ToolCallResultDto = when (r) {
-        is ToolCallResult.Success -> ToolCallResultDto.Success(r.text)
-        is ToolCallResult.ExecutionFailure -> ToolCallResultDto.ExecutionFailure(r.reason)
+    fun toDto(r: CallResult): ToolCallResultDto = when (r) {
+        is CallResult.Success -> ToolCallResultDto.Success(r.text)
+        is CallResult.ExecutionFailure -> ToolCallResultDto.ExecutionFailure(r.reason)
     }
 
-    fun fromDto(r: ToolCallResultDto): ToolCallResult = when (r) {
-        is ToolCallResultDto.Success -> ToolCallResult.Success(r.text)
-        is ToolCallResultDto.ExecutionFailure -> ToolCallResult.ExecutionFailure(r.reason)
+    fun fromDto(r: ToolCallResultDto): CallResult = when (r) {
+        is ToolCallResultDto.Success -> CallResult.Success(r.text)
+        is ToolCallResultDto.ExecutionFailure -> CallResult.ExecutionFailure(r.reason)
     }
 }

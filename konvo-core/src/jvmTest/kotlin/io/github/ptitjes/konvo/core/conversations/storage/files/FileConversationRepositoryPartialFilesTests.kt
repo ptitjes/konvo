@@ -3,6 +3,8 @@
 package io.github.ptitjes.konvo.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
 import io.github.ptitjes.konvo.core.platform.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.*
@@ -37,8 +39,8 @@ class FileConversationRepositoryPartialFilesTests {
             id = id,
             timestamp = ts,
             sender = Participant.User("u1", "user"),
-            payload = Event.Message(
-                content = listOf(ContentPart.Text(content)),
+            payload = Messaging.Message(
+                content = listOf(Part.Text(content)),
             )
         )
 
@@ -81,7 +83,7 @@ class FileConversationRepositoryPartialFilesTests {
 
         // Assert
         assertEquals(2, events.size)
-        assertTrue(events.all { it.payload is Event.Message })
+        assertTrue(events.all { it.payload is Messaging.Message })
         assertEquals(listOf("e1", "e2"), events.map { it.id })
     }
 }

@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.platform.*
 import io.github.ptitjes.konvo.core.util.*
@@ -192,7 +193,7 @@ class FileConversationRepository(
         val events = readEvents(conversationId)
         val newPreview = ConversationUtils.computeLastMessagePreview(events)
         val (delta, deltaUnread) = when (event.payload) {
-            is Event.Message -> 1 to 1
+            is Messaging.Message -> 1 to 1
             else -> 0 to 0
         }
         val updated = current.copy(

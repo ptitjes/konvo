@@ -5,6 +5,10 @@ package io.github.ptitjes.konvo.core.conversations
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
@@ -61,7 +65,7 @@ class Conversation(
             val transcript = repository.getEvents(conversationId).stateIn(this)
 
             val processing = transcript
-                .mapNotNull { it.lastOrNull()?.payload as? Event.AssistantProcessing }
+                .mapNotNull { it.lastOrNull()?.payload as? AgentPresence.Processing }
                 .map { it.isProcessing }
                 .onStart { emit(false) }
 
@@ -133,7 +137,7 @@ class Conversation(
     }
 
     private fun Event.isViewItem(): Boolean =
-        payload !is Event.AssistantProcessing && payload !is Event.ToolUseApproval
+        payload !is AgentPresence.Processing && payload !is ToolUsage.Approval
 
     fun newUserView(): ConversationUserView = UserViewImpl(userMember)
     private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
@@ -145,16 +149,16 @@ class Conversation(
         override val events: SharedFlow<Event> get() = _events
 
         override suspend fun sendProcessing(isProcessing: Boolean) =
-            send(Event.AssistantProcessing(isProcessing = isProcessing))
+            send(AgentPresence.Processing(isProcessing = isProcessing))
 
-        override suspend fun sendMessage(content: List<ContentPart>) =
-            send(Event.Message(content = content))
+        override suspend fun sendMessage(content: List<Part>) =
+            send(Messaging.Message(content = content))
 
-        override suspend fun sendToolUseVetting(calls: List<ToolCall>) =
-            send(Event.ToolUseVetting(calls = calls))
+        override suspend fun sendToolUseVetting(calls: List<Call>) =
+            send(ToolUsage.Vetting(calls = calls))
 
-        override suspend fun sendToolUseResult(call: ToolCall, result: ToolCallResult) =
-            send(Event.ToolUseNotification(call = call, result = result))
+        override suspend fun sendToolUseResult(call: Call, result: CallResult) =
+            send(ToolUsage.Notification(call = call, result = result))
 
         override suspend fun send(payload: Event.Agent) {
             _events.emit(Event(id = newId(), timestamp = newTimestamp(), sender = participant, payload = payload))
@@ -177,11 +181,11 @@ class Conversation(
             _lastReadMessageIndexUpdates.emit(index)
         }
 
-        override suspend fun sendMessage(content: List<ContentPart>) =
-            send(Event.Message(content = content))
+        override suspend fun sendMessage(content: List<Part>) =
+            send(Messaging.Message(content = content))
 
-        override suspend fun sendToolUseApproval(approvals: Map<ToolCall, Boolean>) =
-            send(Event.ToolUseApproval(approvals = approvals))
+        override suspend fun sendToolUseApproval(approvals: Map<Call, Boolean>) =
+            send(ToolUsage.Approval(approvals = approvals))
 
         override suspend fun send(payload: Event.User) {
             _events.emit(Event(id = newId(), timestamp = newTimestamp(), sender = participant, payload = payload))

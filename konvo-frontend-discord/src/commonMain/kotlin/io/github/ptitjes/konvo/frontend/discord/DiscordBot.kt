@@ -19,7 +19,11 @@ import io.github.ptitjes.konvo.core.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.Event
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.discord.components.*
@@ -195,7 +199,7 @@ class KonvoBot(
         val conversationView = conversation.newUserView()
 
         conversationView.sendMessage(
-            content = listOf(ContentPart.Text(message.content)) + message.attachments.map { attachment ->
+            content = listOf(Part.Text(message.content)) + message.attachments.map { attachment ->
                 val fileName = attachment.filename
                 val format = fileName.substringAfterLast('.')
                 val isImage = attachment.isImage
@@ -219,10 +223,10 @@ class KonvoBot(
                 )
 
                 when (type) {
-                    Attachment.Type.Image -> ContentPart.Image(mimeType, fileName, konvoAttachment)
-                    Attachment.Type.Audio -> ContentPart.Audio(mimeType, fileName, konvoAttachment)
-                    Attachment.Type.Video -> ContentPart.Video(mimeType, fileName, konvoAttachment)
-                    Attachment.Type.Document -> ContentPart.File(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Image -> Part.Image(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Audio -> Part.Audio(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Video -> Part.Video(mimeType, fileName, konvoAttachment)
+                    Attachment.Type.Document -> Part.File(mimeType, fileName, konvoAttachment)
                 }
             }
         )
@@ -323,26 +327,26 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
 
         conversation.events.collect { event ->
             when (val details = event.payload) {
-                is Event.AssistantProcessing ->
+                is Processing.AssistantProcessing ->
                     if (details.isProcessing) assistantProcessing.start()
                     else assistantProcessing.stop()
 
-                is Event.Message -> {
+                is Messaging.Message -> {
                     if (event.sender is Participant.Agent) {
                         val textContent =
-                            details.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
+                            details.content.filterIsInstance<Part.Text>().joinToString("\n") { it.text }
                         val content = textContent.maybeSplitDiscordContent()
                         content.forEach { createMessage(it) }
                         assistantProcessing.maybeRestart()
                     }
                 }
 
-                is Event.ToolUseVetting -> {
+                is ToolUsage.ToolUseVetting -> {
                     askForToolUse(conversation, details)
                     assistantProcessing.maybeRestart()
                 }
 
-                is Event.ToolUseNotification -> {
+                is ToolUsage.ToolUseNotification -> {
                     notifyToolUse(details)
                     assistantProcessing.maybeRestart()
                 }
@@ -354,24 +358,23 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
 
 private suspend fun MessageChannelBehavior.askForToolUse(
     conversation: ConversationUserView,
-    details: Event.ToolUseVetting,
+    details: ToolUsage.ToolUseVetting,
 ) {
     val done = CompletableDeferred<Unit>()
     val callsToCheck = details.calls.toMutableList()
-    val approvals = mutableMapOf<ToolCall, Boolean>()
+    val approvals = mutableMapOf<Call, Boolean>()
 
     createEphemeralMessage {
         suspend fun finished() {
             // Send approvals and close the ephemeral message
             conversation.sendToolUseApproval(
-                vetting = details,
                 approvals = approvals.toMap(),
             )
             delete()
             done.complete(Unit)
         }
 
-        suspend fun HandlerScope<*>.recordApproval(call: ToolCall, allowed: Boolean) {
+        suspend fun HandlerScope<*>.recordApproval(call: Call, allowed: Boolean) {
             acknowledge()
             approvals[call] = allowed
             callsToCheck.remove(call)
@@ -414,8 +417,8 @@ private suspend fun MessageChannelBehavior.askForToolUse(
     done.await()
 }
 
-private suspend fun MessageChannelBehavior.notifyToolUse(details: Event.ToolUseNotification) {
-    if (details.result is ToolCallResult.Success) {
+private suspend fun MessageChannelBehavior.notifyToolUse(details: ToolUsage.ToolUseNotification) {
+    if (details.result is CallResult.Success) {
         createMessage {
             messageFlags { +MessageFlag.IsComponentsV2 }
 

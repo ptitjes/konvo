@@ -7,6 +7,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.ConversationUserView
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
 import kotlinx.coroutines.*
 
 /**

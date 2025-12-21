@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.core.conversations.storage.inmemory
 
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.atomicfu.*
@@ -64,7 +65,7 @@ class InMemoryConversationRepository(
             val existing = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
             val now = timeProvider.now()
             val (newPreview, deltaCount, deltaUnread) = when (event.payload) {
-                is Event.Message -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
+                is Messaging.Message -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
                 else -> Triple(existing.lastMessagePreview, 0, 0)
             }
             val changed = existing.copy(
