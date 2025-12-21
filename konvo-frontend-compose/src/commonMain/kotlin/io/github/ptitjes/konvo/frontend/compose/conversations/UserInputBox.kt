@@ -11,6 +11,7 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable

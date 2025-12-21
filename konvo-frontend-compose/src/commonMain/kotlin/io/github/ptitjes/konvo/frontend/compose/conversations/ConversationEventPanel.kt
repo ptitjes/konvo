@@ -15,6 +15,10 @@ import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*
@@ -52,7 +56,7 @@ private fun UserMessagePanel(
                         )
                     }
 
-                    itemViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
+                    itemViewState.details.content.filterIsInstance<Part.Media>().forEach { media ->
                         AttachmentView(media.media)
                     }
                 }
@@ -78,7 +82,7 @@ private fun AgentMessagePanel(
                 )
             }
 
-            itemViewState.details.content.filterIsInstance<ContentPart.Media>().forEach { media ->
+            itemViewState.details.content.filterIsInstance<Part.Media>().forEach { media ->
                 AttachmentView(media.media)
             }
         }
@@ -216,7 +220,7 @@ private fun ToolUseNotificationPanel(
                 )
 
                 when (val result = viewState.result) {
-                    is ToolCallResult.Success -> {
+                    is CallResult.Success -> {
                         Markdown(
                             content = "```json\n${result.text}\n```",
                             typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
@@ -225,7 +229,7 @@ private fun ToolUseNotificationPanel(
                     }
 
                     else -> {
-                        val failure = result as ToolCallResult.ExecutionFailure
+                        val failure = result as CallResult.ExecutionFailure
                         Markdown(
                             content = "```\n${failure.reason}\n```",
                             typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
@@ -302,11 +306,11 @@ private fun ExpandableBox(
 
 @Composable
 private fun ResultIcon(
-    result: ToolCallResult,
+    result: CallResult,
     modifier: Modifier = Modifier,
 ) = when (result) {
-    is ToolCallResult.Success -> SuccessIcon(modifier)
-    is ToolCallResult.ExecutionFailure -> FailureIcon(modifier)
+    is CallResult.Success -> SuccessIcon(modifier)
+    is CallResult.ExecutionFailure -> FailureIcon(modifier)
 }
 
 @Composable

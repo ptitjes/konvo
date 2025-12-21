@@ -4,6 +4,11 @@ import androidx.lifecycle.*
 import com.mikepenz.markdown.model.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.reflect.*
@@ -84,12 +89,12 @@ class ConversationViewModel(
 
         viewModelScope.launch {
             conversationUserView.sendMessage(
-                content = listOf(ContentPart.Text(content)) + attachments.map { attachment ->
+                content = listOf(Part.Text(content)) + attachments.map { attachment ->
                     when (attachment.type) {
-                        Attachment.Type.Image -> ContentPart.Image(attachment.mimeType, attachment.name, attachment)
-                        Attachment.Type.Video -> ContentPart.Video(attachment.mimeType, attachment.name, attachment)
-                        Attachment.Type.Audio -> ContentPart.Audio(attachment.mimeType, attachment.name, attachment)
-                        Attachment.Type.Document -> ContentPart.File(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Image -> Part.Image(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Video -> Part.Video(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Audio -> Part.Audio(attachment.mimeType, attachment.name, attachment)
+                        Attachment.Type.Document -> Part.File(attachment.mimeType, attachment.name, attachment)
                     }
                 },
             )
@@ -224,13 +229,13 @@ class ConversationStateUpdater(
     }
 
     init {
-        addStateUpdater<Event.AssistantProcessing> { state, event, payload ->
+        addStateUpdater<AgentPresence.Processing> { state, event, payload ->
             println("Processing state update for AssistantProcessing")
             state.copy(isProcessing = payload.isProcessing)
         }
 
-        onEvent<Event.Message> { event, payload ->
-            val content = payload.content.filterIsInstance<ContentPart.Text>().joinToString("\n") { it.text }
+        onEvent<Messaging.Message> { event, payload ->
+            val content = payload.content.filterIsInstance<Part.Text>().joinToString("\n") { it.text }
             contributeItem(
                 if (event.sender is Participant.User) {
                     ItemViewState.UserMessage(
@@ -247,14 +252,14 @@ class ConversationStateUpdater(
                 }
             )
         }
-        onEvent<Event.ToolUseVetting> { event, payload ->
+        onEvent<ToolUsage.Vetting> { event, payload ->
             contributeItem(
                 initialViewState = ItemViewState.ToolUseVetting(
                     id = event.id,
                     approvals = payload.calls.associateWith { ItemViewState.ToolUseVetting.ApprovalStatus.Pending },
                 ),
             ) {
-                onEvent<Event.ToolUseApproval> { state, approvalPayload ->
+                onEvent<ToolUsage.Approval> { state, approvalPayload ->
                     val changedApprovals = approvalPayload.approvals.keys.fold(state.approvals) { acc, key ->
                         val newValue by lazy {
                             val approved = approvalPayload.approvals[key]
@@ -278,7 +283,7 @@ class ConversationStateUpdater(
                 }
             }
         }
-        onEvent<Event.ToolUseNotification> { event, payload ->
+        onEvent<ToolUsage.Notification> { event, payload ->
             contributeItem(
                 ItemViewState.ToolUseNotification(
                     id = event.id,
@@ -304,19 +309,19 @@ sealed interface ItemViewState {
 
     data class UserMessage(
         override val id: Any,
-        val details: Event.Message,
+        val details: Messaging.Message,
         val markdownState: MarkdownViewState,
     ) : ItemViewState
 
     data class AssistantMessage(
         override val id: Any,
-        val details: Event.Message,
+        val details: Messaging.Message,
         val markdownState: MarkdownViewState,
     ) : ItemViewState
 
     data class ToolUseVetting(
         override val id: Any,
-        val approvals: Map<ToolCall, ApprovalStatus>,
+        val approvals: Map<Call, ApprovalStatus>,
     ) : ItemViewState {
         sealed interface ApprovalStatus {
             data object Pending : ApprovalStatus
@@ -327,8 +332,8 @@ sealed interface ItemViewState {
 
     data class ToolUseNotification(
         override val id: Any,
-        val call: ToolCall,
-        val result: ToolCallResult,
+        val call: Call,
+        val result: CallResult,
     ) : ItemViewState
 }
 

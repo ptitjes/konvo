@@ -65,5 +65,8 @@ kotlin {
                 implementation(libs.kotlinxCoroutinesSwing)
             }
         }
+        all {
+            languageSettings.enableLanguageFeature("NestedTypeAliases")
+        }
     }
 }

@@ -2,6 +2,8 @@ package io.github.ptitjes.konvo.core.conversations.storage
 
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -56,8 +58,8 @@ abstract class ConversationRepositoryContractTests {
         id = id,
         timestamp = timestamp,
         sender = Participant.User("u1", "user"),
-        payload = Event.Message(
-            content = listOf(ContentPart.Text(content)),
+        payload = Messaging.Message(
+            content = listOf(Part.Text(content)),
         )
     )
 
@@ -69,8 +71,8 @@ abstract class ConversationRepositoryContractTests {
         id = id,
         timestamp = timestamp,
         sender = Participant.Agent("a1", "agent"),
-        payload = Event.Message(
-            content = listOf(ContentPart.Text(content)),
+        payload = Messaging.Message(
+            content = listOf(Part.Text(content)),
         )
     )
 
@@ -92,8 +94,8 @@ abstract class ConversationRepositoryContractTests {
             id = "e1",
             timestamp = timeProvider.now(),
             sender = Participant.User("u1", "user"),
-            payload = Event.Message(
-                content = listOf(ContentPart.Text("Hello world")),
+            payload = Messaging.Message(
+                content = listOf(Part.Text("Hello world")),
             )
         )
         repository.appendEvent(conversation.id, event)
