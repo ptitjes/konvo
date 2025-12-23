@@ -5,10 +5,9 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.conversations.ConversationUserView
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ItemViewState
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
 import kotlinx.coroutines.*
 
 /**
@@ -88,9 +87,7 @@ fun ConversationPane(
                 itemsIndexed(state.items, key = { _, it -> it.id }) { index, viewedItem ->
                     Column {
                         if (index == firstUnreadIndex) NewMessagesDivider()
-                        if (viewedItem is ItemViewState) {
-                            ConversationEventPanel(viewedItem, conversation)
-                        }
+                        ConversationEventPanel(viewedItem, conversation)
                     }
                 }
 
