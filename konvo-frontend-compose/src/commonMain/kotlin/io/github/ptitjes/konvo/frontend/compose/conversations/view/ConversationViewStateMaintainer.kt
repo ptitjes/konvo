@@ -75,7 +75,7 @@ class ConversationViewStateMaintainer(
             UpdateHandlersScopeImpl<S, T>(stateMaintainer, slot, initialEvent).builder()
         }
 
-        override suspend fun <S, T : S> append(
+        override suspend fun <S : Indexed, T : S> append(
             slot: AppendableSlot<S>,
             initial: T,
             builder: UpdateHandlersScope<S, T>.() -> Unit,

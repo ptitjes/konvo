@@ -4,61 +4,82 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 
 sealed interface ConversationViewState {
     data object Loading : ConversationViewState
-    data class Loaded(
-        val conversation: ConversationDigest,
-        val items: List<Item>,
-        val isProcessing: Boolean,
-    ) : ConversationViewState
+
+    @ConsistentCopyVisibility
+    data class Loaded private constructor(
+        private val slotData: Map<Slot<*>, Any?>,
+    ) : ConversationViewState {
+
+        constructor() : this(emptyMap())
+
+        @Suppress("UNCHECKED_CAST")
+        operator fun <T : Indexed> get(slot: AppendableSlot<T>): List<T> =
+            (slotData[slot] ?: emptyList<T>()) as List<T>
+
+        @Suppress("UNCHECKED_CAST")
+        operator fun <T> get(slot: RegisterSlot<T>): T = (slotData[slot] ?: slot.defaultValue) as T
+
+        fun <T : Indexed> copy(slot: AppendableSlot<T>, value: List<T>): Loaded =
+            copy(slotData = slotData + (slot to value))
+
+        fun <T> copy(slot: RegisterSlot<T>, value: T): Loaded =
+            copy(slotData = slotData + (slot to value))
+
+        val conversation: ConversationDigest get() = get(Digest)!!
+        val items: List<Item> get() = get(Items)
+        val isProcessing: Boolean get() = get(AgentState)
+    }
+
+    interface Indexed {
+        val id: Any
+    }
 
     interface Slot<T> {
         suspend fun update(rootState: Loaded, initialEvent: Event<*>, updater: suspend (T) -> T): Loaded
     }
 
-    interface AppendableSlot<T> : Slot<T> {
-        suspend fun get(rootState: Loaded): List<T>
-        suspend fun append(rootState: Loaded, childState: T): Loaded
-    }
-
-    interface RegisterSlot<T> : Slot<T> {
-        suspend fun get(rootState: Loaded): T?
-        suspend fun set(rootState: Loaded, childState: T): Loaded
-    }
-
-    object AgentState : RegisterSlot<Boolean> {
-        override suspend fun get(rootState: Loaded): Boolean = rootState.isProcessing
-
-        override suspend fun set(rootState: Loaded, childState: Boolean): Loaded =
-            rootState.copy(isProcessing = childState)
+    open class AppendableSlot<T : Indexed> : Slot<T> {
+        suspend fun append(rootState: Loaded, childState: T): Loaded =
+            rootState.copy(slot = this, value = rootState[this] + childState)
 
         override suspend fun update(
             rootState: Loaded,
             initialEvent: Event<*>,
-            updater: suspend (Boolean) -> Boolean,
-        ): Loaded = rootState.copy(isProcessing = updater(rootState.isProcessing))
-    }
-
-    interface Item {
-        val id: Any
-    }
-
-    object Items : AppendableSlot<Item> {
-        override suspend fun get(rootState: Loaded): List<Item> = rootState.items
-
-        override suspend fun append(rootState: Loaded, childState: Item): Loaded =
-            rootState.copy(items = rootState.items + childState)
-
-        override suspend fun update(
-            rootState: Loaded,
-            initialEvent: Event<*>,
-            updater: suspend (Item) -> Item,
+            updater: suspend (T) -> T,
         ): Loaded {
-            val itemIndex = rootState.items.indexOfLast { it.id == initialEvent.id }
+            val items = rootState[this]
+            val itemIndex = items.indexOfLast { it.id == initialEvent.id }
             require(itemIndex != -1) { "No view state found for initial view state" }
-            val previousItem = rootState.items[itemIndex]
+            val previousItem = items[itemIndex]
             val updatedItem = updater(previousItem)
-            return rootState.copy(items = rootState.items.mapIndexed { index, item ->
+            return rootState.copy(slot = this, value = items.mapIndexed { index, item ->
                 if (index == itemIndex) updatedItem else item
             })
         }
     }
+
+    open class RegisterSlot<T>(
+        val defaultValue: T,
+    ) : Slot<T> {
+        suspend fun set(rootState: Loaded, childState: T): Loaded =
+            rootState.copy(slot = this, value = childState)
+
+        override suspend fun update(
+            rootState: Loaded,
+            initialEvent: Event<*>,
+            updater: suspend (T) -> T,
+        ): Loaded {
+            val value = rootState[this]
+            val updatedValue = updater(value)
+            return rootState.copy(slot = this, value = updatedValue)
+        }
+    }
+
+    object Digest : RegisterSlot<ConversationDigest?>(null)
+
+    object AgentState : RegisterSlot<Boolean>(false)
+
+    interface Item : Indexed
+
+    object Items : AppendableSlot<Item>()
 }

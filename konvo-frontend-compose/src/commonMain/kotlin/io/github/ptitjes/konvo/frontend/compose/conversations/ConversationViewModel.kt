@@ -46,11 +46,8 @@ class ConversationViewModel(
                         is ConversationState.Loaded -> {
                             val transcript = state.transcript
                             if (transcript != previousTranscript) {
-                                val initial = ConversationViewState.Loaded(
-                                    conversation = state.digest,
-                                    items = emptyList(),
-                                    isProcessing = false,
-                                )
+                                val initial = ConversationViewState.Loaded()
+                                    .copy(slot = ConversationViewState.Digest, value = state.digest)
 
                                 val stateUpdater = ConversationViewStateMaintainer(initial)
                                 stateUpdater.setupCoreContributors()

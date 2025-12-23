@@ -41,7 +41,7 @@ interface ConversationViewStateContribution {
             builder: UpdateHandlersScope<S, T>.() -> Unit = {},
         )
 
-        suspend fun <S, T : S> append(
+        suspend fun <S : ConversationViewState.Indexed, T : S> append(
             slot: ConversationViewState.AppendableSlot<S>,
             initial: T,
             builder: UpdateHandlersScope<S, T>.() -> Unit = {},
