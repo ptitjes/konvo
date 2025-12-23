@@ -14,24 +14,27 @@ import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversations.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ItemViewState
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*
 
 @Composable
-fun ConversationEventPanel(itemViewState: ItemViewState, conversation: ConversationUserView) = when (itemViewState) {
-    is ItemViewState.UserMessage -> UserMessagePanel(itemViewState)
-    is ItemViewState.AssistantMessage -> AgentMessagePanel(itemViewState)
-    is ItemViewState.ToolUseVetting -> ToolUseVettingPanel(itemViewState, conversation)
-    is ItemViewState.ToolUseNotification -> ToolUseNotificationPanel(itemViewState)
+fun ConversationEventPanel(itemViewState: ConversationViewState.Item, conversation: ConversationUserView) =
+    when (itemViewState) {
+        is MessagingViewState.UserMessage -> UserMessagePanel(itemViewState)
+        is MessagingViewState.AssistantMessage -> AgentMessagePanel(itemViewState)
+        is ToolUsageViewState.Vetting -> ToolUsageVettingPanel(itemViewState, conversation)
+        is ToolUsageViewState.Notification -> ToolUsageNotificationPanel(itemViewState)
+        else -> {}
 }
 
 @Composable
 private fun UserMessagePanel(
-    itemViewState: ItemViewState.UserMessage,
+    itemViewState: MessagingViewState.UserMessage,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -65,7 +68,7 @@ private fun UserMessagePanel(
 
 @Composable
 private fun AgentMessagePanel(
-    itemViewState: ItemViewState.AssistantMessage,
+    itemViewState: MessagingViewState.AssistantMessage,
 ) {
     val horizontalArrangement = Arrangement.Start
     Row(
@@ -88,15 +91,15 @@ private fun AgentMessagePanel(
 }
 
 @Composable
-private fun ToolUseVettingPanel(
-    viewState: ItemViewState.ToolUseVetting,
+private fun ToolUsageVettingPanel(
+    viewState: ToolUsageViewState.Vetting,
     conversation: ConversationUserView,
 ) {
     BorderedPanel {
         Column {
             for ((call, status) in viewState.approvals) {
                 ExpandableBox(
-                    collapsable = status !is ItemViewState.ToolUseVetting.ApprovalStatus.Pending,
+                    collapsable = status !is ToolUsageViewState.Vetting.ApprovalStatus.Pending,
                     header = {
                         AskIcon()
 
@@ -113,7 +116,7 @@ private fun ToolUseVettingPanel(
                         )
 
                         when (status) {
-                            is ItemViewState.ToolUseVetting.ApprovalStatus.Pending -> {
+                            is ToolUsageViewState.Vetting.ApprovalStatus.Pending -> {
                                 val coroutineScope = rememberCoroutineScope()
 
                                 TextButton(
@@ -143,7 +146,7 @@ private fun ToolUseVettingPanel(
                                 }
                             }
 
-                            is ItemViewState.ToolUseVetting.ApprovalStatus.Approved -> {
+                            is ToolUsageViewState.Vetting.ApprovalStatus.Approved -> {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -158,7 +161,7 @@ private fun ToolUseVettingPanel(
                                 }
                             }
 
-                            is ItemViewState.ToolUseVetting.ApprovalStatus.Denied -> {
+                            is ToolUsageViewState.Vetting.ApprovalStatus.Denied -> {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -186,8 +189,8 @@ private fun ToolUseVettingPanel(
 }
 
 @Composable
-private fun ToolUseNotificationPanel(
-    viewState: ItemViewState.ToolUseNotification,
+private fun ToolUsageNotificationPanel(
+    viewState: ToolUsageViewState.Notification,
 ) {
     BorderedPanel {
         ExpandableBox(

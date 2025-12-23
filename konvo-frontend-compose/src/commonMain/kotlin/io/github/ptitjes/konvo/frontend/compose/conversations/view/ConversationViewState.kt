@@ -1,9 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations.view
 
-import com.mikepenz.markdown.model.State
-import io.github.ptitjes.konvo.core.conversations.model.ConversationDigest
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage
+import io.github.ptitjes.konvo.core.conversations.model.*
 
 sealed interface ConversationViewState {
     data object Loading : ConversationViewState
@@ -13,39 +10,55 @@ sealed interface ConversationViewState {
         val isProcessing: Boolean,
     ) : ConversationViewState
 
+    interface Slot<T> {
+        suspend fun update(rootState: Loaded, initialEvent: Event<*>, updater: suspend (T) -> T): Loaded
+    }
+
+    interface AppendableSlot<T> : Slot<T> {
+        suspend fun get(rootState: Loaded): List<T>
+        suspend fun append(rootState: Loaded, childState: T): Loaded
+    }
+
+    interface RegisterSlot<T> : Slot<T> {
+        suspend fun get(rootState: Loaded): T?
+        suspend fun set(rootState: Loaded, childState: T): Loaded
+    }
+
+    object AgentState : RegisterSlot<Boolean> {
+        override suspend fun get(rootState: Loaded): Boolean = rootState.isProcessing
+
+        override suspend fun set(rootState: Loaded, childState: Boolean): Loaded =
+            rootState.copy(isProcessing = childState)
+
+        override suspend fun update(
+            rootState: Loaded,
+            initialEvent: Event<*>,
+            updater: suspend (Boolean) -> Boolean,
+        ): Loaded = rootState.copy(isProcessing = updater(rootState.isProcessing))
+    }
+
     interface Item {
         val id: Any
     }
-}
 
-sealed interface ItemViewState : ConversationViewState.Item {
+    object Items : AppendableSlot<Item> {
+        override suspend fun get(rootState: Loaded): List<Item> = rootState.items
 
-    data class UserMessage(
-        override val id: Any,
-        val details: Messaging.Message,
-        val markdownState: State,
-    ) : ItemViewState
+        override suspend fun append(rootState: Loaded, childState: Item): Loaded =
+            rootState.copy(items = rootState.items + childState)
 
-    data class AssistantMessage(
-        override val id: Any,
-        val details: Messaging.Message,
-        val markdownState: State,
-    ) : ItemViewState
-
-    data class ToolUseVetting(
-        override val id: Any,
-        val approvals: Map<ToolUsage.Call, ApprovalStatus>,
-    ) : ItemViewState {
-        sealed interface ApprovalStatus {
-            data object Pending : ApprovalStatus
-            data object Approved : ApprovalStatus
-            data class Denied(val reason: String) : ApprovalStatus
+        override suspend fun update(
+            rootState: Loaded,
+            initialEvent: Event<*>,
+            updater: suspend (Item) -> Item,
+        ): Loaded {
+            val itemIndex = rootState.items.indexOfLast { it.id == initialEvent.id }
+            require(itemIndex != -1) { "No view state found for initial view state" }
+            val previousItem = rootState.items[itemIndex]
+            val updatedItem = updater(previousItem)
+            return rootState.copy(items = rootState.items.mapIndexed { index, item ->
+                if (index == itemIndex) updatedItem else item
+            })
         }
     }
-
-    data class ToolUseNotification(
-        override val id: Any,
-        val call: ToolUsage.Call,
-        val result: ToolUsage.CallResult,
-    ) : ItemViewState
 }

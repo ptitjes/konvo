@@ -1,20 +1,15 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.lifecycle.*
-import com.mikepenz.markdown.model.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationStateMaintainer
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ItemViewState
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.handleTranscript
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.time.*
-import com.mikepenz.markdown.model.State as MarkdownViewState
 
 /**
  * ViewModel for the conversation UI.
@@ -57,7 +52,7 @@ class ConversationViewModel(
                                     isProcessing = false,
                                 )
 
-                                val stateUpdater = ConversationStateMaintainer(initial)
+                                val stateUpdater = ConversationViewStateMaintainer(initial)
                                 stateUpdater.setupCoreContributors()
                                 stateUpdater.handleTranscript(transcript)
                                 val finalState = stateUpdater.state
@@ -85,18 +80,37 @@ class ConversationViewModel(
      */
     fun sendUserMessage(
         content: String,
-        attachments: List<Attachment>,
+        attachments: List<Messaging.Attachment>,
     ) {
         if (content.isBlank()) error("Invalid blank message")
 
         viewModelScope.launch {
             conversationUserView.sendMessage(
-                content = listOf(Part.Text(content)) + attachments.map { attachment ->
+                content = listOf(Messaging.Part.Text(content)) + attachments.map { attachment ->
                     when (attachment.type) {
-                        Attachment.Type.Image -> Part.Image(attachment.mimeType, attachment.name, attachment)
-                        Attachment.Type.Video -> Part.Video(attachment.mimeType, attachment.name, attachment)
-                        Attachment.Type.Audio -> Part.Audio(attachment.mimeType, attachment.name, attachment)
-                        Attachment.Type.Document -> Part.File(attachment.mimeType, attachment.name, attachment)
+                        Messaging.Attachment.Type.Image -> Messaging.Part.Image(
+                            attachment.mimeType,
+                            attachment.name,
+                            attachment
+                        )
+
+                        Messaging.Attachment.Type.Video -> Messaging.Part.Video(
+                            attachment.mimeType,
+                            attachment.name,
+                            attachment
+                        )
+
+                        Messaging.Attachment.Type.Audio -> Messaging.Part.Audio(
+                            attachment.mimeType,
+                            attachment.name,
+                            attachment
+                        )
+
+                        Messaging.Attachment.Type.Document -> Messaging.Part.File(
+                            attachment.mimeType,
+                            attachment.name,
+                            attachment
+                        )
                     }
                 },
             )
@@ -122,71 +136,8 @@ class ConversationViewModel(
     }
 }
 
-fun ConversationStateMaintainer.setupCoreContributors() {
-    addStateUpdater<AgentPresence.Processing> { state, event, payload ->
-        println("Processing state update for AssistantProcessing")
-        state.copy(isProcessing = payload.isProcessing)
-    }
-
-    onEvent<Messaging.Message> { event, payload ->
-        val content = payload.content.filterIsInstance<Part.Text>().joinToString("\n") { it.text }
-        contributeItem(
-            if (event.sender is Participant.User) {
-                ItemViewState.UserMessage(
-                    id = event.id,
-                    details = payload,
-                    markdownState = parseMarkdown(content),
-                )
-            } else {
-                ItemViewState.AssistantMessage(
-                    id = event.id,
-                    details = payload,
-                    markdownState = parseMarkdown(content),
-                )
-            }
-        )
-    }
-    onEvent<ToolUsage.Vetting> { event, payload ->
-        contributeItem(
-            initialViewState = ItemViewState.ToolUseVetting(
-                id = event.id,
-                approvals = payload.calls.associateWith { ItemViewState.ToolUseVetting.ApprovalStatus.Pending },
-            ),
-        ) {
-            onEvent<ToolUsage.Approval> { state, approvalPayload ->
-                val changedApprovals = approvalPayload.approvals.keys.fold(state.approvals) { acc, key ->
-                    val newValue by lazy {
-                        val approved = approvalPayload.approvals[key]
-                        when (approved) {
-                            true -> ItemViewState.ToolUseVetting.ApprovalStatus.Approved
-                            false -> ItemViewState.ToolUseVetting.ApprovalStatus.Denied("Not specified")
-                            null -> ItemViewState.ToolUseVetting.ApprovalStatus.Pending
-                        }
-                    }
-                    if (key in acc) acc + (key to newValue) else acc
-                }
-
-                val done =
-                    changedApprovals.values.all { it !is ItemViewState.ToolUseVetting.ApprovalStatus.Pending }
-
-                if (done) freezeItem()
-
-                state.copy(
-                    approvals = changedApprovals
-                )
-            }
-        }
-    }
-    onEvent<ToolUsage.Notification> { event, payload ->
-        contributeItem(
-            ItemViewState.ToolUseNotification(
-                id = event.id,
-                call = payload.call,
-                result = payload.result,
-            ),
-        )
-    }
+fun ConversationViewStateContribution.setupCoreContributors() {
+    contributeViewStates(AgentPresenceViewState)
+    contributeViewStates(MessagingViewState)
+    contributeViewStates(ToolUsageViewState)
 }
-
-private suspend fun parseMarkdown(content: String): MarkdownViewState =
-    parseMarkdownFlow(content).first { it is MarkdownViewState.Success || it is MarkdownViewState.Error }
