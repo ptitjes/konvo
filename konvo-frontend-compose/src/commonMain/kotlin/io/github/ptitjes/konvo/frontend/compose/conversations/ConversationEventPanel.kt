@@ -99,7 +99,7 @@ private fun ToolUsageVettingPanel(
         Column {
             for ((call, status) in viewState.approvals) {
                 ExpandableBox(
-                    collapsable = status !is ToolUsageViewState.Vetting.ApprovalStatus.Pending,
+                    collapsable = status !is ToolUsageViewState.Vetting.Status.Pending,
                     header = {
                         AskIcon()
 
@@ -116,7 +116,7 @@ private fun ToolUsageVettingPanel(
                         )
 
                         when (status) {
-                            is ToolUsageViewState.Vetting.ApprovalStatus.Pending -> {
+                            is ToolUsageViewState.Vetting.Status.Pending -> {
                                 val coroutineScope = rememberCoroutineScope()
 
                                 TextButton(
@@ -146,7 +146,7 @@ private fun ToolUsageVettingPanel(
                                 }
                             }
 
-                            is ToolUsageViewState.Vetting.ApprovalStatus.Approved -> {
+                            is ToolUsageViewState.Vetting.Status.Approved -> {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -161,7 +161,7 @@ private fun ToolUsageVettingPanel(
                                 }
                             }
 
-                            is ToolUsageViewState.Vetting.ApprovalStatus.Denied -> {
+                            is ToolUsageViewState.Vetting.Status.Denied -> {
                                 Row(
                                     modifier = Modifier.padding(horizontal = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically,

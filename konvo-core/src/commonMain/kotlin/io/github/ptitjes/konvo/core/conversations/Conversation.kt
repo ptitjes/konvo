@@ -6,8 +6,6 @@ import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
@@ -21,7 +19,6 @@ sealed interface ConversationState {
     data class Loaded(
         val digest: ConversationDigest,
         val transcript: List<Event<*>>,
-        val processing: Boolean,
     ) : ConversationState
 }
 
@@ -63,18 +60,12 @@ class Conversation(
             val digest = repository.getDigest(conversationId).stateIn(this)
             val transcript = repository.getEvents(conversationId).stateIn(this)
 
-            val processing = transcript
-                .mapNotNull { it.lastOrNull()?.payload as? AgentPresence.Processing }
-                .map { it.isProcessing }
-                .onStart { emit(false) }
-
             // Process repository changes
             launch {
-                combine(digest, transcript, processing) { digest, transcript, processing ->
+                combine(digest, transcript) { digest, transcript ->
                     ConversationState.Loaded(
                         digest = digest,
                         transcript = transcript,
-                        processing = processing,
                     )
                 }.collect { _state.value = it }
             }

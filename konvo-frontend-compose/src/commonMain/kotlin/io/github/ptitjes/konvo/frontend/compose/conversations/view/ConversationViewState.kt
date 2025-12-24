@@ -29,7 +29,10 @@ sealed interface ConversationViewState {
         // TODO Remove the following!
         val conversation: ConversationDigest get() = get(Digest)!!
         val items: List<Item> get() = get(Items)
-        val isProcessing: Boolean get() = get(AgentState)?.isProcessing ?: false
+        val agentPresence: AgentPresenceViewState.Presence? get() = get(AgentState)
+
+        val isProcessing: Boolean
+            get() = agentPresence?.status is AgentPresenceViewState.Presence.Status.Processing
     }
 
     interface Indexed {
@@ -79,7 +82,7 @@ sealed interface ConversationViewState {
 
     object Digest : RegisterSlot<ConversationDigest?>(null)
 
-    object AgentState : RegisterSlot<AgentPresenceViewState.Available?>(null)
+    object AgentState : RegisterSlot<AgentPresenceViewState.Presence?>(null)
 
     interface Item : Indexed
 

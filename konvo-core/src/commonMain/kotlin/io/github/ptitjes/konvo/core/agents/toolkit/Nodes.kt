@@ -5,9 +5,7 @@ import ai.koog.agents.core.environment.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.AgentPresence.Processing
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Vetting
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
 import io.github.ptitjes.konvo.core.tools.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -63,8 +61,6 @@ internal suspend fun ConversationAgentView.vetToolCalls(
 
     send(Vetting(calls = vetoableToolCalls.keys.toList()))
 
-    send(Processing(isProcessing = false))
-
     val updateJob = launch {
         events.mapNotNull { it.payload as? ToolUsage.Approval }.collect { payload ->
             for ((call, approved) in payload.approvals) {
@@ -78,7 +74,6 @@ internal suspend fun ConversationAgentView.vetToolCalls(
 
     vettedCalls.awaitAll().also {
         updateJob.cancel()
-        send(Processing(isProcessing = true))
     }
 }
 
