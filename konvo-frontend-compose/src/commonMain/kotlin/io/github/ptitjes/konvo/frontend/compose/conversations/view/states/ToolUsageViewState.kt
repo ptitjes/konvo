@@ -8,12 +8,12 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
 
     data class Vetting(
         override val id: Any,
-        val approvals: Map<ToolUsage.Call, ApprovalStatus>,
+        val approvals: Map<ToolUsage.Call, Status>,
     ) : ToolUsageViewState {
-        sealed interface ApprovalStatus {
-            data object Pending : ApprovalStatus
-            data object Approved : ApprovalStatus
-            data class Denied(val reason: String) : ApprovalStatus
+        sealed interface Status {
+            data object Pending : Status
+            data object Approved : Status
+            data class Denied(val reason: String) : Status
         }
     }
 
@@ -30,7 +30,7 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                     ConversationViewState.Items,
                     Vetting(
                         id = event.id,
-                        approvals = event.payload.calls.associateWith { Vetting.ApprovalStatus.Pending },
+                        approvals = event.payload.calls.associateWith { Vetting.Status.Pending },
                     ),
                 ) {
                     onEvent<ToolUsage.Approval> { state, approvalEvent ->
@@ -40,16 +40,16 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                             val newStatus by lazy {
                                 val approved = incomingApprovals[key]
                                 when (approved) {
-                                    true -> Vetting.ApprovalStatus.Approved
-                                    false -> Vetting.ApprovalStatus.Denied("Not specified")
-                                    null -> Vetting.ApprovalStatus.Pending
+                                    true -> Vetting.Status.Approved
+                                    false -> Vetting.Status.Denied("Not specified")
+                                    null -> Vetting.Status.Pending
                                 }
                             }
                             if (key in existingApprovals) existingApprovals + (key to newStatus) else existingApprovals
                         }
 
                         val done = updatedApprovals.all { (_, status) ->
-                            status !is Vetting.ApprovalStatus.Pending
+                            status !is Vetting.Status.Pending
                         }
                         if (done) freeze()
 

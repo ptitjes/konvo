@@ -5,10 +5,8 @@ package io.github.ptitjes.konvo.core.conversations.storage.files
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 import kotlin.time.*
@@ -109,7 +107,6 @@ internal data class AssistantProcessingDto(
     @Contextual override val timestamp: Instant,
     override val sender: ParticipantDto,
     override val recipients: Set<ParticipantDto>? = null,
-    val isProcessing: Boolean,
 ) : EventDto()
 
 @Serializable
@@ -286,7 +283,6 @@ internal object DtoMappers {
             e.timestamp,
             toDto(e.sender),
             e.recipients?.map { toDto(it) }?.toSet(),
-            details.isProcessing
         )
 
         is ToolUsage.Vetting -> ToolUseVettingDto(
@@ -332,7 +328,7 @@ internal object DtoMappers {
             e.timestamp,
             fromDto(e.sender),
             e.recipients?.map { fromDto(it) }?.toSet(),
-            AgentPresence.Processing(e.isProcessing)
+            AgentPresence.Processing
         )
 
         is ToolUseVettingDto -> Event(

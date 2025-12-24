@@ -149,6 +149,8 @@ internal class DefaultAgent(
     }
 
     override suspend fun joinConversation(conversation: ConversationAgentView) = coroutineScope {
+        conversation.send(AgentPresence.Joining)
+
         val conversationJustStarted = prompt.messages.size == 1
         if (conversationJustStarted) {
             welcomeMessage?.let { content ->
@@ -172,7 +174,7 @@ internal class DefaultAgent(
                 when (val details = event.payload) {
                     is Message -> {
                         if (event.sender is Participant.User) {
-                            conversation.send(AgentPresence.Processing(isProcessing = true))
+                            conversation.send(AgentPresence.Processing)
                             val agent = buildAgent(tools, conversation)
                             val result = agent.run(event.toKoogMessage(details) as KoogMessage.User)
                             result.forEach {
@@ -180,7 +182,13 @@ internal class DefaultAgent(
                                     Message(content = listOf(Messaging.Part.Text(it.content)))
                                 )
                             }
-                            conversation.send(AgentPresence.Processing(isProcessing = false))
+                            conversation.send(
+                                AgentPresence.Available(
+                                    messagingCapabilities = AgentPresence.MessagingCapabilities(
+                                        supportedMediaTypes = listOf(),
+                                    )
+                                )
+                            )
                         }
                     }
 
