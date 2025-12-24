@@ -5,12 +5,19 @@ import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStateContribution.*
 
 sealed interface AgentPresenceViewState {
+
+    //
+
+    data class Available(
+        val isProcessing: Boolean,
+    ) : AgentPresenceViewState
+
     companion object : Contribution {
         override fun ContributionsScope.contribute() {
             onEvent<AgentPresence.Processing> { event ->
                 set(
                     ConversationViewState.AgentState,
-                    event.payload.isProcessing,
+                    Available(event.payload.isProcessing),
                 )
             }
         }

@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations.view
 
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 
 sealed interface ConversationViewState {
     data object Loading : ConversationViewState
@@ -25,9 +26,10 @@ sealed interface ConversationViewState {
         fun <T> copy(slot: RegisterSlot<T>, value: T): Loaded =
             copy(slotData = slotData + (slot to value))
 
+        // TODO Remove the following!
         val conversation: ConversationDigest get() = get(Digest)!!
         val items: List<Item> get() = get(Items)
-        val isProcessing: Boolean get() = get(AgentState)
+        val isProcessing: Boolean get() = get(AgentState)?.isProcessing ?: false
     }
 
     interface Indexed {
@@ -77,7 +79,7 @@ sealed interface ConversationViewState {
 
     object Digest : RegisterSlot<ConversationDigest?>(null)
 
-    object AgentState : RegisterSlot<Boolean>(false)
+    object AgentState : RegisterSlot<AgentPresenceViewState.Available?>(null)
 
     interface Item : Indexed
 
