@@ -122,13 +122,15 @@ private fun EntryProviderBuilder<Destination>.settingEntries(navigator: Navigato
     }
 }
 
-private fun suiteTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): NavigationSuiteType {
+private fun suiteTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): NavigationSuiteType = with(adaptiveInfo) {
+    val isCompactHeight =
+        !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    val isAtLeastMediumWidth =
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     return with(adaptiveInfo) {
-        if (windowPosture.isTabletop || windowSizeClass.windowHeightSizeClass == WindowHeightSizeClass.COMPACT) {
+        if (windowPosture.isTabletop || isCompactHeight) {
             NavigationSuiteType.NavigationBar
-        } else if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED ||
-            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.MEDIUM
-        ) {
+        } else if (isAtLeastMediumWidth) {
             NavigationSuiteType.NavigationRail
         } else {
             NavigationSuiteType.NavigationBar

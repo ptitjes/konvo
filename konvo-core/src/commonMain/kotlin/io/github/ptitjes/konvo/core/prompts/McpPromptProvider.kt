@@ -16,13 +16,13 @@ class McpPromptProvider(
             val serverCapabilities = client.serverCapabilities
             if (serverCapabilities == null || serverCapabilities.prompts == null) return@flatMap emptyList()
 
-            client.listPrompts()?.prompts?.map { prompt ->
+            client.listPrompts().prompts.map { prompt ->
                 McpPromptCard(
                     clientName = clientName,
                     client = client,
                     prompt = prompt,
                 )
-            } ?: emptyList()
+            }
         }
     }
 
@@ -36,7 +36,6 @@ class McpPromptProvider(
 
         override suspend fun toPrompt(): ai.koog.prompt.dsl.Prompt {
             val promptResult = client.getPrompt(GetPromptRequest(name, mapOf()))
-                ?: error("Prompt not found")
 
             return prompt(name) {
                 promptResult.messages.forEach { message ->

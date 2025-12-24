@@ -35,7 +35,7 @@ fun <T> GenericSelector(
             modifier = Modifier
                 .height(64.dp)
                 .fillMaxWidth()
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, true)
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
         )
 
         ExposedDropdownMenu(

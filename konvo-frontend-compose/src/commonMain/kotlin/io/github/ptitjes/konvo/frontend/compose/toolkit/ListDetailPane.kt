@@ -49,8 +49,10 @@ internal fun paneTypeFromAdaptiveInfo(
     adaptiveInfo: WindowAdaptiveInfo,
 ): ListDetailPaneType {
     return with(adaptiveInfo) {
+        val isExpandedWidth =
+            windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
         when {
-            windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.EXPANDED -> ListDetailPaneType.TwoPane
+            isExpandedWidth -> ListDetailPaneType.TwoPane
             else -> ListDetailPaneType.OnePane
         }
     }
