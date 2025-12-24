@@ -2,7 +2,6 @@ package io.github.ptitjes.konvo.core.agents
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
-import ai.koog.agents.core.tools.*
 import ai.koog.agents.core.tools.annotations.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.llms.*
@@ -66,12 +65,6 @@ private val dateFormat = LocalDate.Format {
     monthName(MonthNames.ENGLISH_FULL)
     char(' ')
     year()
-}
-
-private fun ToolResult?.toResultText(): String = when (this) {
-    is ToolResult.Text -> this.text
-    is ToolResult.JSONSerializable<*> -> this.toStringDefault()
-    else -> "Tool succeeded"
 }
 
 private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools() = subgraph<Message.User, List<Message.Assistant>> {

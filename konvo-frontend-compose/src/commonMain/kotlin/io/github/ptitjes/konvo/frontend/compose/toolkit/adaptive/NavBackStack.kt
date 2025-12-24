@@ -40,7 +40,6 @@ fun <T : NavKey> rememberSaveable(
 ): SnapshotStateList<T> {
     return rememberSaveable(
         saver = serializableSaver(SnapshotStateListSerializer(elementSerializer)),
-        key = null,
         init = init,
     )
 }
