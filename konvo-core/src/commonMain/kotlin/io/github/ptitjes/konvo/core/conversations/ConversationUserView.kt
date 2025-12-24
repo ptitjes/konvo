@@ -30,4 +30,4 @@ suspend fun ConversationUserView.sendMessage(content: List<Part>) =
     send(Message(content = content))
 
 suspend fun ConversationUserView.sendToolUseApproval(approvals: Map<Call, Boolean>) =
-    send(Approval(approvals = approvals))
+    send(Approval(approvals = approvals.toList()))

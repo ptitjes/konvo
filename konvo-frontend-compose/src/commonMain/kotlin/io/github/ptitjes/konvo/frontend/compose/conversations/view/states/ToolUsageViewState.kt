@@ -36,13 +36,12 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                     onEvent<ToolUsage.Approval> { state, approvalEvent ->
                         val incomingApprovals = approvalEvent.payload.approvals
 
-                        val updatedApprovals = incomingApprovals.keys.fold(state.approvals) { existingApprovals, key ->
+                        val updatedApprovals =
+                            incomingApprovals.fold(state.approvals) { existingApprovals, (key, approved) ->
                             val newStatus by lazy {
-                                val approved = incomingApprovals[key]
                                 when (approved) {
                                     true -> Vetting.Status.Approved
                                     false -> Vetting.Status.Denied("Not specified")
-                                    null -> Vetting.Status.Pending
                                 }
                             }
                             if (key in existingApprovals) existingApprovals + (key to newStatus) else existingApprovals
