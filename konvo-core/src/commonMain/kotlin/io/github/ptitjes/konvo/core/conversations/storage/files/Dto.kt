@@ -29,106 +29,13 @@ internal data class ConversationDto(
 
 @Serializable
 @SerialName("event")
-internal sealed class EventDto {
-    abstract val id: String
-
-    @Contextual
-    abstract val timestamp: Instant
-    abstract val sender: ParticipantDto
-    abstract val recipients: Set<ParticipantDto>?
-}
-
-@Serializable
-@SerialName("message")
-internal data class MessageDto(
-    override val id: String,
-    @Contextual override val timestamp: Instant,
-    override val sender: ParticipantDto,
-    override val recipients: Set<ParticipantDto>? = null,
-    val content: List<ContentPartDto>,
-) : EventDto()
-
-@Serializable
-internal sealed class ContentPartDto {
-    @Serializable
-    @SerialName("text")
-    data class Text(
-        val text: String,
-        val mimeType: String? = null,
-    ) : ContentPartDto()
-
-    @Serializable
-    @SerialName("image")
-    data class Image(
-        val mimeType: String,
-        val filename: String?,
-        val media: AttachmentDto,
-    ) : ContentPartDto()
-
-    @Serializable
-    @SerialName("video")
-    data class Video(
-        val mimeType: String,
-        val filename: String?,
-        val media: AttachmentDto,
-    ) : ContentPartDto()
-
-    @Serializable
-    @SerialName("audio")
-    data class Audio(
-        val mimeType: String,
-        val filename: String?,
-        val media: AttachmentDto,
-    ) : ContentPartDto()
-
-    @Serializable
-    @SerialName("file")
-    data class File(
-        val mimeType: String,
-        val filename: String?,
-        val media: AttachmentDto,
-    ) : ContentPartDto()
-}
-
-@Serializable
-@SerialName("tool-use-approval")
-internal data class ToolUseApprovalDto(
-    override val id: String,
-    @Contextual override val timestamp: Instant,
-    override val sender: ParticipantDto,
-    override val recipients: Set<ParticipantDto>? = null,
-    val approvals: List<Pair<ToolCallDto, Boolean>>,
-) : EventDto()
-
-@Serializable
-@SerialName("assistant-processing")
-internal data class AssistantProcessingDto(
-    override val id: String,
-    @Contextual override val timestamp: Instant,
-    override val sender: ParticipantDto,
-    override val recipients: Set<ParticipantDto>? = null,
-) : EventDto()
-
-@Serializable
-@SerialName("tool-use-vetting")
-internal data class ToolUseVettingDto(
-    override val id: String,
-    @Contextual override val timestamp: Instant,
-    override val sender: ParticipantDto,
-    override val recipients: Set<ParticipantDto>? = null,
-    val calls: List<ToolCallDto>,
-) : EventDto()
-
-@Serializable
-@SerialName("tool-use-notification")
-internal data class ToolUseNotificationDto(
-    override val id: String,
-    @Contextual override val timestamp: Instant,
-    override val sender: ParticipantDto,
-    override val recipients: Set<ParticipantDto>? = null,
-    val call: ToolCallDto,
-    val result: ToolCallResultDto,
-) : EventDto()
+internal data class EventDto(
+    val id: String,
+    @Contextual val timestamp: Instant,
+    val sender: Participant,
+    val recipients: Set<Participant>? = null,
+    val payload: Event.Payload,
+)
 
 @Serializable
 @SerialName("participant")
@@ -140,35 +47,6 @@ internal sealed class ParticipantDto {
     @Serializable
     @SerialName("agent")
     data class Agent(val id: String, val name: String) : ParticipantDto()
-}
-
-@Serializable
-@SerialName("attachment")
-internal data class AttachmentDto(
-    val type: String,
-    val url: String,
-    val name: String,
-    val mimeType: String,
-)
-
-@Serializable
-@SerialName("tool-call")
-internal data class ToolCallDto(
-    val id: String,
-    val tool: String,
-    val arguments: Map<String, JsonElement>,
-)
-
-@Serializable
-@SerialName("tool-call-result")
-internal sealed class ToolCallResultDto {
-    @Serializable
-    @SerialName("success")
-    data class Success(val text: String) : ToolCallResultDto()
-
-    @Serializable
-    @SerialName("execution-failure")
-    data class ExecutionFailure(val reason: String) : ToolCallResultDto()
 }
 
 @Serializable
@@ -261,143 +139,19 @@ internal object DtoMappers {
         is ParticipantDto.Agent -> Participant.Agent(p.id, p.name)
     }
 
-    fun toDto(e: Event<*>): EventDto = when (val details = e.payload) {
-        is Messaging.Message -> MessageDto(
-            e.id,
-            e.timestamp,
-            toDto(e.sender),
-            e.recipients?.map { toDto(it) }?.toSet(),
-            details.content.map { toDto(it) }
-        )
-
-        is ToolUsage.Approval -> ToolUseApprovalDto(
-            e.id,
-            e.timestamp,
-            toDto(e.sender),
-            e.recipients?.map { toDto(it) }?.toSet(),
-            details.approvals.map { toDto(it.key) to it.value }
-        )
-
-        is AgentPresence.Processing -> AssistantProcessingDto(
-            e.id,
-            e.timestamp,
-            toDto(e.sender),
-            e.recipients?.map { toDto(it) }?.toSet(),
-        )
-
-        is ToolUsage.Vetting -> ToolUseVettingDto(
-            e.id,
-            e.timestamp,
-            toDto(e.sender),
-            e.recipients?.map { toDto(it) }?.toSet(),
-            details.calls.map { toDto(it) })
-
-        is ToolUsage.Notification -> ToolUseNotificationDto(
-            e.id,
-            e.timestamp,
-            toDto(e.sender),
-            e.recipients?.map { toDto(it) }?.toSet(),
-            toDto(details.call),
-            toDto(details.result)
-        )
-
-        else -> error("Unsupported event type: ${e.payload::class}")
-    }
-
-    fun fromDto(e: EventDto): Event<*> = when (e) {
-        is MessageDto -> Event(
-            e.id,
-            e.timestamp,
-            fromDto(e.sender),
-            e.recipients?.map { fromDto(it) }?.toSet(),
-            Messaging.Message(e.content.map { fromDto(it) })
-        )
-
-        is ToolUseApprovalDto -> Event(
-            e.id,
-            e.timestamp,
-            fromDto(e.sender),
-            e.recipients?.map { fromDto(it) }?.toSet(),
-            ToolUsage.Approval(
-                e.approvals.associate { fromDto(it.first) to it.second }
-            )
-        )
-
-        is AssistantProcessingDto -> Event(
-            e.id,
-            e.timestamp,
-            fromDto(e.sender),
-            e.recipients?.map { fromDto(it) }?.toSet(),
-            AgentPresence.Processing
-        )
-
-        is ToolUseVettingDto -> Event(
-            e.id,
-            e.timestamp,
-            fromDto(e.sender),
-            e.recipients?.map { fromDto(it) }?.toSet(),
-            ToolUsage.Vetting(e.calls.map { fromDto(it) })
-        )
-
-        is ToolUseNotificationDto -> Event(
-            e.id,
-            e.timestamp,
-            fromDto(e.sender),
-            e.recipients?.map { fromDto(it) }?.toSet(),
-            ToolUsage.Notification(fromDto(e.call), fromDto(e.result))
-        )
-    }
-
-    fun toDto(cp: Part): ContentPartDto = when (cp) {
-        is Part.Text -> ContentPartDto.Text(cp.text, cp.mimeType)
-        is Part.Image -> ContentPartDto.Image(cp.mimeType, cp.filename, toDto(cp.media))
-        is Part.Video -> ContentPartDto.Video(cp.mimeType, cp.filename, toDto(cp.media))
-        is Part.Audio -> ContentPartDto.Audio(cp.mimeType, cp.filename, toDto(cp.media))
-        is Part.File -> ContentPartDto.File(cp.mimeType, cp.filename, toDto(cp.media))
-        is Part.Embed<*> -> error("Serialization of Embed is not yet supported")
-    }
-
-    fun fromDto(cp: ContentPartDto): Part = when (cp) {
-        is ContentPartDto.Text -> Part.Text(cp.text, cp.mimeType)
-        is ContentPartDto.Image -> Part.Image(cp.mimeType, cp.filename, fromDto(cp.media))
-        is ContentPartDto.Video -> Part.Video(cp.mimeType, cp.filename, fromDto(cp.media))
-        is ContentPartDto.Audio -> Part.Audio(cp.mimeType, cp.filename, fromDto(cp.media))
-        is ContentPartDto.File -> Part.File(cp.mimeType, cp.filename, fromDto(cp.media))
-    }
-
-    fun toDto(a: Attachment): AttachmentDto = AttachmentDto(
-        type = a.type.name,
-        url = a.url,
-        name = a.name,
-        mimeType = a.mimeType,
+    fun toDto(e: Event<*>): EventDto = EventDto(
+        e.id,
+        e.timestamp,
+        e.sender,
+        e.recipients,
+        e.payload,
     )
 
-    fun fromDto(a: AttachmentDto): Attachment = Attachment(
-        type = Attachment.Type.valueOf(a.type),
-        url = a.url,
-        name = a.name,
-        mimeType = a.mimeType,
+    fun fromDto(e: EventDto): Event<*> = Event(
+        e.id,
+        e.timestamp,
+        e.sender,
+        e.recipients,
+        e.payload,
     )
-
-    fun toDto(c: Call): ToolCallDto = ToolCallDto(
-        id = c.id,
-        tool = c.tool,
-        arguments = c.arguments,
-    )
-
-    fun fromDto(c: ToolCallDto): Call = Call(
-        id = c.id,
-        tool = c.tool,
-        arguments = c.arguments,
-    )
-
-    fun toDto(r: CallResult): ToolCallResultDto = when (r) {
-        is CallResult.Success -> ToolCallResultDto.Success(r.text)
-        is CallResult.ExecutionFailure -> ToolCallResultDto.ExecutionFailure(r.reason)
-    }
-
-    fun fromDto(r: ToolCallResultDto): CallResult = when (r) {
-        is ToolCallResultDto.Success -> CallResult.Success(r.text)
-        is ToolCallResultDto.ExecutionFailure -> CallResult.ExecutionFailure(r.reason)
-    }
 }

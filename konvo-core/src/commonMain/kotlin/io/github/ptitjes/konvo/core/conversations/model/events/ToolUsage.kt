@@ -1,23 +1,32 @@
 package io.github.ptitjes.konvo.core.conversations.model.events
 
 import io.github.ptitjes.konvo.core.conversations.model.*
+import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
+@Serializable
 sealed interface ToolUsage : Event.Payload {
 
+    @Serializable
+    @SerialName("tool-usage-vetting")
     data class Vetting(
         val calls: List<Call>,
     ) : ToolUsage, Event.Agent
 
+    @Serializable
+    @SerialName("tool-usage-approval")
     data class Approval(
-        val approvals: Map<Call, Boolean>,
+        val approvals: List<Pair<Call, Boolean>>,
     ) : ToolUsage, Event.User
 
+    @Serializable
+    @SerialName("tool-usage-notification")
     data class Notification(
         val call: Call,
         val result: CallResult,
     ) : ToolUsage, Event.Agent
 
+    @Serializable
     data class Call(
         val id: String,
         val tool: String,
@@ -33,8 +42,14 @@ sealed interface ToolUsage : Event.Payload {
         override fun hashCode(): Int = id.hashCode()
     }
 
+    @Serializable
     sealed interface CallResult {
+        @Serializable
+        @SerialName("success")
         data class Success(val text: String) : CallResult
+
+        @Serializable
+        @SerialName("execution-failure")
         data class ExecutionFailure(val reason: String) : CallResult
     }
 }

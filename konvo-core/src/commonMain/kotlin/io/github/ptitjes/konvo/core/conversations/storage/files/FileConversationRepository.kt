@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.*
 
 /**
  * File-backed implementation of ConversationRepository using Kotlinx IO and Kotlinx Serialization.
@@ -32,7 +33,21 @@ class FileConversationRepository(
         fileSystem = fileSystem,
     )
 
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json {
+        ignoreUnknownKeys = true
+        serializersModule = SerializersModule {
+            polymorphic(Event.Payload::class) {
+                subclass(Messaging.Message::class)
+                subclass(AgentPresence.Joining::class)
+                subclass(AgentPresence.Available::class)
+                subclass(AgentPresence.Processing::class)
+                subclass(AgentPresence.Leaving::class)
+                subclass(ToolUsage.Vetting::class)
+                subclass(ToolUsage.Approval::class)
+                subclass(ToolUsage.Notification::class)
+            }
+        }
+    }
 
     // Internal ticker to drive flows on local mutations
     private val changeTicker = MutableStateFlow(0L)
