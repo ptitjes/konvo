@@ -17,10 +17,7 @@ import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.Call
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.CallResult
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Message
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.core.util.*
@@ -37,7 +34,7 @@ import kotlin.coroutines.*
 import kotlin.time.Clock
 import kotlin.uuid.*
 import ai.koog.prompt.message.ContentPart as KoogContentPart
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Message as EventMessage
+import ai.koog.prompt.message.Message as KoogMessage
 
 internal class DefaultAgent(
     private val systemPrompt: Prompt,
@@ -45,7 +42,7 @@ internal class DefaultAgent(
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
-    private val strategy: (ConversationAgentView) -> AIAgentGraphStrategy<Message.User, List<Message.Assistant>>,
+    private val strategy: (ConversationAgentView) -> AIAgentGraphStrategy<KoogMessage.User, List<KoogMessage.Assistant>>,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
     private val mcpServerNames: Set<String> = emptySet(),
     private val installFeatures: GraphAIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
@@ -55,7 +52,7 @@ internal class DefaultAgent(
     private suspend fun buildAgent(
         tools: List<ToolCard>?,
         conversationView: ConversationAgentView,
-    ): AIAgent<Message.User, List<Message.Assistant>> {
+    ): AIAgent<KoogMessage.User, List<KoogMessage.Assistant>> {
         val tools = tools ?: emptyList()
 
         val agentConfig = AIAgentConfig(
@@ -89,33 +86,46 @@ internal class DefaultAgent(
 
                 handleEvents {
                     onToolValidationFailed { eventContext ->
-                        conversationView.sendToolUseResult(
-                            call = Call(
-                                id = eventContext.toolCallId ?: newUniqueId(),
-                                tool = eventContext.tool.name,
-                                arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
+                        val tool = eventContext.tool
+                        conversationView.send(
+                            ToolUsage.Notification(
+                                call = ToolUsage.Call(
+                                    id = eventContext.toolCallId ?: newUniqueId(),
+                                    tool = tool.name,
+                                    arguments = tool.encodeArgsUnsafe(eventContext.toolArgs),
+                                ),
+                                result = ToolUsage.CallResult.ExecutionFailure(eventContext.error),
                             ),
-                            result = CallResult.ExecutionFailure(eventContext.error),
                         )
                     }
                     onToolCallCompleted { eventContext ->
-                        conversationView.sendToolUseResult(
-                            call = Call(
-                                id = eventContext.toolCallId ?: newUniqueId(),
-                                tool = eventContext.tool.name,
-                                arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
+                        val tool = eventContext.tool
+                        conversationView.send(
+                            ToolUsage.Notification(
+                                call = ToolUsage.Call(
+                                    id = eventContext.toolCallId ?: newUniqueId(),
+                                    tool = tool.name,
+                                    arguments = tool.encodeArgsUnsafe(eventContext.toolArgs),
+                                ),
+                                result = ToolUsage.CallResult.Success(
+                                    tool.encodeResultToStringUnsafe(eventContext.result),
+                                ),
                             ),
-                            result = CallResult.Success(eventContext.tool.encodeResultToStringUnsafe(eventContext.result)),
                         )
                     }
                     onToolCallFailed { eventContext ->
-                        conversationView.sendToolUseResult(
-                            call = Call(
-                                id = eventContext.toolCallId ?: newUniqueId(),
-                                tool = eventContext.tool.name,
-                                arguments = eventContext.tool.encodeArgsUnsafe(eventContext.toolArgs)
+                        val tool = eventContext.tool
+                        conversationView.send(
+                            ToolUsage.Notification(
+                                call = ToolUsage.Call(
+                                    id = eventContext.toolCallId ?: newUniqueId(),
+                                    tool = tool.name,
+                                    arguments = tool.encodeArgsUnsafe(eventContext.toolArgs),
+                                ),
+                                result = ToolUsage.CallResult.ExecutionFailure(
+                                    eventContext.throwable.message ?: "Tool failed",
+                                ),
                             ),
-                            result = CallResult.ExecutionFailure(eventContext.throwable.message ?: "Tool failed"),
                         )
                     }
                 }
@@ -128,7 +138,7 @@ internal class DefaultAgent(
     override suspend fun restorePrompt(events: List<Event<*>>) {
         val messages = events.mapNotNull { event ->
             when (val details = event.payload) {
-                is EventMessage -> event.toKoogMessage(details)
+                is Message -> event.toKoogMessage(details)
                 else -> null
             }
         }
@@ -142,10 +152,10 @@ internal class DefaultAgent(
         val conversationJustStarted = prompt.messages.size == 1
         if (conversationJustStarted) {
             welcomeMessage?.let { content ->
-                conversation.sendMessage(listOf(Part.Text(content)))
+                conversation.send(Message(content = listOf(Messaging.Part.Text(content))))
                 prompt = prompt(prompt) {
                     message(
-                        Message.Assistant(
+                        KoogMessage.Assistant(
                             content = content,
                             metaInfo = ResponseMetaInfo(timestamp = Clock.System.now().toDeprecatedInstant())
                         )
@@ -160,13 +170,17 @@ internal class DefaultAgent(
 
             conversation.events.buffer(Channel.UNLIMITED).collect { event ->
                 when (val details = event.payload) {
-                    is EventMessage -> {
+                    is Message -> {
                         if (event.sender is Participant.User) {
-                            conversation.sendProcessing(true)
+                            conversation.send(AgentPresence.Processing(isProcessing = true))
                             val agent = buildAgent(tools, conversation)
-                            val result = agent.run(event.toKoogMessage(details) as Message.User)
-                            result.forEach { conversation.sendMessage(listOf(Part.Text(it.content))) }
-                            conversation.sendProcessing(false)
+                            val result = agent.run(event.toKoogMessage(details) as KoogMessage.User)
+                            result.forEach {
+                                conversation.send(
+                                    Message(content = listOf(Messaging.Part.Text(it.content)))
+                                )
+                            }
+                            conversation.send(AgentPresence.Processing(isProcessing = false))
                         }
                     }
 
@@ -176,31 +190,30 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Event<*>.toKoogMessage(details: EventMessage): Message =
-        when (sender) {
-            is Participant.User -> Message.User(
-                parts = details.content.map { it.toKoogContentPart() },
-                metaInfo = RequestMetaInfo(timestamp = timestamp.toDeprecatedInstant())
-            )
+    private suspend fun Event<*>.toKoogMessage(details: Message): KoogMessage = when (sender) {
+        is Participant.User -> KoogMessage.User(
+            parts = details.content.map { it.toKoogContentPart() },
+            metaInfo = RequestMetaInfo(timestamp = timestamp.toDeprecatedInstant()),
+        )
 
-            is Participant.Agent -> Message.Assistant(
-                parts = details.content.map { it.toKoogContentPart() },
-                metaInfo = ResponseMetaInfo(timestamp = timestamp.toDeprecatedInstant())
-            )
-        }
+        is Participant.Agent -> KoogMessage.Assistant(
+            parts = details.content.map { it.toKoogContentPart() },
+            metaInfo = ResponseMetaInfo(timestamp = timestamp.toDeprecatedInstant()),
+        )
+    }
 
-    private suspend fun Part.toKoogContentPart(): KoogContentPart = when (this) {
-        is Part.Text -> KoogContentPart.Text(text)
-        is Part.Image -> media.toKoogAttachment()
-        is Part.Video -> media.toKoogAttachment()
-        is Part.Audio -> media.toKoogAttachment()
-        is Part.File -> media.toKoogAttachment()
-        is Part.Embed<*> -> error("Embed content part is not supported for Koog")
+    private suspend fun Messaging.Part.toKoogContentPart(): KoogContentPart = when (this) {
+        is Messaging.Part.Text -> KoogContentPart.Text(text)
+        is Messaging.Part.Image -> media.toKoogAttachment()
+        is Messaging.Part.Video -> media.toKoogAttachment()
+        is Messaging.Part.Audio -> media.toKoogAttachment()
+        is Messaging.Part.File -> media.toKoogAttachment()
+        is Messaging.Part.Embed<*> -> error("Embed content part is not supported for Koog")
     }
 
     private val httpClient = HttpClient(CIO)
 
-    private suspend fun Attachment.loadContent(): ByteArray {
+    private suspend fun Messaging.Attachment.loadContent(): ByteArray {
         val uri = Uri.parse(url)
 
         return when {
@@ -213,33 +226,33 @@ internal class DefaultAgent(
         }
     }
 
-    private suspend fun Attachment.toKoogAttachment(): KoogContentPart {
+    private suspend fun Messaging.Attachment.toKoogAttachment(): KoogContentPart {
         val bytes = loadContent()
         val content = AttachmentContent.Binary.Bytes(bytes)
 
         return when (type) {
-            Attachment.Type.Audio -> KoogContentPart.Audio(
+            Messaging.Attachment.Type.Audio -> KoogContentPart.Audio(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Image -> KoogContentPart.Image(
+            Messaging.Attachment.Type.Image -> KoogContentPart.Image(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Video -> KoogContentPart.Video(
+            Messaging.Attachment.Type.Video -> KoogContentPart.Video(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
                 fileName = name,
             )
 
-            Attachment.Type.Document -> KoogContentPart.File(
+            Messaging.Attachment.Type.Document -> KoogContentPart.File(
                 content = content,
                 format = name.substringAfterLast('.'),
                 mimeType = mimeType,
@@ -251,8 +264,7 @@ internal class DefaultAgent(
 
 private class PromptCollector {
     companion object Feature : AIAgentGraphFeature<PromptCollectorConfig, PromptCollector> {
-        override val key: AIAgentStorageKey<PromptCollector> =
-            AIAgentStorageKey("agents-features-prompt-collector")
+        override val key: AIAgentStorageKey<PromptCollector> = AIAgentStorageKey("agents-features-prompt-collector")
 
         override fun createInitialConfig(): PromptCollectorConfig = PromptCollectorConfig()
 
