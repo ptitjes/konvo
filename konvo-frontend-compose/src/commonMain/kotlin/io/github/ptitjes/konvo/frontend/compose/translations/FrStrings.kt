@@ -190,12 +190,18 @@ internal val FrStrings = Strings(
             "characters" to "Personnages",
             "lorebooks" to "Lorebooks",
             "personas" to "Personnages",
+            "developer" to "Développeur",
         ),
         appearanceBaseColorSchemeTitle = "Schéma de couleurs de base",
         appearanceBaseColorSchemeDescription = "Le schéma de couleurs utilisé pour l'application.",
         appearanceBaseColorSchemeOptionDark = "Sombre",
         appearanceBaseColorSchemeOptionLight = "Clair",
         appearanceBaseColorSchemeOptionSystem = "Adapté au système",
+        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
+        developerOpenTelemetryDescription = "Exporter les traces vers un collecteur OpenTelemetry via gRPC.",
+        developerOpenTelemetryEnabledLabel = "Activer l'export OpenTelemetry",
+        developerOpenTelemetryEndpointLabel = "Point de terminaison",
+        developerOpenTelemetryVerboseLabel = "Export verbeux",
     ),
     navigationDestinationTitles = { state ->
         when (state) {

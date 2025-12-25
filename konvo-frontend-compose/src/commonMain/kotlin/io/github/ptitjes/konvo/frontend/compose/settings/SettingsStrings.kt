@@ -14,4 +14,11 @@ internal data class SettingsStrings(
     val appearanceBaseColorSchemeOptionDark: String,
     val appearanceBaseColorSchemeOptionLight: String,
     val appearanceBaseColorSchemeOptionSystem: String,
+
+    // Developer settings
+    val developerOpenTelemetryTitle: String,
+    val developerOpenTelemetryDescription: String,
+    val developerOpenTelemetryEnabledLabel: String,
+    val developerOpenTelemetryEndpointLabel: String,
+    val developerOpenTelemetryVerboseLabel: String,
 )

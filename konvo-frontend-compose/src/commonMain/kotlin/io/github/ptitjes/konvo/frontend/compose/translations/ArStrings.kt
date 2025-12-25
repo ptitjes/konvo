@@ -190,12 +190,18 @@ internal val ArStrings = Strings(
             "characters" to "الشخصيات",
             "lorebooks" to "كتب الخلفية",
             "personas" to "الشخصيات",
+            "developer" to "المطور",
         ),
         appearanceBaseColorSchemeTitle = "نظام الألوان الأساسي",
         appearanceBaseColorSchemeDescription = "نظام الألوان المستخدم للتطبيق.",
         appearanceBaseColorSchemeOptionDark = "داكن",
         appearanceBaseColorSchemeOptionLight = "فاتح",
         appearanceBaseColorSchemeOptionSystem = "متوافق مع النظام",
+        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
+        developerOpenTelemetryDescription = "تصدير الآثار إلى مجمّع OpenTelemetry باستخدام gRPC.",
+        developerOpenTelemetryEnabledLabel = "تمكين تصدير OpenTelemetry",
+        developerOpenTelemetryEndpointLabel = "نقطة النهاية",
+        developerOpenTelemetryVerboseLabel = "تصدير مفصل",
     ),
     navigationDestinationTitles = { state ->
         when (state) {

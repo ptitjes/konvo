@@ -18,6 +18,10 @@ val defaultSettingsSections = listOf(
         panel = { ModelProviderSettingsPanel() },
     ),
     SettingsSection(
+        titleKey = "developer",
+        panel = { DeveloperSettingsPanel() },
+    ),
+    SettingsSection(
         titleKey = "roleplay",
         panel = { RoleplaySettingsPanel() },
         children = listOf(

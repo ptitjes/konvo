@@ -190,12 +190,18 @@ internal val EsStrings = Strings(
             "characters" to "Personajes",
             "lorebooks" to "Libros de lore",
             "personas" to "Avatares",
+            "developer" to "Desarrollador",
         ),
         appearanceBaseColorSchemeTitle = "Esquema de colores base",
         appearanceBaseColorSchemeDescription = "El esquema de colores utilizado por la aplicación.",
         appearanceBaseColorSchemeOptionDark = "Oscuro",
         appearanceBaseColorSchemeOptionLight = "Claro",
         appearanceBaseColorSchemeOptionSystem = "Adaptar al sistema",
+        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
+        developerOpenTelemetryDescription = "Exportar trazas a un recolector de OpenTelemetry mediante gRPC.",
+        developerOpenTelemetryEnabledLabel = "Activar exportación de OpenTelemetry",
+        developerOpenTelemetryEndpointLabel = "Punto final",
+        developerOpenTelemetryVerboseLabel = "Exportación detallada",
     ),
     navigationDestinationTitles = { state ->
         when (state) {

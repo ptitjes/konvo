@@ -16,6 +16,8 @@ class AgentFactory(
 ) {
 
     suspend fun createAgent(agentConfiguration: AgentConfiguration): Agent {
+        val developerSettings = settingsRepository.getSettings(DeveloperSettingsKey).first()
+
         return when (agentConfiguration) {
             is QuestionAnswerAgentConfiguration -> {
                 val model = modelProviderManager.named(agentConfiguration.modelName)
@@ -24,6 +26,7 @@ class AgentFactory(
                     model = model,
                     mcpSessionFactory = mcpSessionFactory,
                     mcpServerNames = agentConfiguration.mcpServerNames,
+                    developerSettings = developerSettings,
                 )
             }
 
@@ -42,6 +45,7 @@ class AgentFactory(
                     character = character,
                     persona = persona,
                     lorebook = lorebook,
+                    developerSettings = developerSettings,
                 )
             }
 
