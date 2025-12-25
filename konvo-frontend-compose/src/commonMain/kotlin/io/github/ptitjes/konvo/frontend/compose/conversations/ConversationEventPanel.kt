@@ -21,6 +21,7 @@ import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.json.Json
 
 @Composable
 fun ConversationEventPanel(itemViewState: ConversationViewState.Item, conversation: ConversationUserView) =
@@ -223,7 +224,7 @@ private fun ToolUsageNotificationPanel(
                 when (val result = viewState.result) {
                     is CallResult.Success -> {
                         Markdown(
-                            content = "```json\n${result.text}\n```",
+                            content = "```json\n${Json.encodeToString(result.value)}\n```",
                             typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
                             colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
                         )

@@ -1,7 +1,8 @@
 package io.github.ptitjes.konvo.mcp.web.utils
 
-import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.*
+import io.modelcontextprotocol.kotlin.sdk.types.*
+import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
 inline fun <reified I> Server.addStringTool(
@@ -20,6 +21,7 @@ inline fun <reified I> Server.addStringTool(
     }
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 inline fun <reified I, reified O> Server.addJsonTool(
     name: String,
     description: String,
@@ -31,7 +33,8 @@ inline fun <reified I, reified O> Server.addJsonTool(
         inputSchema = jsonToolInputOf<I>(),
         outputSchema = jsonToolOutputOf<O>(),
     ) { request ->
-        val decodedRequest = Json.decodeFromJsonElement<I>(request.arguments)
+        val arguments = request.arguments ?: JsonPrimitive(null)
+        val decodedRequest = Json.decodeFromJsonElement<I>(arguments)
         val decodedResult = handler(decodedRequest)
         val encodedResult = Json.encodeToJsonElement(decodedResult)
         CallToolResult(

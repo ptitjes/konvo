@@ -46,7 +46,7 @@ sealed interface ToolUsage : Event.Payload {
     sealed interface CallResult {
         @Serializable
         @SerialName("success")
-        data class Success(val text: String) : CallResult
+        data class Success(val value: JsonElement?) : CallResult
 
         @Serializable
         @SerialName("execution-failure")

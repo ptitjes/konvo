@@ -5,7 +5,7 @@ import ai.koog.agents.mcp.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.serialization.json.*
-import io.modelcontextprotocol.kotlin.sdk.Tool as SdkTool
+import io.modelcontextprotocol.kotlin.sdk.types.Tool as SdkTool
 
 internal class McpToolCard(
     val clientName: String,
@@ -17,8 +17,8 @@ internal class McpToolCard(
     override val description: String? get() = sdkTool.description
     override val parameters: ToolParameters
         get() = ToolParameters(
-            properties = sdkTool.inputSchema.properties.mapValues { (_, property) -> property.jsonObject },
-            required = sdkTool.inputSchema.required ?: emptyList(),
+            properties = sdkTool.inputSchema.properties?.mapValues { (_, property) -> property.jsonObject },
+            required = sdkTool.inputSchema.required,
         )
     override val requiresVetting: Boolean
         get() = doesToolRequirePermission(clientName, sdkTool.name, permissions)

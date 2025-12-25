@@ -2,8 +2,8 @@ package io.github.ptitjes.konvo.mcp.web
 
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
-import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.*
+import io.modelcontextprotocol.kotlin.sdk.types.*
 import kotlinx.cli.*
 import kotlinx.coroutines.*
 import kotlinx.io.*
@@ -73,9 +73,9 @@ fun runMcpServerUsingStdio() {
     )
 
     runBlocking {
-        server.connect(transport)
+        val session = server.createSession(transport)
         val done = Job()
-        server.onClose {
+        session.onClose {
             done.complete()
         }
         done.join()
