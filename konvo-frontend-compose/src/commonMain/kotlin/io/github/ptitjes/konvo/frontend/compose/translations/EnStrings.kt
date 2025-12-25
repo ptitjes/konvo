@@ -190,12 +190,18 @@ internal val EnStrings = Strings(
             "characters" to "Characters",
             "lorebooks" to "Lorebooks",
             "personas" to "Personas",
+            "developer" to "Developer",
         ),
         appearanceBaseColorSchemeTitle = "Base color scheme",
         appearanceBaseColorSchemeDescription = "The color scheme used for the application.",
         appearanceBaseColorSchemeOptionDark = "Dark",
         appearanceBaseColorSchemeOptionLight = "Light",
         appearanceBaseColorSchemeOptionSystem = "Adapt to system",
+        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
+        developerOpenTelemetryDescription = "Export traces to an OpenTelemetry collector using gRPC.",
+        developerOpenTelemetryEnabledLabel = "Enable OpenTelemetry export",
+        developerOpenTelemetryEndpointLabel = "Endpoint",
+        developerOpenTelemetryVerboseLabel = "Verbose export",
     ),
     navigationDestinationTitles = { state ->
         when (state) {

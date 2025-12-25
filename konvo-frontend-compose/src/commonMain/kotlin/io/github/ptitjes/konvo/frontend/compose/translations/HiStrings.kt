@@ -190,12 +190,18 @@ internal val HiStrings = Strings(
             "characters" to "चरित्र",
             "lorebooks" to "लोरबुक",
             "personas" to "व्यक्तित्व",
+            "developer" to "डेवलपर",
         ),
         appearanceBaseColorSchemeTitle = "मूल रंग योजना",
         appearanceBaseColorSchemeDescription = "एप्लिकेशन में उपयोग की जाने वाली रंग योजना।",
         appearanceBaseColorSchemeOptionDark = "डार्क",
         appearanceBaseColorSchemeOptionLight = "लाइट",
         appearanceBaseColorSchemeOptionSystem = "सिस्टम के अनुसार",
+        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
+        developerOpenTelemetryDescription = "gRPC का उपयोग करके OpenTelemetry कलेक्टर को ट्रेस निर्यात करें।",
+        developerOpenTelemetryEnabledLabel = "OpenTelemetry निर्यात सक्षम करें",
+        developerOpenTelemetryEndpointLabel = "एंडपॉइंट",
+        developerOpenTelemetryVerboseLabel = "विस्तृत निर्यात",
     ),
     navigationDestinationTitles = { state ->
         when (state) {

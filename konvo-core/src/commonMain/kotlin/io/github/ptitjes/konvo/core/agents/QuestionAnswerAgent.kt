@@ -8,6 +8,7 @@ import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.markdown.*
 import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
+import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import kotlinx.datetime.*
@@ -20,6 +21,7 @@ fun buildQuestionAnswerAgent(
     model: ModelCard,
     mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
     mcpServerNames: Set<String>,
+    developerSettings: DeveloperSettings = DeveloperSettings(),
 ): Agent {
     return DefaultAgent(
         systemPrompt = buildSystemPrompt(),
@@ -33,6 +35,7 @@ fun buildQuestionAnswerAgent(
         },
         mcpSessionFactory = mcpSessionFactory,
         mcpServerNames = mcpServerNames,
+        developerSettings = developerSettings,
     )
 }
 

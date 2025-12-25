@@ -8,12 +8,14 @@ import ai.koog.agents.core.feature.config.*
 import ai.koog.agents.core.feature.pipeline.*
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.features.eventHandler.feature.*
+import ai.koog.agents.features.opentelemetry.feature.*
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
 import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.agents.*
+import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
@@ -25,6 +27,7 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
@@ -45,6 +48,7 @@ internal class DefaultAgent(
     private val strategy: (ConversationAgentView) -> AIAgentGraphStrategy<KoogMessage.User, List<KoogMessage.Assistant>>,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
     private val mcpServerNames: Set<String> = emptySet(),
+    private val developerSettings: DeveloperSettings = DeveloperSettings(),
     private val installFeatures: GraphAIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
 ) : Agent {
     private var prompt: Prompt = systemPrompt
@@ -82,6 +86,20 @@ internal class DefaultAgent(
                 install(ConversationFeature) {
                     conversationViewProvider = { conversationView }
                     this.tools = tools
+                }
+
+                if (developerSettings.openTelemetry.enabled) {
+                    install(OpenTelemetry) {
+                        setServiceInfo("konvo", "1.0.0")
+
+                        addSpanExporter(
+                            OtlpGrpcSpanExporter.builder()
+                                .setEndpoint(developerSettings.openTelemetry.endpoint)
+                                .build()
+                        )
+
+                        setVerbose(developerSettings.openTelemetry.verbose)
+                    }
                 }
 
                 handleEvents {

@@ -8,6 +8,7 @@ import ai.koog.prompt.message.*
 import ai.koog.prompt.tokenizer.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
+import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import kotlin.random.*
@@ -21,6 +22,7 @@ fun buildRoleplayAgent(
     character: CharacterCard,
     persona: Persona,
     lorebook: Lorebook?,
+    developerSettings: DeveloperSettings = DeveloperSettings(),
 ): Agent {
     val characterGreetingIndex = roleplayConfiguration.characterGreetingIndex
     val userName = persona.nickname
@@ -70,6 +72,7 @@ fun buildRoleplayAgent(
                 edge(request forwardTo nodeFinish onMultipleAssistantMessages { true })
             }
         },
+        developerSettings = developerSettings,
     )
 }
 

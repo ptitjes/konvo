@@ -190,12 +190,18 @@ internal val ZhStrings = Strings(
             "characters" to "角色",
             "lorebooks" to "设定集",
             "personas" to "人设",
+            "developer" to "开发者",
         ),
         appearanceBaseColorSchemeTitle = "基础配色方案",
         appearanceBaseColorSchemeDescription = "应用使用的配色方案。",
         appearanceBaseColorSchemeOptionDark = "深色",
         appearanceBaseColorSchemeOptionLight = "浅色",
         appearanceBaseColorSchemeOptionSystem = "跟随系统",
+        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
+        developerOpenTelemetryDescription = "使用 gRPC 将追踪导出到 OpenTelemetry 收集器。",
+        developerOpenTelemetryEnabledLabel = "启用 OpenTelemetry 导出",
+        developerOpenTelemetryEndpointLabel = "端点",
+        developerOpenTelemetryVerboseLabel = "详细导出",
     ),
     navigationDestinationTitles = { state ->
         when (state) {
