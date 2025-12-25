@@ -86,44 +86,41 @@ internal class DefaultAgent(
 
                 handleEvents {
                     onToolValidationFailed { eventContext ->
-                        val tool = eventContext.tool
                         conversationView.send(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
-                                    tool = tool.name,
-                                    arguments = tool.encodeArgsUnsafe(eventContext.toolArgs),
+                                    tool = eventContext.toolName,
+                                    arguments = eventContext.toolArgs,
                                 ),
-                                result = ToolUsage.CallResult.ExecutionFailure(eventContext.error),
+                                result = ToolUsage.CallResult.ExecutionFailure(eventContext.message),
                             ),
                         )
                     }
                     onToolCallCompleted { eventContext ->
-                        val tool = eventContext.tool
                         conversationView.send(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
-                                    tool = tool.name,
-                                    arguments = tool.encodeArgsUnsafe(eventContext.toolArgs),
+                                    tool = eventContext.toolName,
+                                    arguments = eventContext.toolArgs,
                                 ),
                                 result = ToolUsage.CallResult.Success(
-                                    tool.encodeResultToStringUnsafe(eventContext.result),
+                                    eventContext.toolResult,
                                 ),
                             ),
                         )
                     }
                     onToolCallFailed { eventContext ->
-                        val tool = eventContext.tool
                         conversationView.send(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
-                                    tool = tool.name,
-                                    arguments = tool.encodeArgsUnsafe(eventContext.toolArgs),
+                                    tool = eventContext.toolName,
+                                    arguments = eventContext.toolArgs,
                                 ),
                                 result = ToolUsage.CallResult.ExecutionFailure(
-                                    eventContext.throwable.message ?: "Tool failed",
+                                    eventContext.message,
                                 ),
                             ),
                         )

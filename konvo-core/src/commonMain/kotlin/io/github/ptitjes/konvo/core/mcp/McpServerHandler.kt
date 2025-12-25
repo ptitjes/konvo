@@ -4,7 +4,7 @@ import io.github.oshai.kotlinlogging.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.sse.*
-import io.modelcontextprotocol.kotlin.sdk.*
+import io.modelcontextprotocol.kotlin.sdk.types.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import kotlinx.coroutines.*
 import kotlinx.io.*

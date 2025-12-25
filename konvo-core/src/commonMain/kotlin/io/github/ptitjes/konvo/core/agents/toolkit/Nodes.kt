@@ -9,7 +9,6 @@ import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
 import io.github.ptitjes.konvo.core.tools.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.serialization.json.*
 import kotlin.uuid.*
 
 @AIAgentBuilderDslMarker
@@ -96,11 +95,18 @@ fun AIAgentSubgraphBuilderBase<*, *>.nodeExecuteVettedToolCalls(
     }
 
     val rejectedResults = callsToReject.map {
+        val toolCallId = it.call.id
+        val toolName = it.call.tool
+        val toolArgs = it.call.contentJson
+
         ReceivedToolResult(
-            id = it.call.id,
-            tool = it.call.tool,
-            content = "Tool call was rejected by user",
-            result = JsonPrimitive("Tool call was rejected by user"),
+            id = toolCallId,
+            tool = toolName,
+            toolArgs = toolArgs,
+            toolDescription = null,
+            content = "Tool call with name '$toolName' was rejected by user",
+            resultKind = ToolResultKind.Failure(null),
+            result = null,
         )
     }
 

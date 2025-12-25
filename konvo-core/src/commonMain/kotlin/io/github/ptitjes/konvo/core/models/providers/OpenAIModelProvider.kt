@@ -13,17 +13,19 @@ class OpenAIModelProvider(
 
     override suspend fun queryModels(): List<ModelCard> {
         return listOf(
+            OpenAIModels.Chat.GPT5_2 to "GPT-5.2",
+            OpenAIModels.Chat.GPT5_1 to "GPT-5.1",
             OpenAIModels.Chat.GPT5 to "GPT-5",
             OpenAIModels.Chat.GPT5Mini to "GPT-5 Mini",
             OpenAIModels.Chat.GPT5Nano to "GPT-5 Nano",
             OpenAIModels.Chat.GPT4o to "GPT-4o",
             OpenAIModels.Chat.GPT4_1 to "GPT-4.1",
-            OpenAIModels.CostOptimized.GPT4_1Mini to "GPT-4.1 Mini",
-            OpenAIModels.CostOptimized.GPT4_1Nano to "GPT-4.1 Nano",
-            OpenAIModels.Reasoning.O4Mini to "o4 Mini",
-            OpenAIModels.Reasoning.O3 to "o3",
-            OpenAIModels.Reasoning.O3Mini to "o3 Mini",
-            OpenAIModels.Reasoning.O1 to "o1",
+            OpenAIModels.Chat.GPT4_1Mini to "GPT-4.1 Mini",
+            OpenAIModels.Chat.GPT4_1Nano to "GPT-4.1 Nano",
+            OpenAIModels.Chat.O4Mini to "o4 Mini",
+            OpenAIModels.Chat.O3 to "o3",
+            OpenAIModels.Chat.O3Mini to "o3 Mini",
+            OpenAIModels.Chat.O1 to "o1",
         ).map { (model, name) -> OpenAIModelCard(model, name) }
     }
 

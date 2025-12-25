@@ -2,8 +2,8 @@ package io.github.ptitjes.konvo.mcp.prompts.utils
 
 import ai.koog.prompt.dsl.*
 import ai.koog.prompt.message.*
-import io.modelcontextprotocol.kotlin.sdk.*
-import io.modelcontextprotocol.kotlin.sdk.Prompt
+import io.modelcontextprotocol.kotlin.sdk.types.*
+import io.modelcontextprotocol.kotlin.sdk.types.Prompt
 import io.modelcontextprotocol.kotlin.sdk.server.*
 import ai.koog.prompt.dsl.Prompt as KoogPrompt
 
@@ -34,12 +34,12 @@ fun Server.addKoogPrompt(
 private fun KoogPrompt.toMcpPrompt(): List<PromptMessage> = messages.map { message ->
     when (message) {
         is Message.User -> PromptMessage(
-            role = Role.user,
+            role = Role.User,
             content = TextContent(message.content),
         )
 
         is Message.Assistant -> PromptMessage(
-            role = Role.assistant,
+            role = Role.Assistant,
             content = TextContent(message.content),
         )
 

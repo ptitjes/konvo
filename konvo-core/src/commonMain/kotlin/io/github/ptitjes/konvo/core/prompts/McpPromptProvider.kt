@@ -2,9 +2,9 @@ package io.github.ptitjes.konvo.core.prompts
 
 import ai.koog.prompt.dsl.*
 import io.github.ptitjes.konvo.core.mcp.*
-import io.modelcontextprotocol.kotlin.sdk.*
-import io.modelcontextprotocol.kotlin.sdk.Prompt
 import io.modelcontextprotocol.kotlin.sdk.client.*
+import io.modelcontextprotocol.kotlin.sdk.types.*
+import io.modelcontextprotocol.kotlin.sdk.types.Prompt
 
 class McpPromptProvider(
     private val serversManager: McpServersManager,
@@ -35,26 +35,28 @@ class McpPromptProvider(
         override val description: String? get() = prompt.description
 
         override suspend fun toPrompt(): ai.koog.prompt.dsl.Prompt {
-            val promptResult = client.getPrompt(GetPromptRequest(name, mapOf()))
+            val promptResult = client.getPrompt(
+                GetPromptRequest(GetPromptRequestParams(name, mapOf())),
+            )
 
             return prompt(name) {
                 promptResult.messages.forEach { message ->
                     val content = message.content
 
                     when (message.role) {
-                        Role.user -> user {
+                        Role.User -> user {
                             when (content) {
-                                is TextContent -> content.text?.let { text(it) }
+                                is TextContent -> text(content.text)
                                 is ImageContent -> TODO()
                                 is AudioContent -> TODO()
                                 is EmbeddedResource -> TODO()
-                                is UnknownContent -> error("Unsupported content")
+                                is ResourceLink -> TODO()
                             }
                         }
 
-                        Role.assistant -> assistant {
+                        Role.Assistant -> assistant {
                             when (content) {
-                                is TextContent -> content.text?.let { text(it) }
+                                is TextContent -> text(content.text)
                                 is EmbeddedResource -> TODO()
                                 else -> error("Unsupported content")
                             }

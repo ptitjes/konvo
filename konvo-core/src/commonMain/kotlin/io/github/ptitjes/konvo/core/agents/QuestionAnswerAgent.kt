@@ -75,6 +75,8 @@ private fun AIAgentSubgraphBuilderBase<*, *>.qaWithTools() = subgraph<Message.Us
     val executeTools by nodeExecuteVettedToolCalls(parallelTools = true)
     val toolResultsRequest by nodeLLMSendMultipleToolResults()
 
+    nodeExecuteMultipleTools()
+
     edge(nodeStart forwardTo dumpInitialRequest)
     edge(dumpInitialRequest forwardTo initialRequest)
     edge(initialRequest forwardTo processResponses)
