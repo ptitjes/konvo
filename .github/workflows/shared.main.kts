@@ -31,7 +31,7 @@ fun WorkflowBuilder.buildJob(
         uses(name = "Checkout", action = Checkout())
         uses(
             name = "Install Java",
-            action = SetupJava(javaVersion = "17", distribution = SetupJava.Distribution.Adopt),
+            action = SetupJava(javaVersion = "21", distribution = SetupJava.Distribution.Adopt),
         )
         uses(name = "Build", action = ActionsSetupGradle())
 
