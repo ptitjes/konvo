@@ -20,6 +20,8 @@ uriKmp = "0.0.20"
 kodein = "7.25.0"
 kim = "0.26.2"
 
+opentelemetry = "1.51.0"
+
 # Compose Frontend
 compose = "1.9.3"
 composeHotReload = "1.0.0"
@@ -74,6 +76,11 @@ xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", versi
 uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uriKmp" }
 kodein = { module = "org.kodein.di:kodein-di", version.ref = "kodein" }
 kim = { module = "com.ashampoo:kim", version.ref = "kim" }
+
+opentelemetry-bom = { module = "io.opentelemetry:opentelemetry-bom", version.ref = "opentelemetry" }
+opentelemetry-sdk = { module = "io.opentelemetry:opentelemetry-sdk" }
+opentelemetry-exporter-otlp = { module = "io.opentelemetry:opentelemetry-exporter-otlp" }
+opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-exporter-logging" }
 
 # Compose Frontend
 

@@ -21,6 +21,10 @@ kotlin {
                 implementation(libs.ktorClientCio)
                 implementation(libs.uriKmp)
                 implementation(libs.kim)
+
+                implementation(project.dependencies.enforcedPlatform(libs.opentelemetry.bom))
+                implementation(libs.opentelemetry.exporter.logging)
+                implementation(libs.opentelemetry.exporter.otlp)
             }
         }
 
