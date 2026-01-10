@@ -13,30 +13,21 @@ import ai.koog.prompt.dsl.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
 import ai.koog.prompt.message.*
-import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Message
 import io.github.ptitjes.konvo.core.mcp.*
+import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
-import io.github.ptitjes.konvo.core.util.*
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter
+import io.opentelemetry.exporter.otlp.trace.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
-import kotlinx.io.files.*
 import kotlin.coroutines.*
 import kotlin.time.Clock
 import kotlin.uuid.*
-import ai.koog.prompt.message.ContentPart as KoogContentPart
 import ai.koog.prompt.message.Message as KoogMessage
 
 internal class DefaultAgent(
@@ -152,8 +143,9 @@ internal class DefaultAgent(
 
     override suspend fun restorePrompt(events: List<Event<*>>) {
         val messages = events.mapNotNull { event ->
+            @Suppress("UNCHECKED_CAST")
             when (val details = event.payload) {
-                is Message -> event.toKoogMessage(details)
+                is Messaging.Message -> (event as Event<Messaging.Message>).toKoogMessage()
                 else -> null
             }
         }
@@ -169,7 +161,7 @@ internal class DefaultAgent(
         val conversationJustStarted = prompt.messages.size == 1
         if (conversationJustStarted) {
             welcomeMessage?.let { content ->
-                conversation.send(Message(content = listOf(Messaging.Part.Text(content))))
+                conversation.send(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
                 prompt = prompt(prompt) {
                     message(
                         KoogMessage.Assistant(
@@ -181,106 +173,36 @@ internal class DefaultAgent(
             }
         }
 
+        conversation.send(
+            AgentCapabilities.Messaging(
+                supportedMediaTypes = listOf(),
+            )
+        )
+
         mcpSessionFactory?.invoke(coroutineContext).use { mcpHostSession ->
             mcpHostSession?.addServers(mcpServerNames)
             val tools = mcpHostSession?.tools?.first()
 
             conversation.events.buffer(Channel.UNLIMITED).collect { event ->
                 when (val details = event.payload) {
-                    is Message -> {
+                    is Messaging.Message -> {
                         if (event.sender is Participant.User) {
-                            conversation.send(AgentPresence.Processing)
+                            conversation.send(AgentProcessing.Start)
                             val agent = buildAgent(tools, conversation)
-                            val result = agent.run(event.toKoogMessage(details) as KoogMessage.User)
+                            @Suppress("UNCHECKED_CAST") val result =
+                                agent.run((event as Event<Messaging.Message>).toKoogMessage() as KoogMessage.User)
                             result.forEach {
                                 conversation.send(
-                                    Message(content = listOf(Messaging.Part.Text(it.content)))
+                                    Messaging.Message(content = listOf(Messaging.Part.Text(it.content)))
                                 )
                             }
-                            conversation.send(
-                                AgentPresence.Available(
-                                    messagingCapabilities = AgentPresence.MessagingCapabilities(
-                                        supportedMediaTypes = listOf(),
-                                    )
-                                )
-                            )
+                            conversation.send(AgentProcessing.Completion)
                         }
                     }
 
                     else -> {}
                 }
             }
-        }
-    }
-
-    private suspend fun Event<*>.toKoogMessage(details: Message): KoogMessage = when (sender) {
-        is Participant.User -> KoogMessage.User(
-            parts = details.content.map { it.toKoogContentPart() },
-            metaInfo = RequestMetaInfo(timestamp = timestamp.toDeprecatedInstant()),
-        )
-
-        is Participant.Agent -> KoogMessage.Assistant(
-            parts = details.content.map { it.toKoogContentPart() },
-            metaInfo = ResponseMetaInfo(timestamp = timestamp.toDeprecatedInstant()),
-        )
-    }
-
-    private suspend fun Messaging.Part.toKoogContentPart(): KoogContentPart = when (this) {
-        is Messaging.Part.Text -> KoogContentPart.Text(text)
-        is Messaging.Part.Image -> media.toKoogAttachment()
-        is Messaging.Part.Video -> media.toKoogAttachment()
-        is Messaging.Part.Audio -> media.toKoogAttachment()
-        is Messaging.Part.File -> media.toKoogAttachment()
-        is Messaging.Part.Embed<*> -> error("Embed content part is not supported for Koog")
-    }
-
-    private val httpClient = HttpClient(CIO)
-
-    private suspend fun Messaging.Attachment.loadContent(): ByteArray {
-        val uri = Uri.parse(url)
-
-        return when {
-            uri.scheme == "file" -> {
-                val path = Path(uri.path ?: error("Invalid file path: $url"))
-                SystemFileSystem.readBytes(path).toByteArray()
-            }
-
-            else -> httpClient.get(url).bodyAsBytes()
-        }
-    }
-
-    private suspend fun Messaging.Attachment.toKoogAttachment(): KoogContentPart {
-        val bytes = loadContent()
-        val content = AttachmentContent.Binary.Bytes(bytes)
-
-        return when (type) {
-            Messaging.Attachment.Type.Audio -> KoogContentPart.Audio(
-                content = content,
-                format = name.substringAfterLast('.'),
-                mimeType = mimeType,
-                fileName = name,
-            )
-
-            Messaging.Attachment.Type.Image -> KoogContentPart.Image(
-                content = content,
-                format = name.substringAfterLast('.'),
-                mimeType = mimeType,
-                fileName = name,
-            )
-
-            Messaging.Attachment.Type.Video -> KoogContentPart.Video(
-                content = content,
-                format = name.substringAfterLast('.'),
-                mimeType = mimeType,
-                fileName = name,
-            )
-
-            Messaging.Attachment.Type.Document -> KoogContentPart.File(
-                content = content,
-                format = name.substringAfterLast('.'),
-                mimeType = mimeType,
-                fileName = name,
-            )
         }
     }
 }

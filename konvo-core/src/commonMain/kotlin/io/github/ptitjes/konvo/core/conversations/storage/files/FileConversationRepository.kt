@@ -37,14 +37,17 @@ class FileConversationRepository(
         ignoreUnknownKeys = true
         serializersModule = SerializersModule {
             polymorphic(Event.Payload::class) {
-                subclass(Messaging.Message::class)
                 subclass(AgentPresence.Joining::class)
-                subclass(AgentPresence.Available::class)
-                subclass(AgentPresence.Processing::class)
                 subclass(AgentPresence.Leaving::class)
+                subclass(AgentCapabilities.Messaging::class)
+                subclass(AgentProcessing.Start::class)
+                subclass(AgentProcessing.Cancellation::class)
+                subclass(AgentProcessing.Failure::class)
+                subclass(AgentProcessing.Completion::class)
                 subclass(ToolUsage.Vetting::class)
                 subclass(ToolUsage.Approval::class)
                 subclass(ToolUsage.Notification::class)
+                subclass(Messaging.Message::class)
             }
         }
     }
