@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.*
  */
 interface ConversationAgentView {
 
+    val participant: Participant
+
     val events: SharedFlow<Event<*>>
 
     suspend fun send(payload: Event.Agent)
