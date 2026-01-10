@@ -134,7 +134,7 @@ class ConversationViewModel(
 }
 
 fun ConversationViewStateContribution.setupCoreContributors() {
-    contributeViewStates(AgentPresenceViewState)
+    contributeViewStates(AgentViewState)
     contributeViewStates(MessagingViewState)
     contributeViewStates(ToolUsageViewState)
 }

@@ -50,7 +50,7 @@ class ConversationViewStateMaintainer(
             action: suspend ContributionScope.(Event<P>) -> Unit,
         ) {
             stateMaintainer.addStateUpdater(klass) { state, event ->
-                val scope = ContributionScopeImpl(stateMaintainer, event, state)
+                val scope = ContributionScopeImpl(stateMaintainer, state)
                 scope.action(event)
                 scope.rootState
             }
@@ -59,37 +59,49 @@ class ConversationViewStateMaintainer(
 
     private class ContributionScopeImpl(
         private val stateMaintainer: ConversationViewStateMaintainer,
-        private val initialEvent: Event<*>,
         initialRootState: Loaded,
     ) : ContributionScope {
         var rootState: Loaded = initialRootState
             private set
 
-        override suspend fun <S, T : S> set(
-            slot: RegisterSlot<S>,
+        override suspend fun <S, T : S> append(
+            slot: Slot.Sequence<S>,
             initial: T,
             builder: UpdateHandlersScope<S, T>.() -> Unit,
         ) {
-            rootState = slot.set(rootState, initial)
+            val (updatedRootState, lens) = slot.append(rootState, initial)
+            rootState = updatedRootState
 
-            UpdateHandlersScopeImpl<S, T>(stateMaintainer, slot, initialEvent).builder()
+            UpdateHandlersScopeImpl<S, T>(stateMaintainer, lens).builder()
         }
 
-        override suspend fun <S : Indexed, T : S> append(
-            slot: AppendableSlot<S>,
+        override suspend fun <K, S, T : S> put(
+            slot: Slot.Dictionary<K, S>,
+            key: K,
+            initial: T,
+            builder: UpdateHandlersScope<S?, T?>.() -> Unit,
+        ) {
+            val (updatedRootState, lens) = slot.put(rootState, key, initial)
+            rootState = updatedRootState
+
+            UpdateHandlersScopeImpl<S?, T?>(stateMaintainer, lens).builder()
+        }
+
+        override suspend fun <S, T : S> set(
+            slot: Slot.Register<S>,
             initial: T,
             builder: UpdateHandlersScope<S, T>.() -> Unit,
         ) {
-            rootState = slot.append(rootState, initial)
+            val (updatedRootState, lens) = slot.set(rootState, initial)
+            rootState = updatedRootState
 
-            UpdateHandlersScopeImpl<S, T>(stateMaintainer, slot, initialEvent).builder()
+            UpdateHandlersScopeImpl<S, T>(stateMaintainer, lens).builder()
         }
     }
 
     private class UpdateHandlersScopeImpl<S, T : S>(
         private val stateMaintainer: ConversationViewStateMaintainer,
-        private val slot: Slot<S>,
-        private val initialEvent: Event<*>,
+        private val lens: Slot.Lens<S>,
     ) : UpdateHandlersScope<S, T>() {
         private val teardowns = mutableListOf<() -> Unit>()
 
@@ -104,9 +116,9 @@ class ConversationViewStateMaintainer(
             handler: suspend UpdateHandlerScope.(T, Event<Q>) -> T,
         ) {
             teardowns += stateMaintainer.addStateUpdater(klass) { state, event ->
-                slot.update(state, initialEvent) { previousItemState ->
+                lens.update(state) { previousState ->
                     @Suppress("UNCHECKED_CAST")
-                    handlerScope.handler(previousItemState as T, event)
+                    handlerScope.handler(previousState as T, event)
                 }
             }
         }
