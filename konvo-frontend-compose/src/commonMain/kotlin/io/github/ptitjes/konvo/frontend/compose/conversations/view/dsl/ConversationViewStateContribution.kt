@@ -35,14 +35,22 @@ interface ConversationViewStateContribution {
 
     @Marker
     interface ContributionScope {
-        suspend fun <S, T : S> set(
-            slot: ConversationViewState.RegisterSlot<S>,
+
+        suspend fun <S, T : S> append(
+            slot: ConversationViewState.Slot.Sequence<S>,
             initial: T,
             builder: UpdateHandlersScope<S, T>.() -> Unit = {},
         )
 
-        suspend fun <S : ConversationViewState.Indexed, T : S> append(
-            slot: ConversationViewState.AppendableSlot<S>,
+        suspend fun <K, S, T : S> put(
+            slot: ConversationViewState.Slot.Dictionary<K, S>,
+            key: K,
+            initial: T,
+            builder: UpdateHandlersScope<S?, T?>.() -> Unit = {},
+        )
+
+        suspend fun <S, T : S> set(
+            slot: ConversationViewState.Slot.Register<S>,
             initial: T,
             builder: UpdateHandlersScope<S, T>.() -> Unit = {},
         )
