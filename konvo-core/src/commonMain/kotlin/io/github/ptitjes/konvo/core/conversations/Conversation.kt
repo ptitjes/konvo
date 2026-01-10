@@ -135,7 +135,7 @@ class Conversation(
     private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
 
     private inner class AgentViewImpl(
-        val participant: Participant,
+        override val participant: Participant,
     ) : ConversationAgentView {
 
         override val events: SharedFlow<Event<*>> get() = _events
