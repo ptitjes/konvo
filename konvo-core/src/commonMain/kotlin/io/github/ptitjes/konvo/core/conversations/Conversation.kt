@@ -94,8 +94,7 @@ class Conversation(
             // Observe and persist last read message index updates
             launch {
                 _lastReadMessageIndexUpdates.collect { lastReadMessageIndex ->
-                    // TODO Fix: use the event index in the transcript as read index
-                    val lastMessageIndex = transcript.value.count { it.isViewItem() } - 1
+                    val lastMessageIndex = transcript.value.size - 1
                     val unreadMessageCount = (lastMessageIndex - lastReadMessageIndex).coerceAtLeast(0)
 
                     val currentDigest = digest.value
@@ -126,10 +125,6 @@ class Conversation(
     override fun close() {
         job.cancel()
     }
-
-    // TODO Remove the following!
-    private fun Event<*>.isViewItem(): Boolean =
-        payload !is AgentPresence.Processing && payload !is ToolUsage.Approval
 
     fun newUserView(): ConversationUserView = UserViewImpl(userMember)
     private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
