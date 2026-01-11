@@ -1,5 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
@@ -9,6 +11,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.*
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
@@ -21,7 +25,7 @@ import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 
 @Composable
 fun ConversationEventPanel(itemViewState: ConversationViewState.Item, conversation: ConversationUserView) =
@@ -49,7 +53,9 @@ private fun UserMessagePanel(
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
             ) {
-                Column {
+                Column(
+                    horizontalAlignment = Alignment.End,
+                ) {
                     SelectionContainer {
                         MarkdownContent(
                             state = itemViewState.markdownState,
@@ -76,7 +82,9 @@ private fun AgentMessagePanel(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = horizontalArrangement,
     ) {
-        Column {
+        Column(
+            horizontalAlignment = Alignment.Start,
+        ) {
             SelectionContainer {
                 MarkdownContent(
                     state = itemViewState.markdownState,
@@ -95,8 +103,11 @@ private fun AgentMessagePanel(
 private fun ToolUsageVettingPanel(
     viewState: ToolUsageViewState.Vetting,
     conversation: ConversationUserView,
+    modifier: Modifier = Modifier,
 ) {
-    BorderedPanel {
+    BorderedPanel(
+        modifier = modifier,
+    ) {
         Column {
             for ((call, status) in viewState.approvals) {
                 ExpandableBox(
@@ -111,8 +122,7 @@ private fun ToolUsageVettingPanel(
                                     append(call.tool)
                                 }
                             },
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = MaterialTheme.typography.titleSmall.fontSize,
                             modifier = Modifier.weight(1f),
                         )
 
@@ -192,8 +202,11 @@ private fun ToolUsageVettingPanel(
 @Composable
 private fun ToolUsageNotificationPanel(
     viewState: ToolUsageViewState.Notification,
+    modifier: Modifier = Modifier,
 ) {
-    BorderedPanel {
+    BorderedPanel(
+        modifier = modifier,
+    ) {
         ExpandableBox(
             header = {
                 ResultIcon(viewState.result)
@@ -205,8 +218,7 @@ private fun ToolUsageNotificationPanel(
                             append(viewState.call.tool)
                         }
                     },
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
                     modifier = Modifier.weight(1f),
                 )
 
@@ -215,7 +227,6 @@ private fun ToolUsageNotificationPanel(
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 ToolArgumentsTable(
                     arguments = viewState.call.arguments,
@@ -225,8 +236,7 @@ private fun ToolUsageNotificationPanel(
                     is CallResult.Success -> {
                         Markdown(
                             content = "```json\n${Json.encodeToString(result.value)}\n```",
-                            typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
-                            colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
+                            colors = markdownColor(text = LocalContentColor.current),
                         )
                     }
 
@@ -234,8 +244,7 @@ private fun ToolUsageNotificationPanel(
                         val failure = result as CallResult.ExecutionFailure
                         Markdown(
                             content = "```\n${failure.reason}\n```",
-                            typography = markdownTypography(code = MaterialTheme.typography.bodyMedium),
-                            colors = markdownColor(text = MaterialTheme.colorScheme.onBackground),
+                            colors = markdownColor(text = LocalContentColor.current),
                         )
                     }
                 }
@@ -245,18 +254,20 @@ private fun ToolUsageNotificationPanel(
 }
 
 @Composable
-private fun BorderedPanel(content: @Composable () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start,
-    ) {
-        Surface(
-            modifier = Modifier.border(
+private fun BorderedPanel(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .border(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 shape = RoundedCornerShape(8.dp),
             ),
-            color = MaterialTheme.colorScheme.background,
-        ) {
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        val lighter = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+        CompositionLocalProvider(LocalContentColor provides lighter) {
             content()
         }
     }
@@ -287,8 +298,10 @@ private fun ExpandableBox(
                 header()
 
                 if (collapsable) {
+                    val rotation by animateFloatAsState(if (expanded) 180f else 0f)
                     Icon(
-                        imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        modifier = Modifier.rotate(rotation),
+                        imageVector = Icons.Filled.ExpandMore,
                         contentDescription =
                             if (expanded) strings.conversations.collapseAria
                             else strings.conversations.expandAria,
@@ -298,13 +311,63 @@ private fun ExpandableBox(
             }
         }
 
-        if (!collapsable || expanded) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                content()
+        AnimatedVisibility(!collapsable || expanded) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun ToolArgumentsTable(
+    arguments: Map<String, JsonElement>,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+    ) {
+        val headerColumnWidth = remember { mutableStateOf<Int?>(null) }
+
+        arguments.entries.forEach { (name, value) ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = "$name:",
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    modifier = Modifier.padding(start = 4.dp).withSharedWidth(headerColumnWidth)
+                )
+
+                val code = remember(value) {
+                    prettyJson.encodeToString(JsonElement.serializer(), value)
+                }
+
+                Markdown(
+                    content = "```json\n$code\n```",
+                    colors = markdownColor(text = LocalContentColor.current),
+                )
             }
         }
     }
 }
+
+private val prettyJson = Json { prettyPrint = true }
+
+private fun Modifier.withSharedWidth(headerColumnWidth: MutableState<Int?>) = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+
+    val existingWidth = headerColumnWidth.value ?: 0
+    val maxWidth = maxOf(existingWidth, placeable.width)
+
+    if (maxWidth > existingWidth) {
+        headerColumnWidth.value = maxWidth
+    }
+
+    layout(width = maxWidth, height = placeable.height) {
+        placeable.placeRelative(0, 0)
+    }
+}
+
 
 @Composable
 private fun ResultIcon(

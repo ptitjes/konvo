@@ -15,6 +15,7 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun UserInputBox(
+    modifier: Modifier = Modifier,
     onSendMessage: (content: String, attachments: List<Attachment>) -> Unit,
 ) {
     var inputValue by remember { mutableStateOf(TextFieldValue(text = "")) }
@@ -33,7 +34,7 @@ fun UserInputBox(
     }
 
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.primaryContainer,
         tonalElevation = 2.dp,
