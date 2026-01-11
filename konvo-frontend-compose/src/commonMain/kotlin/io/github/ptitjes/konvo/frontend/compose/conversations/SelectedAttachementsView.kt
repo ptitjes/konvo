@@ -6,8 +6,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 
 @Composable
 fun SelectedAttachementsView(attachments: List<Attachment>) {
