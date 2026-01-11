@@ -2,8 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.runtime.*
 import coil3.compose.*
-import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Attachment
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 
 @Composable
 fun AttachmentView(
