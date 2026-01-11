@@ -5,7 +5,7 @@ import com.mikepenz.markdown.model.State
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStateContribution.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStates.*
 import kotlinx.coroutines.flow.*
 import com.mikepenz.markdown.model.State as MarkdownViewState
 
@@ -24,7 +24,7 @@ sealed interface MessagingViewState : ConversationViewState.Item {
     ) : MessagingViewState
 
     companion object : Contribution {
-        override fun ContributionsScope.contribute() {
+        override fun CreateScope.contribute() {
             onEvent<Messaging.Message> { event ->
                 val content =
                     event.payload.content.filterIsInstance<Messaging.Part.Text>().joinToString("\n") { it.text }

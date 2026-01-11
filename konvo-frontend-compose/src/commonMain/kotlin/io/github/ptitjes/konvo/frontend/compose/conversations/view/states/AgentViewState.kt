@@ -3,7 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.conversations.view.states
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStateContribution.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStates.*
 import kotlinx.serialization.*
 
 data class AgentViewState(
@@ -16,7 +16,7 @@ data class AgentViewState(
     )
 
     companion object : Contribution {
-        override fun ContributionsScope.contribute() {
+        override fun CreateScope.contribute() {
             onEvent<AgentPresence.Joining> { event ->
                 put(
                     ConversationViewState.Agents,

@@ -133,7 +133,7 @@ class ConversationViewModel(
     }
 }
 
-fun ConversationViewStateContribution.setupCoreContributors() {
+fun ConversationViewStateMaintainer.setupCoreContributors() {
     contributeViewStates(AgentViewState)
     contributeViewStates(MessagingViewState)
     contributeViewStates(ToolUsageViewState)
