@@ -5,7 +5,6 @@ package io.github.ptitjes.konvo.core.conversations
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
@@ -130,7 +129,7 @@ class Conversation(
     private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
 
     private inner class AgentViewImpl(
-        override val participant: Participant,
+        override val participant: Participant.Agent,
     ) : ConversationAgentView {
 
         override val events: SharedFlow<Event<*>> get() = _events
@@ -148,7 +147,7 @@ class Conversation(
     }
 
     private inner class UserViewImpl(
-        val participant: Participant,
+        override val participant: Participant.User,
     ) : ConversationUserView {
 
         override val state: StateFlow<ConversationState> get() = _state

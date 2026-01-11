@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.*
  */
 interface ConversationUserView {
 
+    val participant: Participant.User
+
     val state: StateFlow<ConversationState>
 
     val events: SharedFlow<Event<*>>
