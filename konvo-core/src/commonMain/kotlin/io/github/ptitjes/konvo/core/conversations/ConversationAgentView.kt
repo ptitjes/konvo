@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.*
  */
 interface ConversationAgentView {
 
-    val participant: Participant
+    val participant: Participant.Agent
 
     val events: SharedFlow<Event<*>>
 
