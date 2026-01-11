@@ -12,7 +12,7 @@ fun <T : Any> ListDetailPaneScaffold(
     onBack: (count: Int) -> Unit,
     entryProvider: (key: T) -> NavEntry<T>,
 ) {
-    val adaptiveInfo = currentWindowAdaptiveInfo()
+    val adaptiveInfo = currentWindowAdaptiveInfo(supportLargeAndXLargeWidth = true)
     val paneType = paneTypeFromAdaptiveInfo(adaptiveInfo)
 
     val listDetailStrategy = remember(paneType) { ListDetailStrategy<T>() }
@@ -36,4 +36,11 @@ fun <T : Any> ListDetailPaneScaffold(
             )
         }
     }
+}
+
+private const val WIDTH_DP_LARGE_LOWER_BOUND = 1200
+
+private fun paneTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): ListDetailPaneType = with(adaptiveInfo) {
+    val isExpandedWidth = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_LARGE_LOWER_BOUND)
+    if (isExpandedWidth) ListDetailPaneType.TwoPane else ListDetailPaneType.OnePane
 }
