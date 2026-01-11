@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.conversations.view.states
 
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStateContribution.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStates.*
 
 sealed interface ToolUsageViewState : ConversationViewState.Item {
 
@@ -24,7 +24,7 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
     ) : ToolUsageViewState
 
     companion object : Contribution {
-        override fun ContributionsScope.contribute() {
+        override fun CreateScope.contribute() {
             onEvent<ToolUsage.Vetting> { event ->
                 append(
                     ConversationViewState.Items,
