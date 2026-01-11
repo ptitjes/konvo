@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations.view
 
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 
 sealed interface ConversationViewState {
@@ -17,13 +18,6 @@ sealed interface ConversationViewState {
         operator fun <C> get(slot: Slot<C>): C = slotData[slot] as C? ?: slot.initialValue
 
         fun <C> copy(slot: Slot<C>, value: C): Loaded = copy(slotData = slotData + (slot to value))
-
-        // TODO Remove the following!
-        val conversation: ConversationDigest get() = get(Digest)!!
-        val items: List<Item> get() = get(Items)
-        val agents: Map<Participant.Agent, AgentViewState> get() = get(Agents)
-
-        val isProcessing: Boolean get() = agents.any { (_, state) -> state.isProcessing }
     }
 
     interface Slot<C> {
@@ -101,3 +95,9 @@ sealed interface ConversationViewState {
 
     object Items : Slot.Sequence<Item>()
 }
+
+// TODO Remove the following!
+val Loaded.digest: ConversationDigest get() = get(Digest)!!
+val Loaded.items: List<Item> get() = get(Items)
+val Loaded.agents: Map<Participant.Agent, AgentViewState> get() = get(Agents)
+val Loaded.isProcessing: Boolean get() = agents.any { (_, state) -> state.isProcessing }

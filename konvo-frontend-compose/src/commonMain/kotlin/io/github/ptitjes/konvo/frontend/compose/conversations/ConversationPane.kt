@@ -83,7 +83,7 @@ fun ConversationPane(
                 if (!firstComposition) {
                     val hasItems = state.items.isNotEmpty()
 
-                    val lastReadMessageIndex = state.conversation.lastReadMessageIndex
+                    val lastReadMessageIndex = state.digest.lastReadMessageIndex
 
                     val shouldScroll = when {
                         // New item appended: user must have read up to the previous last item
@@ -151,8 +151,8 @@ private object ProcessingIndicatorKey
 
 @Composable
 private fun firstUnreadMessageIndex(state: ConversationViewState.Loaded): Int =
-    remember(state.items.size, state.conversation.lastReadMessageIndex, state.isProcessing) {
-        val idx = state.conversation.lastReadMessageIndex + 1
+    remember(state.items.size, state.digest.lastReadMessageIndex, state.isProcessing) {
+        val idx = state.digest.lastReadMessageIndex + 1
         if (idx in 0..state.items.lastIndex) idx else -1
     }
 
@@ -178,7 +178,7 @@ private fun LastReadMessageIndexUpdater(
                             val stillOverNew = lastVisibleNow >= firstUnreadIndex
                             if (stillOverNew) {
                                 val lastVisibleClamped = lastVisibleNow.coerceAtMost(state.items.lastIndex)
-                                if (lastVisibleClamped > state.conversation.lastReadMessageIndex) {
+                                if (lastVisibleClamped > state.digest.lastReadMessageIndex) {
                                     onUpdateLastReadMessageIndex(lastVisibleClamped)
                                 }
                             }

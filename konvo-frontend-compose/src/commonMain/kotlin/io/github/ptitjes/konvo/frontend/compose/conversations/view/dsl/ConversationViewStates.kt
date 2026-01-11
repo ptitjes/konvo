@@ -6,10 +6,6 @@ import kotlin.reflect.*
 
 sealed interface ConversationViewStates {
 
-//    companion object : ExtensionPoint<Contribution> {
-//
-//    }
-
     fun interface Contribution {
         fun CreateScope.contribute()
     }
