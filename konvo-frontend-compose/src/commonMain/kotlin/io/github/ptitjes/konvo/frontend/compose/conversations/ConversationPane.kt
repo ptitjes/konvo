@@ -1,7 +1,10 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.text.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
@@ -27,9 +30,34 @@ fun ConversationPane(
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
-        Column(
-            modifier = Modifier.widthIn(max = 800.dp),
+        // ConversationStartMessage slot?
+        AnimatedVisibility(
+            modifier = Modifier,
+            visible = state.items.isEmpty(),
+            enter = expandVertically(expandFrom = Alignment.CenterVertically) + fadeIn(),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+        ) {
+            val onBackground = MaterialTheme.colorScheme.onBackground
+
+            BasicText(
+                modifier = Modifier
+                    .padding(bottom = 32.dp)
+                    .widthIn(max = 800.dp)
+                    .padding(horizontal = 32.dp),
+                text = "What can I do for you today?",
+                autoSize = TextAutoSize.StepBased(maxFontSize = 42.sp),
+                softWrap = false,
+                color = { onBackground },
+            )
+        }
+
+        AnimatedVisibility(
+            modifier = Modifier.weight(1f),
+            visible = state.items.isNotEmpty(),
+            enter = expandVertically(),
+            exit = shrinkVertically(),
         ) {
             var firstComposition by remember { mutableStateOf(true) }
 
@@ -79,31 +107,47 @@ fun ConversationPane(
             )
 
             LazyColumn(
-                modifier = Modifier.weight(1f).padding(horizontal = 32.dp),
+                modifier = Modifier.fillMaxSize(),
                 state = listState,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 0.dp),
             ) {
-                itemsIndexed(state.items, key = { _, it -> it.id }) { index, viewedItem ->
-                    Column {
+                itemsIndexed(state.items, key = { _, item -> item.id }) { index, viewedItem ->
+                    Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
                         if (index == firstUnreadIndex) NewMessagesDivider()
+                        // ConversationItemPanel slot (selected by type of the item view state)
                         ConversationEventPanel(viewedItem, conversation)
                     }
                 }
 
+                // ConversationFeedBottom slot
                 if (state.isProcessing) {
-                    item("__processing__") {
-                        ConversationProcessingIndicator()
+                    item(ProcessingIndicatorKey) {
+                        Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
+                            ConversationProcessingIndicator()
+                        }
                     }
                 }
             }
-
-            UserInputBox(
-                onSendMessage = onSendMessage,
-            )
         }
+
+        // ConversationSuggestions slot
+        // ConversationSuggestions()
+
+        // UserInputBox slot (itself having sub slots)
+        // - AttachmentButtonSlot slot
+        //   - AttachmentMenu slot
+        // - TextInput slot
+        // - CommitButtonSlot slot
+        UserInputBox(
+            modifier = Modifier.widthIn(max = 800.dp).padding(16.dp),
+            onSendMessage = onSendMessage,
+        )
     }
 }
+
+private object ProcessingIndicatorKey
 
 @Composable
 private fun firstUnreadMessageIndex(state: ConversationViewState.Loaded): Int =
