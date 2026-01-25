@@ -7,7 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.lifecycle.*
-import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
+import androidx.navigation3.runtime.*
 import kotlinx.serialization.*
 
 /**

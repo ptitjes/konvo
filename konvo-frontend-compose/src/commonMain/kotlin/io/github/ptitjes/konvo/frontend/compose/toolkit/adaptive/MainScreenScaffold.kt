@@ -3,33 +3,35 @@ package io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive
 import androidx.compose.animation.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.navigation3.*
+import androidx.navigation3.runtime.*
+import androidx.navigation3.ui.*
+import androidx.window.core.layout.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun <T : Any> ListDetailPaneScaffold(
+fun <T : Any> MainScreenScaffold(
     backStack: List<T>,
-    onBack: (count: Int) -> Unit,
+    onBack: () -> Unit,
     entryProvider: (key: T) -> NavEntry<T>,
 ) {
     val adaptiveInfo = currentWindowAdaptiveInfo(supportLargeAndXLargeWidth = true)
+    val windowSizeClass = adaptiveInfo.windowSizeClass
     val paneType = paneTypeFromAdaptiveInfo(adaptiveInfo)
 
-    val listDetailStrategy = remember(paneType) { ListDetailStrategy<T>() }
+    val listDetailStrategy = remember(windowSizeClass) { ListDetailStrategy<T>(windowSizeClass) }
 
     SharedTransitionLayout {
         CompositionLocalProvider(
             LocalListDetailPaneType provides paneType,
-            LocalNavSharedTransitionScope provides this,
         ) {
             NavDisplay(
                 backStack = backStack,
                 onBack = onBack,
                 sceneStrategy = listDetailStrategy,
+                sharedTransitionScope = this@SharedTransitionLayout,
                 entryDecorators = listOf(
-                    rememberSharedEntryInSceneNavEntryDecorator(),
-                    rememberSceneSetupNavEntryDecorator(),
-                    rememberSavedStateNavEntryDecorator(),
+                    rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
                 entryProvider = entryProvider,
@@ -38,9 +40,7 @@ fun <T : Any> ListDetailPaneScaffold(
     }
 }
 
-private const val WIDTH_DP_LARGE_LOWER_BOUND = 1200
-
 private fun paneTypeFromAdaptiveInfo(adaptiveInfo: WindowAdaptiveInfo): ListDetailPaneType = with(adaptiveInfo) {
-    val isExpandedWidth = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_LARGE_LOWER_BOUND)
+    val isExpandedWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND)
     if (isExpandedWidth) ListDetailPaneType.TwoPane else ListDetailPaneType.OnePane
 }

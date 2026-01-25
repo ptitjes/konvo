@@ -1,16 +1,15 @@
 package io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive
 
 import androidx.compose.runtime.*
+import androidx.navigation3.runtime.*
+import androidx.navigation3.scene.*
+import androidx.window.core.layout.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 
-class ListDetailStrategy<T : Any> : SceneStrategy<T> {
-    @Composable
-    override fun calculateScene(
-        entries: List<NavEntry<T>>,
-        onBack: (Int) -> Unit,
-    ): Scene<T>? {
-        val paneType = LocalListDetailPaneType.current
-        if (paneType != ListDetailPaneType.TwoPane) return null
+class ListDetailStrategy<T : Any>(private val windowSizeClass: WindowSizeClass) : SceneStrategy<T> {
+    override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
+        val isExpandedWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND)
+        if (!isExpandedWidth) return null
 
         val lastTwoEntries = entries.takeLast(2)
 

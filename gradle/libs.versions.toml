@@ -23,12 +23,15 @@ kim = "0.26.2"
 opentelemetry = "1.51.0"
 
 # Compose Frontend
-compose = "1.9.3"
-composeHotReload = "1.0.0"
 
-material3Adaptive = "1.2.0"
-androidxLifecycleViewmodel = "2.9.6"
-androidxCollection = "1.5.0"
+compose = "1.10.0"
+composeMaterialIcons = "1.7.3"
+composeMaterial3 = "1.9.0-beta03"
+composeMaterial3Adaptive = "1.3.0-alpha03"
+androidxLifecycle = "2.10.0-alpha07"
+androidxNavigation3 = "1.1.0-alpha01"
+
+composeHotReload = "1.0.0"
 
 lyricist = "1.7.0"
 humanReadable = "1.12.0"
@@ -84,9 +87,19 @@ opentelemetry-exporter-logging = { module = "io.opentelemetry:opentelemetry-expo
 
 # Compose Frontend
 
-material3Adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "material3Adaptive" }
-androidxLifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycleViewmodel" }
-androidxCollection = { module = "androidx.collection:collection", version.ref = "androidxCollection" }
+composeUiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+composeUiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
+composeUiTest = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
+composeComponentsResources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
+composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeMaterialIcons" }
+composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3" }
+composeMaterial3AdaptiveNavigationSuite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "composeMaterial3" }
+composeMaterial3Adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "composeMaterial3Adaptive" }
+
+androidxLifecycleViewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidxLifecycleViewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
+androidxNavigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "androidxNavigation3" }
+
 kodeinCompose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
 
 lyricist = { module = "cafe.adriel.lyricist:lyricist", version.ref = "lyricist" }
@@ -113,6 +126,8 @@ flexmarkHtmlMarkdownConverter = { module = "com.vladsch.flexmark:flexmark-html2m
 [bundles]
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines", "kotlinxIoCore"]
 ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiation", "ktorSerializationKotlinxJson"]
+
+composeUi = ["composeUiTooling", "composeUiToolingPreview", "composeComponentsResources", "composeMaterialIconsExtended", "composeMaterial3", "composeMaterial3Adaptive", "composeMaterial3AdaptiveNavigationSuite", "androidxLifecycleViewmodelCompose", "androidxLifecycleViewmodelNavigation3", "androidxNavigation3Ui"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -1,7 +1,3 @@
-@file:OptIn(ExperimentalComposeLibrary::class)
-
-import org.jetbrains.compose.*
-
 plugins {
     id("buildsrc.convention.kotlin-multiplatform")
     alias(libs.plugins.kotlinPluginAtomicfu)
@@ -25,16 +21,8 @@ kotlin {
                 implementation(libs.kotlinxIoOkio)
                 implementation(project(":konvo-core"))
 
-                implementation(compose.material3)
-                implementation(libs.material3Adaptive)
-                implementation(compose.material3AdaptiveNavigationSuite)
-                implementation(compose.materialIconsExtended)
-                implementation(compose.components.resources)
-                implementation(compose.preview)
-                implementation(compose.uiTooling)
+                implementation(libs.bundles.composeUi)
 
-                implementation(libs.androidxLifecycleViewmodel)
-                implementation(libs.androidxCollection)
                 implementation(libs.kodeinCompose)
 
                 implementation(libs.lyricist)
@@ -55,7 +43,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinxCoroutinesTest)
-                implementation(compose.uiTest)
+                implementation(libs.composeUiTest)
             }
         }
 

@@ -4,6 +4,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.*
 import androidx.compose.material3.adaptive.navigationsuite.*
 import androidx.compose.runtime.*
+import androidx.navigation3.runtime.*
 import androidx.window.core.layout.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
@@ -42,7 +43,7 @@ fun MainScreen(
             }
         },
     ) {
-        ListDetailPaneScaffold(
+        MainScreenScaffold(
             backStack = navigator.backStack,
             onBack = { navigator.navigateBack() },
             entryProvider = entryProvider {
@@ -55,7 +56,7 @@ fun MainScreen(
     }
 }
 
-private fun EntryProviderBuilder<Destination>.conversationEntries(navigator: Navigator) {
+private fun EntryProviderScope<Destination>.conversationEntries(navigator: Navigator) {
     entry<Destination.Conversation.List> {
         ConversationListScreen(
             navigator = navigator,
@@ -75,7 +76,7 @@ private fun EntryProviderBuilder<Destination>.conversationEntries(navigator: Nav
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-private fun EntryProviderBuilder<Destination>.archiveEntries(navigator: Navigator) {
+private fun EntryProviderScope<Destination>.archiveEntries(navigator: Navigator) {
     entry<Destination.Archive> {
         Scaffold(
             topBar = {
@@ -92,7 +93,7 @@ private fun EntryProviderBuilder<Destination>.archiveEntries(navigator: Navigato
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-private fun EntryProviderBuilder<Destination>.knowledgeBaseEntries(navigator: Navigator) {
+private fun EntryProviderScope<Destination>.knowledgeBaseEntries(navigator: Navigator) {
     entry<Destination.KnowledgeBase> {
         Scaffold(
             topBar = {
@@ -108,13 +109,17 @@ private fun EntryProviderBuilder<Destination>.knowledgeBaseEntries(navigator: Na
     }
 }
 
-private fun EntryProviderBuilder<Destination>.settingEntries(navigator: Navigator) {
-    entry<Destination.Setting.List> {
+private fun EntryProviderScope<Destination>.settingEntries(navigator: Navigator) {
+    entry<Destination.Setting.List>(
+//        metadata = SettingsDialogSceneStrategy.listPane(),
+    ) {
         SettingsListScreen(
             navigator = navigator,
         )
     }
-    entry<Destination.Setting.Section> {
+    entry<Destination.Setting.Section>(
+//        metadata = SettingsDialogSceneStrategy.detailPane(),
+    ) {
         SettingsScreen(
             titleKey = it.key,
             navigator = navigator,
