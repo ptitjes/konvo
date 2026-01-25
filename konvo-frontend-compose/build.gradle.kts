@@ -31,7 +31,7 @@ kotlin {
                 implementation(libs.markdownRenderer)
                 implementation(libs.markdownRendererCoil)
                 implementation(libs.markdownRendererCode)
-                implementation(libs.fileKit)
+                implementation(libs.bundles.fileKit)
                 implementation(libs.coil)
                 implementation(libs.coilKtor)
                 implementation(libs.reorderable)

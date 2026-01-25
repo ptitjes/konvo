@@ -15,8 +15,9 @@ import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
-import io.github.vinceglb.filekit.compose.*
-import io.github.vinceglb.filekit.core.*
+import io.github.vinceglb.filekit.*
+import io.github.vinceglb.filekit.dialogs.*
+import io.github.vinceglb.filekit.dialogs.compose.*
 import kotlinx.coroutines.*
 import org.kodein.di.compose.*
 
@@ -47,8 +48,8 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
     LaunchedEffect(Unit) { reload() }
 
     val importLauncher = rememberFilePickerLauncher(
-        mode = PickerMode.Multiple(),
-        type = PickerType.File(extensions = listOf("json")),
+        mode = FileKitMode.Multiple(),
+        type = FileKitType.File(extensions = listOf("json")),
     ) { files ->
         if (files.isNullOrEmpty()) return@rememberFilePickerLauncher
         scope.launch {

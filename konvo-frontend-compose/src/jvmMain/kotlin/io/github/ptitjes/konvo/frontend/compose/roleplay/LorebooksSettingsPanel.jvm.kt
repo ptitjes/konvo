@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.roleplay
 
 import io.github.ptitjes.konvo.core.roleplay.providers.*
-import io.github.vinceglb.filekit.core.*
+import io.github.vinceglb.filekit.*
 import kotlinx.io.files.*
 
 actual suspend fun PlatformFile.importLorebook(provider: FileSystemLorebookProvider) {

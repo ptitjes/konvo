@@ -36,11 +36,11 @@ composeHotReload = "1.0.0"
 lyricist = "1.7.0"
 humanReadable = "1.12.0"
 
-markdownRenderer = "0.35.0"
-fileKit = "0.8.8"
+markdownRenderer = "0.39.1"
+fileKit = "0.12.0"
 coil = "3.3.0"
 reorderable = "3.0.0"
-placeholder = "1.0.11"
+placeholder = "1.0.12"
 
 # Discord Frontend
 kord = "feat-components-v2-didier-SNAPSHOT"
@@ -108,7 +108,10 @@ humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "humanRea
 markdownRenderer = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
 markdownRendererCoil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdownRenderer" }
 markdownRendererCode = { module = "com.mikepenz:multiplatform-markdown-renderer-code", version.ref = "markdownRenderer" }
-fileKit = { module = "io.github.vinceglb:filekit-compose", version.ref = "fileKit" }
+fileKitCore = { module = "io.github.vinceglb:filekit-core", version.ref = "fileKit" }
+fileKitDialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "fileKit" }
+fileKitDialogsCompose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "fileKit" }
+fileKitCoil = { module = "io.github.vinceglb:filekit-coil", version.ref = "fileKit" }
 coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coilKtor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
@@ -128,6 +131,7 @@ kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutine
 ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiation", "ktorSerializationKotlinxJson"]
 
 composeUi = ["composeUiTooling", "composeUiToolingPreview", "composeComponentsResources", "composeMaterialIconsExtended", "composeMaterial3", "composeMaterial3Adaptive", "composeMaterial3AdaptiveNavigationSuite", "androidxLifecycleViewmodelCompose", "androidxLifecycleViewmodelNavigation3", "androidxNavigation3Ui"]
+fileKit = ["fileKitCore", "fileKitDialogs", "fileKitDialogsCompose", "fileKitCoil"]
 
 [plugins]
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
