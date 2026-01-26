@@ -19,7 +19,7 @@ import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
-import konvo.konvo_frontend_compose.generated.resources.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
 import org.kodein.di.*

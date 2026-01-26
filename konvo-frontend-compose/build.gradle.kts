@@ -58,3 +58,9 @@ kotlin {
         }
     }
 }
+
+compose {
+    resources {
+        packageOfResClass = "io.github.ptitjes.konvo.frontend.compose.resources"
+    }
+}
