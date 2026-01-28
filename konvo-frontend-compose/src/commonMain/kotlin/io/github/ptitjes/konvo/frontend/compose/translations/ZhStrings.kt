@@ -14,6 +14,13 @@ import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "zh-CN")
 internal val ZhStrings = Strings(
+    navigation = NavigationStrings(
+        navigationOpenAria = "打开导航",
+        navigationCloseAria = "关闭导航",
+        backAria = "返回",
+        detailsOpenAria = "打开详情",
+        detailsCloseAria = "关闭详情",
+    ),
     agents = AgentStrings(
         agentTypeDisplayName = {
             when (it) {
@@ -144,8 +151,6 @@ internal val ZhStrings = Strings(
         emptyMessage = "没有可用的工具",
     ),
     conversations = ConversationStrings(
-        backAria = "返回",
-        settingsAria = "设置",
         listTitle = "会话",
         newConversationAria = "新建会话",
         emptyTitle = "暂时还没有会话",

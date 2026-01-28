@@ -12,6 +12,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
 import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 internal data class Strings(
+    val navigation: NavigationStrings,
     val agents: AgentStrings,
     val models: ModelStrings,
     val mcp: McpStrings,

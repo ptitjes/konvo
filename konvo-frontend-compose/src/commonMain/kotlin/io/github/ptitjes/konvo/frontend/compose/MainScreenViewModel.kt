@@ -4,10 +4,10 @@ import androidx.compose.material.icons.*
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.*
 import androidx.compose.ui.graphics.vector.*
 import androidx.lifecycle.*
 import androidx.navigation3.runtime.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import kotlinx.serialization.*
 
 /**
@@ -15,13 +15,20 @@ import kotlinx.serialization.*
  */
 class MainScreenViewModel : ViewModel() {
 
-    private val _backStack = mutableStateListOf<Destination>(
+    private val _backStack = NavBackStack<Destination>(
         Destination.Conversation.List,
         Destination.Conversation.New,
     )
     val backStack: List<Destination> by derivedStateOf { _backStack.toList() }
 
-    val navigator = Navigator(backStack = _backStack)
+    val navigationPaneState = PaneState()
+    val extraPaneState = PaneState()
+
+    val navigator = Navigator(
+        backStack = _backStack,
+        navigationPaneState = navigationPaneState,
+        extraPaneState = extraPaneState,
+    )
 
     init {
         println("Initializing MainScreenViewModel")
@@ -33,6 +40,7 @@ class MainScreenViewModel : ViewModel() {
     }
 }
 
+// TODO remove and update translation strings
 /**
  * High-level application navigation destinations.
  */
@@ -47,13 +55,8 @@ enum class MainDestination(
 
 @Serializable
 sealed interface Destination : NavKey {
-    val mainDestination: MainDestination
-
     @Serializable
     sealed interface Conversation : Destination {
-        override val mainDestination: MainDestination
-            get() = MainDestination.Conversations
-
         @Serializable
         data object List : Conversation {
             override fun toString(): String = "conversations"
@@ -70,23 +73,9 @@ sealed interface Destination : NavKey {
         }
     }
 
-    @Serializable
-    data object Archive : Destination {
-        override val mainDestination: MainDestination
-            get() = MainDestination.Archive
-    }
-
-    @Serializable
-    data object KnowledgeBase : Destination {
-        override val mainDestination: MainDestination
-            get() = MainDestination.KnowledgeBases
-    }
-
+    // TODO move settings into their own NavDisplay/Backstack (inside a dialog)
     @Serializable
     sealed interface Setting : Destination {
-        override val mainDestination: MainDestination
-            get() = MainDestination.Settings
-
         @Serializable
         data object List : Setting {
             override fun toString(): String = "settings"
@@ -99,33 +88,28 @@ sealed interface Destination : NavKey {
     }
 }
 
-class Navigator(val backStack: SnapshotStateList<Destination>) {
-    fun navigateTo(mainDestination: MainDestination) {
-        when (mainDestination) {
-            MainDestination.Conversations -> backStack.navigate(Destination.Conversation.List, clear = true)
-            MainDestination.Archive -> backStack.navigate(Destination.Archive, clear = true)
-            MainDestination.KnowledgeBases -> backStack.navigate(Destination.KnowledgeBase, clear = true)
-            MainDestination.Settings -> backStack.navigate(Destination.Setting.List, clear = true)
-        }
-    }
-
-    fun isInMainDestination(mainDestination: MainDestination): Boolean {
-        return backStack.lastOrNull()?.mainDestination == mainDestination
-    }
+class Navigator(
+    val backStack: NavBackStack<Destination>,
+    val navigationPaneState: PaneState,
+    val extraPaneState: PaneState,
+) {
+    val navigationExpanded: Boolean get() = navigationPaneState.targetValue.isExpanded
+    val extraExpanded: Boolean get() = extraPaneState.targetValue.isExpanded
 
     fun navigateBack() {
         backStack.removeLastOrNull()
     }
 
-    fun navigateToConversation(conversationId: String) {
-        backStack.navigate(Destination.Conversation.Selected(conversationId), popUpTo = Destination.Conversation.List)
-    }
-
     val selectedConversationId: String?
         get() = (backStack.lastOrNull() as? Destination.Conversation.Selected)?.id
 
+    fun navigateToConversation(conversationId: String) {
+        if (selectedConversationId == conversationId) return
+        backStack.navigate(Destination.Conversation.Selected(conversationId))
+    }
+
     fun navigateToNewConversation() {
-        backStack.navigate(Destination.Conversation.New, popUpTo = Destination.Conversation.List)
+        backStack.navigate(Destination.Conversation.New)
     }
 
     fun navigateToSettingSection(titleKey: String) {
@@ -136,7 +120,7 @@ class Navigator(val backStack: SnapshotStateList<Destination>) {
         get() = (backStack.lastOrNull() as? Destination.Setting.Section)?.key
 }
 
-private fun <T : NavKey> SnapshotStateList<T>.navigate(
+private fun <T : NavKey> NavBackStack<T>.navigate(
     destination: T,
     clear: Boolean = false,
     popUpTo: T? = null,
@@ -146,7 +130,7 @@ private fun <T : NavKey> SnapshotStateList<T>.navigate(
     if (popUpTo != null) {
         val index = indexOfLast { it == popUpTo }
         if (index >= 0) {
-            removeRange(index + if (inclusive) 0 else 1, size)
+            dropLast(size - index + if (inclusive) 0 else 1)
         }
     }
     add(destination)

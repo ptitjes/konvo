@@ -14,6 +14,13 @@ import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "ar-SA")
 internal val ArStrings = Strings(
+    navigation = NavigationStrings(
+        navigationOpenAria = "فتح التنقل",
+        navigationCloseAria = "إغلاق التنقل",
+        backAria = "رجوع",
+        detailsOpenAria = "فتح التفاصيل",
+        detailsCloseAria = "إغلاق التفاصيل",
+    ),
     agents = AgentStrings(
         agentTypeDisplayName = {
             when (it) {
@@ -144,8 +151,6 @@ internal val ArStrings = Strings(
         emptyMessage = "لا توجد أدوات متاحة",
     ),
     conversations = ConversationStrings(
-        backAria = "رجوع",
-        settingsAria = "الإعدادات",
         listTitle = "المحادثات",
         newConversationAria = "محادثة جديدة",
         emptyTitle = "لا توجد محادثات بعد",

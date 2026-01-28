@@ -26,6 +26,7 @@ fun ConversationPane(
     onSendMessage: (String, List<Attachment>) -> Unit,
     onUpdateLastReadMessageIndex: (Int) -> Unit,
     conversation: ConversationUserView,
+    paddingValues: PaddingValues,
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -111,7 +112,7 @@ fun ConversationPane(
                 state = listState,
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 0.dp),
+                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 0.dp) + paddingValues,
             ) {
                 itemsIndexed(state.items, key = { _, item -> item.id }) { index, viewedItem ->
                     Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {

@@ -8,8 +8,10 @@ import androidx.navigation3.scene.*
 import androidx.window.core.layout.*
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_LARGE_LOWER_BOUND
+import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.CenterStageScene.Companion.CONTENT_KEY
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.CenterStageScene.Companion.EXTRA_PANE_KEY
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.CenterStageScene.Companion.NAVIGATION_PANE_KEY
+import kotlinx.coroutines.*
 
 class CenterStageScene<T : Any>(
     override val key: Any,
@@ -28,7 +30,7 @@ class CenterStageScene<T : Any>(
 
     override val content: @Composable (() -> Unit) = {
         val windowSizeClass = currentWindowAdaptiveInfo(supportLargeAndXLargeWidth = true).windowSizeClass
-        val windowInfo = LocalWindowInfo.current
+        val containerDpSize = LocalWindowInfo.current.containerDpSize
 
         val navigationMetadata = navigationEntry?.metadata?.get(NAVIGATION_PANE_KEY) as? PaneMetadata
         val extraMetadata = extraEntry?.metadata?.get(EXTRA_PANE_KEY) as? PaneMetadata
@@ -38,53 +40,64 @@ class CenterStageScene<T : Any>(
         val widthAtLeastExpanded = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
 
         val navigationPaneProperties = navigationMetadata?.properties
-            ?: remember(windowSizeClass, windowInfo) {
+            ?: remember(windowSizeClass, containerDpSize) {
                 PaneProperties(
                     modal = !widthAtLeastLarge,
                     hiddenWhenCollapsed = !widthAtLeastExpanded,
                     expandedWidth = when {
-                        widthAtLeastExpanded -> windowInfo.containerDpSize.width * 1000 / 2618
-                        else -> windowInfo.containerDpSize.width * .9f // TODO get default platform width
+                        widthAtLeastExpanded -> containerDpSize.width * 1000 / 2618
+                        else -> containerDpSize.width * .9f // TODO get default platform width
                     },
                 )
             }
 
         val extraPaneProperties = extraMetadata?.properties
-            ?: remember(windowSizeClass, windowInfo) {
+            ?: remember(windowSizeClass, containerDpSize) {
                 PaneProperties(
                     modal = !widthAtLeastLarge,
                     hiddenWhenCollapsed = true,
                     expandedWidth = when {
-                        widthAtLeastExpanded -> windowInfo.containerDpSize.width * 1000 / 2618
-                        else -> windowInfo.containerDpSize.width * .9f // TODO get default platform width
+                        widthAtLeastExpanded -> containerDpSize.width * 1000 / 2618
+                        else -> containerDpSize.width * .9f // TODO get default platform width
                     },
                 )
             }
 
         val defaultExtraContent = contentMetadata?.defaultExtraContent
 
-        CompositionLocalProvider(
-            LocalCenterStagePaneSettings provides CenterStagePaneSettings(
-                navigationButtonVisible = navigationEntry != null &&
-                        navigationPaneProperties.modal &&
-                        navigationPaneProperties.hiddenWhenCollapsed,
-                extraButtonVisible = defaultExtraContent != null ||
-                        extraEntry != null &&
-                        extraPaneProperties.modal &&
-                        extraPaneProperties.hiddenWhenCollapsed,
-            )
-        ) {
-            CenterStageScaffold(
-                navigationPaneState = navigationPaneState,
-                navigationPaneProperties = navigationPaneProperties,
-                navigationPaneContent = navigationEntry?.let { entry -> { entry.Content() } },
-                extraPaneState = extraPaneState,
-                extraPaneProperties = extraPaneProperties,
-                extraPaneContent = extraEntry?.let { entry -> { entry.Content() } }
-                    ?: defaultExtraContent?.let { extraContent -> @Composable { extraContent() } },
-                content = { contentEntry.Content() },
-            )
-        }
+        val coroutineScope = rememberCoroutineScope()
+
+        val contentNavigationControl = CenterStageControl(
+            navigationButtonRole =
+                if (navigationEntry != null && navigationPaneProperties.hiddenWhenCollapsed) {
+                    if (navigationPaneState.targetValue.isExpanded) CenterStageButtonRole.MenuClose
+                    else CenterStageButtonRole.MenuOpen
+                } else CenterStageButtonRole.None,
+            onNavigationClick = { coroutineScope.launch { navigationPaneState.toggle() } },
+            extraButtonRole =
+                if ((extraEntry != null || defaultExtraContent != null) && extraPaneProperties.hiddenWhenCollapsed) {
+                    if (extraPaneState.targetValue.isExpanded) CenterStageButtonRole.MenuClose
+                    else CenterStageButtonRole.MenuOpen
+                } else CenterStageButtonRole.None,
+            onExtraClick = { coroutineScope.launch { extraPaneState.toggle() } },
+        )
+
+        CenterStageScaffold(
+            navigationPaneState = navigationPaneState,
+            navigationPaneProperties = navigationPaneProperties,
+            navigationPaneContent = navigationEntry?.let { entry -> { entry.Content() } },
+            extraPaneState = extraPaneState,
+            extraPaneProperties = extraPaneProperties,
+            extraPaneContent = extraEntry?.let { entry -> { entry.Content() } }
+                ?: defaultExtraContent?.let { extraContent -> @Composable { extraContent() } },
+            content = {
+                CompositionLocalProvider(
+                    LocalCenterStageControl provides contentNavigationControl
+                ) {
+                    contentEntry.Content()
+                }
+            },
+        )
     }
 
     companion object {
@@ -111,14 +124,6 @@ class CenterStageScene<T : Any>(
     )
 }
 
-val LocalCenterStagePaneSettings =
-    compositionLocalOf<CenterStagePaneSettings> { error("No LocalCenterStagePaneSettings provided") }
-
-data class CenterStagePaneSettings(
-    val navigationButtonVisible: Boolean = false,
-    val extraButtonVisible: Boolean = false,
-)
-
 class CenterStageSceneStrategy<T : Any>(
     private val windowSizeClass: WindowSizeClass,
     private val navigationPaneState: PaneState,
@@ -131,12 +136,12 @@ class CenterStageSceneStrategy<T : Any>(
         val lastEntry = entries.lastOrNull() ?: return null
         val isCenterStageEntry =
             lastEntry.metadata.containsKey(NAVIGATION_PANE_KEY) ||
-                    lastEntry.metadata.containsKey(CenterStageScene.CONTENT_KEY) ||
+                    lastEntry.metadata.containsKey(CONTENT_KEY) ||
                     lastEntry.metadata.containsKey(EXTRA_PANE_KEY)
         if (!isCenterStageEntry) return null
 
         val navigationEntry = entries.findLast { NAVIGATION_PANE_KEY in it.metadata }
-        val contentEntry = entries.findLast { CenterStageScene.CONTENT_KEY in it.metadata } ?: return null
+        val contentEntry = entries.findLast { CONTENT_KEY in it.metadata } ?: return null
         val extraEntry = entries.findLast { EXTRA_PANE_KEY in it.metadata }
 
         return CenterStageScene(

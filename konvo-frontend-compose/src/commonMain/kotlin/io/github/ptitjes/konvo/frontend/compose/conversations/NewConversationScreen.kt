@@ -31,7 +31,6 @@ fun NewConversationScreen(
     NewConversationScreen(
         viewModel = viewModel,
         onConversationCreated = { navigator.navigateToConversation(it) },
-        onBackClick = { navigator.navigateBack() },
         onProviderSettingsClick = { navigator.navigateToSettingSection("models") },
         modifier = modifier,
     )
@@ -49,12 +48,9 @@ fun NewConversationScreen(
 fun NewConversationScreen(
     viewModel: NewConversationViewModel = viewModel(),
     onConversationCreated: (id: String) -> Unit,
-    onBackClick: () -> Unit,
     onProviderSettingsClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val paneType = LocalListDetailPaneType.current
-
     val selectedAgentType = viewModel.selectedAgentType
     val questionAnswer by viewModel.questionAnswer.collectAsState()
     val roleplay by viewModel.roleplay.collectAsState()
@@ -91,22 +87,14 @@ fun NewConversationScreen(
             TopAppBar(
                 title = {
                     Text(
-                        modifier =
-                            if (paneType != ListDetailPaneType.OnePane) Modifier.padding(start = 16.dp)
-                            else Modifier,
+                        modifier = Modifier.padding(start = 16.dp, end = 16.dp),
                         text = strings.conversations.newConversationTitle,
                     )
                 },
                 navigationIcon = {
-                    if (paneType == ListDetailPaneType.OnePane) {
-                        IconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = strings.conversations.backAria
-                            )
-                        }
-                    } else {
+                    LocalCenterStageControl.current.NavigationButton {
                         Icon(
+                            modifier = Modifier.padding(start = 16.dp, end = 8.dp),
                             imageVector = Icons.AutoMirrored.Default.Chat,
                             contentDescription = strings.conversations.newConversationIconAria,
                         )

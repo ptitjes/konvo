@@ -14,6 +14,13 @@ import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "es-ES")
 internal val EsStrings = Strings(
+    navigation = NavigationStrings(
+        navigationOpenAria = "Abrir navegación",
+        navigationCloseAria = "Cerrar navegación",
+        backAria = "Atrás",
+        detailsOpenAria = "Abrir detalles",
+        detailsCloseAria = "Cerrar detalles",
+    ),
     agents = AgentStrings(
         agentTypeDisplayName = {
             when (it) {
@@ -144,8 +151,6 @@ internal val EsStrings = Strings(
         emptyMessage = "No hay herramientas disponibles",
     ),
     conversations = ConversationStrings(
-        backAria = "Atrás",
-        settingsAria = "Ajustes",
         listTitle = "Conversaciones",
         newConversationAria = "Nueva conversación",
         emptyTitle = "Aún no hay conversaciones",

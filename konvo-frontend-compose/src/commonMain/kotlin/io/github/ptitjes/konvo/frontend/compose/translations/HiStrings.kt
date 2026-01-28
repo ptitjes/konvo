@@ -14,6 +14,13 @@ import io.github.ptitjes.konvo.frontend.compose.tools.*
 
 @LyricistStrings(languageTag = "hi-IN")
 internal val HiStrings = Strings(
+    navigation = NavigationStrings(
+        navigationOpenAria = "नेविगेशन खोलें",
+        navigationCloseAria = "नेविगेशन बंद करें",
+        backAria = "वापस",
+        detailsOpenAria = "विवरण खोलें",
+        detailsCloseAria = "विवरण बंद करें",
+    ),
     agents = AgentStrings(
         agentTypeDisplayName = {
             when (it) {
@@ -144,8 +151,6 @@ internal val HiStrings = Strings(
         emptyMessage = "कोई उपकरण उपलब्ध नहीं",
     ),
     conversations = ConversationStrings(
-        backAria = "वापस",
-        settingsAria = "सेटिंग्स",
         listTitle = "वार्तालाप",
         newConversationAria = "नया वार्तालाप",
         emptyTitle = "अभी तक कोई वार्तालाप नहीं",

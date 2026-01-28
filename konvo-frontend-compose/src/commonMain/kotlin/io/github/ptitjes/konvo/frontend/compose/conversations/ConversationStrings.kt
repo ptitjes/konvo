@@ -1,10 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
 internal data class ConversationStrings(
-    // General/navigation
-    val backAria: String,
-    val settingsAria: String,
-
     // Conversation list
     val listTitle: String,
     val newConversationAria: String,

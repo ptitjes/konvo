@@ -1,12 +1,15 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.geometry.*
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import com.eygraber.compose.placeholder.*
 import com.eygraber.compose.placeholder.material3.*
@@ -25,10 +28,9 @@ fun ConversationScreen(
     modifier: Modifier = Modifier,
 ) {
     ConversationScreen(
-        modifier = modifier,
         conversationId = conversationId,
         viewModel = viewModel,
-        onBackClick = { navigator.navigateBack() },
+        modifier = modifier,
     )
 }
 
@@ -36,7 +38,6 @@ fun ConversationScreen(
  * A screen that displays a conversation with a top app bar.
  *
  * @param viewModel The view model of the conversation to display
- * @param onBackClick Callback for when the back button is clicked
  * @param modifier The modifier to apply to this component
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,16 +45,25 @@ fun ConversationScreen(
 fun ConversationScreen(
     conversationId: String,
     viewModel: ConversationViewModel = viewModel(key = conversationId),
-    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsState()
-    val paneType = LocalListDetailPaneType.current
 
     Scaffold(
         modifier = modifier,
         topBar = {
+            val barHeightPx = with(LocalDensity.current) { 64.dp.toPx() }
+
+            val transparentToBlack =  Brush.linearGradient(
+                0.0f to MaterialTheme.colorScheme.background,
+                1.0f to Color.Transparent,
+                start = Offset(0.0f, 0.0f),
+                end = Offset(0.0f, barHeightPx)
+            )
+
             TopAppBar(
+                modifier = Modifier.background(transparentToBlack),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 title = {
                     when (val state = state) {
                         is ConversationViewState.Loading -> Text(
@@ -73,27 +83,16 @@ fun ConversationScreen(
                     }
                 },
                 navigationIcon = {
-                    if (paneType == ListDetailPaneType.OnePane) {
-                        IconButton(onClick = onBackClick) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                contentDescription = strings.conversations.backAria
-                            )
-                        }
-                    } else {
+                    LocalCenterStageControl.current.NavigationButton {
                         Icon(
+                            modifier = Modifier.padding(start = 16.dp, end = 8.dp),
                             imageVector = Icons.Default.ChatBubbleOutline,
-                            contentDescription = strings.conversations.backAria
+                            contentDescription = strings.conversations.conversationAria
                         )
                     }
                 },
                 actions = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = strings.conversations.settingsAria
-                        )
-                    }
+                    LocalCenterStageControl.current.ExtraPaneButton()
                 }
             )
         }
@@ -102,10 +101,11 @@ fun ConversationScreen(
             is ConversationViewState.Loading -> FullSizeProgressIndicator()
             is ConversationViewState.Loaded -> ConversationPane(
                 state = state,
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier.fillMaxSize(),
                 onSendMessage = viewModel::sendUserMessage,
                 onUpdateLastReadMessageIndex = viewModel::updateLastReadMessageIndex,
                 conversation = viewModel.conversation,
+                paddingValues = paddingValues,
             )
         }
     }
