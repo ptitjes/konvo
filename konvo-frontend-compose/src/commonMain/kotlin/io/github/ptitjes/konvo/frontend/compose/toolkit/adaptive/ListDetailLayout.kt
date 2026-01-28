@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.frontend.compose.toolkit
+package io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*

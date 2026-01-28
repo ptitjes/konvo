@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.frontend.compose.toolkit.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 
 /**
  * Button that adapts to the pane type:

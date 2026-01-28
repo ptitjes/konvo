@@ -7,7 +7,6 @@ import androidx.lifecycle.viewmodel.navigation3.*
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.*
 import androidx.window.core.layout.*
-import io.github.ptitjes.konvo.frontend.compose.toolkit.*
 
 @Composable
 fun <T : Any> MainScreenScaffold(
@@ -19,7 +18,7 @@ fun <T : Any> MainScreenScaffold(
     val windowSizeClass = adaptiveInfo.windowSizeClass
     val paneType = paneTypeFromAdaptiveInfo(adaptiveInfo)
 
-    val listDetailStrategy = remember(windowSizeClass) { ListDetailStrategy<T>(windowSizeClass) }
+    val sceneStrategy = remember(windowSizeClass) { ListDetailStrategy<T>(windowSizeClass) }
 
     SharedTransitionLayout {
         CompositionLocalProvider(
@@ -28,7 +27,7 @@ fun <T : Any> MainScreenScaffold(
             NavDisplay(
                 backStack = backStack,
                 onBack = onBack,
-                sceneStrategy = listDetailStrategy,
+                sceneStrategy = sceneStrategy,
                 sharedTransitionScope = this@SharedTransitionLayout,
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
