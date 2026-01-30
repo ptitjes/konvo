@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.*
@@ -111,7 +112,10 @@ fun ConversationListScreen(
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
+            val offset by animateDpAsState(if (expanded) 0.dp else 8.dp)
+
             FloatingActionButton(
+                modifier = Modifier.offset(x = offset),
                 onClick = {
                     onCreateConversation()
                     if (expanded) onExpandedToggle()

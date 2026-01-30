@@ -60,7 +60,7 @@ internal fun CenterStageScaffold(
     )
 }
 
-private val FoldedWidth = 88.dp
+private val FoldedWidth = 72.dp
 private val ExpandedWidth = 300.dp
 
 data class PaneProperties(
