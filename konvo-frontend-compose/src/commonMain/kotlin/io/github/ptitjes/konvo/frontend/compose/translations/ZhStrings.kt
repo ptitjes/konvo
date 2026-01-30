@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.translations
 
 import cafe.adriel.lyricist.*
-import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
@@ -86,6 +85,10 @@ internal val ZhStrings = Strings(
     prompts = PromptStrings(
         selectorLabel = "提示",
     ),
+    tools = ToolStrings(
+        panelLabel = "工具",
+        emptyMessage = "没有可用的工具",
+    ),
     roleplay = RoleplayStrings(
         deleteConfirm = "删除",
         cancel = "取消",
@@ -146,10 +149,6 @@ internal val ZhStrings = Strings(
         randomGreeting = "随机问候语",
         greetingOptionLabel = { index, preview -> "问候语${index + 1}：$preview" },
     ),
-    tools = ToolStrings(
-        panelLabel = "工具",
-        emptyMessage = "没有可用的工具",
-    ),
     conversations = ConversationStrings(
         listTitle = "会话",
         newConversationAria = "新建会话",
@@ -208,14 +207,6 @@ internal val ZhStrings = Strings(
         developerOpenTelemetryEndpointLabel = "端点",
         developerOpenTelemetryVerboseLabel = "详细导出",
     ),
-    navigationDestinationTitles = { state ->
-        when (state) {
-            MainDestination.Conversations -> "会话"
-            MainDestination.Archive -> "归档"
-            MainDestination.KnowledgeBases -> "知识库"
-            MainDestination.Settings -> "设置"
-        }
-    },
     formats = FormatStrings(
         now = "现在",
     ),

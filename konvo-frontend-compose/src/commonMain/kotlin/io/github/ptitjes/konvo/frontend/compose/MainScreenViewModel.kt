@@ -1,12 +1,9 @@
 package io.github.ptitjes.konvo.frontend.compose
 
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.filled.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.vector.*
 import androidx.lifecycle.*
 import androidx.navigation3.runtime.*
+import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import kotlinx.serialization.*
 
@@ -24,10 +21,29 @@ class MainScreenViewModel : ViewModel() {
     val navigationPaneState = PaneState()
     val extraPaneState = PaneState()
 
+    private val firstSettingsSection = defaultSettingsSections
+        .recursivelySortedBy { it.titleKey }.first()
+
     val navigator = Navigator(
         backStack = _backStack,
         navigationPaneState = navigationPaneState,
         extraPaneState = extraPaneState,
+        onNavigateToSettings = {
+            _settingsBackStack.addAll(
+                listOf(
+                    SettingsDestination.List,
+                    SettingsDestination.Section(it ?: firstSettingsSection.titleKey)
+                )
+            )
+        },
+    )
+
+    private val _settingsBackStack = NavBackStack<SettingsDestination>()
+
+    val settingsBackStack: List<SettingsDestination> by derivedStateOf { _settingsBackStack.toList() }
+
+    val settingsNavigator = SettingsNavigator(
+        backStack = _settingsBackStack,
     )
 
     init {
@@ -38,19 +54,6 @@ class MainScreenViewModel : ViewModel() {
         super.onCleared()
         println("Cleared MainScreenViewModel")
     }
-}
-
-// TODO remove and update translation strings
-/**
- * High-level application navigation destinations.
- */
-enum class MainDestination(
-    val icon: ImageVector,
-) {
-    Conversations(icon = Icons.AutoMirrored.Filled.Chat),
-    Archive(icon = Icons.Filled.Archive),
-    KnowledgeBases(icon = Icons.Filled.Dataset),
-    Settings(icon = Icons.Filled.Settings),
 }
 
 @Serializable
@@ -92,10 +95,8 @@ class Navigator(
     val backStack: NavBackStack<Destination>,
     val navigationPaneState: PaneState,
     val extraPaneState: PaneState,
+    val onNavigateToSettings: (String?) -> Unit,
 ) {
-    val navigationExpanded: Boolean get() = navigationPaneState.targetValue.isExpanded
-    val extraExpanded: Boolean get() = extraPaneState.targetValue.isExpanded
-
     fun navigateBack() {
         backStack.removeLastOrNull()
     }
@@ -112,12 +113,41 @@ class Navigator(
         backStack.navigate(Destination.Conversation.New)
     }
 
+    fun openSettings() {
+        onNavigateToSettings(null)
+    }
+
+    fun openSettingsSection(titleKey: String) {
+        onNavigateToSettings(titleKey)
+    }
+}
+
+@Serializable
+sealed interface SettingsDestination : NavKey {
+    @Serializable
+    data object List : SettingsDestination {
+        override fun toString(): String = "settings"
+    }
+
+    @Serializable
+    data class Section(val key: String) : SettingsDestination {
+        override fun toString(): String = "settings/$key"
+    }
+}
+
+class SettingsNavigator(
+    val backStack: NavBackStack<SettingsDestination>,
+) {
+    fun navigateBack() {
+        backStack.removeLastOrNull()
+    }
+
     fun navigateToSettingSection(titleKey: String) {
-        backStack.navigate(Destination.Setting.Section(titleKey), popUpTo = Destination.Setting.List)
+        backStack.add(SettingsDestination.Section(titleKey))
     }
 
     val selectedSettingSectionKey: String?
-        get() = (backStack.lastOrNull() as? Destination.Setting.Section)?.key
+        get() = (backStack.lastOrNull() as? SettingsDestination.Section)?.key
 }
 
 private fun <T : NavKey> NavBackStack<T>.navigate(

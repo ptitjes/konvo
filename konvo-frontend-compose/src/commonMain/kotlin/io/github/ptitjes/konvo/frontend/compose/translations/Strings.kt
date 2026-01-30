@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.frontend.compose.translations
 
-import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
@@ -21,6 +20,5 @@ internal data class Strings(
     val roleplay: RoleplayStrings,
     val conversations: ConversationStrings,
     val settings: SettingsStrings,
-    val navigationDestinationTitles: (MainDestination) -> String,
     val formats: FormatStrings,
 )

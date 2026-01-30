@@ -18,7 +18,7 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 @Composable
 fun SettingsScreen(
     titleKey: String,
-    navigator: Navigator,
+    navigator: SettingsNavigator,
     viewModel: SettingsListViewModel = viewModel(),
 ) {
     key(titleKey) {
@@ -68,6 +68,7 @@ fun SettingsScreen(
                         }
                     } else {
                         Icon(
+                            modifier = Modifier.padding(start = 16.dp, end = 8.dp),
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Back"
                         )

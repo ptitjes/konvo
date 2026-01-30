@@ -16,7 +16,7 @@ import io.github.ptitjes.konvo.frontend.compose.translations.*
 
 @Composable
 fun SettingsListScreen(
-    navigator: Navigator,
+    navigator: SettingsNavigator,
     viewModel: SettingsListViewModel = viewModel(),
 ) {
     val sections by viewModel.sections.collectAsState()
@@ -45,19 +45,27 @@ fun SettingsListScreen(
     onSelectSection: (SettingsSection) -> Unit,
     modifier: Modifier = Modifier.Companion,
 ) {
+    val containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+    val contentColor = MaterialTheme.colorScheme.onSurface
+
     Scaffold(
         modifier = modifier,
+        containerColor = containerColor,
+        contentColor = contentColor,
         topBar = {
+            // Reserved for the settings search bar
             TopAppBar(
-                title = {
-                    Text(
-                        text = strings.settings.listTitle,
-                    )
-                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = containerColor,
+                    titleContentColor = contentColor,
+                ),
+                title = { },
             )
         },
     ) { paddingValues ->
-        val flattenedSections = remember(sections) { sections.flatten() }
+        val flattenedSections = remember(sections) {
+            sections.recursivelySortedBy { it.titleKey }.flatten()
+        }
 
         LazyColumn(
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
@@ -92,6 +100,15 @@ fun SettingsListScreen(
             }
         }
     }
+}
+
+fun <R : Comparable<R>> List<SettingsSection>.recursivelySortedBy(selector: (SettingsSection) -> R?): List<SettingsSection> {
+    fun List<SettingsSection>.recursivelySorted(): List<SettingsSection> {
+        return sortedBy { selector(it) }
+            .map { section -> section.copy(children = section.children.recursivelySorted()) }
+    }
+
+    return recursivelySorted()
 }
 
 fun List<SettingsSection>.flatten(): List<FlattenSettingsSection> {

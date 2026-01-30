@@ -12,6 +12,9 @@ class SettingsListViewModel() : ViewModel() {
 
     init {
         println("Initializing SettingsListViewModel")
+
+        // TODO Use DI to retrieve settings sections
+        //
     }
 
     override fun onCleared() {

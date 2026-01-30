@@ -7,9 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.navigation3.runtime.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
-import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
-import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 
 @Composable
@@ -56,26 +54,8 @@ fun MainScreen(
             ) {
                 ConversationScreen(conversationId = it.id, navigator = navigator)
             }
-
-            settingEntries(navigator)
         }
     )
-}
 
-private fun EntryProviderScope<Destination>.settingEntries(navigator: Navigator) {
-    entry<Destination.Setting.List>(
-//        metadata = SettingsDialogSceneStrategy.listPane(),
-    ) {
-        SettingsListScreen(
-            navigator = navigator,
-        )
-    }
-    entry<Destination.Setting.Section>(
-//        metadata = SettingsDialogSceneStrategy.detailPane(),
-    ) {
-        SettingsScreen(
-            titleKey = it.key,
-            navigator = navigator,
-        )
-    }
+    SettingsWindow(navigator = viewModel.settingsNavigator)
 }

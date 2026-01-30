@@ -17,6 +17,7 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.inmemory.*
 import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.resources.*
+import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.utils.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
@@ -36,8 +37,9 @@ fun ConversationListScreen(
     ConversationListScreen(
         modifier = modifier,
         viewModel = viewModel,
-        expanded = navigator.navigationExpanded,
+        expanded = navigator.navigationPaneState.targetValue.isExpanded,
         onExpandedToggle = { coroutineScope.launch { navigator.navigationPaneState.toggle() } },
+        onSettingsClick = { coroutineScope.launch { navigator.openSettings() }},
         selectedConversationId = navigator.selectedConversationId,
         onCreateConversation = { navigator.navigateToNewConversation() },
         onSelectConversation = { navigator.navigateToConversation(it) },
@@ -57,6 +59,7 @@ fun ConversationListScreen(
 fun ConversationListScreen(
     expanded: Boolean,
     onExpandedToggle: () -> Unit,
+    onSettingsClick: () -> Unit,
     selectedConversationId: String?,
     onCreateConversation: () -> Unit,
     onSelectConversation: (id: String) -> Unit,
@@ -171,30 +174,57 @@ fun ConversationListScreen(
                     enter = fadeIn() + expandIn(expandFrom = Alignment.CenterStart),
                     exit = shrinkOut(shrinkTowards = Alignment.CenterStart) + fadeOut(),
                 ) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        state = listState,
-                        contentPadding = PaddingValues(
-                            start = 8.dp,
-                            end = 8.dp,
-                            top = 8.dp,
-                            bottom = 64.dp,
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        items(conversations, key = { it.id }) { conversation ->
-                            ConversationListItem(
-                                conversation = conversation,
-                                selected = conversation.id == selectedConversationId,
-                                onClick = {
-                                    onSelectConversation(conversation.id)
-                                    if (expanded) onExpandedToggle()
-                                },
-                                onDelete = {
-                                    viewModel.delete(conversation)
-                                    onDeleteConversation(conversation.id)
-                                },
-                            )
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            state = listState,
+                            contentPadding = PaddingValues(
+                                start = 8.dp,
+                                end = 8.dp,
+                                top = 8.dp,
+                                bottom = 64.dp,
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            items(conversations, key = { it.id }) { conversation ->
+                                ConversationListItem(
+                                    conversation = conversation,
+                                    selected = conversation.id == selectedConversationId,
+                                    onClick = {
+                                        onSelectConversation(conversation.id)
+                                        if (expanded) onExpandedToggle()
+                                    },
+                                    onDelete = {
+                                        viewModel.delete(conversation)
+                                        onDeleteConversation(conversation.id)
+                                    },
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .padding(start = 16.dp, bottom = 16.dp, top = 16.dp, end = 72.dp)
+                                .fillMaxWidth()
+                                .requiredHeight(56.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
+                            IconButton(onClick = {
+                                onSettingsClick()
+                            }) {
+                                Icon(Icons.Filled.Settings, contentDescription = "Settings")
+                            }
+
+                            DropdownMenu(
+                                expanded = false,
+                                onDismissRequest = {},
+                            ) {
+                                Text("Profile")
+                            }
                         }
                     }
                 }
@@ -240,6 +270,7 @@ private fun ConversationListPanelPreview() {
         viewModel = vm,
         modifier = Modifier.fillMaxSize(),
         expanded = true,
+        onSettingsClick = {},
         onExpandedToggle = {},
         selectedConversationId = null,
         onCreateConversation = {},

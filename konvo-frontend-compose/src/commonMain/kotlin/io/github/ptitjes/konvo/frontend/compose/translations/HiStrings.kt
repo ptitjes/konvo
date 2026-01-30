@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.translations
 
 import cafe.adriel.lyricist.*
-import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
@@ -86,6 +85,10 @@ internal val HiStrings = Strings(
     prompts = PromptStrings(
         selectorLabel = "प्रॉम्प्ट",
     ),
+    tools = ToolStrings(
+        panelLabel = "उपकरण",
+        emptyMessage = "कोई उपकरण उपलब्ध नहीं",
+    ),
     roleplay = RoleplayStrings(
         deleteConfirm = "हटाएँ",
         cancel = "रद्द करें",
@@ -146,10 +149,6 @@ internal val HiStrings = Strings(
         randomGreeting = "यादृच्छिक अभिवादन",
         greetingOptionLabel = { index, preview -> "अभिवादन ${index + 1}: $preview" },
     ),
-    tools = ToolStrings(
-        panelLabel = "उपकरण",
-        emptyMessage = "कोई उपकरण उपलब्ध नहीं",
-    ),
     conversations = ConversationStrings(
         listTitle = "वार्तालाप",
         newConversationAria = "नया वार्तालाप",
@@ -208,14 +207,6 @@ internal val HiStrings = Strings(
         developerOpenTelemetryEndpointLabel = "एंडपॉइंट",
         developerOpenTelemetryVerboseLabel = "विस्तृत निर्यात",
     ),
-    navigationDestinationTitles = { state ->
-        when (state) {
-            MainDestination.Conversations -> "वार्तालाप"
-            MainDestination.Archive -> "आर्काइव"
-            MainDestination.KnowledgeBases -> "नॉलेज बेस"
-            MainDestination.Settings -> "सेटिंग्स"
-        }
-    },
     formats = FormatStrings(
         now = "अभी",
     ),

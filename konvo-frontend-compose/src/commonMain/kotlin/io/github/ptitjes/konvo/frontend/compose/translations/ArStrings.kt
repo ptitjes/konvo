@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.translations
 
 import cafe.adriel.lyricist.*
-import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
@@ -86,6 +85,10 @@ internal val ArStrings = Strings(
     prompts = PromptStrings(
         selectorLabel = "المحفِّز",
     ),
+    tools = ToolStrings(
+        panelLabel = "الأدوات",
+        emptyMessage = "لا توجد أدوات متاحة",
+    ),
     roleplay = RoleplayStrings(
         deleteConfirm = "حذف",
         cancel = "إلغاء",
@@ -146,10 +149,6 @@ internal val ArStrings = Strings(
         randomGreeting = "تحية عشوائية",
         greetingOptionLabel = { index, preview -> "تحية ${index + 1}: $preview" },
     ),
-    tools = ToolStrings(
-        panelLabel = "الأدوات",
-        emptyMessage = "لا توجد أدوات متاحة",
-    ),
     conversations = ConversationStrings(
         listTitle = "المحادثات",
         newConversationAria = "محادثة جديدة",
@@ -208,14 +207,6 @@ internal val ArStrings = Strings(
         developerOpenTelemetryEndpointLabel = "نقطة النهاية",
         developerOpenTelemetryVerboseLabel = "تصدير مفصل",
     ),
-    navigationDestinationTitles = { state ->
-        when (state) {
-            MainDestination.Conversations -> "المحادثات"
-            MainDestination.Archive -> "الأرشيف"
-            MainDestination.KnowledgeBases -> "قواعد المعرفة"
-            MainDestination.Settings -> "الإعدادات"
-        }
-    },
     formats = FormatStrings(
         now = "الآن",
     ),

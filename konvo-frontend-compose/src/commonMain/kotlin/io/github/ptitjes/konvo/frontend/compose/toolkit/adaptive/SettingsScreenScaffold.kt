@@ -9,25 +9,18 @@ import androidx.compose.ui.*
 import androidx.lifecycle.viewmodel.navigation3.*
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.*
-import androidx.window.core.layout.*
 
 @Composable
-fun <T : Any> MainScreenScaffold(
+fun <T : Any> SettingsScreenScaffold(
     backStack: List<T>,
     onBack: () -> Unit,
-    navigationPaneState: PaneState,
-    extraPaneState: PaneState,
     entryProvider: (key: T) -> NavEntry<T>,
     modifier: Modifier = Modifier,
 ) {
     val windowSizeClass = currentWindowAdaptiveInfo(supportLargeAndXLargeWidth = true).windowSizeClass
 
-    val sceneStrategy = remember(windowSizeClass, navigationPaneState, extraPaneState) {
-        CenterStageSceneStrategy<T>(
-            windowSizeClass = windowSizeClass,
-            navigationPaneState = navigationPaneState,
-            extraPaneState = extraPaneState,
-        )
+    val sceneStrategy = remember(windowSizeClass) {
+        ListDetailStrategy<T>(windowSizeClass = windowSizeClass)
     }
 
     Surface(modifier = modifier) {
@@ -49,9 +42,4 @@ fun <T : Any> MainScreenScaffold(
             )
         }
     }
-}
-
-private fun paneTypeFromAdaptiveInfo(windowSizeClass: WindowSizeClass): ListDetailPaneType {
-    val isExpandedWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND)
-    return if (isExpandedWidth) ListDetailPaneType.TwoPane else ListDetailPaneType.OnePane
 }
