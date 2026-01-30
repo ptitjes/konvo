@@ -49,9 +49,9 @@ fun Typography.withFontFamily(fontFamily: FontFamily) = Typography(
     titleMedium = titleMedium.copy(fontFamily = fontFamily),
     titleSmall = titleSmall.copy(fontFamily = fontFamily),
 
-    bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
-    bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
-    bodySmall = bodySmall.copy(fontFamily = fontFamily),
+    bodyLarge = bodyLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.Thin),
+    bodyMedium = bodyMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.Thin),
+    bodySmall = bodySmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.Thin),
 
     labelLarge = labelLarge.copy(fontFamily = fontFamily),
     labelMedium = labelMedium.copy(fontFamily = fontFamily),
