@@ -95,7 +95,7 @@ fun NewConversationScreen(
                     LocalCenterStageControl.current.NavigationButton {
                         Icon(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                            imageVector = Icons.AutoMirrored.Default.Chat,
+                            imageVector = Icons.Default.ChatBubbleOutline,
                             contentDescription = strings.conversations.newConversationIconAria,
                         )
                     }

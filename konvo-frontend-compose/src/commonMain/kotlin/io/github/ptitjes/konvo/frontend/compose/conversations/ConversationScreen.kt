@@ -3,6 +3,8 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -86,7 +88,7 @@ fun ConversationScreen(
                     LocalCenterStageControl.current.NavigationButton {
                         Icon(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                            imageVector = Icons.Default.ChatBubbleOutline,
+                            imageVector = Icons.AutoMirrored.Filled.Chat,
                             contentDescription = strings.conversations.conversationAria
                         )
                     }
