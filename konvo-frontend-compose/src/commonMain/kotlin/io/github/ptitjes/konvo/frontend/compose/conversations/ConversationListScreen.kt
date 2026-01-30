@@ -2,6 +2,8 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material.icons.*
@@ -76,8 +78,15 @@ fun ConversationListScreen(
     val containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     val contentColor = MaterialTheme.colorScheme.onSurface
 
+    val clickableModifier = if (!expanded) {
+        val interactionSource = remember { MutableInteractionSource() }
+        Modifier.clickable(interactionSource = interactionSource, indication = null) { onExpandedToggle() }
+    } else Modifier
+
+    val transition = updateTransition(expanded)
+
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.then(clickableModifier),
         containerColor = containerColor,
         contentColor = contentColor,
         topBar = {
@@ -98,21 +107,32 @@ fun ConversationListScreen(
                     }
                 },
                 title = {
-                    AnimatedVisibility(
-                        visible = expanded,
-                        enter = fadeIn() + expandIn(expandFrom = Alignment.CenterStart),
-                        exit = shrinkOut(shrinkTowards = Alignment.CenterStart) + fadeOut(),
-                    ) {
-                        Text(
-                            text = strings.conversations.listTitle,
-                        )
+                    Box {
+                        transition.AnimatedVisibility(
+                            modifier = Modifier.wrapContentSize(unbounded = true),
+                            visible = { it },
+                            enter = fadeIn(
+                                animationSpec = tween(durationMillis = 100, delayMillis = 50),
+                            ) + expandIn(
+                                expandFrom = Alignment.CenterStart,
+                                animationSpec = tween(durationMillis = 100, delayMillis = 50),
+                            ),
+                            exit = shrinkOut(
+                                shrinkTowards = Alignment.CenterStart,
+                                animationSpec = tween(durationMillis = 100),
+                            ) + fadeOut(
+                                animationSpec = tween(durationMillis = 100),
+                            ),
+                        ) {
+                            Text(text = strings.conversations.listTitle)
+                        }
                     }
                 },
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
-            val offset by animateDpAsState(if (expanded) 0.dp else 8.dp)
+            val offset by transition.animateDp { if (expanded) 0.dp else 8.dp }
 
             FloatingActionButton(
                 modifier = Modifier.offset(x = offset),
@@ -145,9 +165,9 @@ fun ConversationListScreen(
                     }
                 }
 
-                AnimatedVisibility(
+                transition.AnimatedVisibility(
                     modifier = Modifier.padding(paddingValues).fillMaxSize(),
-                    visible = expanded,
+                    visible = { it },
                     enter = fadeIn() + expandIn(expandFrom = Alignment.CenterStart),
                     exit = shrinkOut(shrinkTowards = Alignment.CenterStart) + fadeOut(),
                 ) {
