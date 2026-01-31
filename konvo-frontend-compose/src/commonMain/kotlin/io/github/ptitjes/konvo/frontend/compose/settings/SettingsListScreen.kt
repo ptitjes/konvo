@@ -77,6 +77,7 @@ fun SettingsListScreen(
                 val selected = section == selectedSection
                 val selectSectionAria = strings.settings.selectSectionAria
                 val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
+                val depthPadding = 16.dp * flattenedSection.depth
 
                 Surface(
                     color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
@@ -89,10 +90,17 @@ fun SettingsListScreen(
                                 onClick(label = selectSectionAria, action = null)
                             }
                             .clickable(role = Role.Button, onClick = { onSelectSection(section) })
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
+                        Spacer(modifier = Modifier.width(depthPadding))
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = section.icon,
+                            contentDescription = localizedTitle,
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            modifier = Modifier.padding(start = 16.dp * flattenedSection.depth),
                             text = localizedTitle,
                         )
                     }

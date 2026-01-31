@@ -14,10 +14,6 @@ fun SettingsWindow(
     navigator: SettingsNavigator,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(navigator.backStack) {
-        println("Settings back stack changed: ${navigator.backStack.joinToString(", ")}")
-    }
-
     if (navigator.backStack.isNotEmpty()) {
         // TODO provide the dialog window as an expect/actual
         // TODO derive the dialog window size based on screen size
@@ -26,7 +22,7 @@ fun SettingsWindow(
             state = rememberDialogState(
                 size = DpSize(width = 1024.dp, height = 800.dp),
             ),
-            onCloseRequest = { navigator.backStack.clear() },
+            onCloseRequest = { navigator.closeSettings() },
         ) {
             CompositionLocalProvider(
                 LocalListDetailPaneType provides ListDetailPaneType.TwoPane,
@@ -34,7 +30,13 @@ fun SettingsWindow(
                 SettingsScreenScaffold(
                     modifier = modifier,
                     backStack = navigator.backStack,
-                    onBack = { navigator.navigateBack() },
+                    onBack = {
+                        if (navigator.isLastSettingsSection) {
+                            navigator.closeSettings()
+                        } else {
+                            navigator.navigateBack()
+                        }
+                    },
                     entryProvider = entryProvider {
 
                         entry<SettingsDestination.List>(metadata = ListDetailScene.list()) {

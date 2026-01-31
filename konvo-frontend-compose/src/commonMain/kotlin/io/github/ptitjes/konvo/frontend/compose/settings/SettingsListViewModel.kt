@@ -2,6 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.settings
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.vector.*
 import androidx.lifecycle.*
 import kotlinx.coroutines.flow.*
 
@@ -25,6 +26,7 @@ class SettingsListViewModel() : ViewModel() {
 
 data class SettingsSection(
     val titleKey: String,
+    val icon: ImageVector,
     val panel: @Composable SettingsPanelScope.() -> Unit,
     val scrollable: Boolean = true,
     val children: List<SettingsSection> = emptyList(),

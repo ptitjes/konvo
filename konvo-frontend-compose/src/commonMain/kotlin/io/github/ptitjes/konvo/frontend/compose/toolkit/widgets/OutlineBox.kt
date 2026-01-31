@@ -10,8 +10,8 @@ import androidx.compose.ui.unit.*
 
 @Composable
 fun OutlineBox(
-    label: String,
-    modifier: Modifier,
+    label: String? = null,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
     Box(modifier = modifier) {
@@ -28,16 +28,18 @@ fun OutlineBox(
             }
         }
 
-        Row(
-            modifier = Modifier.offset(x = 12.dp, y = (-2).dp)
-                .background(MaterialTheme.colorScheme.background)
-                .padding(horizontal = 4.dp),
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        if (label != null) {
+            Row(
+                modifier = Modifier.offset(x = 12.dp, y = (-2).dp)
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(horizontal = 4.dp),
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }

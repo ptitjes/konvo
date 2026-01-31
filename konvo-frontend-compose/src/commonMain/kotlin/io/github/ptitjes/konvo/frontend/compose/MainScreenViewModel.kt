@@ -138,6 +138,13 @@ sealed interface SettingsDestination : NavKey {
 class SettingsNavigator(
     val backStack: NavBackStack<SettingsDestination>,
 ) {
+    val isLastSettingsSection: Boolean get() =
+        backStack.size == 2
+
+    fun closeSettings() {
+        backStack.clear()
+    }
+
     fun navigateBack() {
         backStack.removeLastOrNull()
     }

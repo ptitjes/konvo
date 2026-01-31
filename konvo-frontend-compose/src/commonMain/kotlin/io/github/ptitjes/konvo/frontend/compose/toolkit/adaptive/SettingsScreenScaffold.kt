@@ -38,6 +38,10 @@ fun <T : Any> SettingsScreenScaffold(
                 transitionSpec = {
                     fadeIn(animationSpec = tween(durationMillis = 250)) togetherWith
                             fadeOut(animationSpec = tween(durationMillis = 250))
+                },
+                popTransitionSpec = {
+                    fadeIn(animationSpec = tween(durationMillis = 250)) togetherWith
+                            fadeOut(animationSpec = tween(durationMillis = 250))
                 }
             )
         }

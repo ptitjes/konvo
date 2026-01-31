@@ -50,19 +50,19 @@ class ListDetailStrategy<T : Any>(private val windowSizeClass: WindowSizeClass) 
         if (!isExpandedWidth) return null
 
         val lastEntry = entries.lastOrNull() ?: return null
-        val isListDetailEntry =
-            lastEntry.metadata.containsKey(LIST_KEY) ||
-                    lastEntry.metadata.containsKey(DETAIL_KEY)
+        val isListDetailEntry = lastEntry.metadata.containsKey(LIST_KEY) || lastEntry.metadata.containsKey(DETAIL_KEY)
         if (!isListDetailEntry) return null
 
         val listEntry = entries.findLast { LIST_KEY in it.metadata } ?: return null
         val detailEntry = entries.findLast { DETAIL_KEY in it.metadata }
 
+        val previousEntries = entries.dropLast(1)
+
         return ListDetailScene(
             key = listEntry.contentKey to detailEntry?.contentKey,
-            previousEntries = entries.dropLast(1),
+            previousEntries = previousEntries,
             listEntry = listEntry,
-            detailEntry = detailEntry
+            detailEntry = detailEntry,
         )
     }
 }

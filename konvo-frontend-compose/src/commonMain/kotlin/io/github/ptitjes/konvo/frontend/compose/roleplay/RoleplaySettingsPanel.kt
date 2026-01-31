@@ -28,11 +28,13 @@ fun RoleplaySettingsPanel() {
         bottomContent = {
             val personaSettings by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
             if (personaSettings.isEmpty()) {
-                Text(
-                    text = strings.roleplay.noPersonaDefined,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp),
-                )
+                OutlineBox(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = strings.roleplay.noPersonaDefined,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(8.dp),
+                    )
+                }
             } else {
                 val selectedPersona = remember(settings.defaultPersonaName, personaSettings) {
                     personaSettings.firstOrNull { it.name == settings.defaultPersonaName } ?: personaSettings.first()
@@ -56,11 +58,13 @@ fun RoleplaySettingsPanel() {
         description = strings.roleplay.defaultPreferredModelDescription,
         bottomContent = {
             if (models.isEmpty()) {
-                Text(
-                    text = strings.roleplay.noAvailableModels,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(8.dp),
-                )
+                OutlineBox(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = strings.roleplay.noAvailableModels,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(8.dp),
+                    )
+                }
             } else {
                 val selectedModel = remember(settings.defaultPreferredModelName, models) {
                     settings.defaultPreferredModelName?.let { name ->
