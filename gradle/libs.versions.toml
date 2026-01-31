@@ -91,7 +91,6 @@ composeUiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref
 composeUiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 composeUiTest = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose" }
 composeComponentsResources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
-composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeMaterialIcons" }
 composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3" }
 composeMaterial3AdaptiveNavigationSuite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "composeMaterial3" }
 composeMaterial3Adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "composeMaterial3Adaptive" }
@@ -130,7 +129,7 @@ flexmarkHtmlMarkdownConverter = { module = "com.vladsch.flexmark:flexmark-html2m
 kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines", "kotlinxIoCore"]
 ktorClient = ["ktorClientCore", "ktorClientLogging", "ktorClientContentNegotiation", "ktorSerializationKotlinxJson"]
 
-composeUi = ["composeUiTooling", "composeUiToolingPreview", "composeComponentsResources", "composeMaterialIconsExtended", "composeMaterial3", "composeMaterial3Adaptive", "composeMaterial3AdaptiveNavigationSuite", "androidxLifecycleViewmodelCompose", "androidxLifecycleViewmodelNavigation3", "androidxNavigation3Ui"]
+composeUi = ["composeUiTooling", "composeUiToolingPreview", "composeComponentsResources", "composeMaterial3", "composeMaterial3Adaptive", "composeMaterial3AdaptiveNavigationSuite", "androidxLifecycleViewmodelCompose", "androidxLifecycleViewmodelNavigation3", "androidxNavigation3Ui"]
 fileKit = ["fileKitCore", "fileKitDialogs", "fileKitDialogsCompose", "fileKitCoil"]
 
 [plugins]

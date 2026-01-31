@@ -1,52 +1,51 @@
 package io.github.ptitjes.konvo.frontend.compose.settings
 
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 
 val defaultSettingsSections = listOf(
     SettingsSection(
         titleKey = "appearance",
-        icon = Icons.Default.Palette,
+        icon = Res.drawable.ic_palette,
         panel = { AppearanceSettingsPanel() },
     ),
     SettingsSection(
         titleKey = "mcp",
-        icon = Icons.Default.Extension,
+        icon = Res.drawable.ic_extension,
         panel = { McpSettingsPanel() },
     ),
     SettingsSection(
         titleKey = "models",
-        icon = Icons.Default.Memory,
+        icon = Res.drawable.ic_memory,
         panel = { ModelProviderSettingsPanel() },
     ),
     SettingsSection(
         titleKey = "developer",
-        icon = Icons.Default.DeveloperMode,
+        icon = Res.drawable.ic_mobile_code,
         panel = { DeveloperSettingsPanel() },
     ),
     SettingsSection(
         titleKey = "roleplay",
-        icon = Icons.Default.TheaterComedy,
+        icon = Res.drawable.ic_theater_comedy,
         panel = { RoleplaySettingsPanel() },
         children = listOf(
             SettingsSection(
                 titleKey = "characters",
-                icon = Icons.Default.Person,
+                icon = Res.drawable.ic_person,
                 scrollable = false,
                 panel = { CharacterSettingsPanel() },
             ),
             SettingsSection(
                 titleKey = "lorebooks",
-                icon = Icons.Default.MenuBook,
+                icon = Res.drawable.ic_menu_book,
                 panel = { LorebooksSettingsPanel() },
                 children = emptyList(),
             ),
             SettingsSection(
                 titleKey = "personas",
-                icon = Icons.Default.Face,
+                icon = Res.drawable.ic_comedy_mask,
                 panel = { PersonaSettingsPanel() },
             ),
         ),

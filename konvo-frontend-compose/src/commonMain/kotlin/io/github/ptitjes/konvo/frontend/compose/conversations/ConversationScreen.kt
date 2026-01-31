@@ -2,10 +2,6 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -17,10 +13,12 @@ import com.eygraber.compose.placeholder.*
 import com.eygraber.compose.placeholder.material3.*
 import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun ConversationScreen(
@@ -88,7 +86,7 @@ fun ConversationScreen(
                     LocalCenterStageControl.current.NavigationButton {
                         Icon(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                            imageVector = Icons.AutoMirrored.Filled.Chat,
+                            painter = painterResource(Res.drawable.ic_chat),
                             contentDescription = strings.conversations.conversationAria
                         )
                     }

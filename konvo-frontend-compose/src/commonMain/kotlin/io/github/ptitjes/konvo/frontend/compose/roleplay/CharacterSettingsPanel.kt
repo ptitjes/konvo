@@ -1,8 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.roleplay
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -10,6 +8,7 @@ import androidx.compose.ui.unit.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.roleplay.providers.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
@@ -18,6 +17,7 @@ import io.github.vinceglb.filekit.*
 import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.dialogs.compose.*
 import kotlinx.coroutines.*
+import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
 
 /**
@@ -112,7 +112,7 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
                 Icon(
-                    imageVector = Icons.Default.FileDownload,
+                    painter = painterResource(Res.drawable.ic_file_download),
                     contentDescription = strings.roleplay.importCharactersAria
                 )
             }
@@ -127,7 +127,7 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
                     bottomEndContent = { character ->
                         FilledTonalIconButton(onClick = { pendingDelete = character }) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                painter = painterResource(Res.drawable.ic_delete),
                                 contentDescription = strings.roleplay.deleteCharacterAria,
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )

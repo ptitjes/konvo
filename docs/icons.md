@@ -1,0 +1,109 @@
+## Guidelines
+
+- Rounded icons are preferred to square ones
+- Outlined rounded icons are preferred to filled ones for settings sections
+
+## Existing icons
+
+- `ic_icon.png`: Application icon used for app branding (general app icon)
+  - Used in: `ComposeFrontend.kt`
+  - Material Symbols library: n/a (custom icon)
+- `ic_left_panel_open.svg`: Indicates opening the left panel/side drawer (left panel open)
+  - Used in: Nav entries that use the `CenterStageControl.kt`
+  - Material Symbols library: `left_panel_open`
+- `ic_left_panel_close.svg`: Indicates closing the left panel/side drawer (left panel close)
+  - Used in: Nav entries that use the `CenterStageControl.kt`
+  - Material Symbols library: `left_panel_close`
+- `ic_right_panel_open.svg`: Indicates opening the right panel/side drawer (right panel open)
+  - Used in: Nav entries that use the `CenterStageControl.kt`
+  - Material Symbols library: `right_panel_open`
+- `ic_right_panel_close.svg`: Indicates closing the right panel/side drawer (right panel close)
+  - Used in: Nav entries that use the `CenterStageControl.kt`
+  - Material Symbols library: `right_panel_close`
+- `ic_add.svg`: Used for adding a new model provider or creating a new conversation
+  - Used in: `ModelProviderSettingsPanel.kt`, `ConversationListScreen.kt`, `McpSettingsPanel.kt`, `PersonaSettingsPanel.kt`, `JsonEditor.kt`
+  - Material Symbols library: `add`
+- `ic_drag_handle.svg`: Used as a handle for reordering items in a list
+  - Used in: `ModelProviderSettingsPanel.kt`
+  - Material Symbols library: `drag_handle`
+- `ic_check.svg`: Indicates a successful test or validation
+  - Used in: `ModelProviderSettingsPanel.kt`
+  - Material Symbols library: `check`
+- `ic_error.svg`: Indicates a failed test or error state
+  - Used in: `ModelProviderSettingsPanel.kt`
+  - Material Symbols library: `error`
+- `ic_play.svg`: Used for initiating a test/try action
+  - Used in: `ModelProviderSettingsPanel.kt`
+  - Material Symbols library: `play_arrow`
+- `ic_edit.svg`: Used for editing an existing item
+  - Used in: `ModelProviderSettingsPanel.kt`, `McpSettingsPanel.kt`, `PersonaSettingsPanel.kt`
+  - Material Symbols library: `edit`
+- `ic_delete.svg`: Used for deleting an item
+  - Used in: `ModelProviderSettingsPanel.kt`, `McpSettingsPanel.kt`, `PersonaSettingsPanel.kt`, `JsonEditor.kt`, `ConversationListItem.kt`
+  - Material Symbols library: `delete`
+- `ic_cached.svg`: Used for a test action icon in its initial state
+  - Used in: `ModelProviderSettingsPanel.kt`
+  - Material Symbols library: `cached`
+-  `ic_save.svg`: Used for saving changes
+  - Used in: `ModelProviderSettingsPanel.kt`
+  - Material Symbols library: `save`
+-  `ic_settings.svg`: Opens the settings screen
+  - Used in: `ConversationListScreen.kt`, `NewConversationScreen.kt`
+  - Material Symbols library: `settings`
+-  `ic_chat.svg`: Represents a chat or conversation
+  - Used in: `ConversationScreen.kt`, `ConversationListItem.kt`
+  - Material Symbols library: `chat`
+-  `ic_chat_bubble_outline.svg`: Used for the new conversation screen navigation icon
+  - Used in: `NewConversationScreen.kt`
+  - Material Symbols library: `chat_bubble_outline`
+-  `ic_expand_more.svg`: Used to indicate an expandable section
+  - Used in: `ConversationEventPanel.kt`
+  - Material Symbols library: `expand_more`
+-  `ic_question_mark.svg`: Indicates a tool call requires vetting/approval
+  - Used in: `ConversationEventPanel.kt`
+  - Material Symbols library: `question_mark`
+-  `ic_check_circle.svg`: Indicates a successful tool call result
+  - Used in: `ConversationEventPanel.kt`
+  - Material Symbols library: `check_circle`
+-  `ic_send.svg`: Used for the send message button
+  - Used in: `UserInputBox.kt`
+  - Material Symbols library: `send`
+-  `ic_attach_file.svg`: Used for the add attachments button
+  - Used in: `AddAttachmentsButton.kt`
+  - Material Symbols library: `attachment`
+-  `ic_palette.svg`: Appearance settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `palette`
+-  `ic_extension.svg`: General settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `extension`
+-  `ic_memory.svg`: Model providers settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `memory`
+-  `ic_mobile_code.svg`: Developer settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `mobile_code`
+-  `ic_theater_comedy.svg`: Characters settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `theater_comedy`
+-  `ic_person.svg`: Personas settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `person`
+-  `ic_menu_book.svg`: Lorebooks settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `menu_book`
+-  `ic_comedy_mask.svg`: Avatars settings section icon
+  - Used in: `DefaultSettingsSections.kt`
+  - Material Symbols library: `comedy_mask`
+-  `ic_arrow_back.svg`: Back button in settings screen
+  - Used in: `SettingsScreen.kt`, `CenterStageControl.kt`
+  - Material Symbols library: `arrow_back`
+-  `ic_file_download.svg`: Used for importing characters or lorebooks
+  - Used in: `CharacterSettingsPanel.kt`, `LorebooksSettingsPanel.kt`
+  - Material Symbols library: `download`
+-  `ic_book.svg`: Used for lorebook icon in character selector
+  - Used in: `CharacterGridSelector.kt`
+  - Material Symbols library: `book`
+-  `ic_settings.svg`: Opens the settings screen
+  - Used in: `ConversationListScreen.kt`, `NewConversationScreen.kt`
+  - Material Symbols library: `settings`

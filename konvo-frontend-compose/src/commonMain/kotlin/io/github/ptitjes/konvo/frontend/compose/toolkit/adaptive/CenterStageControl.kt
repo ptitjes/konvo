@@ -1,7 +1,5 @@
 package io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive
 
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import io.github.ptitjes.konvo.frontend.compose.resources.*
@@ -31,7 +29,7 @@ fun CenterStageControl.NavigationButton(
             when (this.navigationButtonRole) {
                 CenterStageButtonRole.Back -> {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painter = painterResource(Res.drawable.ic_arrow_back),
                         contentDescription = strings.navigation.backAria
                     )
                 }
@@ -63,7 +61,7 @@ fun CenterStageControl.ExtraPaneButton() {
             when (this.extraButtonRole) {
                 CenterStageButtonRole.Back -> {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        painter = painterResource(Res.drawable.ic_arrow_back),
                         contentDescription = strings.navigation.backAria
                     )
                 }

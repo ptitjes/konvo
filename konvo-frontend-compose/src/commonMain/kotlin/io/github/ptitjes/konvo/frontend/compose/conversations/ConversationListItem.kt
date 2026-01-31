@@ -2,8 +2,6 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -12,8 +10,10 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.text.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun ConversationListItem(
@@ -56,7 +56,7 @@ fun ConversationListItem(
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ChatBubbleOutline,
+                        painter = painterResource(Res.drawable.ic_chat),
                         contentDescription = strings.conversations.conversationAria,
                     )
                 }
@@ -80,7 +80,7 @@ fun ConversationListItem(
                 )
                 IconButton(onClick = { showConfirm = true }) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        painter = painterResource(Res.drawable.ic_delete),
                         contentDescription = strings.conversations.deleteConversationAria
                     )
                 }

@@ -2,17 +2,17 @@ package io.github.ptitjes.konvo.frontend.compose.toolkit.settings
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun SettingsScreen(
@@ -61,14 +61,14 @@ fun SettingsScreen(
                     if (paneType == ListDetailPaneType.OnePane) {
                         IconButton(onClick = onBackClick) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                painter = painterResource(Res.drawable.ic_arrow_back),
                                 contentDescription = "Back"
                             )
                         }
                     } else {
                         Icon(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                            imageVector = section.icon,
+                            painter = painterResource(section.icon),
                             contentDescription = title,
                         )
                     }

@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun SettingsListScreen(
@@ -96,7 +97,7 @@ fun SettingsListScreen(
                         Spacer(modifier = Modifier.width(depthPadding))
                         Icon(
                             modifier = Modifier.size(20.dp),
-                            imageVector = section.icon,
+                            painter = painterResource(section.icon),
                             contentDescription = localizedTitle,
                         )
                         Spacer(modifier = Modifier.width(8.dp))

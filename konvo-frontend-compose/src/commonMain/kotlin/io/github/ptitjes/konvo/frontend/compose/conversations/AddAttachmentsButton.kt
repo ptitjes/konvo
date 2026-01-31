@@ -1,13 +1,13 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.dialogs.compose.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun AddAttachmentsButton(
@@ -20,7 +20,7 @@ fun AddAttachmentsButton(
 
     IconButton(onClick = { launcher.launch() }) {
         Icon(
-            imageVector = Icons.Rounded.AttachFile,
+            painter = painterResource(Res.drawable.ic_attach_file),
             contentDescription = strings.conversations.addAttachmentAria,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

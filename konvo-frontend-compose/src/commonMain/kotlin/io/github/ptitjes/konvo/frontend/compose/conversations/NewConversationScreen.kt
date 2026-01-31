@@ -1,8 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -13,12 +11,14 @@ import io.github.ptitjes.konvo.frontend.compose.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import io.github.ptitjes.konvo.frontend.compose.mcp.*
 import io.github.ptitjes.konvo.frontend.compose.models.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.roleplay.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
 
 @Composable
@@ -94,7 +94,7 @@ fun NewConversationScreen(
                     LocalCenterStageControl.current.NavigationButton {
                         Icon(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                            imageVector = Icons.Default.ChatBubbleOutline,
+                            painter = painterResource(Res.drawable.ic_chat_bubble_outline),
                             contentDescription = strings.conversations.newConversationIconAria,
                         )
                     }
@@ -107,7 +107,7 @@ fun NewConversationScreen(
                         enabled = canCreate,
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Check,
+                            painter = painterResource(Res.drawable.ic_check),
                             contentDescription = strings.conversations.createAria,
                         )
                     }
@@ -303,7 +303,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
                     onClick = { showLorebookSheet = true },
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
+                        painter = painterResource(Res.drawable.ic_settings),
                         contentDescription = strings.conversations.personaSettingsAria
                     )
                 }

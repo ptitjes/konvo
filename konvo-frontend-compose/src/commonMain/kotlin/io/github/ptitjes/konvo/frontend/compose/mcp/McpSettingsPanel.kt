@@ -1,16 +1,16 @@
 package io.github.ptitjes.konvo.frontend.compose.mcp
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.mcp.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.painterResource
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +45,7 @@ fun McpSettingsPanel() {
         description = strings.mcp.configuredServersDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { sheetState = McpServersSheetState.Adding }) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = strings.mcp.addServerAria)
+                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = strings.mcp.addServerAria)
             }
         },
         bottomContent = {
@@ -80,14 +80,14 @@ fun McpSettingsPanel() {
 
                                 IconButton(onClick = { sheetState = McpServersSheetState.Editing(name) }) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
+                                        painter = painterResource(Res.drawable.ic_edit),
                                         contentDescription = strings.mcp.editServerAria
                                     )
                                 }
 
                                 IconButton(onClick = { serverPendingDeletion = name }) {
                                     Icon(
-                                        imageVector = Icons.Default.Delete,
+                                        painter = painterResource(Res.drawable.ic_delete),
                                         contentDescription = strings.mcp.deleteServerAria
                                     )
                                 }
@@ -222,7 +222,7 @@ private fun EditServerSheetContent(
                 modifier = Modifier.offset(y = 4.dp),
                 onClick = onRemove,
             ) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = strings.mcp.removeServerAria)
+                Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = strings.mcp.removeServerAria)
             }
         }
 
@@ -407,7 +407,7 @@ private fun AddServerSheetContent(
                 },
                 enabled = isValid(),
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = strings.mcp.addServerAria)
+                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = strings.mcp.addServerAria)
             }
         }
 

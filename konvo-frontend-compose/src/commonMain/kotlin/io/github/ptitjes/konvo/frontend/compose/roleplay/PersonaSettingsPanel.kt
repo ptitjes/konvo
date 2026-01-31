@@ -1,17 +1,17 @@
 package io.github.ptitjes.konvo.frontend.compose.roleplay
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.roleplay.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.ptitjes.konvo.frontend.compose.utils.*
+import org.jetbrains.compose.resources.painterResource
 import org.kodein.di.compose.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,7 +50,7 @@ fun PersonaSettingsPanel() {
         trailingContent = {
             FilledTonalIconButton(onClick = { openSheet = PersonaSheetState.Adding }) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    painter = painterResource(Res.drawable.ic_add),
                     contentDescription = strings.roleplay.addPersonaAria,
                 )
             }
@@ -90,14 +90,14 @@ fun PersonaSettingsPanel() {
 
                                 IconButton(onClick = { openSheet = PersonaSheetState.Editing(persona.name) }) {
                                     Icon(
-                                        imageVector = Icons.Default.Edit,
+                                        painter = painterResource(Res.drawable.ic_edit),
                                         contentDescription = strings.roleplay.editPersonaAria,
                                     )
                                 }
 
                                 IconButton(onClick = { pendingDeletion = persona }) {
                                     Icon(
-                                        imageVector = Icons.Default.Delete,
+                                        painter = painterResource(Res.drawable.ic_delete),
                                         contentDescription = strings.roleplay.deletePersonaAria,
                                     )
                                 }
@@ -233,7 +233,7 @@ private fun PersonaEditor(
                     onClick = onRemove,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        painter = painterResource(Res.drawable.ic_delete),
                         contentDescription = strings.roleplay.removePersonaAria,
                     )
                 }

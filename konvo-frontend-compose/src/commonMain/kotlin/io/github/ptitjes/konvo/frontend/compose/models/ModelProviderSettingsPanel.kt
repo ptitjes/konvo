@@ -2,8 +2,6 @@ package io.github.ptitjes.konvo.frontend.compose.models
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -13,12 +11,14 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.core.models.providers.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import io.github.ptitjes.konvo.frontend.compose.utils.*
 import kotlinx.coroutines.*
+import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
 import sh.calvin.reorderable.*
 
@@ -67,7 +67,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
             FilledTonalIconButton(
                 onClick = { sheetState = ModelProvidersSheetState.Adding },
             ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = strings.models.addProviderAria)
+                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = strings.models.addProviderAria)
             }
         },
         bottomContent = {
@@ -100,7 +100,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                         onClick = { },
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.DragHandle,
+                                            painter = painterResource(Res.drawable.ic_drag_handle),
                                             contentDescription = strings.models.dragHandleAria,
                                         )
                                     }
@@ -133,7 +133,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
 
                                                     is ModelProviderStatus.Available -> {
                                                         Icon(
-                                                            imageVector = Icons.Default.Check,
+                                                            painter = painterResource(Res.drawable.ic_check),
                                                             contentDescription = strings.models.testProviderSuccessAria,
                                                             tint = Color.Green,
                                                         )
@@ -141,7 +141,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
 
                                                     is ModelProviderStatus.Unavailable -> {
                                                         Icon(
-                                                            imageVector = Icons.Default.Error,
+                                                            painter = painterResource(Res.drawable.ic_error),
                                                             contentDescription = strings.models.testProviderFailureAria,
                                                             tint = Color.Red,
                                                         )
@@ -149,7 +149,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
 
                                                     null -> {
                                                         Icon(
-                                                            imageVector = Icons.Default.Try,
+                                                            painter = painterResource(Res.drawable.ic_play),
                                                             contentDescription = strings.models.testProviderAria,
                                                             tint = Color.Gray,
                                                         )
@@ -163,7 +163,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                         onClick = { sheetState = ModelProvidersSheetState.Editing(index) },
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Edit,
+                                            painter = painterResource(Res.drawable.ic_edit),
                                             contentDescription = strings.models.editProviderAria,
                                         )
                                     }
@@ -172,7 +172,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                         onClick = { providerPendingDeletionIndex = index },
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Delete,
+                                            painter = painterResource(Res.drawable.ic_delete),
                                             contentDescription = strings.models.deleteProviderAria,
                                         )
                                     }
@@ -657,7 +657,7 @@ private fun TestButton(
 
                 is TestResult.Success -> {
                     Icon(
-                        imageVector = Icons.Default.Check,
+                        painter = painterResource(Res.drawable.ic_check),
                         contentDescription = strings.models.testProviderSuccessAria,
                         tint = Color.Green,
                     )
@@ -665,7 +665,7 @@ private fun TestButton(
 
                 is TestResult.Failure -> {
                     Icon(
-                        imageVector = Icons.Default.Error,
+                        painter = painterResource(Res.drawable.ic_error),
                         contentDescription = strings.models.testProviderFailureAria,
                         tint = Color.Red,
                     )
@@ -673,7 +673,7 @@ private fun TestButton(
 
                 is TestResult.Unknown -> {
                     Icon(
-                        imageVector = Icons.Default.Cached,
+                        painter = painterResource(Res.drawable.ic_cached),
                         contentDescription = strings.models.testProviderAria,
                     )
                 }
@@ -689,7 +689,7 @@ private fun DeleteButton(
 ) {
     OutlinedActionButton(
         onClick = onClick,
-        icon = { Icon(imageVector = Icons.Default.Delete, contentDescription = strings.models.deleteProviderAria) },
+        icon = { Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = strings.models.deleteProviderAria) },
         label = { Text(strings.models.deleteAction) },
     )
 }
@@ -708,7 +708,7 @@ private fun AddSaveButton(
             enabled = enabled,
             icon = {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    painter = painterResource(Res.drawable.ic_add),
                     contentDescription = strings.models.addProviderConfirmAria
                 )
             },
@@ -718,7 +718,7 @@ private fun AddSaveButton(
         AddSaveActionType.Save -> FilledActionButton(
             onClick = onClick,
             enabled = enabled,
-            icon = { Icon(imageVector = Icons.Default.Save, contentDescription = strings.models.saveAction) },
+            icon = { Icon(painter = painterResource(Res.drawable.ic_save), contentDescription = strings.models.saveAction) },
             label = { Text(strings.models.saveAction) },
         )
     }

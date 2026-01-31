@@ -2,8 +2,7 @@ package io.github.ptitjes.konvo.frontend.compose.toolkit.json
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -13,8 +12,10 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import com.xemantic.ai.tool.schema.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import kotlinx.serialization.json.*
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun JsonEditor(
@@ -326,7 +327,7 @@ fun JsonArrayEditor(
                 },
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,
+                    painter = painterResource(Res.drawable.ic_add),
                     contentDescription = "Add",
                 )
             }
@@ -360,7 +361,7 @@ private fun JsonArrayItemEditor(
             onClick = onItemDelete,
         ) {
             Icon(
-                imageVector = Icons.Default.Delete,
+                painter = painterResource(Res.drawable.ic_delete),
                 contentDescription = "Remove",
             )
         }

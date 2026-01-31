@@ -5,8 +5,6 @@ import androidx.compose.foundation.interaction.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -18,9 +16,11 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import coil3.compose.*
 import io.github.ptitjes.konvo.core.roleplay.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * An alternative pretty selector for characters showing avatars in a responsive grid.
@@ -113,7 +113,7 @@ private fun DefaultTopEndContent(character: CharacterCard) {
                 .padding(4.dp),
         ) {
             Icon(
-                imageVector = Icons.Rounded.Book,
+                painter = painterResource(Res.drawable.ic_book),
                 contentDescription = strings.roleplay.hasCharacterBookAria,
                 tint = Color.White,
                 modifier = Modifier.size(12.dp),

@@ -6,8 +6,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.foundation.text.selection.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -24,8 +22,10 @@ import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun ConversationEventPanel(itemViewState: ConversationViewState.Item, conversation: ConversationUserView) =
@@ -301,7 +301,7 @@ private fun ExpandableBox(
                     val rotation by animateFloatAsState(if (expanded) 180f else 0f)
                     Icon(
                         modifier = Modifier.rotate(rotation),
-                        imageVector = Icons.Filled.ExpandMore,
+                        painter = painterResource(Res.drawable.ic_expand_more),
                         contentDescription =
                             if (expanded) strings.conversations.collapseAria
                             else strings.conversations.expandAria,
@@ -381,7 +381,7 @@ private fun ResultIcon(
 @Composable
 private fun AskIcon(modifier: Modifier = Modifier) {
     Icon(
-        imageVector = Icons.Filled.QuestionMark,
+        painter = painterResource(Res.drawable.ic_question_mark),
         contentDescription = "Question", // TODO
         tint = MaterialTheme.colorScheme.primary,
         modifier = modifier,
@@ -391,7 +391,7 @@ private fun AskIcon(modifier: Modifier = Modifier) {
 @Composable
 private fun SuccessIcon(modifier: Modifier = Modifier) {
     Icon(
-        imageVector = Icons.Filled.CheckCircle,
+        painter = painterResource(Res.drawable.ic_check_circle),
         contentDescription = strings.conversations.successAria,
         tint = MaterialTheme.colorScheme.primary,
         modifier = modifier,
@@ -401,7 +401,7 @@ private fun SuccessIcon(modifier: Modifier = Modifier) {
 @Composable
 private fun FailureIcon(modifier: Modifier = Modifier) {
     Icon(
-        imageVector = Icons.Filled.Error,
+        painter = painterResource(Res.drawable.ic_error),
         contentDescription = strings.conversations.failureAria,
         tint = MaterialTheme.colorScheme.error,
         modifier = modifier,

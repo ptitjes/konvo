@@ -1,8 +1,6 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.*
-import androidx.compose.material.icons.automirrored.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -11,7 +9,9 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.*
 
 @Composable
 fun UserInputBox(
@@ -87,7 +87,7 @@ fun UserInputBox(
                     enabled = canSendMessage,
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.Send,
+                        painter = painterResource(Res.drawable.ic_send),
                         contentDescription = strings.conversations.sendMessageAria,
                         tint = MaterialTheme.colorScheme.primary
                     )
