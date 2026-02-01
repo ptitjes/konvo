@@ -1,9 +1,9 @@
-package io.github.ptitjes.konvo.frontend.compose.conversations.view.states
+package io.github.ptitjes.konvo.frontend.compose.conversations.views
 
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStates.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewState
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewStates.*
 import kotlinx.serialization.*
 
 data class AgentViewState(

@@ -1,8 +1,8 @@
-package io.github.ptitjes.konvo.frontend.compose.conversations.view
+package io.github.ptitjes.konvo.frontend.compose.conversations.spi
 
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewState.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
 
 sealed interface ConversationViewState {
     data object Loading : ConversationViewState

@@ -4,9 +4,8 @@ import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.time.*

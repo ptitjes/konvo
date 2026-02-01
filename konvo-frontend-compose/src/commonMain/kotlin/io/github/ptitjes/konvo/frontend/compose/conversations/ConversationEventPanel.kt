@@ -18,11 +18,11 @@ import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.states.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
+import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
-import io.github.ptitjes.konvo.frontend.compose.resources.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import org.jetbrains.compose.resources.*

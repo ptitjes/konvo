@@ -1,8 +1,8 @@
-package io.github.ptitjes.konvo.frontend.compose.conversations.view
+package io.github.ptitjes.konvo.frontend.compose.conversations.spi
 
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.ConversationViewState.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl.ConversationViewStates.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewState.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewStates.*
 import kotlin.reflect.*
 
 suspend fun ConversationViewStateMaintainer.handleTranscript(transcript: List<Event<*>>) {

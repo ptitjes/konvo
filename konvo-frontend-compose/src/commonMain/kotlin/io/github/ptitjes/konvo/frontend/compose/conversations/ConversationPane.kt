@@ -10,7 +10,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import kotlinx.coroutines.*
 
 /**

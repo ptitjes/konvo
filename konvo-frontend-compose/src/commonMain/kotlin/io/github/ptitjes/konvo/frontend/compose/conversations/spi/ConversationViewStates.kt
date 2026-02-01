@@ -1,8 +1,7 @@
-package io.github.ptitjes.konvo.frontend.compose.conversations.view.dsl
+package io.github.ptitjes.konvo.frontend.compose.conversations.spi
 
-import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.view.*
-import kotlin.reflect.*
+import io.github.ptitjes.konvo.core.conversations.model.Event
+import kotlin.reflect.KClass
 
 sealed interface ConversationViewStates {
 
