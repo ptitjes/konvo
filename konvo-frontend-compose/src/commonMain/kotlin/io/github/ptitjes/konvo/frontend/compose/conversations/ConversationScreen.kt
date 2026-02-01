@@ -27,11 +27,13 @@ fun ConversationScreen(
     navigator: Navigator,
     modifier: Modifier = Modifier,
 ) {
-    ConversationScreen(
-        conversationId = conversationId,
-        viewModel = viewModel,
-        modifier = modifier,
-    )
+    CompositionLocalProvider(LocalViewRegistry provides viewModel.componentRegistry) {
+        ConversationScreen(
+            conversationId = conversationId,
+            viewModel = viewModel,
+            modifier = modifier,
+        )
+    }
 }
 
 /**

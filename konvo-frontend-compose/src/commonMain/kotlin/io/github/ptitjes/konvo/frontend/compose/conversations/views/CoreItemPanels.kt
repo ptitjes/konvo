@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.frontend.compose.conversations
+package io.github.ptitjes.konvo.frontend.compose.conversations.views
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -18,8 +18,8 @@ import com.mikepenz.markdown.m3.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
+import io.github.ptitjes.konvo.frontend.compose.conversations.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
 import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
@@ -27,14 +27,13 @@ import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import org.jetbrains.compose.resources.*
 
-@Composable
-fun ConversationEventPanel(itemViewState: ConversationViewState.Item, conversation: ConversationUserView) =
-    when (itemViewState) {
-        is MessagingViewState.UserMessage -> UserMessagePanel(itemViewState)
-        is MessagingViewState.AssistantMessage -> AgentMessagePanel(itemViewState)
-        is ToolUsageViewState.Vetting -> ToolUsageVettingPanel(itemViewState, conversation)
-        is ToolUsageViewState.Notification -> ToolUsageNotificationPanel(itemViewState)
-        else -> {}
+internal fun ConversationViews.ContributionScope.coreItemPanels() {
+    ConversationPane.ItemPanels {
+        put<MessagingViewState.UserMessage> { UserMessagePanel(it) }
+        put<MessagingViewState.AssistantMessage> { AgentMessagePanel(it) }
+        put<ToolUsageViewState.Vetting> { ToolUsageVettingPanel(it) }
+        put<ToolUsageViewState.Notification> { ToolUsageNotificationPanel(it) }
+    }
 }
 
 @Composable
@@ -100,9 +99,9 @@ private fun AgentMessagePanel(
 }
 
 @Composable
+context(conversation: ConversationUserView)
 private fun ToolUsageVettingPanel(
     viewState: ToolUsageViewState.Vetting,
-    conversation: ConversationUserView,
     modifier: Modifier = Modifier,
 ) {
     BorderedPanel(

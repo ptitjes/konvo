@@ -55,6 +55,7 @@ kotlin {
         }
         all {
             languageSettings.enableLanguageFeature("NestedTypeAliases")
+            languageSettings.enableLanguageFeature("ContextParameters")
         }
     }
 }

@@ -63,6 +63,12 @@ class ConversationViewModel(
         }
     }
 
+    val componentRegistry: ConversationViewRegistry by lazy {
+        ConversationViewRegistry.Builder().apply {
+            contributeComponents(CoreComponents)
+        }.build()
+    }
+
     override fun onCleared() {
         super.onCleared()
         println("Cleared ConversationViewModel(${this.conversationId})")

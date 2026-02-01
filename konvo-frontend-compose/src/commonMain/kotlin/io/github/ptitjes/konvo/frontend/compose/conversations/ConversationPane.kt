@@ -13,6 +13,11 @@ import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import kotlinx.coroutines.*
 
+object ConversationPane {
+    object ItemPanels :
+        ConversationView.Slot.Typed<LazyItemScope, ConversationViewState.Item, ConversationUserView>()
+}
+
 /**
  * A component that displays a conversation with a text entry box.
  *
@@ -107,6 +112,8 @@ fun ConversationPane(
                 onUpdateLastReadMessageIndex = onUpdateLastReadMessageIndex,
             )
 
+            val itemPanelView = LocalViewRegistry.current[ConversationPane.ItemPanels]
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = listState,
@@ -117,8 +124,10 @@ fun ConversationPane(
                 itemsIndexed(state.items, key = { _, item -> item.id }) { index, viewedItem ->
                     Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
                         if (index == firstUnreadIndex) NewMessagesDivider()
-                        // ConversationItemPanel slot (selected by type of the item view state)
-                        ConversationEventPanel(viewedItem, conversation)
+
+                        with(conversation) {
+                            with(itemPanelView) { Content(viewedItem) }
+                        }
                     }
                 }
 
