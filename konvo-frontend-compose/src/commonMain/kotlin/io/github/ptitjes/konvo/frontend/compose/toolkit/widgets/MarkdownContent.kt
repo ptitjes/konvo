@@ -29,6 +29,7 @@ fun MarkdownContent(
     }
 
     Markdown(
+        modifier = modifier,
         state = state,
         colors = markdownColor(
             text = textColor,
@@ -61,7 +62,6 @@ fun MarkdownContent(
                 )
             },
         ),
-        modifier = modifier,
     )
 }
 

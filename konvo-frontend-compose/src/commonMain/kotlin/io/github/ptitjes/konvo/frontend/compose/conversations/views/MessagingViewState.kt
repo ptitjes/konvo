@@ -1,13 +1,11 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations.views
 
 import com.mikepenz.markdown.model.*
-import com.mikepenz.markdown.model.State
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewState
+import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewStates.*
-import kotlinx.coroutines.flow.*
-import com.mikepenz.markdown.model.State as MarkdownViewState
+import io.github.ptitjes.konvo.frontend.compose.toolkit.utils.*
 
 sealed interface MessagingViewState : ConversationViewState.Item {
 
@@ -49,6 +47,3 @@ sealed interface MessagingViewState : ConversationViewState.Item {
         }
     }
 }
-
-private suspend fun parseMarkdown(content: String): MarkdownViewState =
-    parseMarkdownFlow(content).first { it is MarkdownViewState.Success || it is MarkdownViewState.Error }

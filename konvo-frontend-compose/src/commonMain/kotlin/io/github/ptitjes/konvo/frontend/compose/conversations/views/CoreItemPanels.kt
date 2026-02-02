@@ -14,7 +14,7 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
-import com.mikepenz.markdown.m3.*
+import com.mikepenz.markdown.model.State
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
@@ -24,7 +24,6 @@ import io.github.ptitjes.konvo.frontend.compose.resources.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*
-import kotlinx.serialization.json.*
 import org.jetbrains.compose.resources.*
 
 internal fun ConversationViews.ContributionScope.coreItemPanels() {
@@ -188,10 +187,13 @@ private fun ToolUsageVettingPanel(
                         }
                     },
                 ) {
-                    ToolArgumentsTable(
-                        arguments = call.arguments,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    )
+                    val argumentsState = viewState.callsArgumentsMarkdownStates[call]
+                    if (argumentsState != null) {
+                        ToolArgumentsTable(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                            argumentsState = argumentsState,
+                        )
+                    }
                 }
             }
         }
@@ -228,24 +230,16 @@ private fun ToolUsageNotificationPanel(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             ) {
                 ToolArgumentsTable(
-                    arguments = viewState.call.arguments,
+                    modifier = Modifier.fillMaxWidth(),
+                    argumentsState = viewState.argumentsMarkdownStates,
                 )
 
-                when (val result = viewState.result) {
-                    is CallResult.Success -> {
-                        Markdown(
-                            content = "```json\n${Json.encodeToString(result.value)}\n```",
-                            colors = markdownColor(text = LocalContentColor.current),
-                        )
-                    }
-
-                    else -> {
-                        val failure = result as CallResult.ExecutionFailure
-                        Markdown(
-                            content = "```\n${failure.reason}\n```",
-                            colors = markdownColor(text = LocalContentColor.current),
-                        )
-                    }
+                SelectionContainer {
+                    MarkdownContent(
+                        modifier = modifier.clipToBounds().fillMaxWidth(),
+                        state = viewState.resultMarkdownState,
+                        textColor = LocalContentColor.current,
+                    )
                 }
             }
         }
@@ -318,55 +312,84 @@ private fun ExpandableBox(
 
 @Composable
 private fun ToolArgumentsTable(
-    arguments: Map<String, JsonElement>,
+    argumentsState: Map<String, State>,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    ToolArgumentsTableLayout(
         modifier = modifier,
-    ) {
-        val headerColumnWidth = remember { mutableStateOf<Int?>(null) }
+        arguments = argumentsState,
+        keyContent = { key ->
+            Text(
+                text = "$key:",
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+            )
+        },
+        valueContent = { value ->
+            MarkdownContent(
+                modifier = Modifier.fillMaxSize(),
+                state = value,
+                textColor = LocalContentColor.current,
+            )
+        },
+    )
+}
 
-        arguments.entries.forEach { (name, value) ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Text(
-                    text = "$name:",
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                    modifier = Modifier.padding(start = 4.dp).withSharedWidth(headerColumnWidth)
-                )
+@Composable
+private fun <K, V> ToolArgumentsTableLayout(
+    arguments: Map<K, V>,
+    modifier: Modifier = Modifier,
+    keyContent: @Composable (K) -> Unit,
+    valueContent: @Composable (V) -> Unit,
+) {
+    Layout(
+        modifier = modifier, content = {
+            arguments.entries.forEach { (key, value) ->
+                Box { keyContent(key) }
+                Box { valueContent(value) }
+            }
+        }) { measurables, constraints ->
+        val rowCount = measurables.size / 2
+        val keyMeasureables = measurables.filterIndexed { index, _ -> index % 2 == 0 }
+        val valueMeasureables = measurables.filterIndexed { index, _ -> index % 2 == 1 }
 
-                val code = remember(value) {
-                    prettyJson.encodeToString(JsonElement.serializer(), value)
-                }
+        val keyConstraints = constraints.copy(minWidth = 0)
+        val keyPlaceables = keyMeasureables.map { it.measure(keyConstraints) }
 
-                Markdown(
-                    content = "```json\n$code\n```",
-                    colors = markdownColor(text = LocalContentColor.current),
-                )
+        val keyColumnWidth = keyPlaceables.maxOfOrNull { it.width } ?: 0
+
+        val valueConstraints = constraints.copy(
+            minWidth = constraints.minWidth - keyColumnWidth,
+            maxWidth = constraints.maxWidth - keyColumnWidth,
+        )
+
+        val valuePlaceables = valueMeasureables.map { it.measure(valueConstraints) }
+
+        val rowHeights = (0 until rowCount).map { rowIndex ->
+            max(keyPlaceables[rowIndex].height, valuePlaceables[rowIndex].height)
+        }
+
+        val totalWidth = keyColumnWidth + valuePlaceables.maxOf { it.width }
+        val totalHeight = rowHeights.sum()
+
+        layout(width = totalWidth, height = totalHeight) {
+            var currentY = 0
+            (0 until rowCount).forEach { rowIndex ->
+                val keyPlaceable = keyPlaceables[rowIndex]
+                val valuePlaceable = valuePlaceables[rowIndex]
+
+                val keyHeight = keyPlaceable.height
+                val valueHeight = valuePlaceable.height
+                val rowHeight = max(keyHeight, valueHeight)
+
+                keyPlaceable.placeRelative(0, currentY + rowHeight / 2 - keyHeight / 2)
+                valuePlaceable.placeRelative(keyColumnWidth, currentY + rowHeight / 2 - valueHeight / 2)
+
+                currentY += rowHeight
             }
         }
     }
 }
-
-private val prettyJson = Json { prettyPrint = true }
-
-private fun Modifier.withSharedWidth(headerColumnWidth: MutableState<Int?>) = layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints)
-
-    val existingWidth = headerColumnWidth.value ?: 0
-    val maxWidth = maxOf(existingWidth, placeable.width)
-
-    if (maxWidth > existingWidth) {
-        headerColumnWidth.value = maxWidth
-    }
-
-    layout(width = maxWidth, height = placeable.height) {
-        placeable.placeRelative(0, 0)
-    }
-}
-
 
 @Composable
 private fun ResultIcon(
