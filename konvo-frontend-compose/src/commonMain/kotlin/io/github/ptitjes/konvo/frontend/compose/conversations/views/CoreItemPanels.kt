@@ -25,6 +25,7 @@ import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
 import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
+import kotlin.math.*
 
 internal fun ConversationViews.ContributionScope.coreItemPanels() {
     ConversationPane.ItemPanels {
@@ -49,7 +50,8 @@ private fun UserMessagePanel(
         ) {
             Surface(
                 shape = RoundedCornerShape(16.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
             ) {
                 Column(
                     horizontalAlignment = Alignment.End,
@@ -57,7 +59,7 @@ private fun UserMessagePanel(
                     SelectionContainer {
                         MarkdownContent(
                             state = itemViewState.markdownState,
-                            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
                             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                         )
                     }
@@ -111,7 +113,7 @@ private fun ToolUsageVettingPanel(
                 ExpandableBox(
                     collapsable = status !is ToolUsageViewState.Vetting.Status.Pending,
                     header = {
-                        AskIcon()
+                        AskIcon(modifier = Modifier.requiredSize(20.dp))
 
                         Text(
                             text = buildAnnotatedString {
@@ -136,7 +138,7 @@ private fun ToolUsageVettingPanel(
                                     },
                                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                                 ) {
-                                    FailureIcon()
+                                    FailureIcon(modifier = Modifier.requiredSize(20.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(text = "Deny")
                                 }
@@ -161,7 +163,7 @@ private fun ToolUsageVettingPanel(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    SuccessIcon()
+                                    SuccessIcon(modifier = Modifier.requiredSize(20.dp))
                                     Text(
                                         text = "Approved",
                                         style = MaterialTheme.typography.labelLarge,
@@ -176,7 +178,7 @@ private fun ToolUsageVettingPanel(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
-                                    FailureIcon()
+                                    FailureIcon(modifier = Modifier.requiredSize(20.dp))
                                     Text(
                                         text = "Denied",
                                         style = MaterialTheme.typography.labelLarge,
@@ -210,7 +212,7 @@ private fun ToolUsageNotificationPanel(
     ) {
         ExpandableBox(
             header = {
-                ResultIcon(viewState.result)
+                ResultIcon(modifier = Modifier.requiredSize(20.dp), result = viewState.result)
 
                 Text(
                     text = buildAnnotatedString {
@@ -223,7 +225,10 @@ private fun ToolUsageNotificationPanel(
                     modifier = Modifier.weight(1f),
                 )
 
-                Text(strings.conversations.detailsLabel)
+                Text(
+                    text = strings.conversations.detailsLabel,
+                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                )
             },
         ) {
             Column(
@@ -276,12 +281,11 @@ private fun ExpandableBox(
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = modifier) {
-        TextButton(
-            onClick = { expanded = !expanded },
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
             shape = RoundedCornerShape(4.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-            enabled = collapsable,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp).heightIn(min = 36.dp)
+                .clickable(enabled = collapsable) { expanded = !expanded },
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 8.dp),

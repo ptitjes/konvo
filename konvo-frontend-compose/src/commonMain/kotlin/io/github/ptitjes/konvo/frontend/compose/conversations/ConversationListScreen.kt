@@ -205,7 +205,7 @@ fun ConversationListScreen(
 
                         Row(
                             modifier = Modifier
-                                .padding(start = 16.dp, bottom = 16.dp, top = 16.dp, end = 72.dp)
+                                .padding(start = 16.dp, bottom = 16.dp, top = 16.dp, end = 64.dp)
                                 .fillMaxWidth()
                                 .requiredHeight(56.dp),
                             verticalAlignment = Alignment.CenterVertically,

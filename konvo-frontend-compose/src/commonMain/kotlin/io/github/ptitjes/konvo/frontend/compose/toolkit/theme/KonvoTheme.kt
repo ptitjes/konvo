@@ -26,9 +26,10 @@ fun KonvoTheme(
         LocalTheme provides Theme(isDarkTheme),
     ) {
         MaterialTheme(
-            colorScheme = if (isDarkTheme) darkColorScheme() else lightColorScheme(),
-            typography = MaterialTheme.typography.withFontFamily(
-                FontFamily(Font(Res.font.InterVariable))
+            colorScheme = if (isDarkTheme) darkScheme else lightScheme,
+            typography = MaterialTheme.typography.withFontFamilies(
+                displayFontFamily = FontFamily(Font(Res.font.InterVariable)),
+                bodyFontFamily = FontFamily(Font(Res.font.InterVariable)),
             ),
         ) {
             content()
@@ -36,24 +37,27 @@ fun KonvoTheme(
     }
 }
 
-fun Typography.withFontFamily(fontFamily: FontFamily) = Typography(
-    displayLarge = displayLarge.copy(fontFamily = fontFamily),
-    displayMedium = displayMedium.copy(fontFamily = fontFamily),
-    displaySmall = displaySmall.copy(fontFamily = fontFamily),
+fun Typography.withFontFamilies(
+    displayFontFamily: FontFamily,
+    bodyFontFamily: FontFamily,
+) = Typography(
+    displayLarge = displayLarge.copy(fontFamily = displayFontFamily),
+    displayMedium = displayMedium.copy(fontFamily = displayFontFamily),
+    displaySmall = displaySmall.copy(fontFamily = displayFontFamily),
 
-    headlineLarge = headlineLarge.copy(fontFamily = fontFamily),
-    headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
-    headlineSmall = headlineSmall.copy(fontFamily = fontFamily),
+    headlineLarge = headlineLarge.copy(fontFamily = displayFontFamily),
+    headlineMedium = headlineMedium.copy(fontFamily = displayFontFamily),
+    headlineSmall = headlineSmall.copy(fontFamily = displayFontFamily),
 
-    titleLarge = titleLarge.copy(fontFamily = fontFamily),
-    titleMedium = titleMedium.copy(fontFamily = fontFamily),
-    titleSmall = titleSmall.copy(fontFamily = fontFamily),
+    titleLarge = titleLarge.copy(fontFamily = displayFontFamily),
+    titleMedium = titleMedium.copy(fontFamily = displayFontFamily),
+    titleSmall = titleSmall.copy(fontFamily = displayFontFamily),
 
-    bodyLarge = bodyLarge.copy(fontFamily = fontFamily, fontWeight = FontWeight.Thin),
-    bodyMedium = bodyMedium.copy(fontFamily = fontFamily, fontWeight = FontWeight.Thin),
-    bodySmall = bodySmall.copy(fontFamily = fontFamily, fontWeight = FontWeight.Thin),
+    bodyLarge = bodyLarge.copy(fontFamily = bodyFontFamily, fontWeight = FontWeight.Thin),
+    bodyMedium = bodyMedium.copy(fontFamily = bodyFontFamily, fontWeight = FontWeight.Thin),
+    bodySmall = bodySmall.copy(fontFamily = bodyFontFamily, fontWeight = FontWeight.Thin),
 
-    labelLarge = labelLarge.copy(fontFamily = fontFamily),
-    labelMedium = labelMedium.copy(fontFamily = fontFamily),
-    labelSmall = labelSmall.copy(fontFamily = fontFamily)
+    labelLarge = labelLarge.copy(fontFamily = bodyFontFamily),
+    labelMedium = labelMedium.copy(fontFamily = bodyFontFamily),
+    labelSmall = labelSmall.copy(fontFamily = bodyFontFamily)
 )

@@ -37,6 +37,7 @@ fun UserInputBox(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         tonalElevation = 2.dp,
     ) {
         Column {
@@ -71,13 +72,25 @@ fun UserInputBox(
                             }
                             false
                         },
-                    placeholder = { Text(strings.conversations.inputPlaceholder) },
+                    placeholder = {
+                        Text(
+                            text = strings.conversations.inputPlaceholder,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                    },
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
                         focusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
                         unfocusedIndicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        focusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        disabledTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        focusedSupportingTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        unfocusedSupportingTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        disabledSupportingTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        cursorColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     ),
                     maxLines = 5,
                 )
@@ -89,7 +102,6 @@ fun UserInputBox(
                     Icon(
                         painter = painterResource(Res.drawable.ic_send),
                         contentDescription = strings.conversations.sendMessageAria,
-                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }

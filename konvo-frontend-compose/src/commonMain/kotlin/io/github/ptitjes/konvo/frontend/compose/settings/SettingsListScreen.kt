@@ -82,6 +82,7 @@ fun SettingsListScreen(
 
                 Surface(
                     color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+                    contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
                     shape = MaterialTheme.shapes.extraSmall,
                 ) {
                     Row(

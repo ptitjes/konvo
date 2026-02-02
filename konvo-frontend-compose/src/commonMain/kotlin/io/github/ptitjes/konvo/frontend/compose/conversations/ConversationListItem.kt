@@ -29,6 +29,7 @@ fun ConversationListItem(
 
     Surface(
         color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
+        contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface,
         shape = MaterialTheme.shapes.extraSmall,
     ) {
         val hasLastMessagePreview = !conversation.lastMessagePreview.isNullOrBlank()
@@ -49,7 +50,10 @@ fun ConversationListItem(
                     badge = {
                         val unreadMessageCount = conversation.unreadMessageCount
                         if (unreadMessageCount > 0) {
-                            Badge(containerColor = MaterialTheme.colorScheme.error) {
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            ) {
                                 Text(unreadMessageCount.toString())
                             }
                         }
@@ -68,7 +72,6 @@ fun ConversationListItem(
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(

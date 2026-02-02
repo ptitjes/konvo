@@ -22,7 +22,6 @@ fun AddAttachmentsButton(
         Icon(
             painter = painterResource(Res.drawable.ic_attach_file),
             contentDescription = strings.conversations.addAttachmentAria,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
