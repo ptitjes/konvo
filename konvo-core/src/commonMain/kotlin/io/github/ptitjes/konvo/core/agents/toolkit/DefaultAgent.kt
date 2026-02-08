@@ -25,6 +25,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlinx.datetime.*
+import kotlinx.serialization.json.*
 import kotlin.coroutines.*
 import kotlin.time.Clock
 import kotlin.uuid.*
@@ -107,6 +108,9 @@ internal class DefaultAgent(
                         )
                     }
                     onToolCallCompleted { eventContext ->
+                        val result = eventContext.toolResult
+                        val structuredContent = (result as? JsonObject)?.get("structuredContent")
+
                         conversationView.send(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
@@ -115,7 +119,7 @@ internal class DefaultAgent(
                                     arguments = eventContext.toolArgs,
                                 ),
                                 result = ToolUsage.CallResult.Success(
-                                    eventContext.toolResult,
+                                    structuredContent ?: result,
                                 ),
                             ),
                         )
