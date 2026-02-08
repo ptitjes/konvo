@@ -52,8 +52,8 @@ fun runComposeFrontend() = application {
                     }
                 },
             ) {
-                val windowInfo = LocalWindowInfo.current
-                if (windowInfo.containerSize != IntSize(0, 0)) {
+                val containerSize = LocalWindowInfo.current.containerSize
+                if (containerSize != IntSize(0, 0)) {
                     App()
                 }
             }
