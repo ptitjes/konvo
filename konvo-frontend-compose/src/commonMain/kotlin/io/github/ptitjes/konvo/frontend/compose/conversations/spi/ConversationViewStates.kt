@@ -1,54 +1,53 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations.spi
 
-import io.github.ptitjes.konvo.core.conversations.model.Event
-import kotlin.reflect.KClass
+import io.github.ptitjes.konvo.core.conversations.model.*
+import kotlin.reflect.*
 
 sealed interface ConversationViewStates {
 
     fun interface Contribution {
-        fun CreateScope.contribute()
+        fun ContributionScope.contribute()
     }
 
     @DslMarker
     annotation class Marker
 
     @Marker
-    abstract class CreateScope {
+    abstract class ContributionScope {
+        abstract operator fun <S> ConversationViewState.Slot.Sequence<S>.invoke(contribute: ProducerScope<SequenceBuilder<S>>.() -> Unit)
+        abstract operator fun <K, S> ConversationViewState.Slot.Dictionary<K, S>.invoke(contribute: ProducerScope<DictionaryBuilder<K, S>>.() -> Unit)
+        abstract operator fun <S> ConversationViewState.Slot.Register<S>.invoke(contribute: ProducerScope<RegisterBuilder<S>>.() -> Unit)
+    }
+
+    @Marker
+    abstract class ProducerScope<Builder> {
         inline fun <reified P : Event.Payload> onEvent(
-            noinline action: suspend CreateHandlerScope.(Event<P>) -> Unit,
+            noinline action: suspend Builder.(Event<P>) -> Unit,
         ) = onEvent(P::class, action)
 
         abstract fun <P : Event.Payload> onEvent(
             klass: KClass<P>,
-            action: suspend CreateHandlerScope.(Event<P>) -> Unit,
+            action: suspend Builder.(Event<P>) -> Unit,
         )
     }
 
     @Marker
-    interface CreateHandlerScope {
-
-        suspend fun <S, T : S> append(
-            slot: ConversationViewState.Slot.Sequence<S>,
-            initial: T,
-            builder: UpdateScope<S, T>.() -> Unit = {},
-        )
-
-        suspend fun <K, S, T : S> put(
-            slot: ConversationViewState.Slot.Dictionary<K, S>,
-            key: K,
-            initial: T,
-            builder: UpdateScope<S?, T?>.() -> Unit = {},
-        )
-
-        suspend fun <S, T : S> set(
-            slot: ConversationViewState.Slot.Register<S>,
-            initial: T,
-            builder: UpdateScope<S, T>.() -> Unit = {},
-        )
+    interface SequenceBuilder<S> {
+        suspend fun <T : S> append(initial: T, builder: UpdaterScope<S, T>.() -> Unit = {})
     }
 
     @Marker
-    abstract class UpdateScope<S, T : S> {
+    interface DictionaryBuilder<K, S> {
+        suspend fun <T : S> put(key: K, initial: T, builder: UpdaterScope<S?, T?>.() -> Unit = {})
+    }
+
+    @Marker
+    interface RegisterBuilder<S> {
+        suspend fun <T : S> set(initial: T, builder: UpdaterScope<S, T>.() -> Unit = {})
+    }
+
+    @Marker
+    abstract class UpdaterScope<S, T : S> {
         inline fun <reified Q : Event.Payload> onEvent(
             noinline handler: suspend UpdateHandlerScope.(T, Event<Q>) -> T,
         ) = onEvent(Q::class, handler)
@@ -59,6 +58,7 @@ sealed interface ConversationViewStates {
         )
     }
 
+    @Marker
     interface UpdateHandlerScope {
         fun freeze()
     }
