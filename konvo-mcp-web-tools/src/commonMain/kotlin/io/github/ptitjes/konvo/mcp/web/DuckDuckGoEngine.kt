@@ -151,9 +151,10 @@ class DuckDuckGoEngine(
         val document = Ksoup.parse(body)
         val lastTable = document.select("table").last()!!
         val resultRows = lastTable.select("tr").chunked(4)
+        val filteredRows = request.maxResults?.let { resultRows.take(it) } ?: resultRows
 
         return SearchResponse(
-            results = resultRows.mapNotNull { rows ->
+            results = filteredRows.mapNotNull { rows ->
                 if (rows.size != 4) return@mapNotNull null
 
                 val link = rows[0].select("a")
