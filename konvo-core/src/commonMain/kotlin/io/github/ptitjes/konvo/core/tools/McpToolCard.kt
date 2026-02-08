@@ -24,8 +24,11 @@ internal class McpToolCard(
         get() = doesToolRequirePermission(clientName, sdkTool.name, permissions)
 
     override suspend fun toTool(): Tool<*, *> {
+        val outputSchema = sdkTool.outputSchema
         val descriptor = DefaultMcpToolDescriptorParser.parse(sdkTool)
-        return McpTool(client, descriptor)
+
+        return if (outputSchema != null) StructuredMcpTool(client, descriptor)
+        else McpTool(client, descriptor)
     }
 
     private fun doesToolRequirePermission(
