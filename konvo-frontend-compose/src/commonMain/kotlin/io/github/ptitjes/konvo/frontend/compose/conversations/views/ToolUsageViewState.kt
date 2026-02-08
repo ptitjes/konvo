@@ -30,55 +30,56 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
     ) : ToolUsageViewState
 
     companion object : Contribution {
-        override fun CreateScope.contribute() {
-            onEvent<ToolUsage.Vetting> { event ->
-                append(
-                    ConversationViewState.Items,
-                    Vetting(
-                        id = event.id,
-                        callsArgumentsMarkdownStates = event.payload.calls.associateWith { parseMarkdownArguments(it) },
-                        approvals = event.payload.calls.associateWith { Vetting.Status.Pending },
-                    ),
-                ) {
-                    onEvent<ToolUsage.Approval> { state, approvalEvent ->
-                        val incomingApprovals = approvalEvent.payload.approvals
+        override fun ContributionScope.contribute() {
+            ConversationViewState.Items {
+                onEvent<ToolUsage.Vetting> { event ->
+                    val calls = event.payload.calls
+                    append(
+                        Vetting(
+                            id = event.id,
+                            callsArgumentsMarkdownStates = calls.associateWith { parseMarkdownArguments(it) },
+                            approvals = calls.associateWith { Vetting.Status.Pending },
+                        ),
+                    ) {
+                        onEvent<ToolUsage.Approval> { state, approvalEvent ->
+                            val incomingApprovals = approvalEvent.payload.approvals
 
-                        val updatedApprovals =
-                            incomingApprovals.fold(state.approvals) { existingApprovals, (key, approved) ->
-                            val newStatus by lazy {
-                                when (approved) {
-                                    true -> Vetting.Status.Approved
-                                    false -> Vetting.Status.Denied("Not specified")
+                            val updatedApprovals =
+                                incomingApprovals.fold(state.approvals) { existingApprovals, (key, approved) ->
+                                    val newStatus by lazy {
+                                        when (approved) {
+                                            true -> Vetting.Status.Approved
+                                            false -> Vetting.Status.Denied("Not specified")
+                                        }
+                                    }
+
+                                    if (key in existingApprovals) existingApprovals + (key to newStatus)
+                                    else existingApprovals
                                 }
+
+                            val done = updatedApprovals.all { (_, status) ->
+                                status !is Vetting.Status.Pending
                             }
-                            if (key in existingApprovals) existingApprovals + (key to newStatus) else existingApprovals
-                        }
+                            if (done) freeze()
 
-                        val done = updatedApprovals.all { (_, status) ->
-                            status !is Vetting.Status.Pending
+                            state.copy(approvals = updatedApprovals)
                         }
-                        if (done) freeze()
-
-                        state.copy(
-                            approvals = updatedApprovals
-                        )
                     }
                 }
-            }
 
-            onEvent<ToolUsage.Notification> { event ->
-                val call = event.payload.call
-                val result = event.payload.result
-                append(
-                    ConversationViewState.Items,
-                    Notification(
-                        id = event.id,
-                        call = call,
-                        result = result,
-                        argumentsMarkdownStates = parseMarkdownArguments(call),
-                        resultMarkdownState = parseMarkdownResult(result),
-                    ),
-                )
+                onEvent<ToolUsage.Notification> { event ->
+                    val call = event.payload.call
+                    val result = event.payload.result
+                    append(
+                        Notification(
+                            id = event.id,
+                            call = call,
+                            result = result,
+                            argumentsMarkdownStates = parseMarkdownArguments(call),
+                            resultMarkdownState = parseMarkdownResult(result),
+                        ),
+                    )
+                }
             }
         }
     }
@@ -92,9 +93,8 @@ private suspend fun parseMarkdownArguments(call: ToolUsage.Call): Map<String, St
 }
 
 private suspend fun parseMarkdownResult(result: ToolUsage.CallResult): State {
-    var result1 = result
     return parseMarkdown(
-        when (val result = result1) {
+        when (result) {
             is ToolUsage.CallResult.Success -> "```json\n${jsonFormat.encodeToString(result.value)}\n```"
             is ToolUsage.CallResult.ExecutionFailure -> "```\n${result.reason}\n```"
         }

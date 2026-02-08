@@ -22,27 +22,29 @@ sealed interface MessagingViewState : ConversationViewState.Item {
     ) : MessagingViewState
 
     companion object : Contribution {
-        override fun CreateScope.contribute() {
-            onEvent<Messaging.Message> { event ->
-                val content =
-                    event.payload.content.filterIsInstance<Messaging.Part.Text>().joinToString("\n") { it.text }
+        override fun ContributionScope.contribute() {
+            ConversationViewState.Items {
+                onEvent<Messaging.Message> { event ->
+                    val content = event.payload.content
+                        .filterIsInstance<Messaging.Part.Text>()
+                        .joinToString("\n") { it.text }
 
-                append(
-                    ConversationViewState.Items,
-                    if (event.sender is Participant.User) {
-                        UserMessage(
-                            id = event.id,
-                            details = event.payload,
-                            markdownState = parseMarkdown(content),
-                        )
-                    } else {
-                        AssistantMessage(
-                            id = event.id,
-                            details = event.payload,
-                            markdownState = parseMarkdown(content),
-                        )
-                    }
-                )
+                    append(
+                        if (event.sender is Participant.User) {
+                            UserMessage(
+                                id = event.id,
+                                details = event.payload,
+                                markdownState = parseMarkdown(content),
+                            )
+                        } else {
+                            AssistantMessage(
+                                id = event.id,
+                                details = event.payload,
+                                markdownState = parseMarkdown(content),
+                            )
+                        }
+                    )
+                }
             }
         }
     }
