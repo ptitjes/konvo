@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.conversations.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import kotlinx.coroutines.*
 
@@ -25,12 +25,11 @@ object ConversationPane {
  * @param modifier The modifier to apply to this component
  */
 @Composable
+context(_: ConversationUserView)
 fun ConversationPane(
     state: ConversationViewState.Loaded,
     modifier: Modifier = Modifier,
-    onSendMessage: (String, List<Attachment>) -> Unit,
     onUpdateLastReadMessageIndex: (Int) -> Unit,
-    conversation: ConversationUserView,
     paddingValues: PaddingValues,
 ) {
     Column(
@@ -38,25 +37,13 @@ fun ConversationPane(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        // ConversationStartMessage slot?
         AnimatedVisibility(
             modifier = Modifier,
             visible = state.items.isEmpty(),
             enter = expandVertically(expandFrom = Alignment.CenterVertically) + fadeIn(),
             exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
         ) {
-            val onBackground = MaterialTheme.colorScheme.onBackground
-
-            BasicText(
-                modifier = Modifier
-                    .padding(bottom = 32.dp)
-                    .widthIn(max = 800.dp)
-                    .padding(horizontal = 32.dp),
-                text = "What can I do for you today?",
-                autoSize = TextAutoSize.StepBased(maxFontSize = 42.sp),
-                softWrap = false,
-                color = { onBackground },
-            )
+            ConversationPreamble()
         }
 
         AnimatedVisibility(
@@ -65,96 +52,158 @@ fun ConversationPane(
             enter = expandVertically(),
             exit = shrinkVertically(),
         ) {
-            var firstComposition by remember { mutableStateOf(true) }
-
-            val firstUnreadIndex = firstUnreadMessageIndex(state)
-
-            // Bottom: last item, or processing indicator if active
-            val lastListIndex = state.items.lastIndex + (if (state.isProcessing) 1 else 0)
-
-            // Determine the initial first visible index: first unread if any, else bottom
-            val initialFirstIndex =
-                (if (firstUnreadIndex != -1) firstUnreadIndex else lastListIndex)
-                    .coerceAtLeast(0)
-            val initialFirstScrollOffset =
-                if (firstUnreadIndex != -1) 0 else Int.MAX_VALUE
-
-            val listState = rememberLazyListState(
-                initialFirstVisibleItemIndex = initialFirstIndex,
-                initialFirstVisibleItemScrollOffset = initialFirstScrollOffset,
+            ConversationLog(
+                state = state,
+                onUpdateLastReadMessageIndex = onUpdateLastReadMessageIndex,
+                paddingValues = paddingValues,
             )
+        }
 
-            // Auto-scroll to bottom only if all previous messages were read
-            LaunchedEffect(state.items.size, state.isProcessing) {
-                if (!firstComposition) {
-                    val hasItems = state.items.isNotEmpty()
+        ConversationSuggestions()
 
-                    val lastReadMessageIndex = state.digest.lastReadMessageIndex
+        ConversationInputBox()
+    }
+}
 
-                    val shouldScroll = when {
-                        // New item appended: user must have read up to the previous last item
-                        hasItems && !state.isProcessing -> lastReadMessageIndex >= state.items.lastIndex - 1
-                        // Processing indicator visible: user must have read all items
-                        state.isProcessing -> lastReadMessageIndex >= state.items.lastIndex
-                        else -> false
-                    }
+@Composable
+context(_: ConversationUserView)
+private fun ConversationPreamble() {
+    val onBackground = MaterialTheme.colorScheme.onBackground
 
-                    if (shouldScroll) listState.animateScrollToItem(lastListIndex)
-                }
+    BasicText(
+        modifier = Modifier
+            .padding(bottom = 32.dp)
+            .widthIn(max = 800.dp)
+            .padding(horizontal = 32.dp),
+        text = "What can I do for you today?",
+        autoSize = TextAutoSize.StepBased(maxFontSize = 42.sp),
+        softWrap = false,
+        color = { onBackground },
+    )
+}
+
+@Composable
+context(_: ConversationUserView)
+private fun ConversationLog(
+    state: ConversationViewState.Loaded,
+    onUpdateLastReadMessageIndex: (Int) -> Unit,
+    paddingValues: PaddingValues,
+) {
+    var firstComposition by remember { mutableStateOf(true) }
+
+    val firstUnreadIndex = firstUnreadMessageIndex(state)
+
+    // Bottom: last item, or processing indicator if active
+    val lastListIndex = state.items.lastIndex + (if (state.isProcessing) 1 else 0)
+
+    // Determine the initial first visible index: first unread if any, else bottom
+    val initialFirstIndex =
+        (if (firstUnreadIndex != -1) firstUnreadIndex else lastListIndex)
+            .coerceAtLeast(0)
+    val initialFirstScrollOffset =
+        if (firstUnreadIndex != -1) 0 else Int.MAX_VALUE
+
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = initialFirstIndex,
+        initialFirstVisibleItemScrollOffset = initialFirstScrollOffset,
+    )
+
+    // Auto-scroll to bottom only if all previous messages were read
+    LaunchedEffect(state.items.size, state.isProcessing) {
+        if (!firstComposition) {
+            val hasItems = state.items.isNotEmpty()
+
+            val lastReadMessageIndex = state.digest.lastReadMessageIndex
+
+            val shouldScroll = when {
+                // New item appended: user must have read up to the previous last item
+                hasItems && !state.isProcessing -> lastReadMessageIndex >= state.items.lastIndex - 1
+                // Processing indicator visible: user must have read all items
+                state.isProcessing -> lastReadMessageIndex >= state.items.lastIndex
+                else -> false
             }
 
-            LaunchedEffect(Unit) { firstComposition = false }
+            if (shouldScroll) listState.animateScrollToItem(lastListIndex)
+        }
+    }
 
-            LastReadMessageIndexUpdater(
-                firstUnreadIndex = firstUnreadIndex,
-                state = state,
-                listState = listState,
-                onUpdateLastReadMessageIndex = onUpdateLastReadMessageIndex,
-            )
+    LaunchedEffect(Unit) { firstComposition = false }
 
-            val itemPanelView = LocalViewRegistry.current[ConversationPane.ItemPanels]
+    LastReadMessageIndexUpdater(
+        firstUnreadIndex = firstUnreadIndex,
+        state = state,
+        listState = listState,
+        onUpdateLastReadMessageIndex = {
+            onUpdateLastReadMessageIndex(it)
+        },
+    )
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp, horizontal = 0.dp) + paddingValues,
-            ) {
-                itemsIndexed(state.items, key = { _, item -> item.id }) { index, viewedItem ->
-                    Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
-                        if (index == firstUnreadIndex) NewMessagesDivider()
+    val itemPanelView = LocalViewRegistry.current[ConversationPane.ItemPanels]
 
-                        with(conversation) {
-                            with(itemPanelView) { Content(viewedItem) }
-                        }
-                    }
-                }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        state = listState,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 0.dp) + paddingValues,
+    ) {
+        itemsIndexed(
+            items = state.items,
+            key = { _, item -> item.id },
+            contentType = { _, item -> item::class },
+        ) { index, viewedItem ->
+            Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
+                if (index == firstUnreadIndex) NewMessagesDivider()
 
-                // ConversationFeedBottom slot
-                if (state.isProcessing) {
-                    item(ProcessingIndicatorKey) {
-                        Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
-                            ConversationProcessingIndicator()
-                        }
-                    }
-                }
+                with(itemPanelView) { Content(viewedItem) }
             }
         }
 
-        // ConversationSuggestions slot
-        // ConversationSuggestions()
-
-        // UserInputBox slot (itself having sub slots)
-        // - AttachmentButtonSlot slot
-        //   - AttachmentMenu slot
-        // - TextInput slot
-        // - CommitButtonSlot slot
-        UserInputBox(
-            modifier = Modifier.widthIn(max = 800.dp).padding(16.dp),
-            onSendMessage = onSendMessage,
-        )
+        conversationLogBottomItems(state)
     }
+}
+
+private fun LazyListScope.conversationLogBottomItems(state: ConversationViewState.Loaded) {
+    // ConversationFeedBottom slot
+    if (state.isProcessing) {
+        item(ProcessingIndicatorKey) {
+            Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
+                ConversationProcessingIndicator()
+            }
+        }
+    }
+}
+
+@Composable
+context(_: ConversationUserView)
+private fun ConversationSuggestions() {
+    // ConversationSuggestions slot
+    // ConversationSuggestions()
+}
+
+@Composable
+context(conversation: ConversationUserView)
+private fun ConversationInputBox() {
+    // UserInputBox slot (itself having sub slots)
+    // - AttachmentButtonSlot slot
+    //   - AttachmentMenu slot
+    // - TextInput slot
+    // - CommitButtonSlot slot
+
+    val coroutineScope = rememberCoroutineScope()
+
+    UserInputBox(
+        modifier = Modifier.widthIn(max = 800.dp).padding(16.dp),
+        onSendMessage = { content, attachments ->
+            coroutineScope.launch {
+                conversation.send(
+                    payload = Messaging.Message(
+                        content = listOf(Messaging.Part.Text(content)) + attachments.toMediaParts(),
+                    ),
+                )
+            }
+        },
+    )
 }
 
 private object ProcessingIndicatorKey
@@ -205,3 +254,33 @@ private fun LastReadMessageIndexUpdater(
 
 private val LazyListState.listVisibleItemIndex: Int
     get() = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+
+private fun List<Messaging.Attachment>.toMediaParts(): List<Messaging.Part.Media> {
+    return map { attachment ->
+        when (attachment.type) {
+            Messaging.Attachment.Type.Image -> Messaging.Part.Image(
+                attachment.mimeType,
+                attachment.name,
+                attachment
+            )
+
+            Messaging.Attachment.Type.Video -> Messaging.Part.Video(
+                attachment.mimeType,
+                attachment.name,
+                attachment
+            )
+
+            Messaging.Attachment.Type.Audio -> Messaging.Part.Audio(
+                attachment.mimeType,
+                attachment.name,
+                attachment
+            )
+
+            Messaging.Attachment.Type.Document -> Messaging.Part.File(
+                attachment.mimeType,
+                attachment.name,
+                attachment
+            )
+        }
+    }
+}
