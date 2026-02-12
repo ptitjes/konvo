@@ -23,6 +23,9 @@ import kotlin.time.*
 @OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
     conversationManager: ConversationManager,
+    // TODO
+    // private val viewStateContributions: Set<ConversationViewStates.Contribution>,
+    // private val componentContributions: Set<ConversationComponents.Contribution>,
     private val conversationId: String,
 ) : ViewModel() {
     private val liveConversation = conversationManager.getConversation(conversationId)
@@ -32,6 +35,11 @@ class ConversationViewModel(
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
     val state: StateFlow<ConversationViewState> = _state
+
+    // TODO
+    // private fun ConversationViewStateMaintainer.setupViewStateContributions() {
+    //     viewStateContributions.forEach { contributeViewStates(it) }
+    // }
 
     init {
         println("Initializing ConversationViewModel(${this.conversationId})")
@@ -66,6 +74,8 @@ class ConversationViewModel(
     val componentRegistry: ConversationViewRegistry by lazy {
         ConversationViewRegistry.Builder().apply {
             contributeComponents(CoreComponents)
+            // TODO
+            // componentContributions.forEach { contributeComponents(it) }
         }.build()
     }
 
