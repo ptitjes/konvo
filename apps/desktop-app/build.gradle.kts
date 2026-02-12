@@ -10,6 +10,7 @@ plugins {
 
 dependencies {
     implementation(libs.slf4jSimple)
+    implementation(libs.kotlinLogging)
     implementation(compose.desktop.currentOs)
 
     implementation(project(":konvo-core"))
@@ -19,6 +20,9 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "io.github.ptitjes.konvo.MainKt"
+
+        // https://youtrack.jetbrains.com/issue/SKIKO-890/Crash-when-using-WLToolkit
+        // jvmArgs += listOf("-Dawt.toolkit.name=auto")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm)
