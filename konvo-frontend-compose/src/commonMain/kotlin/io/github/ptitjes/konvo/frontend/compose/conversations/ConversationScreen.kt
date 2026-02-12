@@ -101,14 +101,14 @@ fun ConversationScreen(
     ) { paddingValues ->
         when (val state = state) {
             is ConversationViewState.Loading -> FullSizeProgressIndicator()
-            is ConversationViewState.Loaded -> ConversationPane(
-                state = state,
-                modifier = Modifier.fillMaxSize(),
-                onSendMessage = viewModel::sendUserMessage,
-                onUpdateLastReadMessageIndex = viewModel::updateLastReadMessageIndex,
-                conversation = viewModel.conversation,
-                paddingValues = paddingValues,
-            )
+            is ConversationViewState.Loaded -> with(viewModel.conversation) {
+                ConversationPane(
+                    state = state,
+                    modifier = Modifier.fillMaxSize(),
+                    onUpdateLastReadMessageIndex = viewModel::updateLastReadMessageIndex,
+                    paddingValues = paddingValues,
+                )
+            }
         }
     }
 }

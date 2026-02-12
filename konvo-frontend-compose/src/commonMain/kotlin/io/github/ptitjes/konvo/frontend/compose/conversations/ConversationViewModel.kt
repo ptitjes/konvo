@@ -3,7 +3,6 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
 import kotlinx.coroutines.*
@@ -82,51 +81,6 @@ class ConversationViewModel(
     override fun onCleared() {
         super.onCleared()
         println("Cleared ConversationViewModel(${this.conversationId})")
-    }
-
-    /**
-     * Send a user message to the conversation.
-     *
-     * @param content The message content to send
-     * @param attachments The attachments to send
-     */
-    fun sendUserMessage(
-        content: String,
-        attachments: List<Messaging.Attachment>,
-    ) {
-        if (content.isBlank()) error("Invalid blank message")
-
-        viewModelScope.launch {
-            conversationUserView.sendMessage(
-                content = listOf(Messaging.Part.Text(content)) + attachments.map { attachment ->
-                    when (attachment.type) {
-                        Messaging.Attachment.Type.Image -> Messaging.Part.Image(
-                            attachment.mimeType,
-                            attachment.name,
-                            attachment
-                        )
-
-                        Messaging.Attachment.Type.Video -> Messaging.Part.Video(
-                            attachment.mimeType,
-                            attachment.name,
-                            attachment
-                        )
-
-                        Messaging.Attachment.Type.Audio -> Messaging.Part.Audio(
-                            attachment.mimeType,
-                            attachment.name,
-                            attachment
-                        )
-
-                        Messaging.Attachment.Type.Document -> Messaging.Part.File(
-                            attachment.mimeType,
-                            attachment.name,
-                            attachment
-                        )
-                    }
-                },
-            )
-        }
     }
 
     /** Update last read message index, clamped to current items. */
