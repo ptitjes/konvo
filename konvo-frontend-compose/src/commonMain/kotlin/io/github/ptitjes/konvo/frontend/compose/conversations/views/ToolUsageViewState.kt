@@ -6,11 +6,13 @@ import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewStates.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.utils.*
 import kotlinx.serialization.json.*
+import kotlin.time.*
 
 sealed interface ToolUsageViewState : ConversationViewState.Item {
 
     data class Vetting(
         override val id: Any,
+        override val timestamp: Instant,
         val callsArgumentsMarkdownStates: Map<ToolUsage.Call, Map<String, State>>,
         val approvals: Map<ToolUsage.Call, Status>,
     ) : ToolUsageViewState {
@@ -23,6 +25,7 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
 
     data class Notification(
         override val id: Any,
+        override val timestamp: Instant,
         val call: ToolUsage.Call,
         val result: ToolUsage.CallResult,
         val argumentsMarkdownStates: Map<String, State>,
@@ -37,6 +40,7 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                     append(
                         Vetting(
                             id = event.id,
+                            timestamp = event.timestamp,
                             callsArgumentsMarkdownStates = calls.associateWith { parseMarkdownArguments(it) },
                             approvals = calls.associateWith { Vetting.Status.Pending },
                         ),
@@ -73,6 +77,7 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                     append(
                         Notification(
                             id = event.id,
+                            timestamp = event.timestamp,
                             call = call,
                             result = result,
                             argumentsMarkdownStates = parseMarkdownArguments(call),

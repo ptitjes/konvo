@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.frontend.compose.conversations.spi
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewState.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
+import kotlin.time.*
 
 sealed interface ConversationViewState {
     data object Loading : ConversationViewState
@@ -91,6 +92,7 @@ sealed interface ConversationViewState {
 
     interface Item {
         val id: Any
+        val timestamp: Instant
     }
 
     object Items : Slot.Sequence<Item>()
