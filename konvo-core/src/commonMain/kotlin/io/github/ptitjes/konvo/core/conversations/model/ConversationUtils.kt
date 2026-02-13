@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.core.conversations.model
 
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
 
 /**
  * Utilities related to [ConversationDigest] derived values.
@@ -18,8 +17,14 @@ object ConversationUtils {
         } ?: return null
 
         val details = lastMsg.payload as Messaging.Message
-        val text = details.content.filterIsInstance<Part.Text>().joinToString("\n") { it.text }
 
-        return TextFormatters.truncatePreview(text, maxLength)
+        return details.computeMessagePreview(maxLength)
     }
+}
+
+fun Messaging.Message.computeMessagePreview(
+    maxLength: Int = 500,
+): String {
+    val text = content.filterIsInstance<Messaging.Part.Text>().joinToString("\n") { it.text }
+    return TextFormatters.truncatePreview(text, maxLength)
 }
