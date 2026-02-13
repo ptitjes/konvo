@@ -56,7 +56,7 @@ class ConversationViewModel(
                                     .copy(slot = ConversationViewState.Digest, value = state.digest)
 
                                 val stateUpdater = ConversationViewStateMaintainer(initial)
-                                stateUpdater.setupCoreContributors()
+                                stateUpdater.setupCoreViewStateProducers()
                                 stateUpdater.handleTranscript(transcript)
                                 val finalState = stateUpdater.state
 
@@ -100,10 +100,4 @@ class ConversationViewModel(
             conversationUserView.updateTitle(newTitle)
         }
     }
-}
-
-fun ConversationViewStateMaintainer.setupCoreContributors() {
-    contributeViewStates(AgentViewState)
-    contributeViewStates(MessagingViewState)
-    contributeViewStates(ToolUsageViewState)
 }
