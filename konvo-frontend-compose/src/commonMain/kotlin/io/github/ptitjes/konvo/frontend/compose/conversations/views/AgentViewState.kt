@@ -16,7 +16,7 @@ data class AgentViewState(
     companion object : Contribution {
         override fun ContributionScope.contribute() {
             ConversationViewState.Agents {
-                onEvent<AgentPresence.Joining> { event ->
+                onEvent<Presence.Joining> { event ->
                     put(key = event.sender as Participant.Agent, initial = AgentViewState()) {
                         onEvent<AgentCapabilities.Messaging> { state, event ->
                             val supportedMediaTypes = event.payload.supportedMediaTypes
@@ -28,7 +28,7 @@ data class AgentViewState(
                         onEvent<AgentProcessing.Completion> { state, _ ->
                             state!!.copy(isProcessing = false)
                         }
-                        onEvent<AgentPresence.Leaving> { _, _ ->
+                        onEvent<Presence.Leaving> { _, _ ->
                             freeze()
                             null
                         }

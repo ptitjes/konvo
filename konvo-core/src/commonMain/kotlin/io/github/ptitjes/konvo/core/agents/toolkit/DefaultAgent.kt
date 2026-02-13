@@ -160,7 +160,7 @@ internal class DefaultAgent(
     }
 
     override suspend fun joinConversation(conversation: ConversationAgentView) = coroutineScope {
-        conversation.send(AgentPresence.Joining)
+        conversation.send(Presence.Joining)
 
         val conversationJustStarted = prompt.messages.size == 1
         if (conversationJustStarted) {
