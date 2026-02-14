@@ -81,7 +81,6 @@ class FileConversationRepository(
                                 updatedAt = dto.updatedAt,
                                 lastMessagePreview = dto.lastMessagePreview,
                                 messageCount = dto.messageCount,
-                                lastReadMessageIndex = dto.lastReadMessageIndex,
                                 unreadMessageCount = dto.unreadMessageCount,
                             )
                         }
@@ -96,34 +95,33 @@ class FileConversationRepository(
         return idx
     }
 
-    override suspend fun create(initial: ConversationDigest) {
+    override suspend fun create(digest: ConversationDigest) {
         // Create directories
         FileIo.ensureDirectoryExists(conversationsDir, fileSystem)
-        val dir = conversationDir(initial.id)
+        val dir = conversationDir(digest.id)
         FileIo.ensureDirectoryExists(dir, fileSystem)
         // Write meta.json atomically
-        val dto = DtoMappers.toDto(initial)
-        FileIo.atomicWrite(metaPath(initial.id), fileSystem) { sink ->
+        val dto = DtoMappers.toDto(digest)
+        FileIo.atomicWrite(metaPath(digest.id), fileSystem) { sink ->
             val content = json.encodeToString(ConversationDto.serializer(), dto)
             sink.writeString(content)
         }
         // Ensure empty events file exists
-        if (!fileSystem.exists(eventsPath(initial.id))) {
-            FileIo.atomicWrite(eventsPath(initial.id), fileSystem) { sink -> sink.writeString("") }
+        if (!fileSystem.exists(eventsPath(digest.id))) {
+            FileIo.atomicWrite(eventsPath(digest.id), fileSystem) { sink -> sink.writeString("") }
         }
         // Update index
         val existing = loadIndex() ?: ConversationIndexDto(conversations = emptyList())
         val entry = ConversationIndexEntryDto(
-            id = initial.id,
-            title = initial.title,
-            createdAt = initial.createdAt,
-            updatedAt = initial.updatedAt,
-            lastMessagePreview = initial.lastMessagePreview,
-            messageCount = initial.messageCount,
-            lastReadMessageIndex = initial.lastReadMessageIndex,
-            unreadMessageCount = initial.unreadMessageCount,
+            id = digest.id,
+            title = digest.title,
+            createdAt = digest.createdAt,
+            updatedAt = digest.updatedAt,
+            lastMessagePreview = digest.lastMessagePreview,
+            messageCount = digest.messageCount,
+            unreadMessageCount = digest.unreadMessageCount,
         )
-        val newIdx = existing.copy(conversations = (existing.conversations.filter { it.id != initial.id } + entry))
+        val newIdx = existing.copy(conversations = (existing.conversations.filter { it.id != digest.id } + entry))
         saveIndex(newIdx)
         changeTicker.value = changeTicker.value + 1
     }
@@ -141,8 +139,8 @@ class FileConversationRepository(
         }
     }
 
-    override fun getDigest(id: String): Flow<ConversationDigest> =
-        changeTicker.map { readConversation(id) }.onStart { emit(readConversation(id)) }.filterNotNull()
+    override fun getDigest(conversationId: String): Flow<ConversationDigest> =
+        changeTicker.map { readConversation(conversationId) }.onStart { emit(readConversation(conversationId)) }.filterNotNull()
             .distinctUntilChanged()
 
     private fun readConversations(
@@ -159,7 +157,6 @@ class FileConversationRepository(
                 participants = emptyList(),
                 lastMessagePreview = e.lastMessagePreview,
                 messageCount = e.messageCount,
-                lastReadMessageIndex = e.lastReadMessageIndex,
                 unreadMessageCount = e.unreadMessageCount,
             )
         }
@@ -188,71 +185,29 @@ class FileConversationRepository(
             sink.writeString(existingContent)
             sink.writeString(newLine)
         }
-        // Update meta and index
-        val current =
-            readConversation(conversationId) ?: throw NoSuchElementException("Unknown conversation: $conversationId")
-        val now = timeProvider.now()
-        // Compute new preview from full transcript (skip non-message events)
-        val events = readEvents(conversationId)
-        val newPreview = ConversationUtils.computeLastMessagePreview(events)
-        val (delta, deltaUnread) = when (event.payload) {
-            is Messaging.Message -> 1 to 1
-            else -> 0 to 0
-        }
-        val updated = current.copy(
-            updatedAt = now,
-            lastMessagePreview = newPreview,
-            messageCount = current.messageCount + delta,
-            unreadMessageCount = current.unreadMessageCount + deltaUnread,
-        )
-        // Write meta
-        FileIo.atomicWrite(metaFile, fileSystem) { sink ->
-            val content = json.encodeToString(ConversationDto.serializer(), DtoMappers.toDto(updated))
-            sink.writeString(content)
-        }
-        // Update index entry
-        val idx = loadIndex() ?: ConversationIndexDto(conversations = emptyList())
-        val entry = ConversationIndexEntryDto(
-            id = updated.id,
-            title = updated.title,
-            createdAt = updated.createdAt,
-            updatedAt = updated.updatedAt,
-            lastMessagePreview = updated.lastMessagePreview,
-            messageCount = updated.messageCount,
-            lastReadMessageIndex = updated.lastReadMessageIndex,
-            unreadMessageCount = updated.unreadMessageCount,
-        )
-        saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
         changeTicker.value = changeTicker.value + 1
     }
 
-    override suspend fun updateDigest(conversation: ConversationDigest) {
-        val existing = readConversation(conversation.id)
-            ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
-        val updated = conversation.copy(
-            createdAt = existing.createdAt,
-            messageCount = existing.messageCount,
-            lastMessagePreview = conversation.lastMessagePreview ?: existing.lastMessagePreview,
-            updatedAt = timeProvider.now(),
-        )
+    override suspend fun updateDigest(digest: ConversationDigest) {
+        val metaFile = metaPath(digest.id)
+        if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: ${digest.id}")
         // Write meta
-        FileIo.atomicWrite(metaPath(updated.id), fileSystem) { sink ->
-            val content = json.encodeToString(ConversationDto.serializer(), DtoMappers.toDto(updated))
+        FileIo.atomicWrite(metaFile, fileSystem) { sink ->
+            val content = json.encodeToString(ConversationDto.serializer(), DtoMappers.toDto(digest))
             sink.writeString(content)
         }
         // Update index
         val idx = loadIndex() ?: ConversationIndexDto(conversations = emptyList())
         val entry = ConversationIndexEntryDto(
-            id = updated.id,
-            title = updated.title,
-            createdAt = updated.createdAt,
-            updatedAt = updated.updatedAt,
-            lastMessagePreview = updated.lastMessagePreview,
-            messageCount = updated.messageCount,
-            lastReadMessageIndex = updated.lastReadMessageIndex,
-            unreadMessageCount = updated.unreadMessageCount,
+            id = digest.id,
+            title = digest.title,
+            createdAt = digest.createdAt,
+            updatedAt = digest.updatedAt,
+            lastMessagePreview = digest.lastMessagePreview,
+            messageCount = digest.messageCount,
+            unreadMessageCount = digest.unreadMessageCount,
         )
-        saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != updated.id } + entry))
+        saveIndex(idx.copy(conversations = idx.conversations.filter { it.id != digest.id } + entry))
         changeTicker.value = changeTicker.value + 1
     }
 

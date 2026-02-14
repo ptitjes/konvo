@@ -87,7 +87,7 @@ abstract class ConversationRepositoryContractTests {
     }
 
     @Test
-    fun `append user message updates preview and count`() = runRepositoryTest { timeProvider, repository ->
+    fun `append user message does not update preview and count`() = runRepositoryTest { timeProvider, repository ->
         val conversation = newConversation(timestamp = timeProvider.now())
         repository.create(conversation)
         val event = Event(
@@ -100,8 +100,8 @@ abstract class ConversationRepositoryContractTests {
         )
         repository.appendEvent(conversation.id, event)
         val updated = repository.getDigest(conversation.id).first()
-        assertEquals(1, updated.messageCount)
-        assertEquals("Hello world", updated.lastMessagePreview)
+        assertEquals(0, updated.messageCount)
+        assertEquals(null, updated.lastMessagePreview)
         val events = repository.getEvents(conversation.id).first()
         assertEquals(1, events.size)
     }
@@ -121,7 +121,7 @@ abstract class ConversationRepositoryContractTests {
     }
 
     @Test
-    fun `append updates updatedAt, lastMessagePreview and messageCount`() =
+    fun `append does not update updatedAt, lastMessagePreview and messageCount`() =
         runRepositoryTest { timeProvider, repository ->
             val conversation = newConversation("c1", timestamp = timeProvider.now())
             repository.create(conversation)
@@ -129,39 +129,41 @@ abstract class ConversationRepositoryContractTests {
             val u1 = userMessage("e1", "Hello world", timeProvider.now())
             repository.appendEvent("c1", u1)
             val after1 = repository.getDigest("c1").first()
-            assertEquals(1, after1.messageCount)
-            assertEquals("Hello world", after1.lastMessagePreview)
-            assertTrue(after1.updatedAt >= beforeUpdatedAt)
+            assertEquals(0, after1.messageCount)
+            assertEquals(null, after1.lastMessagePreview)
+            assertEquals(beforeUpdatedAt, after1.updatedAt)
 
             val a1 = assistantMessage("e2", "Hi!", timeProvider.now())
             repository.appendEvent("c1", a1)
             val after2 = repository.getDigest("c1").first()
-            assertEquals(2, after2.messageCount)
-            assertEquals("Hi!", after2.lastMessagePreview)
+            assertEquals(0, after2.messageCount)
+            assertEquals(null, after2.lastMessagePreview)
         }
 
     @Test
     fun `listConversations default is UpdatedDesc`() = runRepositoryTest { timeProvider, repository ->
-        repository.create(newConversation("c1", "A", timeProvider.now()))
-        // ensure different updatedAt by appending to c2 later
-        repository.create(newConversation("c2", "B", timeProvider.now()))
-
+        val c1 = newConversation("c1", "A", timeProvider.now())
+        repository.create(c1)
         advanceTimeBy(1.seconds)
-        // append to c2 to bump updatedAt
-        repository.appendEvent("c2", userMessage("e1", "msg", timeProvider.now()))
+        val c2 = newConversation("c2", "B", timeProvider.now())
+        repository.create(c2)
 
         val listed = repository.getDigests().first()
         assertEquals(listOf("c2", "c1"), listed.map { it.id })
     }
 
     @Test
-    fun `updateConversation persists title changes and updatedAt`() = runRepositoryTest { timeProvider, repository ->
-        repository.create(newConversation("c1", "Old", timeProvider.now()))
+    fun `updateConversation persists title changes and does not automatically update updatedAt`() = runRepositoryTest { timeProvider, repository ->
+        val initial = newConversation("c1", "Old", timeProvider.now())
+        repository.create(initial)
         val before = repository.getDigest("c1").first().updatedAt
-        repository.updateDigest(repository.getDigest("c1").first().copy(title = "New"))
+        
+        val updated = repository.getDigest("c1").first().copy(title = "New")
+        repository.updateDigest(updated)
+        
         val changed = repository.getDigest("c1").first()
         assertEquals("New", changed.title)
-        assertTrue(changed.updatedAt >= before)
+        assertEquals(before, changed.updatedAt)
     }
 
     @Test

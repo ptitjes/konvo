@@ -24,21 +24,21 @@ class InMemoryConversationRepository(
     private val conversationsState = MutableStateFlow<Map<String, ConversationDigest>>(emptyMap())
     private val eventsState = MutableStateFlow<Map<String, List<Event<*>>>>(emptyMap())
 
-    override suspend fun create(initial: ConversationDigest) {
+    override suspend fun create(digest: ConversationDigest) {
         val newConversations = conversations.updateAndGet { prev ->
-            if (prev.containsKey(initial.id)) {
-                throw IllegalStateException("Conversation already exists: ${initial.id}")
+            if (prev.containsKey(digest.id)) {
+                throw IllegalStateException("Conversation already exists: ${digest.id}")
             }
-            prev + (initial.id to initial)
+            prev + (digest.id to digest)
         }
         conversationsState.value = newConversations
         // Initialize empty events list
-        val newEvents = events.updateAndGet { prev -> prev + (initial.id to emptyList()) }
+        val newEvents = events.updateAndGet { prev -> prev + (digest.id to emptyList()) }
         eventsState.value = newEvents
     }
 
-    override fun getDigest(id: String): Flow<ConversationDigest> =
-        conversationsState.map { it[id] }.filterNotNull().distinctUntilChanged()
+    override fun getDigest(conversationId: String): Flow<ConversationDigest> =
+        conversationsState.map { it[conversationId] }.filterNotNull().distinctUntilChanged()
 
     override fun getDigests(sort: Sort): Flow<List<ConversationDigest>> =
         conversationsState.map { map ->
@@ -53,44 +53,19 @@ class InMemoryConversationRepository(
         }.distinctUntilChanged()
 
     override suspend fun appendEvent(conversationId: String, event: Event<*>) {
-        // Append event first
+        // Append event
         val updatedEvents = events.updateAndGet { prev ->
             val current = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
             prev + (conversationId to (current + event))
         }[conversationId]!!
         eventsState.value = events.value
-
-        // Update conversation metadata
-        conversations.updateAndGet { prev ->
-            val existing = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
-            val now = timeProvider.now()
-            val (newPreview, deltaCount, deltaUnread) = when (event.payload) {
-                is Messaging.Message -> Triple(ConversationUtils.computeLastMessagePreview(updatedEvents), 1, 1)
-                else -> Triple(existing.lastMessagePreview, 0, 0)
-            }
-            val changed = existing.copy(
-                updatedAt = now,
-                lastMessagePreview = newPreview,
-                messageCount = existing.messageCount + deltaCount,
-                unreadMessageCount = existing.unreadMessageCount + deltaUnread,
-            )
-            prev + (conversationId to changed)
-        }[conversationId]!!
-        conversationsState.value = conversations.value
     }
 
-    override suspend fun updateDigest(conversation: ConversationDigest) {
+    override suspend fun updateDigest(digest: ConversationDigest) {
         conversations.updateAndGet { prev ->
-            val existing = prev[conversation.id] ?: throw NoSuchElementException("Unknown conversation: ${conversation.id}")
-            val now = timeProvider.now()
-            val changed = conversation.copy(
-                createdAt = existing.createdAt, // preserve
-                updatedAt = now,
-                messageCount = existing.messageCount, // preserve unless caller intentionally changed? keep existing
-                lastMessagePreview = conversation.lastMessagePreview ?: existing.lastMessagePreview,
-            )
-            prev + (conversation.id to changed)
-        }[conversation.id]!!
+            if (!prev.containsKey(digest.id)) throw NoSuchElementException("Unknown conversation: ${digest.id}")
+            prev + (digest.id to digest)
+        }
         conversationsState.value = conversations.value
     }
 

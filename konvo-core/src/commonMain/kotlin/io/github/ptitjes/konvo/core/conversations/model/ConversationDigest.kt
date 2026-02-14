@@ -11,13 +11,12 @@ import kotlin.time.*
  */
 data class ConversationDigest(
     val id: String,
-    val title: String,
+    val title: String? = null,
     val createdAt: Instant,
     val updatedAt: Instant,
     val participants: List<Participant>,
-    val lastMessagePreview: String?,
-    val messageCount: Int,
-    val lastReadMessageIndex: Int = -1,
+    val lastMessagePreview: String? = null,
+    val messageCount: Int = 0,
     val unreadMessageCount: Int = 0,
     val agentConfiguration: AgentConfiguration = NoAgentConfiguration,
 )

@@ -32,11 +32,10 @@ internal data class ConversationIndexDto(
 @SerialName("conversation-index-entry")
 internal data class ConversationIndexEntryDto(
     val id: String,
-    val title: String,
+    val title: String?,
     @Contextual val createdAt: Instant,
     @Contextual val updatedAt: Instant,
     val lastMessagePreview: String?,
     val messageCount: Int,
-    val lastReadMessageIndex: Int = -1,
     val unreadMessageCount: Int = 0,
 )
