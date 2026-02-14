@@ -89,6 +89,8 @@ sealed interface ConversationViewState {
 
     object Digest : Slot.Register<ConversationDigest?>(null)
 
+    object Preview : Slot.Register<PreviewViewState>(PreviewViewState())
+    object Presence : Slot.Dictionary<Participant, PresenceViewState>()
     object Agents : Slot.Dictionary<Participant.Agent, AgentViewState>()
 
     interface Item {
@@ -99,8 +101,10 @@ sealed interface ConversationViewState {
     object Items : Slot.Sequence<Item>()
 }
 
-// TODO Remove the following!
+// TODO Move the following alongside the slot definitions
 val Loaded.digest: ConversationDigest get() = get(Digest)!!
-val Loaded.items: List<Item> get() = get(Items)
+val Loaded.preview: PreviewViewState get() = get(Preview)
+val Loaded.presence: Map<Participant, PresenceViewState> get() = get(Presence)
 val Loaded.agents: Map<Participant.Agent, AgentViewState> get() = get(Agents)
 val Loaded.isProcessing: Boolean get() = agents.any { (_, state) -> state.isProcessing }
+val Loaded.items: List<Item> get() = get(Items)
