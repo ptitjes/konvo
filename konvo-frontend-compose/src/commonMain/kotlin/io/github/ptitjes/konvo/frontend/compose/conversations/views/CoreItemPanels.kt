@@ -202,6 +202,9 @@ private fun ToolUsageVettingPanel(
     }
 }
 
+private suspend fun ConversationUserView.sendToolUseApproval(approvals: Map<Call, Boolean>) =
+    send(Approval(approvals = approvals.toList()))
+
 @Composable
 private fun ToolUsageNotificationPanel(
     viewState: ToolUsageViewState.Notification,
