@@ -1,8 +1,6 @@
 package io.github.ptitjes.konvo.core.conversations
 
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
 import kotlinx.coroutines.flow.*
 
 /**
@@ -19,9 +17,3 @@ interface ConversationUserView {
 
     suspend fun send(payload: Event.User)
 }
-
-suspend fun ConversationUserView.sendMessage(content: List<Part>) =
-    send(Message(content = content))
-
-suspend fun ConversationUserView.sendToolUseApproval(approvals: Map<Call, Boolean>) =
-    send(Approval(approvals = approvals.toList()))

@@ -234,15 +234,16 @@ private fun ConversationInputBox() {
         modifier = Modifier.widthIn(max = 800.dp).padding(16.dp),
         onSendMessage = { content, attachments ->
             coroutineScope.launch {
-                conversation.send(
-                    payload = Messaging.Message(
-                        content = listOf(Messaging.Part.Text(content)) + attachments.toMediaParts(),
-                    ),
+                conversation.sendMessage(
+                    listOf(Messaging.Part.Text(content)) + attachments.toMediaParts(),
                 )
             }
         },
     )
 }
+
+private suspend fun ConversationUserView.sendMessage(content: List<Messaging.Part>) =
+    send(Messaging.Message(content = content))
 
 private fun List<Messaging.Attachment>.toMediaParts(): List<Messaging.Part.Media> {
     return map { attachment ->
