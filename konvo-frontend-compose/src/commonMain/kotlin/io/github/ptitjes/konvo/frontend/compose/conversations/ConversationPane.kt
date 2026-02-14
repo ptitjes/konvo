@@ -89,19 +89,9 @@ private fun ConversationLog(
 ) {
     val lastViewedItemIndex = state.lastViewedItemIndex()
 
-    LaunchedEffect(lastViewedItemIndex) {
-        println("lastViewedItemIndex changed: $lastViewedItemIndex")
-    }
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = lastViewedItemIndex + 1)
 
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = lastViewedItemIndex,
-        initialFirstVisibleItemScrollOffset = 0,
-    )
-
-    LastViewedTimestampUpdater(
-        listState = listState,
-        state = state,
-    )
+    LastViewedTimestampUpdater(listState = listState, state = state)
 
     val itemPanelView = LocalViewRegistry.current[ConversationPane.ItemPanels]
 
@@ -109,15 +99,14 @@ private fun ConversationLog(
         modifier = Modifier.fillMaxSize(),
         state = listState,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(vertical = 16.dp, horizontal = 0.dp) + paddingValues,
+        contentPadding = paddingValues,
     ) {
         itemsIndexed(
             items = state.items,
             key = { _, item -> item.id },
             contentType = { _, item -> item::class },
         ) { index, viewedItem ->
-            Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
+            Column(modifier = Modifier.widthIn(max = 800.dp).padding(vertical = 8.dp, horizontal = 32.dp)) {
                 with(itemPanelView) { Content(viewedItem) }
 
                 if (index == lastViewedItemIndex && index != state.items.lastIndex) NewMessagesDivider()
@@ -130,9 +119,9 @@ private fun ConversationLog(
 
 private fun LazyListScope.conversationLogBottomItems(state: ConversationViewState.Loaded) {
     // ConversationFeedBottom slot
-    if (state.isProcessing) {
-        item(ProcessingIndicatorKey) {
-            Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
+    item(ProcessingIndicatorKey, contentType = ProcessingIndicatorKey) {
+        if (state.isProcessing) {
+            Column(modifier = Modifier.widthIn(max = 800.dp).padding(vertical = 8.dp, horizontal = 32.dp)) {
                 ConversationProcessingIndicator()
             }
         }
@@ -167,10 +156,6 @@ private fun LastViewedTimestampUpdater(
 
     // When the user scrolls over new messages for > 5 seconds, update the last read index
     LaunchedEffect(lastViewedItemIndex, lastViewTimestamp, lastMessageTimestamp) {
-        println("lastViewedItemIndex: $lastViewedItemIndex")
-        println("lastViewTimestamp: $lastViewTimestamp")
-        println("lastMessageTimestamp: $lastMessageTimestamp")
-
         if (lastViewTimestamp >= lastMessageTimestamp) return@LaunchedEffect
 
         var pendingJob: Job? = null
@@ -179,20 +164,17 @@ private fun LastViewedTimestampUpdater(
             lastViewedItemIndex < lastVisibleIndex
         }
             .collect { overNew ->
-                println("overNew: $overNew")
                 if (overNew) {
                     if (pendingJob == null) {
                         pendingJob = launch {
-                            println("starting job")
                             delay(5_000)
-                            println("after 5 seconds")
+
                             // Re-check condition after delay using the last visible index
                             val lastVisibleIndex = listState.lastVisibleItemIndex.coerceAtMost(state.items.lastIndex)
                             val lastVisibleItem = state.items[lastVisibleIndex]
                             val lastVisibleTimestamp = lastVisibleItem.timestamp
 
                             val stillOverNew = lastViewedItemIndex < lastVisibleIndex
-                            println("stillOverNew: $stillOverNew")
                             if (stillOverNew) {
                                 conversation.send(Presence.ViewNotification(lastVisibleTimestamp))
                             }
