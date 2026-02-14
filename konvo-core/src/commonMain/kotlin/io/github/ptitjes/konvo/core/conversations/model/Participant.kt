@@ -3,12 +3,15 @@ package io.github.ptitjes.konvo.core.conversations.model
 import kotlinx.serialization.*
 
 @Serializable
-sealed class Participant {
+sealed interface Participant {
+    val id: String
+    val name: String
+
     @Serializable
     @SerialName("user")
-    data class User(val id: String, val name: String) : Participant()
+    data class User(override val id: String, override val name: String) : Participant
 
     @Serializable
     @SerialName("agent")
-    data class Agent(val id: String, val name: String) : Participant()
+    data class Agent(override val id: String, override val name: String) : Participant
 }

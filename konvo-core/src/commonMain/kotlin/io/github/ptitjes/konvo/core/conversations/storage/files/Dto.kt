@@ -15,13 +15,12 @@ import kotlin.time.*
 @SerialName("conversation")
 internal data class ConversationDto(
     val id: String,
-    val title: String,
+    val title: String? = null,
     @Contextual val createdAt: Instant,
     @Contextual val updatedAt: Instant,
     val participants: List<ParticipantDto>,
     val lastMessagePreview: String? = null,
     val messageCount: Int = 0,
-    val lastReadMessageIndex: Int = -1,
     val unreadMessageCount: Int = 0,
     val agent: AgentConfigurationDto = AgentConfigurationDto.None,
     val schemaVersion: Int = 3,
@@ -83,7 +82,6 @@ internal object DtoMappers {
         participants = conv.participants.map { toDto(it) },
         lastMessagePreview = conv.lastMessagePreview,
         messageCount = conv.messageCount,
-        lastReadMessageIndex = conv.lastReadMessageIndex,
         unreadMessageCount = conv.unreadMessageCount,
         agent = when (val agentConfiguration = conv.agentConfiguration) {
             is NoAgentConfiguration -> AgentConfigurationDto.None
@@ -110,7 +108,6 @@ internal object DtoMappers {
         participants = dto.participants.map { fromDto(it) },
         lastMessagePreview = dto.lastMessagePreview,
         messageCount = dto.messageCount,
-        lastReadMessageIndex = dto.lastReadMessageIndex,
         unreadMessageCount = dto.unreadMessageCount,
         agentConfiguration = when (val agentConfigurationDto = dto.agent) {
             is AgentConfigurationDto.None -> NoAgentConfiguration
