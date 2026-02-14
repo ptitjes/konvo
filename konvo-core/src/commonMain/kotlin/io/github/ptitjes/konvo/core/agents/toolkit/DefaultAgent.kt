@@ -145,8 +145,13 @@ internal class DefaultAgent(
         )
     }
 
-    override suspend fun restorePrompt(events: List<Event<*>>) {
-        val messages = events.mapNotNull { event ->
+    override suspend fun restoreSession(
+        transcript: List<Event<*>>,
+        conversation: ConversationAgentView,
+    ): Unit = coroutineScope {
+        // TODO implement this properly: restore state and prompt
+
+        val messages = transcript.mapNotNull { event ->
             @Suppress("UNCHECKED_CAST")
             when (val details = event.payload) {
                 is Messaging.Message -> (event as Event<Messaging.Message>).toKoogMessage()
@@ -157,54 +162,56 @@ internal class DefaultAgent(
         prompt = prompt(systemPrompt) {
             messages(messages)
         }
-    }
 
-    override suspend fun joinConversation(conversation: ConversationAgentView) = coroutineScope {
-        conversation.send(Presence.Joining)
-
-        val conversationJustStarted = prompt.messages.size == 1
-        if (conversationJustStarted) {
-            welcomeMessage?.let { content ->
-                conversation.send(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
-                prompt = prompt(prompt) {
-                    message(
-                        KoogMessage.Assistant(
-                            content = content,
-                            metaInfo = ResponseMetaInfo(timestamp = Clock.System.now().toDeprecatedInstant())
-                        )
-                    )
-                }
-            }
+        if (transcript.isEmpty()) {
+            conversation.send(Presence.Joining)
         }
 
-        conversation.send(
-            AgentCapabilities.Messaging(
-                supportedMediaTypes = listOf(),
-            )
-        )
-
-        mcpSessionFactory?.invoke(coroutineContext).use { mcpHostSession ->
-            mcpHostSession?.addServers(mcpServerNames)
-            val tools = mcpHostSession?.tools?.first()
-
-            conversation.events.buffer(Channel.UNLIMITED).collect { event ->
-                when (val details = event.payload) {
-                    is Messaging.Message -> {
-                        if (event.sender is Participant.User) {
-                            conversation.send(AgentProcessing.Start)
-                            val agent = buildAgent(tools, conversation)
-                            @Suppress("UNCHECKED_CAST") val result =
-                                agent.run((event as Event<Messaging.Message>).toKoogMessage() as KoogMessage.User)
-                            result.forEach {
-                                conversation.send(
-                                    Messaging.Message(content = listOf(Messaging.Part.Text(it.content)))
-                                )
-                            }
-                            conversation.send(AgentProcessing.Completion)
-                        }
+        launch {
+            val conversationJustStarted = prompt.messages.size == 1
+            if (conversationJustStarted) {
+                welcomeMessage?.let { content ->
+                    conversation.send(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
+                    prompt = prompt(prompt) {
+                        message(
+                            KoogMessage.Assistant(
+                                content = content,
+                                metaInfo = ResponseMetaInfo(timestamp = Clock.System.now().toDeprecatedInstant())
+                            )
+                        )
                     }
+                }
+            }
 
-                    else -> {}
+            conversation.send(
+                AgentCapabilities.Messaging(
+                    supportedMediaTypes = listOf(),
+                )
+            )
+
+            mcpSessionFactory?.invoke(coroutineContext).use { mcpHostSession ->
+                mcpHostSession?.addServers(mcpServerNames)
+                val tools = mcpHostSession?.tools?.first()
+
+                conversation.events.buffer(Channel.UNLIMITED).collect { event ->
+                    when (val details = event.payload) {
+                        is Messaging.Message -> {
+                            if (event.sender is Participant.User) {
+                                conversation.send(AgentProcessing.Start)
+                                val agent = buildAgent(tools, conversation)
+                                @Suppress("UNCHECKED_CAST") val result =
+                                    agent.run((event as Event<Messaging.Message>).toKoogMessage() as KoogMessage.User)
+                                result.forEach {
+                                    conversation.send(
+                                        Messaging.Message(content = listOf(Messaging.Part.Text(it.content)))
+                                    )
+                                }
+                                conversation.send(AgentProcessing.Completion)
+                            }
+                        }
+
+                        else -> {}
+                    }
                 }
             }
         }

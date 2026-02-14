@@ -5,13 +5,13 @@ package io.github.ptitjes.konvo.core.conversations
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 import kotlin.time.*
-import kotlin.time.Duration.Companion.milliseconds
 
 sealed interface ConversationState {
     data object Loading : ConversationState
@@ -47,12 +47,6 @@ class Conversation(
 
     private val _state = MutableStateFlow<ConversationState>(ConversationState.Loading)
     private val _events = MutableSharedFlow<Event<*>>()
-    private val _titleUpdates = MutableSharedFlow<String>(extraBufferCapacity = 64)
-    private val _lastReadMessageIndexUpdates = MutableSharedFlow<Int>()
-
-    private val userMember = Participant.User(id = newId(), name = "user")
-    private val agentMember = Participant.Agent(id = newId(), name = "agent")
-    val participants = listOf(userMember, agentMember)
 
     init {
         coroutineScope.launch {
@@ -66,7 +60,9 @@ class Conversation(
                         digest = digest,
                         transcript = transcript,
                     )
-                }.collect { _state.value = it }
+                }.collect {
+                    _state.value = it
+                }
             }
 
             // Observe new events
@@ -77,47 +73,17 @@ class Conversation(
                 }
             }
 
-            // Observe and persist title updates
-            launch {
-                _titleUpdates
-                    .debounce(500.milliseconds)
-                    .distinctUntilChanged()
-                    .collect { newTitle ->
-                        val current = digest.value
-                        if (current.title != newTitle) {
-                            repository.updateDigest(current.copy(title = newTitle))
-                        }
-                    }
-            }
+            awaitConversationLoaded()
 
-            // Observe and persist last read message index updates
-            launch {
-                _lastReadMessageIndexUpdates.collect { lastReadMessageIndex ->
-                    val lastMessageIndex = transcript.value.size - 1
-                    val unreadMessageCount = (lastMessageIndex - lastReadMessageIndex).coerceAtLeast(0)
-
-                    val currentDigest = digest.value
-                    if (currentDigest.lastReadMessageIndex != lastReadMessageIndex
-                        || currentDigest.unreadMessageCount != unreadMessageCount
-                    ) {
-                        repository.updateDigest(
-                            currentDigest.copy(
-                                lastReadMessageIndex = lastReadMessageIndex,
-                                unreadMessageCount = unreadMessageCount,
-                            )
-                        )
-                    }
-                }
+            if (transcript.value.isEmpty()) {
+                newUserView().send(Presence.Joining)
             }
 
             // Restore agent
             val agentConfiguration = digest.value.agentConfiguration
             val agent = agentFactory.createAgent(agentConfiguration)
-            agent.restorePrompt(transcript.value)
 
-            launch {
-                agent.joinConversation(newAgentView())
-            }
+            agent.restoreSession(transcript.value, newAgentView())
         }
     }
 
@@ -125,8 +91,26 @@ class Conversation(
         job.cancel()
     }
 
-    fun newUserView(): ConversationUserView = UserViewImpl(userMember)
-    private fun newAgentView(): ConversationAgentView = AgentViewImpl(agentMember)
+    suspend fun awaitConversationLoaded() {
+        _state.first { it is ConversationState.Loaded }
+    }
+
+    private fun checkConversationLoaded(): ConversationState.Loaded {
+        check(_state.value is ConversationState.Loaded) { "Conversation not loaded yet" }
+        return _state.value as ConversationState.Loaded
+    }
+
+    fun newUserView(): ConversationUserView {
+        val state = checkConversationLoaded()
+        val userParticipant = state.digest.participants.filterIsInstance<Participant.User>().first()
+        return UserViewImpl(userParticipant)
+    }
+
+    private fun newAgentView(): ConversationAgentView {
+        val state = checkConversationLoaded()
+        val agentParticipant = state.digest.participants.filterIsInstance<Participant.Agent>().first()
+        return AgentViewImpl(agentParticipant)
+    }
 
     private inner class AgentViewImpl(
         override val participant: Participant.Agent,
@@ -153,14 +137,6 @@ class Conversation(
         override val state: StateFlow<ConversationState> get() = _state
 
         override val events: SharedFlow<Event<*>> get() = _events
-
-        override suspend fun updateTitle(title: String) {
-            _titleUpdates.emit(title)
-        }
-
-        override suspend fun updateLastReadMessageIndex(index: Int) {
-            _lastReadMessageIndexUpdates.emit(index)
-        }
 
         override suspend fun send(payload: Event.User) {
             _events.emit(

@@ -51,6 +51,8 @@ fun ConversationScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    val conversation = viewModel.conversation
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -78,10 +80,11 @@ fun ConversationScreen(
                                 ),
                         )
 
-                        is ConversationViewState.Loaded -> EditableConversationTitle(
-                            conversation = state.digest,
-                            onTitleChange = { viewModel.updateTitle(it) }
-                        )
+                        is ConversationViewState.Loaded -> with(conversation) {
+                            EditableConversationTitle(
+                                conversationTitle = state.preview.title,
+                            )
+                        }
                     }
                 },
                 navigationIcon = {
@@ -101,11 +104,10 @@ fun ConversationScreen(
     ) { paddingValues ->
         when (val state = state) {
             is ConversationViewState.Loading -> FullSizeProgressIndicator()
-            is ConversationViewState.Loaded -> with(viewModel.conversation) {
+            is ConversationViewState.Loaded -> with(conversation) {
                 ConversationPane(
                     state = state,
                     modifier = Modifier.fillMaxSize(),
-                    onUpdateLastReadMessageIndex = viewModel::updateLastReadMessageIndex,
                     paddingValues = paddingValues,
                 )
             }

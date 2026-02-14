@@ -17,14 +17,6 @@ interface ConversationUserView {
 
     val events: SharedFlow<Event<*>>
 
-    suspend fun updateTitle(title: String)
-
-    /**
-     * Update the last read message index.
-     * Implementations should clamp the value to the current bounds and ignore decreases that are out of range.
-     */
-    suspend fun updateLastReadMessageIndex(index: Int)
-
     suspend fun send(payload: Event.User)
 }
 
