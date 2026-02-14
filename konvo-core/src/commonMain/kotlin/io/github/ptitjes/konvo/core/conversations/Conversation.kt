@@ -79,11 +79,13 @@ class Conversation(
                 newUserView().send(Presence.Joining)
             }
 
-            // Restore agent
-            val agentConfiguration = digest.value.agentConfiguration
-            val agent = agentFactory.createAgent(agentConfiguration)
+            launch {
+                // Restore agent
+                val agentConfiguration = digest.value.agentConfiguration
+                val agent = agentFactory.createAgent(agentConfiguration)
 
-            agent.restoreSession(transcript.value, newAgentView())
+                agent.restoreSession(transcript.value, newAgentView())
+            }
         }
     }
 
