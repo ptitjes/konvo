@@ -27,14 +27,14 @@ fun EditableConversationTitle(
     LaunchedEffect(titleFieldState) {
         @OptIn(FlowPreview::class)
         snapshotFlow { titleFieldState.text.toString() }.debounce(300.milliseconds).collectLatest {
-            if (it == conversationTitle && !isFocused) return@collectLatest
+            if ((it.isBlank() || it == conversationTitle) && !isFocused) return@collectLatest
             coroutineScope.launch { conversation.send(Metadata.TitleChange(it)) }
         }
     }
 
     TextField(
         state = titleFieldState,
-        placeholder = { Text(text = LocalStrings.current.conversations.newConversationTitle) },
+        placeholder = { Text(text = LocalStrings.current.conversations.untitledConversationTitle) },
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier.onFocusChanged { focusState -> isFocused = focusState.isFocused },
         colors = TextFieldDefaults.colors(

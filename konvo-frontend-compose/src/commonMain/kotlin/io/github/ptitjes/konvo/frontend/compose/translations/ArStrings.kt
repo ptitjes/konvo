@@ -150,6 +150,7 @@ internal val ArStrings = Strings(
         greetingOptionLabel = { index, preview -> "تحية ${index + 1}: $preview" },
     ),
     conversations = ConversationStrings(
+        untitledConversationTitle = "محادثة بدون عنوان",
         listTitle = "المحادثات",
         newConversationAria = "محادثة جديدة",
         emptyTitle = "لا توجد محادثات بعد",

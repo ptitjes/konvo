@@ -150,6 +150,7 @@ internal val EsStrings = Strings(
         greetingOptionLabel = { index, preview -> "Saludo ${index + 1}: $preview" },
     ),
     conversations = ConversationStrings(
+        untitledConversationTitle = "Conversación sin título",
         listTitle = "Conversaciones",
         newConversationAria = "Nueva conversación",
         emptyTitle = "Aún no hay conversaciones",

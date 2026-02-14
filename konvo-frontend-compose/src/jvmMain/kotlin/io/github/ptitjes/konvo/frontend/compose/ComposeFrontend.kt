@@ -137,6 +137,6 @@ fun CoroutineScope.buildDi() = DI {
     bindProviderOf(::NewConversationViewModel)
     bindProviderOf(::MainScreenViewModel)
     bindFactory { conversationId: String ->
-        ConversationViewModel(instance(), conversationId)
+        ConversationViewModel(instance(), instance(), conversationId)
     }
 }

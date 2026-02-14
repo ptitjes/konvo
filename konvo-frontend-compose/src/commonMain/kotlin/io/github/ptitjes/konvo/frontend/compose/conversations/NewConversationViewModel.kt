@@ -263,12 +263,9 @@ class NewConversationViewModel(
 
             val conversation = ConversationDigest(
                 id = UuidIdGenerator.newId(),
-                title = "Untitled conversation",
                 createdAt = now,
                 updatedAt = now,
                 participants = listOf(userMember, agentMember),
-                lastMessagePreview = null,
-                messageCount = 0,
                 agentConfiguration = agentConfiguration,
             )
 

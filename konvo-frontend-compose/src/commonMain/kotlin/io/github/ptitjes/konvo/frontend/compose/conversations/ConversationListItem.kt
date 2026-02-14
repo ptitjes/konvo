@@ -68,7 +68,7 @@ fun ConversationListItem(
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = conversation.title,
+                    text = conversation.title ?: strings.conversations.untitledConversationTitle,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -115,7 +115,13 @@ fun ConversationListItem(
                 }
             },
             title = { Text(strings.conversations.deleteDialogTitle) },
-            text = { Text(strings.conversations.deleteDialogText(conversation.title)) },
+            text = {
+                Text(
+                    strings.conversations.deleteDialogText(
+                        conversation.title ?: strings.conversations.untitledConversationTitle
+                    )
+                )
+            },
         )
     }
 }

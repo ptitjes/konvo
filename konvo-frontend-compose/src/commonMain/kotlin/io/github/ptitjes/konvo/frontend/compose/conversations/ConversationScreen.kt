@@ -51,8 +51,6 @@ fun ConversationScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    val conversation = viewModel.conversation
-
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -80,7 +78,7 @@ fun ConversationScreen(
                                 ),
                         )
 
-                        is ConversationViewState.Loaded -> with(conversation) {
+                        is ConversationViewState.Loaded -> with(viewModel.conversation) {
                             EditableConversationTitle(
                                 conversationTitle = state.preview.title,
                             )
@@ -104,7 +102,7 @@ fun ConversationScreen(
     ) { paddingValues ->
         when (val state = state) {
             is ConversationViewState.Loading -> FullSizeProgressIndicator()
-            is ConversationViewState.Loaded -> with(conversation) {
+            is ConversationViewState.Loaded -> with(viewModel.conversation) {
                 ConversationPane(
                     state = state,
                     modifier = Modifier.fillMaxSize(),
