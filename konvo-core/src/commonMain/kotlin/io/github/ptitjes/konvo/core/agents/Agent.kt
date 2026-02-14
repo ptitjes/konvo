@@ -4,6 +4,6 @@ import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 
 interface Agent {
-    suspend fun restorePrompt(events: List<Event<*>>)
-    suspend fun joinConversation(conversation: ConversationAgentView)
+    // TODO this should return a AgentSession
+    suspend fun restoreSession(transcript: List<Event<*>>, conversation: ConversationAgentView)
 }

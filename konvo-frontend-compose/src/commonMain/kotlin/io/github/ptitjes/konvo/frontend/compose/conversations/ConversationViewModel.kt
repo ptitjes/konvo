@@ -11,13 +11,6 @@ import kotlin.time.*
 
 /**
  * ViewModel for the conversation UI.
- *
- * This class encapsulates:
- * - Listening to events from the ConversationUiView
- * - Maintaining the conversation entries
- * - Adding messages from the user and sending them to the ConversationUiView
- *
- * @param conversationUserView The view of the conversation to interact with
  */
 @OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
@@ -28,9 +21,8 @@ class ConversationViewModel(
     private val conversationId: String,
 ) : ViewModel() {
     private val liveConversation = conversationManager.getConversation(conversationId)
-    private val conversationUserView = liveConversation.newUserView()
 
-    val conversation: ConversationUserView get() = conversationUserView
+    val conversation: ConversationUserView get() = liveConversation.newUserView()
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
     val state: StateFlow<ConversationViewState> = _state
@@ -45,6 +37,10 @@ class ConversationViewModel(
         viewModelScope.launch {
             launch {
                 var previousTranscript: List<Event<*>>? = null
+
+                liveConversation.awaitConversationLoaded()
+
+                val conversationUserView = liveConversation.newUserView()
 
                 conversationUserView.state.collect { state ->
                     when (state) {
@@ -81,23 +77,5 @@ class ConversationViewModel(
     override fun onCleared() {
         super.onCleared()
         println("Cleared ConversationViewModel(${this.conversationId})")
-    }
-
-    /** Update last read message index, clamped to current items. */
-    fun updateLastReadMessageIndex(index: Int) {
-        viewModelScope.launch {
-            conversationUserView.updateLastReadMessageIndex(index)
-        }
-    }
-
-    /**
-     * Update the conversation title.
-     *
-     * @param newTitle The new title to set on the conversation
-     */
-    fun updateTitle(newTitle: String) {
-        viewModelScope.launch {
-            conversationUserView.updateTitle(newTitle)
-        }
     }
 }

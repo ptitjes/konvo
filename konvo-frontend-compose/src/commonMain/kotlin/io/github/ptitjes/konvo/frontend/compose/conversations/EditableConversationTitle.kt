@@ -1,38 +1,41 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
+import androidx.compose.foundation.text.input.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.text.input.*
-import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.frontend.compose.translations.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
+context(conversation: ConversationUserView)
 fun EditableConversationTitle(
-    conversation: ConversationDigest,
-    onTitleChange: (String) -> Unit,
+    conversationTitle: String?,
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    var titleField by remember(conversation.id) {
-        mutableStateOf(TextFieldValue(conversation.title))
-    }
+    val coroutineScope = rememberCoroutineScope()
 
-    // Keep local text in sync with repository updates when not focused
-    LaunchedEffect(conversation.title, isFocused) {
-        if (!isFocused && titleField.text != conversation.title) {
-            titleField = TextFieldValue(conversation.title)
+    val titleFieldState = rememberTextFieldState(conversationTitle ?: "")
+
+    LaunchedEffect(titleFieldState) {
+        @OptIn(FlowPreview::class)
+        snapshotFlow { titleFieldState.text.toString() }.debounce(300.milliseconds).collectLatest {
+            if (it == conversationTitle && !isFocused) return@collectLatest
+            coroutineScope.launch { conversation.send(Metadata.TitleChange(it)) }
         }
     }
 
     TextField(
-        value = titleField,
-        onValueChange = { value ->
-            titleField = value
-            onTitleChange(value.text)
-        },
-        singleLine = true,
+        state = titleFieldState,
+        placeholder = { Text(text = LocalStrings.current.conversations.newConversationTitle) },
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier.onFocusChanged { focusState -> isFocused = focusState.isFocused },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,

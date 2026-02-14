@@ -12,6 +12,7 @@ import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import kotlinx.coroutines.*
+import kotlin.time.*
 
 object ConversationPane {
     object ItemPanels :
@@ -29,7 +30,6 @@ context(_: ConversationUserView)
 fun ConversationPane(
     state: ConversationViewState.Loaded,
     modifier: Modifier = Modifier,
-    onUpdateLastReadMessageIndex: (Int) -> Unit,
     paddingValues: PaddingValues,
 ) {
     Column(
@@ -54,7 +54,6 @@ fun ConversationPane(
         ) {
             ConversationLog(
                 state = state,
-                onUpdateLastReadMessageIndex = onUpdateLastReadMessageIndex,
                 paddingValues = paddingValues,
             )
         }
@@ -83,59 +82,25 @@ private fun ConversationPreamble() {
 }
 
 @Composable
-context(_: ConversationUserView)
+context(conversation: ConversationUserView)
 private fun ConversationLog(
     state: ConversationViewState.Loaded,
-    onUpdateLastReadMessageIndex: (Int) -> Unit,
     paddingValues: PaddingValues,
 ) {
-    var firstComposition by remember { mutableStateOf(true) }
+    val lastViewedItemIndex = state.lastViewedItemIndex()
 
-    val firstUnreadIndex = firstUnreadMessageIndex(state)
-
-    // Bottom: last item, or processing indicator if active
-    val lastListIndex = state.items.lastIndex + (if (state.isProcessing) 1 else 0)
-
-    // Determine the initial first visible index: first unread if any, else bottom
-    val initialFirstIndex =
-        (if (firstUnreadIndex != -1) firstUnreadIndex else lastListIndex)
-            .coerceAtLeast(0)
-    val initialFirstScrollOffset =
-        if (firstUnreadIndex != -1) 0 else Int.MAX_VALUE
-
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = initialFirstIndex,
-        initialFirstVisibleItemScrollOffset = initialFirstScrollOffset,
-    )
-
-    // Auto-scroll to bottom only if all previous messages were read
-    LaunchedEffect(state.items.size, state.isProcessing) {
-        if (!firstComposition) {
-            val hasItems = state.items.isNotEmpty()
-
-            val lastReadMessageIndex = state.digest.lastReadMessageIndex
-
-            val shouldScroll = when {
-                // New item appended: user must have read up to the previous last item
-                hasItems && !state.isProcessing -> lastReadMessageIndex >= state.items.lastIndex - 1
-                // Processing indicator visible: user must have read all items
-                state.isProcessing -> lastReadMessageIndex >= state.items.lastIndex
-                else -> false
-            }
-
-            if (shouldScroll) listState.animateScrollToItem(lastListIndex)
-        }
+    LaunchedEffect(lastViewedItemIndex) {
+        println("lastViewedItemIndex changed: $lastViewedItemIndex")
     }
 
-    LaunchedEffect(Unit) { firstComposition = false }
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = lastViewedItemIndex,
+        initialFirstVisibleItemScrollOffset = 0,
+    )
 
-    LastReadMessageIndexUpdater(
-        firstUnreadIndex = firstUnreadIndex,
-        state = state,
+    LastViewedTimestampUpdater(
         listState = listState,
-        onUpdateLastReadMessageIndex = {
-            onUpdateLastReadMessageIndex(it)
-        },
+        state = state,
     )
 
     val itemPanelView = LocalViewRegistry.current[ConversationPane.ItemPanels]
@@ -153,9 +118,9 @@ private fun ConversationLog(
             contentType = { _, item -> item::class },
         ) { index, viewedItem ->
             Column(modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 32.dp)) {
-                if (index == firstUnreadIndex) NewMessagesDivider()
-
                 with(itemPanelView) { Content(viewedItem) }
+
+                if (index == lastViewedItemIndex && index != state.items.lastIndex) NewMessagesDivider()
             }
         }
 
@@ -173,6 +138,79 @@ private fun LazyListScope.conversationLogBottomItems(state: ConversationViewStat
         }
     }
 }
+
+@Composable
+context(conversation: ConversationUserView)
+private fun ConversationViewState.Loaded.lastViewedItemIndex(): Int {
+    return remember(presence, items) {
+        val lastViewTimestamp = presence[conversation.participant]?.lastViewTimestamp ?: Instant.DISTANT_PAST
+        val lastViewedItemIndex = items.indexOfFirst { it.timestamp > lastViewTimestamp }
+            .takeIf { it != -1 } ?: items.lastIndex
+        lastViewedItemIndex
+    }
+}
+
+@Composable
+context(conversation: ConversationUserView)
+private fun LastViewedTimestampUpdater(
+    listState: LazyListState,
+    state: ConversationViewState.Loaded,
+) {
+    val lastMessageTimestamp = remember(state.preview) {
+        state.preview.lastMessageTimestamp ?: Instant.DISTANT_PAST
+    }
+    val lastViewTimestamp = remember(state.presence) {
+        state.presence[conversation.participant]?.lastViewTimestamp ?: Instant.DISTANT_PAST
+    }
+
+    val lastViewedItemIndex = state.lastViewedItemIndex()
+
+    // When the user scrolls over new messages for > 5 seconds, update the last read index
+    LaunchedEffect(lastViewedItemIndex, lastViewTimestamp, lastMessageTimestamp) {
+        println("lastViewedItemIndex: $lastViewedItemIndex")
+        println("lastViewTimestamp: $lastViewTimestamp")
+        println("lastMessageTimestamp: $lastMessageTimestamp")
+
+        if (lastViewTimestamp >= lastMessageTimestamp) return@LaunchedEffect
+
+        var pendingJob: Job? = null
+        snapshotFlow {
+            val lastVisibleIndex = listState.lastVisibleItemIndex.coerceAtMost(state.items.lastIndex)
+            lastViewedItemIndex < lastVisibleIndex
+        }
+            .collect { overNew ->
+                println("overNew: $overNew")
+                if (overNew) {
+                    if (pendingJob == null) {
+                        pendingJob = launch {
+                            println("starting job")
+                            delay(5_000)
+                            println("after 5 seconds")
+                            // Re-check condition after delay using the last visible index
+                            val lastVisibleIndex = listState.lastVisibleItemIndex.coerceAtMost(state.items.lastIndex)
+                            val lastVisibleItem = state.items[lastVisibleIndex]
+                            val lastVisibleTimestamp = lastVisibleItem.timestamp
+
+                            val stillOverNew = lastViewedItemIndex < lastVisibleIndex
+                            println("stillOverNew: $stillOverNew")
+                            if (stillOverNew) {
+                                conversation.send(Presence.ViewNotification(lastVisibleTimestamp))
+                            }
+                            pendingJob = null
+                        }
+                    }
+                } else {
+                    pendingJob?.cancel()
+                    pendingJob = null
+                }
+            }
+    }
+}
+
+private val LazyListState.lastVisibleItemIndex: Int
+    get() = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+
+private object ProcessingIndicatorKey
 
 @Composable
 context(_: ConversationUserView)
@@ -205,55 +243,6 @@ private fun ConversationInputBox() {
         },
     )
 }
-
-private object ProcessingIndicatorKey
-
-@Composable
-private fun firstUnreadMessageIndex(state: ConversationViewState.Loaded): Int =
-    remember(state.items.size, state.digest.lastReadMessageIndex, state.isProcessing) {
-        val idx = state.digest.lastReadMessageIndex + 1
-        if (idx in 0..state.items.lastIndex) idx else -1
-    }
-
-@Composable
-private fun LastReadMessageIndexUpdater(
-    firstUnreadIndex: Int,
-    state: ConversationViewState.Loaded,
-    listState: LazyListState,
-    onUpdateLastReadMessageIndex: (Int) -> Unit,
-) {
-    // When the user scrolls over new messages for > 5 seconds, update the last read index
-    LaunchedEffect(firstUnreadIndex, state.items.size) {
-        if (firstUnreadIndex == -1) return@LaunchedEffect
-        var pendingJob: Job? = null
-        snapshotFlow { listState.listVisibleItemIndex >= firstUnreadIndex }
-            .collect { overNew ->
-                if (overNew) {
-                    if (pendingJob == null) {
-                        pendingJob = launch {
-                            delay(5_000)
-                            // Re-check condition after delay using the last visible index
-                            val lastVisibleNow = listState.listVisibleItemIndex
-                            val stillOverNew = lastVisibleNow >= firstUnreadIndex
-                            if (stillOverNew) {
-                                val lastVisibleClamped = lastVisibleNow.coerceAtMost(state.items.lastIndex)
-                                if (lastVisibleClamped > state.digest.lastReadMessageIndex) {
-                                    onUpdateLastReadMessageIndex(lastVisibleClamped)
-                                }
-                            }
-                            pendingJob = null
-                        }
-                    }
-                } else {
-                    pendingJob?.cancel()
-                    pendingJob = null
-                }
-            }
-    }
-}
-
-private val LazyListState.listVisibleItemIndex: Int
-    get() = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
 
 private fun List<Messaging.Attachment>.toMediaParts(): List<Messaging.Part.Media> {
     return map { attachment ->

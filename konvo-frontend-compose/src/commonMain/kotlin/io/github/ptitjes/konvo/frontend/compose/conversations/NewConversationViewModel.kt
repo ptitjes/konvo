@@ -13,6 +13,7 @@ import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlin.uuid.*
 
 /**
  * ViewModel for the NewConversationScreen that encapsulates all the mutable state.
@@ -256,12 +257,16 @@ class NewConversationViewModel(
 
             val now = SystemTimeProvider.now()
 
+            // TODO get the current profile's user id
+            val userMember = Participant.User(id = "user", name = "user")
+            val agentMember = Participant.Agent(id = Uuid.random().toString(), name = "agent")
+
             val conversation = ConversationDigest(
                 id = UuidIdGenerator.newId(),
                 title = "Untitled conversation",
                 createdAt = now,
                 updatedAt = now,
-                participants = listOf(),
+                participants = listOf(userMember, agentMember),
                 lastMessagePreview = null,
                 messageCount = 0,
                 agentConfiguration = agentConfiguration,
