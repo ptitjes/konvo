@@ -97,10 +97,10 @@ class ConversationViewStateMaintainer(
             private set
 
         override suspend fun <T : S> append(
-            initial: T,
+            value: suspend () -> T,
             builder: UpdaterScope<S, T>.() -> Unit,
         ) {
-            val (updatedRootState, lens) = slot.append(rootState, initial)
+            val (updatedRootState, lens) = slot.append(rootState, value)
             rootState = updatedRootState
 
             UpdaterScopeImpl<S, T>(stateMaintainer, lens).builder()
@@ -138,10 +138,10 @@ class ConversationViewStateMaintainer(
 
         override suspend fun <T : S> put(
             key: K,
-            initial: T,
+            value: suspend () -> T,
             builder: UpdaterScope<S?, T?>.() -> Unit,
         ) {
-            val (updatedRootState, lens) = slot.put(rootState, key, initial)
+            val (updatedRootState, lens) = slot.put(rootState, key, value)
             rootState = updatedRootState
 
             UpdaterScopeImpl<S?, T?>(stateMaintainer, lens).builder()
@@ -177,14 +177,14 @@ class ConversationViewStateMaintainer(
         var rootState: Loaded = initialRootState
             private set
 
-        override suspend fun <T : S> set(
-            initial: T,
-            builder: UpdaterScope<S, T>.() -> Unit,
+        override suspend fun set(
+            value: suspend (S) -> S,
+            builder: UpdaterScope<S, S>.() -> Unit,
         ) {
-            val (updatedRootState, lens) = slot.set(rootState, initial)
+            val (updatedRootState, lens) = slot.set(rootState, value)
             rootState = updatedRootState
 
-            UpdaterScopeImpl<S, T>(stateMaintainer, lens).builder()
+            UpdaterScopeImpl(stateMaintainer, lens).builder()
         }
     }
 

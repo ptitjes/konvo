@@ -17,7 +17,8 @@ data class AgentViewState(
         override fun ContributionScope.contribute() {
             ConversationViewState.Agents {
                 onEvent<Presence.Joining> { event ->
-                    put(key = event.sender as Participant.Agent, initial = AgentViewState()) {
+                    val agent = event.sender as? Participant.Agent ?: return@onEvent
+                    put(key = agent, value = { AgentViewState() }) {
                         onEvent<AgentCapabilities.Messaging> { state, event ->
                             val supportedMediaTypes = event.payload.supportedMediaTypes
                             state!!.copy(messagingCapabilities = MessagingCapabilities(supportedMediaTypes))
