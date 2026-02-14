@@ -38,12 +38,14 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                 onEvent<ToolUsage.Vetting> { event ->
                     val calls = event.payload.calls
                     append(
-                        Vetting(
-                            id = event.id,
-                            timestamp = event.timestamp,
-                            callsArgumentsMarkdownStates = calls.associateWith { parseMarkdownArguments(it) },
-                            approvals = calls.associateWith { Vetting.Status.Pending },
-                        ),
+                        value = {
+                            Vetting(
+                                id = event.id,
+                                timestamp = event.timestamp,
+                                callsArgumentsMarkdownStates = calls.associateWith { parseMarkdownArguments(it) },
+                                approvals = calls.associateWith { Vetting.Status.Pending },
+                            )
+                        }
                     ) {
                         onEvent<ToolUsage.Approval> { state, approvalEvent ->
                             val incomingApprovals = approvalEvent.payload.approvals
@@ -74,7 +76,7 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                 onEvent<ToolUsage.Notification> { event ->
                     val call = event.payload.call
                     val result = event.payload.result
-                    append(
+                    append {
                         Notification(
                             id = event.id,
                             timestamp = event.timestamp,
@@ -82,8 +84,8 @@ sealed interface ToolUsageViewState : ConversationViewState.Item {
                             result = result,
                             argumentsMarkdownStates = parseMarkdownArguments(call),
                             resultMarkdownState = parseMarkdownResult(result),
-                        ),
-                    )
+                        )
+                    }
                 }
             }
         }

@@ -32,7 +32,7 @@ sealed interface MessagingViewState : ConversationViewState.Item {
                         .filterIsInstance<Messaging.Part.Text>()
                         .joinToString("\n") { it.text }
 
-                    append(
+                    append {
                         if (event.sender is Participant.User) {
                             UserMessage(
                                 id = event.id,
@@ -48,7 +48,7 @@ sealed interface MessagingViewState : ConversationViewState.Item {
                                 markdownState = parseMarkdown(content),
                             )
                         }
-                    )
+                    }
                 }
             }
         }

@@ -33,17 +33,20 @@ sealed interface ConversationViewStates {
 
     @Marker
     interface SequenceBuilder<S> {
-        suspend fun <T : S> append(initial: T, builder: UpdaterScope<S, T>.() -> Unit = {})
+        suspend fun <T : S> append(value: suspend () -> T, builder: UpdaterScope<S, T>.() -> Unit)
+        suspend fun <T : S> append(value: suspend () -> T) = append(value) {}
     }
 
     @Marker
     interface DictionaryBuilder<K, S> {
-        suspend fun <T : S> put(key: K, initial: T, builder: UpdaterScope<S?, T?>.() -> Unit = {})
+        suspend fun <T : S> put(key: K, value: suspend () -> T, builder: UpdaterScope<S?, T?>.() -> Unit)
+        suspend fun <T : S> put(key: K, value: suspend () -> T) = put(key, value) {}
     }
 
     @Marker
     interface RegisterBuilder<S> {
-        suspend fun <T : S> set(initial: T, builder: UpdaterScope<S, T>.() -> Unit = {})
+        suspend fun set(value: suspend (S) -> S, builder: UpdaterScope<S, S>.() -> Unit)
+        suspend fun set(value: suspend (S) -> S) = set(value = value) {}
     }
 
     @Marker

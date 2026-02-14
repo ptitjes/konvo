@@ -31,10 +31,10 @@ sealed interface ConversationViewState {
         open class Sequence<T> : Slot<List<T>> {
             override val initialValue: List<T> get() = emptyList()
 
-            suspend fun append(rootState: Loaded, childState: T): Pair<Loaded, Lens<T>> {
+            suspend fun append(rootState: Loaded, value: suspend () -> T): Pair<Loaded, Lens<T>> {
                 val container = rootState[this]
                 val newIndex = container.size
-                val updatedContainer = container + childState
+                val updatedContainer = container + value()
                 val updatedRootState = rootState.copy(slot = this, value = updatedContainer)
                 return updatedRootState to AppendableLens(newIndex)
             }
@@ -53,9 +53,9 @@ sealed interface ConversationViewState {
         open class Dictionary<K, T> : Slot<Map<K, T>> {
             override val initialValue: Map<K, T> get() = emptyMap()
 
-            suspend fun put(rootState: Loaded, key: K, childState: T): Pair<Loaded, Lens<T?>> {
+            suspend fun put(rootState: Loaded, key: K, value: suspend () -> T): Pair<Loaded, Lens<T?>> {
                 val container = rootState[this]
-                val updatedContainer = container + (key to childState)
+                val updatedContainer = container + (key to value())
                 return rootState.copy(slot = this@Dictionary, value = updatedContainer) to IndexLens(key)
             }
 
@@ -74,8 +74,9 @@ sealed interface ConversationViewState {
         open class Register<T>(val defaultValue: T) : Slot<T> {
             override val initialValue: T get() = defaultValue
 
-            suspend fun set(rootState: Loaded, childState: T): Pair<Loaded, Lens<T>> {
-                return rootState.copy(slot = this@Register, value = childState) to RegisterLens()
+            suspend fun set(rootState: Loaded, updater: suspend (T) -> T): Pair<Loaded, Lens<T>> {
+                val lens = RegisterLens()
+                return lens.update(rootState, updater) to lens
             }
 
             private inner class RegisterLens : Lens<T> {
