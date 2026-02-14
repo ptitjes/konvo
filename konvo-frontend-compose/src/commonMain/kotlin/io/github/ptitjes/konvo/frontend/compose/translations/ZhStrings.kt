@@ -150,6 +150,7 @@ internal val ZhStrings = Strings(
         greetingOptionLabel = { index, preview -> "问候语${index + 1}：$preview" },
     ),
     conversations = ConversationStrings(
+        untitledConversationTitle = "未命名会话",
         listTitle = "会话",
         newConversationAria = "新建会话",
         emptyTitle = "暂时还没有会话",

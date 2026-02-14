@@ -3,9 +3,11 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.*
 import io.github.ptitjes.konvo.frontend.compose.conversations.views.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlin.time.*
 
@@ -14,6 +16,7 @@ import kotlin.time.*
  */
 @OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
+    private val conversationRepository: ConversationRepository,
     conversationManager: ConversationManager,
     // TODO
     // private val viewStateContributions: Set<ConversationViewStates.Contribution>,
@@ -32,37 +35,44 @@ class ConversationViewModel(
     //     viewStateContributions.forEach { contributeViewStates(it) }
     // }
 
+    private val stateUpdater = ConversationViewStateMaintainer().apply {
+        setupCoreViewStateProducers()
+    }
+
     init {
         println("Initializing ConversationViewModel(${this.conversationId})")
         viewModelScope.launch {
+            liveConversation.awaitConversationLoaded()
+            val conversationUserView = liveConversation.newUserView()
+
+            val transcriptHandled = Job()
+
             launch {
-                var previousTranscript: List<Event<*>>? = null
+                conversationUserView.events.buffer(Channel.UNLIMITED).collect { event ->
+                    transcriptHandled.join()
 
-                liveConversation.awaitConversationLoaded()
-
-                val conversationUserView = liveConversation.newUserView()
-
-                conversationUserView.state.collect { state ->
-                    when (state) {
-                        is ConversationState.Loading -> {}
-                        is ConversationState.Loaded -> {
-                            val transcript = state.transcript
-                            if (transcript != previousTranscript) {
-                                val initial = ConversationViewState.Loaded()
-                                    .copy(slot = ConversationViewState.Digest, value = state.digest)
-
-                                val stateUpdater = ConversationViewStateMaintainer(initial)
-                                stateUpdater.setupCoreViewStateProducers()
-                                stateUpdater.handleTranscript(transcript)
-                                val finalState = stateUpdater.state
-
-                                previousTranscript = transcript
-                                _state.value = finalState
-                            }
-                        }
-                    }
+                    stateUpdater.handleEvent(event)
+                    updateStateAndStoredDigest()
                 }
             }
+
+            val state = conversationUserView.state.filterIsInstance<ConversationState.Loaded>().first()
+
+            stateUpdater.handleTranscript(state.transcript)
+            updateStateAndStoredDigest()
+
+            transcriptHandled.complete()
+        }
+    }
+
+    private fun CoroutineScope.updateStateAndStoredDigest() {
+        _state.value = stateUpdater.state
+
+        launch {
+            val digest = conversationRepository.getDigest(conversationId).first()
+            conversationRepository.updateDigest(
+                digest.updateFrom(stateUpdater.state, "user")
+            )
         }
     }
 
@@ -78,4 +88,26 @@ class ConversationViewModel(
         super.onCleared()
         println("Cleared ConversationViewModel(${this.conversationId})")
     }
+}
+
+private fun ConversationDigest.updateFrom(
+    state: ConversationViewState.Loaded,
+    participantId: String,
+): ConversationDigest {
+    val preview = state.preview
+    val presence = state.presence
+    val items = state.items
+
+    val participant = presence.keys.firstOrNull { it.id == participantId } ?: return this
+    val lastViewTimestamp = presence[participant]?.lastViewTimestamp
+
+    return copy(
+        title = preview.title,
+        updatedAt = Clock.System.now(),
+        participants = presence.keys.toList(),
+        lastMessagePreview = preview.lastMessagePreview,
+        messageCount = items.size,
+        unreadMessageCount =
+            if (lastViewTimestamp != null) items.count { it.timestamp > lastViewTimestamp } else items.size,
+    )
 }

@@ -10,7 +10,7 @@ suspend fun ConversationViewStateMaintainer.handleTranscript(transcript: List<Ev
 }
 
 class ConversationViewStateMaintainer(
-    initialState: Loaded,
+    initialState: Loaded = Loaded(),
 ) {
     var state = initialState
         private set

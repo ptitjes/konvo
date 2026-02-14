@@ -150,6 +150,7 @@ internal val HiStrings = Strings(
         greetingOptionLabel = { index, preview -> "अभिवादन ${index + 1}: $preview" },
     ),
     conversations = ConversationStrings(
+        untitledConversationTitle = "बिना शीर्षक वाला वार्तालाप",
         listTitle = "वार्तालाप",
         newConversationAria = "नया वार्तालाप",
         emptyTitle = "अभी तक कोई वार्तालाप नहीं",

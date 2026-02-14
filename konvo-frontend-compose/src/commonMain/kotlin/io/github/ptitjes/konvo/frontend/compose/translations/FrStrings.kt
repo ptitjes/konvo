@@ -150,6 +150,7 @@ internal val FrStrings = Strings(
         greetingOptionLabel = { index, preview -> "Salutation ${index + 1} : $preview" },
     ),
     conversations = ConversationStrings(
+        untitledConversationTitle = "Conversation sans titre",
         listTitle = "Conversations",
         newConversationAria = "Nouvelle conversation",
         emptyTitle = "Aucune conversation pour l'instant",
