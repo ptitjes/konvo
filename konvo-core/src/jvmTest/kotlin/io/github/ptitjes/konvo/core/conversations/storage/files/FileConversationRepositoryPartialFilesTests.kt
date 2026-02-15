@@ -4,7 +4,7 @@ package io.github.ptitjes.konvo.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.core.platform.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.*
@@ -29,7 +29,7 @@ class FileConversationRepositoryPartialFilesTests {
             title = title,
             createdAt = now,
             updatedAt = now,
-            participants = listOf(Participant.User("u1", "user"), Participant.Agent("a1", "agent")),
+            participants = listOf(Participant.User("u1"), Participant.Agent("a1")),
             lastMessagePreview = null,
             messageCount = 0,
         )
@@ -38,7 +38,7 @@ class FileConversationRepositoryPartialFilesTests {
         Event(
             id = id,
             timestamp = ts,
-            sender = Participant.User("u1", "user"),
+            sender = Participant.User("u1"),
             payload = Messaging.Message(
                 content = listOf(Part.Text(content)),
             )

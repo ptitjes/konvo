@@ -4,11 +4,7 @@ package io.github.ptitjes.konvo.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
 import kotlinx.serialization.*
-import kotlinx.serialization.json.*
 import kotlin.time.*
 
 @Serializable
@@ -31,21 +27,21 @@ internal data class ConversationDto(
 internal data class EventDto(
     val id: String,
     @Contextual val timestamp: Instant,
-    val sender: Participant,
-    val recipients: Set<Participant>? = null,
+    val sender: ParticipantDto,
+    val recipients: Set<ParticipantDto>? = null,
     val payload: Event.Payload,
 )
 
 @Serializable
 @SerialName("participant")
-internal sealed class ParticipantDto {
+internal sealed interface ParticipantDto {
     @Serializable
     @SerialName("user")
-    data class User(val id: String, val name: String) : ParticipantDto()
+    data class User(val id: String) : ParticipantDto
 
     @Serializable
     @SerialName("agent")
-    data class Agent(val id: String, val name: String) : ParticipantDto()
+    data class Agent(val id: String) : ParticipantDto
 }
 
 @Serializable
@@ -127,28 +123,28 @@ internal object DtoMappers {
     )
 
     fun toDto(p: Participant): ParticipantDto = when (p) {
-        is Participant.User -> ParticipantDto.User(p.id, p.name)
-        is Participant.Agent -> ParticipantDto.Agent(p.id, p.name)
+        is Participant.User -> ParticipantDto.User(p.id)
+        is Participant.Agent -> ParticipantDto.Agent(p.id)
     }
 
     fun fromDto(p: ParticipantDto): Participant = when (p) {
-        is ParticipantDto.User -> Participant.User(p.id, p.name)
-        is ParticipantDto.Agent -> Participant.Agent(p.id, p.name)
+        is ParticipantDto.User -> Participant.User(p.id)
+        is ParticipantDto.Agent -> Participant.Agent(p.id)
     }
 
     fun toDto(e: Event<*>): EventDto = EventDto(
         e.id,
         e.timestamp,
-        e.sender,
-        e.recipients,
+        toDto(e.sender),
+        e.recipients?.map(::toDto)?.toSet(),
         e.payload,
     )
 
     fun fromDto(e: EventDto): Event<*> = Event(
         e.id,
         e.timestamp,
-        e.sender,
-        e.recipients,
+        fromDto(e.sender),
+        e.recipients?.map(::fromDto)?.toSet(),
         e.payload,
     )
 }

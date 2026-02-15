@@ -3,7 +3,7 @@ package io.github.ptitjes.konvo.core.conversations.storage
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Part
+import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -43,7 +43,7 @@ abstract class ConversationRepositoryContractTests {
             title = title,
             createdAt = timestamp,
             updatedAt = timestamp,
-            participants = listOf(Participant.User("u1", "user"), Participant.Agent("a1", "agent")),
+            participants = listOf(Participant.User("u1"), Participant.Agent("a1")),
             lastMessagePreview = null,
             messageCount = 0,
             agentConfiguration = NoAgentConfiguration,
@@ -57,7 +57,7 @@ abstract class ConversationRepositoryContractTests {
     ): Event<*> = Event(
         id = id,
         timestamp = timestamp,
-        sender = Participant.User("u1", "user"),
+        sender = Participant.User("u1"),
         payload = Messaging.Message(
             content = listOf(Part.Text(content)),
         )
@@ -70,7 +70,7 @@ abstract class ConversationRepositoryContractTests {
     ): Event<*> = Event(
         id = id,
         timestamp = timestamp,
-        sender = Participant.Agent("a1", "agent"),
+        sender = Participant.Agent("a1"),
         payload = Messaging.Message(
             content = listOf(Part.Text(content)),
         )
@@ -93,7 +93,7 @@ abstract class ConversationRepositoryContractTests {
         val event = Event(
             id = "e1",
             timestamp = timeProvider.now(),
-            sender = Participant.User("u1", "user"),
+            sender = Participant.User("u1"),
             payload = Messaging.Message(
                 content = listOf(Part.Text("Hello world")),
             )

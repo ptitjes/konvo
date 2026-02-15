@@ -140,7 +140,9 @@ class FileConversationRepository(
     }
 
     override fun getDigest(conversationId: String): Flow<ConversationDigest> =
-        changeTicker.map { readConversation(conversationId) }.onStart { emit(readConversation(conversationId)) }.filterNotNull()
+        changeTicker.map { readConversation(conversationId) }
+            .onStart { emit(readConversation(conversationId)) }
+            .filterNotNull()
             .distinctUntilChanged()
 
     private fun readConversations(
@@ -254,27 +256,28 @@ class FileConversationRepository(
 
     private fun readEvents(conversationId: String): List<Event<*>> {
         val path = eventsPath(conversationId)
-        if (!fileSystem.exists(path)) return emptyList()
-        val result = mutableListOf<Event<*>>()
-        fileSystem.source(path).buffered().use { src ->
-            val content = src.readString()
-            if (content.isEmpty()) return emptyList()
-            val lines = content.split('\n')
-            for (line in lines) {
-                if (line.isBlank()) continue
-                val evt = try {
-                    val dto = json.decodeFromString(EventDto.serializer(), line)
-                    DtoMappers.fromDto(dto)
-                } catch (_: Throwable) {
-                    continue // skip corrupt line
+        return if (!fileSystem.exists(path)) emptyList()
+        else buildList {
+            fileSystem.source(path).buffered().use { source ->
+                for (line in source.readLines().filter { it.isNotBlank() }) {
+                    add(
+                        runCatching { DtoMappers.fromDto(json.decodeFromString<EventDto>(line)) }
+                            .getOrElse { continue } // skip corrupt line
+                    )
                 }
-                result.add(evt)
             }
         }
-        return result
     }
 
     override fun getEvents(conversationId: String): Flow<List<Event<*>>> =
-        changeTicker.map { readEvents(conversationId) }.onStart { emit(readEvents(conversationId)) }
+        changeTicker
+            .map { readEvents(conversationId) }
+            .onStart { emit(readEvents(conversationId)) }
             .distinctUntilChanged()
+}
+
+private fun Source.readLines(): Sequence<String> = sequence {
+    do {
+        val maybeLine = readLine()?.also { yield(it) }
+    } while (maybeLine != null)
 }

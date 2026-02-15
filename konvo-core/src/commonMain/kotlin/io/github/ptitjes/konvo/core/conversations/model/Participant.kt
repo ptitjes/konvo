@@ -5,13 +5,14 @@ import kotlinx.serialization.*
 @Serializable
 sealed interface Participant {
     val id: String
-    val name: String
 
+    @JvmInline
     @Serializable
     @SerialName("user")
-    data class User(override val id: String, override val name: String) : Participant
+    value class User(override val id: String) : Participant
 
+    @JvmInline
     @Serializable
     @SerialName("agent")
-    data class Agent(override val id: String, override val name: String) : Participant
+    value class Agent(override val id: String) : Participant
 }
