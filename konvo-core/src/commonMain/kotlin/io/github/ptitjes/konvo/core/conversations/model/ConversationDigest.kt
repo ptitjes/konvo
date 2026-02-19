@@ -14,7 +14,7 @@ data class ConversationDigest(
     val title: String? = null,
     val createdAt: Instant,
     val updatedAt: Instant,
-    val participants: List<Participant>,
+    val participants: List<Participant> = emptyList(),
     val lastMessagePreview: String? = null,
     val messageCount: Int = 0,
     val unreadMessageCount: Int = 0,

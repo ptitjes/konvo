@@ -28,7 +28,7 @@ fun EditableConversationTitle(
         @OptIn(FlowPreview::class)
         snapshotFlow { titleFieldState.text.toString() }.debounce(300.milliseconds).collectLatest {
             if ((it.isBlank() || it == conversationTitle) && !isFocused) return@collectLatest
-            coroutineScope.launch { conversation.send(Metadata.TitleChange(it)) }
+            coroutineScope.launch { conversation.send(ConversationControl.TitleChange(it)) }
         }
     }
 

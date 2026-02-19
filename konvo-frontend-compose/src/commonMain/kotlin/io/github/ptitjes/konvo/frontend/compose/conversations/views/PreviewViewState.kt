@@ -13,7 +13,7 @@ data class PreviewViewState(
     companion object : ConversationViewStates.Contribution {
         override fun ConversationViewStates.ContributionScope.contribute() {
             ConversationViewState.Preview {
-                onEvent<Metadata.TitleChange> { event ->
+                onEvent<ConversationControl.TitleChange> { event ->
                     set { it.copy(title = event.payload.title) }
                 }
                 onEvent<Messaging.Message> { event ->
