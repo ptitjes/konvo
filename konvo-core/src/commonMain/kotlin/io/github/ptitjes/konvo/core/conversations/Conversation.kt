@@ -22,9 +22,9 @@ sealed interface ConversationState {
 }
 
 @OptIn(FlowPreview::class)
-class Conversation(
+class Conversation internal constructor(
     coroutineContext: CoroutineContext,
-    private val conversationId: String,
+    val id: String,
     private val repository: ConversationRepository,
     private val agentFactory: AgentFactory,
     private val timeProvider: TimeProvider = SystemTimeProvider,
@@ -50,8 +50,8 @@ class Conversation(
 
     init {
         coroutineScope.launch {
-            val digest = repository.getDigest(conversationId).stateIn(this)
-            val transcript = repository.getEvents(conversationId).stateIn(this)
+            val digest = repository.getDigest(id).stateIn(this)
+            val transcript = repository.getEvents(id).stateIn(this)
 
             // Process repository changes
             launch {
@@ -69,23 +69,12 @@ class Conversation(
             launch {
                 _events.collect { event ->
                     // Persist new events to repository
-                    repository.appendEvent(conversationId, event)
+                    repository.appendEvent(id, event)
                 }
             }
 
-            awaitConversationLoaded()
-
-            if (transcript.value.isEmpty()) {
-                newUserView().send(Presence.Joining)
-            }
-
-            launch {
-                // Restore agent
-                val agentConfiguration = digest.value.agentConfiguration
-                val agent = agentFactory.createAgent(agentConfiguration)
-
-                agent.restoreSession(transcript.value, newAgentView())
-            }
+            val state = awaitConversationLoaded()
+            restoreAgents(state.transcript)
         }
     }
 
@@ -93,8 +82,14 @@ class Conversation(
         job.cancel()
     }
 
-    suspend fun awaitConversationLoaded() {
-        _state.first { it is ConversationState.Loaded }
+    private fun restoreAgents(transcript: List<Event<*>>) {
+        val joins = transcript.filter {
+            it.payload is Presence.Joining && it.sender is Participant.Agent
+        }
+    }
+
+    suspend fun awaitConversationLoaded(): ConversationState.Loaded {
+        return _state.filterIsInstance<ConversationState.Loaded>().first()
     }
 
     private fun checkConversationLoaded(): ConversationState.Loaded {
@@ -102,16 +97,26 @@ class Conversation(
         return _state.value as ConversationState.Loaded
     }
 
+    suspend fun join() {
+        awaitConversationLoaded()
+        newUserView().send(Presence.Joining)
+    }
+
     fun newUserView(): ConversationUserView {
-        val state = checkConversationLoaded()
-        val userParticipant = state.digest.participants.filterIsInstance<Participant.User>().first()
+        checkConversationLoaded()
+        // TODO get the current profile's user id
+        val userParticipant = Participant.User(id = "user")
         return UserViewImpl(userParticipant)
     }
 
-    private fun newAgentView(): ConversationAgentView {
-        val state = checkConversationLoaded()
-        val agentParticipant = state.digest.participants.filterIsInstance<Participant.Agent>().first()
-        return AgentViewImpl(agentParticipant)
+    suspend fun inviteAgent(agentConfiguration: AgentConfiguration) {
+        val state = awaitConversationLoaded()
+        val agent = agentFactory.createAgent(agentConfiguration)
+
+        // TODO allow multiple agents
+        val agentParticipant = Participant.Agent(id = "agent")
+        val agentView = AgentViewImpl(agentParticipant)
+        agent.restoreSession(state.transcript, agentView)
     }
 
     private inner class AgentViewImpl(

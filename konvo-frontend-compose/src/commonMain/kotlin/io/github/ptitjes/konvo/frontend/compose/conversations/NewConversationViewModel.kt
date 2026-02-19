@@ -3,17 +3,14 @@ package io.github.ptitjes.konvo.frontend.compose.conversations
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import io.github.ptitjes.konvo.core.agents.*
-import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.storage.*
+import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.settings.*
-import io.github.ptitjes.konvo.core.util.*
 import io.github.ptitjes.konvo.frontend.compose.agents.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlin.uuid.*
 
 /**
  * ViewModel for the NewConversationScreen that encapsulates all the mutable state.
@@ -23,7 +20,7 @@ class NewConversationViewModel(
     private val characterManager: CharacterManager,
     private val lorebookManager: LorebookManager,
     mcpServerSpecificationsManager: McpServerSpecificationsManager,
-    private val conversationRepository: ConversationRepository,
+    private val conversationManager: ConversationManager,
     settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
@@ -255,21 +252,12 @@ class NewConversationViewModel(
         viewModelScope.launch {
             val agentConfiguration = createAgentConfiguration()
 
-            val now = SystemTimeProvider.now()
+            val conversation = conversationManager.newConversation()
 
-            // TODO get the current profile's user id
-            val userMember = Participant.User(id = "user", name = "user")
-            val agentMember = Participant.Agent(id = Uuid.random().toString(), name = "agent")
-
-            val conversation = ConversationDigest(
-                id = UuidIdGenerator.newId(),
-                createdAt = now,
-                updatedAt = now,
-                participants = listOf(userMember, agentMember),
-                agentConfiguration = agentConfiguration,
-            )
-
-            conversationRepository.create(conversation)
+            launch {
+                conversation.join()
+                conversation.inviteAgent(agentConfiguration)
+            }
 
             onConversationCreated(conversation.id)
         }

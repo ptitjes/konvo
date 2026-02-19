@@ -2,10 +2,13 @@ package io.github.ptitjes.konvo.core.conversations
 
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
+import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.time.*
+import kotlin.uuid.*
 
 class ConversationManager(
     coroutineContext: CoroutineContext,
@@ -25,6 +28,21 @@ class ConversationManager(
 
     private val conversations = atomic(mapOf<String, Conversation>())
 
+    suspend fun newConversation(): Conversation {
+        val id = Uuid.random().toString()
+        val now = Clock.System.now()
+
+        val conversation = ConversationDigest(
+            id = id,
+            createdAt = now,
+            updatedAt = now,
+        )
+
+        conversationRepository.create(conversation)
+
+        return getConversation(id)
+    }
+
     fun getConversation(conversationId: String): Conversation {
         val updatedLiveConversations = conversations.updateAndGet {
             if (it.containsKey(conversationId)) it
@@ -37,7 +55,7 @@ class ConversationManager(
     private fun buildLiveConversation(conversationId: String): Conversation {
         return Conversation(
             coroutineContext = coroutineScope.coroutineContext,
-            conversationId = conversationId,
+            id = conversationId,
             repository = conversationRepository,
             agentFactory = agentFactory,
         )

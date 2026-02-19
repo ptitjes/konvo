@@ -2,8 +2,19 @@ package io.github.ptitjes.konvo.core.conversations.model.events
 
 import io.github.ptitjes.konvo.core.conversations.model.*
 import kotlinx.serialization.*
-import kotlin.time.Instant
+import kotlin.time.*
 
+/*
+TODO Split again?
+AgentPresence
+    Joining
+    Leaving
+UserPresence
+    Joining
+    Leaving
+    TypingIndication
+    ViewIndication
+ */
 @Serializable
 sealed interface Presence : Event.Payload {
     @Serializable
