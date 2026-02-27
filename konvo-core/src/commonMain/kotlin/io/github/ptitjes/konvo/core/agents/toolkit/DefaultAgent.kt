@@ -179,7 +179,7 @@ internal class DefaultAgent(
                         message(
                             KoogMessage.Assistant(
                                 content = content,
-                                metaInfo = ResponseMetaInfo(timestamp = Clock.System.now().toDeprecatedInstant())
+                                metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
                             )
                         )
                     }

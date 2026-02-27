@@ -59,7 +59,7 @@ class CallFixingPromptExecutorTests {
         val sourceMessage = Message.Assistant(
             content = text,
             metaInfo = ResponseMetaInfo(
-                timestamp = Clock.System.now().toDeprecatedInstant(),
+                timestamp = Clock.System.now(),
             ),
         )
 
