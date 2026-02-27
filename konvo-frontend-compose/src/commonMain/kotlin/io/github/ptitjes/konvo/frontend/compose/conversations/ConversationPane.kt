@@ -16,7 +16,7 @@ import kotlin.time.*
 
 object ConversationPane {
     object ItemPanels :
-        ConversationView.Slot.Typed<LazyItemScope, ConversationViewState.Item, ConversationUserView>()
+        ConversationView.Slot.Typed<LazyItemScope, ConversationViewState.Item, InteractionDevice.User>()
 }
 
 /**
@@ -26,7 +26,7 @@ object ConversationPane {
  * @param modifier The modifier to apply to this component
  */
 @Composable
-context(_: ConversationUserView)
+context(_: InteractionDevice.User)
 fun ConversationPane(
     state: ConversationViewState.Loaded,
     modifier: Modifier = Modifier,
@@ -65,7 +65,7 @@ fun ConversationPane(
 }
 
 @Composable
-context(_: ConversationUserView)
+context(_: InteractionDevice.User)
 private fun ConversationPreamble() {
     val onBackground = MaterialTheme.colorScheme.onBackground
 
@@ -82,7 +82,7 @@ private fun ConversationPreamble() {
 }
 
 @Composable
-context(conversation: ConversationUserView)
+context(conversation: InteractionDevice.User)
 private fun ConversationLog(
     state: ConversationViewState.Loaded,
     paddingValues: PaddingValues,
@@ -129,7 +129,7 @@ private fun LazyListScope.conversationLogBottomItems(state: ConversationViewStat
 }
 
 @Composable
-context(conversation: ConversationUserView)
+context(conversation: InteractionDevice.User)
 private fun ConversationViewState.Loaded.lastViewedItemIndex(): Int {
     return remember(presence, items) {
         val lastViewTimestamp = presence[conversation.participant]?.lastViewTimestamp ?: Instant.DISTANT_PAST
@@ -140,7 +140,7 @@ private fun ConversationViewState.Loaded.lastViewedItemIndex(): Int {
 }
 
 @Composable
-context(conversation: ConversationUserView)
+context(conversation: InteractionDevice.User)
 private fun LastViewedTimestampUpdater(
     listState: LazyListState,
     state: ConversationViewState.Loaded,
@@ -195,14 +195,14 @@ private val LazyListState.lastVisibleItemIndex: Int
 private object ProcessingIndicatorKey
 
 @Composable
-context(_: ConversationUserView)
+context(_: InteractionDevice.User)
 private fun ConversationSuggestions() {
     // ConversationSuggestions slot
     // ConversationSuggestions()
 }
 
 @Composable
-context(conversation: ConversationUserView)
+context(conversation: InteractionDevice.User)
 private fun ConversationInputBox() {
     // UserInputBox slot (itself having sub slots)
     // - AttachmentButtonSlot slot
@@ -224,8 +224,8 @@ private fun ConversationInputBox() {
     )
 }
 
-private suspend fun ConversationUserView.sendMessage(content: List<Messaging.Part>) =
-    send(Messaging.Message(content = content))
+private suspend fun InteractionDevice.User.sendMessage(content: List<Messaging.Part>) =
+    act(Messaging.Message(content = content))
 
 private fun List<Messaging.Attachment>.toMediaParts(): List<Messaging.Part.Media> {
     return map { attachment ->

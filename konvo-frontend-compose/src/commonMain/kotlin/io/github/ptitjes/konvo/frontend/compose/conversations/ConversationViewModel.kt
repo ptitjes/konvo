@@ -25,7 +25,7 @@ class ConversationViewModel(
 ) : ViewModel() {
     private val liveConversation = conversationManager.getConversation(conversationId)
 
-    val conversation: ConversationUserView get() = liveConversation.newUserView()
+    val conversation: InteractionDevice.User get() = liveConversation.newUserView()
 
     private val _state = MutableStateFlow<ConversationViewState>(ConversationViewState.Loading)
     val state: StateFlow<ConversationViewState> = _state
@@ -42,21 +42,19 @@ class ConversationViewModel(
     init {
         println("Initializing ConversationViewModel(${this.conversationId})")
         viewModelScope.launch {
-            liveConversation.awaitConversationLoaded()
+            val state = liveConversation.awaitConversationLoaded()
             val conversationUserView = liveConversation.newUserView()
 
             val transcriptHandled = Job()
 
             launch {
-                conversationUserView.events.buffer(Channel.UNLIMITED).collect { event ->
+                conversationUserView.actions.buffer(Channel.UNLIMITED).collect { event ->
                     transcriptHandled.join()
 
                     stateUpdater.handleEvent(event)
                     updateStateAndStoredDigest()
                 }
             }
-
-            val state = conversationUserView.state.filterIsInstance<ConversationState.Loaded>().first()
 
             // Extract actions from transcript for view state processing
             val actions = state.transcript.filterIsInstance<Action<*>>()

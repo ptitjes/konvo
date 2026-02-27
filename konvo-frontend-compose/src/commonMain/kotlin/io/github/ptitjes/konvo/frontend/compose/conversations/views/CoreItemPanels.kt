@@ -100,7 +100,7 @@ private fun AgentMessagePanel(
 }
 
 @Composable
-context(conversation: ConversationUserView)
+context(conversation: InteractionDevice.User)
 private fun ToolUsageVettingPanel(
     viewState: ToolUsageViewState.Vetting,
     modifier: Modifier = Modifier,
@@ -202,8 +202,8 @@ private fun ToolUsageVettingPanel(
     }
 }
 
-private suspend fun ConversationUserView.sendToolUseApproval(approvals: Map<Call, Boolean>) =
-    send(Approval(approvals = approvals.toList()))
+private suspend fun InteractionDevice.User.sendToolUseApproval(approvals: Map<Call, Boolean>) =
+    act(Approval(approvals = approvals.toList()))
 
 @Composable
 private fun ToolUsageNotificationPanel(
