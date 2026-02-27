@@ -29,7 +29,10 @@ class GoogleModelProvider(
         override val parameterCount: Long? get() = null
         override val contextLength: Long? get() = null
         override val quantizationLevel: String? get() = null
-        override val supportsTools: Boolean get() = LLMCapability.Tools in delegate.capabilities
+        override val supportsTools: Boolean get() {
+            val capabilities = delegate.capabilities
+            return capabilities != null && LLMCapability.Tools in capabilities
+        }
 
         override fun toLLModel(): LLModel = delegate
         override fun getLLMClient(): LLMClient = this@GoogleModelProvider.client

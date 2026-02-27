@@ -18,12 +18,12 @@ import ai.koog.prompt.message.Message as KoogMessage
 internal suspend fun Action<Message>.toKoogMessage(): KoogMessage = when (sender) {
     is Participant.User -> KoogMessage.User(
         parts = payload.content.map { it.toKoogContentPart() },
-        metaInfo = RequestMetaInfo(timestamp = timestamp.toDeprecatedInstant()),
+        metaInfo = RequestMetaInfo(timestamp = timestamp),
     )
 
     is Participant.Agent -> KoogMessage.Assistant(
         parts = payload.content.map { it.toKoogContentPart() },
-        metaInfo = ResponseMetaInfo(timestamp = timestamp.toDeprecatedInstant()),
+        metaInfo = ResponseMetaInfo(timestamp = timestamp),
     )
 }
 
