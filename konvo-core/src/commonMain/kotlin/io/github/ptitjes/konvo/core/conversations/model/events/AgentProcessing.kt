@@ -1,9 +1,9 @@
 package io.github.ptitjes.konvo.core.conversations.model.events
 
 import io.github.ptitjes.konvo.core.conversations.model.Action
+import io.github.ptitjes.konvo.core.conversations.model.InteractionProtocol
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 internal const val PLUGIN_ID = "konvo:io.github.ptitjes.konvo.core"
 
@@ -33,15 +33,7 @@ sealed interface AgentProcessing : Action.Payload {
             id = "$PREFIX#TurnBased",
             awaitsInput = true,
             hidesParent = true,
-            inputEvents = setOf(Cancellation::class),
+            reactsTo = setOf(Cancellation::class),
         )
     }
 }
-
-data class InteractionProtocol(
-    val id: String,
-    val awaitsInput: Boolean,
-    val hidesParent: Boolean,
-    val inputEvents: Set<KClass<out Action.Payload>>,
-    // FIXME will the conversation helper agent need more?
-)

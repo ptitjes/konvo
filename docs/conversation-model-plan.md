@@ -295,14 +295,14 @@ The implementation is divided into four main phases:
 
 ### 2.1 Introduce `ConversationEntry` sealed class hierarchy
 
-- [ ] **Create ConversationEntry sealed class**
+- [x] **Create ConversationEntry sealed class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/ConversationEntry.kt` (new file)
   - Create `sealed class ConversationEntry` with internal constructor
   - Properties:
     - `val timestamp: Instant`
     - `val sender: Participant`
 
-- [ ] **Make `Action` extend `ConversationEntry`**
+- [x] **Make `Action` extend `ConversationEntry`**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/Action.kt`
   - Change from `data class Action<out T : Action.Payload>(...)` to extend `ConversationEntry`
   - Constructor should call `super(timestamp, sender)` with ConversationEntry constructor
@@ -313,12 +313,12 @@ The implementation is divided into four main phases:
 
 ### 2.2 Introduce `InteractionBoundary` subclasses
 
-- [ ] **Create InteractionBoundary sealed class**
+- [x] **Create InteractionBoundary sealed class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/InteractionBoundary.kt` (new file)
   - Create `sealed class InteractionBoundary` extending `ConversationEntry`
   - Common property: `val interaction: Interaction`
 
-- [ ] **Create InteractionBoundary.Start class**
+- [x] **Create InteractionBoundary.Start class**
   - In same file as above
   - `class Start internal constructor(timestamp, sender, interaction) : InteractionBoundary`
   - Constructor parameters:
@@ -326,7 +326,7 @@ The implementation is divided into four main phases:
     - `override val sender: Participant`
     - `override val interaction: Interaction`
 
-- [ ] **Create InteractionBoundary.End class**
+- [x] **Create InteractionBoundary.End class**
   - In same file as above
   - `class End internal constructor(timestamp, sender, interaction) : InteractionBoundary`
   - Constructor parameters:
@@ -338,7 +338,7 @@ The implementation is divided into four main phases:
 
 ### 2.3 Introduce `InteractionProtocol` data class
 
-- [ ] **Create InteractionProtocol data class**
+- [x] **Create InteractionProtocol data class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/InteractionProtocol.kt` (new file)
   - Create data class with properties:
     - `val id: String` (should be URN, e.g., `urn:konvo:io.github.ptitjes.konvo.core/Messaging#Processing`)
@@ -347,7 +347,7 @@ The implementation is divided into four main phases:
     - `val reactsTo: Set<KClass<out Action.Payload>>`
   - Add documentation explaining each property
 
-- [ ] **Remove or update old InteractionProtocol**
+- [x] **Remove or update old InteractionProtocol**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/events/AgentProcessing.kt`
   - Remove the existing `InteractionProtocol` data class (lines 41-47)
   - Update `AgentProcessing.TurnBased` to use the new `InteractionProtocol` class
@@ -357,7 +357,7 @@ The implementation is divided into four main phases:
 
 ### 2.4 Introduce `Interaction` class
 
-- [ ] **Create Interaction class**
+- [x] **Create Interaction class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/Interaction.kt` (new file)
   - Create class with internal constructor:
     ```kotlin
@@ -375,7 +375,7 @@ The implementation is divided into four main phases:
 
 ### 2.5 Implement `startInteraction` and `endInteraction` in Conversation
 
-- [ ] **Implement methods in Conversation.AgentViewImpl**
+- [x] **Implement methods in Conversation.AgentViewImpl**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/Conversation.kt`
   - Implement `startInteraction`:
     - Generate new interaction ID using `newId()`
@@ -387,9 +387,10 @@ The implementation is divided into four main phases:
     - Create `InteractionBoundary.End` with current timestamp
     - Emit to `_actions` flow
 
-- [ ] **Update internal action emission**
+- [x] **Update internal action emission**
   - Update `_actions` type to `MutableSharedFlow<ConversationEntry>`
   - Update emission logic to handle both `Action` and `InteractionBoundary`
+  - Keep public API `actions` property as `SharedFlow<Action<*>>` by filtering
 
 ---
 

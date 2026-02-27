@@ -46,7 +46,7 @@ class Conversation internal constructor(
     private fun newTimestamp(): Instant = timeProvider.now()
 
     private val _state = MutableStateFlow<ConversationState>(ConversationState.Loading)
-    private val _events = MutableSharedFlow<Action<*>>()
+    private val _events = MutableSharedFlow<ConversationEntry>()
 
     init {
         coroutineScope.launch {
@@ -67,9 +67,13 @@ class Conversation internal constructor(
 
             // Observe new events
             launch {
-                _events.collect { event ->
-                    // Persist new events to repository
-                    repository.appendAction(id, event)
+                _events.collect { entry ->
+                    // Persist new entries to repository
+                    // TODO: In Phase 3, we'll update the repository to handle all entry types
+                    when (entry) {
+                        is Action<*> -> repository.appendAction(id, entry)
+                        is InteractionBoundary -> {} // Skip for now, will be persisted in Phase 3
+                    }
                 }
             }
 
@@ -123,7 +127,12 @@ class Conversation internal constructor(
         override val participant: Participant.Agent,
     ) : InteractionDevice.Agent {
 
-        override val actions: SharedFlow<Action<*>> get() = _events
+        override val actions: SharedFlow<Action<*>>
+            get() = _events.filterIsInstance<Action<*>>().shareIn(
+                coroutineScope,
+                SharingStarted.Eagerly,
+                replay = 0
+            )
 
         override suspend fun act(payload: Action.Agent) {
             _events.emit(
@@ -135,6 +144,37 @@ class Conversation internal constructor(
                 )
             )
         }
+
+        override suspend fun startInteraction(
+            protocol: InteractionProtocol,
+            parent: Interaction?,
+            trigger: Action<*>?
+        ): Interaction {
+            val interaction = Interaction(
+                id = newId(),
+                protocol = protocol,
+                parent = parent,
+                trigger = trigger,
+            )
+            _events.emit(
+                InteractionBoundary.Start(
+                    timestamp = newTimestamp(),
+                    sender = participant,
+                    interaction = interaction,
+                )
+            )
+            return interaction
+        }
+
+        override suspend fun endInteraction(interaction: Interaction) {
+            _events.emit(
+                InteractionBoundary.End(
+                    timestamp = newTimestamp(),
+                    sender = participant,
+                    interaction = interaction,
+                )
+            )
+        }
     }
 
     private inner class UserViewImpl(
@@ -143,7 +183,12 @@ class Conversation internal constructor(
 
         override val state: StateFlow<ConversationState> get() = _state
 
-        override val actions: SharedFlow<Action<*>> get() = _events
+        override val actions: SharedFlow<Action<*>>
+            get() = _events.filterIsInstance<Action<*>>().shareIn(
+                coroutineScope,
+                SharingStarted.Eagerly,
+                replay = 0
+            )
 
         override suspend fun act(payload: Action.User) {
             _events.emit(

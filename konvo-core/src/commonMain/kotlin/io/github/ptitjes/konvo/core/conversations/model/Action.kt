@@ -5,11 +5,11 @@ import kotlin.time.*
 
 data class Action<out T : Action.Payload>(
     val id: String,
-    val timestamp: Instant,
-    val sender: Participant,
+    override val timestamp: Instant,
+    override val sender: Participant,
     val recipients: Set<Participant>? = null,
     val payload: @Contextual T,
-) {
+) : ConversationEntry(timestamp, sender) {
 
     interface Payload
 
