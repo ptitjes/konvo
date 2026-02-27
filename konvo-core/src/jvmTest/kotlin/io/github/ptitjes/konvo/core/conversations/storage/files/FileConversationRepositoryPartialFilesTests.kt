@@ -34,8 +34,8 @@ class FileConversationRepositoryPartialFilesTests {
             messageCount = 0,
         )
 
-    private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Event<*> =
-        Event(
+    private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Action<*> =
+        Action(
             id = id,
             timestamp = ts,
             sender = Participant.User("u1"),
@@ -54,11 +54,11 @@ class FileConversationRepositoryPartialFilesTests {
         // Create conversation and append two valid events
         val conversation = newConversation()
         repo.create(conversation)
-        repo.appendEvent(conversation.id, userMessage("e1", "Hello"))
-        repo.appendEvent(conversation.id, userMessage("e2", "World"))
+        repo.appendAction(conversation.id, userMessage("e1", "Hello"))
+        repo.appendAction(conversation.id, userMessage("e2", "World"))
 
         // Sanity: we should have two events
-        val before = repo.getEvents(conversation.id).first()
+        val before = repo.getActions(conversation.id).first()
         assertEquals(2, before.size)
 
         // Corrupt the events file by appending a truncated JSON line (no newline)
@@ -79,7 +79,7 @@ class FileConversationRepositoryPartialFilesTests {
         }
 
         // Act: list events should skip the bad line and still return the two valid ones
-        val events = repo.getEvents(conversation.id).first()
+        val events = repo.getActions(conversation.id).first()
 
         // Assert
         assertEquals(2, events.size)

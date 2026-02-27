@@ -16,7 +16,7 @@ import kotlinx.serialization.json.*
  * Layout (relative to [rootPath]):
  * - conversations/index.json (ConversationIndexDto)
  * - conversations/<id>/meta.json (ConversationDto)
- * - conversations/<id>/events.ndjson (one EventDto per line)
+ * - conversations/<id>/events.ndjson (one ActionDto per line)
  */
 class FileConversationRepository(
     private val rootPath: Path,
@@ -34,7 +34,7 @@ class FileConversationRepository(
 
     private val json = Json {
         ignoreUnknownKeys = true
-        serializersModule = CoreEvents
+        serializersModule = CoreActions
     }
 
     // Internal ticker to drive flows on local mutations
@@ -174,12 +174,12 @@ class FileConversationRepository(
     override fun getDigests(sort: Sort): Flow<List<ConversationDigest>> =
         changeTicker.map { readConversations(sort) }.onStart { emit(readConversations(sort)) }.distinctUntilChanged()
 
-    override suspend fun appendEvent(conversationId: String, event: Event<*>) {
+    override suspend fun appendAction(conversationId: String, action: Action<*>) {
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
-        // Append event to NDJSON by reading current content and rewriting (for portability)
+        // Append action to NDJSON by reading current content and rewriting (for portability)
         val eventsFile = eventsPath(conversationId)
-        val newLine = json.encodeToString(EventDto.serializer(), DtoMappers.toDto(event)) + "\n"
+        val newLine = json.encodeToString(ActionDto.serializer(), DtoMappers.toDto(action)) + "\n"
         val existingContent = if (fileSystem.exists(eventsFile)) {
             fileSystem.source(eventsFile).buffered().use(Source::readString)
         } else ""
@@ -254,14 +254,14 @@ class FileConversationRepository(
         changeTicker.value = changeTicker.value + 1
     }
 
-    private fun readEvents(conversationId: String): List<Event<*>> {
+    private fun readActions(conversationId: String): List<Action<*>> {
         val path = eventsPath(conversationId)
         return if (!fileSystem.exists(path)) emptyList()
         else buildList {
             fileSystem.source(path).buffered().use { source ->
                 for (line in source.readLines().filter { it.isNotBlank() }) {
                     add(
-                        runCatching { DtoMappers.fromDto(json.decodeFromString<EventDto>(line)) }
+                        runCatching { DtoMappers.fromDto(json.decodeFromString<ActionDto>(line)) }
                             .getOrElse { continue } // skip corrupt line
                     )
                 }
@@ -269,10 +269,10 @@ class FileConversationRepository(
         }
     }
 
-    override fun getEvents(conversationId: String): Flow<List<Event<*>>> =
+    override fun getActions(conversationId: String): Flow<List<Action<*>>> =
         changeTicker
-            .map { readEvents(conversationId) }
-            .onStart { emit(readEvents(conversationId)) }
+            .map { readActions(conversationId) }
+            .onStart { emit(readActions(conversationId)) }
             .distinctUntilChanged()
 }
 

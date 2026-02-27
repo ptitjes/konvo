@@ -146,7 +146,7 @@ internal class DefaultAgent(
     }
 
     override suspend fun restoreSession(
-        transcript: List<Event<*>>,
+        transcript: List<Action<*>>,
         conversation: ConversationAgentView,
     ): Unit = coroutineScope {
         // TODO implement this properly: restore state and prompt
@@ -154,7 +154,7 @@ internal class DefaultAgent(
         val messages = transcript.mapNotNull { event ->
             @Suppress("UNCHECKED_CAST")
             when (val details = event.payload) {
-                is Messaging.Message -> (event as Event<Messaging.Message>).toKoogMessage()
+                is Messaging.Message -> (event as Action<Messaging.Message>).toKoogMessage()
                 else -> null
             }
         }
@@ -200,7 +200,7 @@ internal class DefaultAgent(
                                 conversation.send(AgentProcessing.Start)
                                 val agent = buildAgent(tools, conversation)
                                 @Suppress("UNCHECKED_CAST") val result =
-                                    agent.run((event as Event<Messaging.Message>).toKoogMessage() as KoogMessage.User)
+                                    agent.run((event as Action<Messaging.Message>).toKoogMessage() as KoogMessage.User)
                                 result.forEach {
                                     conversation.send(
                                         Messaging.Message(content = listOf(Messaging.Part.Text(it.content)))

@@ -5,7 +5,7 @@ import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationVi
 import io.github.ptitjes.konvo.frontend.compose.conversations.spi.ConversationViewStates.*
 import kotlin.reflect.*
 
-suspend fun ConversationViewStateMaintainer.handleTranscript(transcript: List<Event<*>>) {
+suspend fun ConversationViewStateMaintainer.handleTranscript(transcript: List<Action<*>>) {
     for (element in transcript) handleEvent(element)
 }
 
@@ -15,23 +15,23 @@ class ConversationViewStateMaintainer(
     var state = initialState
         private set
 
-    private typealias StateUpdaterFunction<S, P> = suspend (state: S, event: Event<P>) -> S
+    private typealias StateUpdaterFunction<S, P> = suspend (state: S, event: Action<P>) -> S
 
     private val registeredStateUpdater =
-        mutableMapOf<KClass<out Event.Payload>, MutableList<StateUpdaterFunction<Loaded, Event.Payload>>>()
+        mutableMapOf<KClass<out Action.Payload>, MutableList<StateUpdaterFunction<Loaded, Action.Payload>>>()
 
-    private fun <P : Event.Payload> addStateUpdater(
+    private fun <P : Action.Payload> addStateUpdater(
         klass: KClass<out P>,
         handler: StateUpdaterFunction<Loaded, P>,
     ): () -> Unit {
         registeredStateUpdater[klass] = (registeredStateUpdater[klass] ?: mutableListOf()).also {
             @Suppress("UNCHECKED_CAST")
-            it += handler as StateUpdaterFunction<Loaded, Event.Payload>
+            it += handler as StateUpdaterFunction<Loaded, Action.Payload>
         }
         return { registeredStateUpdater[klass]?.remove(handler) }
     }
 
-    suspend fun handleEvent(event: Event<*>) {
+    suspend fun handleEvent(event: Action<*>) {
         val payload = event.payload
         val updaters = registeredStateUpdater[payload::class]?.toList() ?: return
         state = updaters.fold(state) { state, updater -> updater(state, event) }
@@ -72,9 +72,9 @@ class ConversationViewStateMaintainer(
         private val slot: Slot.Sequence<S>,
     ) : ProducerScope<SequenceBuilder<S>>() {
 
-        override fun <P : Event.Payload> onEvent(
+        override fun <P : Action.Payload> onEvent(
             klass: KClass<P>,
-            action: suspend SequenceBuilder<S>.(Event<P>) -> Unit,
+            action: suspend SequenceBuilder<S>.(Action<P>) -> Unit,
         ) {
             stateMaintainer.addStateUpdater(klass) { state, event ->
                 val scope = SequenceBuilderImpl(
@@ -112,9 +112,9 @@ class ConversationViewStateMaintainer(
         private val slot: Slot.Dictionary<K, S>,
     ) : ProducerScope<DictionaryBuilder<K, S>>() {
 
-        override fun <P : Event.Payload> onEvent(
+        override fun <P : Action.Payload> onEvent(
             klass: KClass<P>,
-            action: suspend DictionaryBuilder<K, S>.(Event<P>) -> Unit,
+            action: suspend DictionaryBuilder<K, S>.(Action<P>) -> Unit,
         ) {
             stateMaintainer.addStateUpdater(klass) { state, event ->
                 val scope = DictionaryBuilderImpl<K, S>(
@@ -153,9 +153,9 @@ class ConversationViewStateMaintainer(
         private val slot: Slot.Register<S>,
     ) : ProducerScope<RegisterBuilder<S>>() {
 
-        override fun <P : Event.Payload> onEvent(
+        override fun <P : Action.Payload> onEvent(
             klass: KClass<P>,
-            action: suspend RegisterBuilder<S>.(Event<P>) -> Unit,
+            action: suspend RegisterBuilder<S>.(Action<P>) -> Unit,
         ) {
             stateMaintainer.addStateUpdater(klass) { state, event ->
                 val scope = RegisterBuilderImpl<S>(
@@ -200,9 +200,9 @@ class ConversationViewStateMaintainer(
             }
         }
 
-        override fun <Q : Event.Payload> onEvent(
+        override fun <Q : Action.Payload> onEvent(
             klass: KClass<Q>,
-            handler: suspend UpdateHandlerScope.(T, Event<Q>) -> T,
+            handler: suspend UpdateHandlerScope.(T, Action<Q>) -> T,
         ) {
             teardowns += stateMaintainer.addStateUpdater(klass) { state, event ->
                 lens.update(state) { previousState ->
