@@ -5,15 +5,19 @@ import kotlinx.coroutines.flow.*
 
 /**
  * Provides a view of the conversation for UI components.
- * This interface allows UI components to send user events into a conversation.
+ * This interface allows UI components to send user actions into a conversation.
+ *
+ * @deprecated Use InteractionDevice.User instead
  */
-interface ConversationUserView {
-
-    val participant: Participant.User
+@Deprecated(
+    "Use InteractionDevice.User instead",
+    ReplaceWith("InteractionDevice.User", "io.github.ptitjes.konvo.core.conversations.InteractionDevice")
+)
+interface ConversationUserView : InteractionDevice.User {
 
     val state: StateFlow<ConversationState>
 
+    @Deprecated("Use actions instead", ReplaceWith("actions"))
     val events: SharedFlow<Action<*>>
-
-    suspend fun send(payload: Action.User)
+        get() = actions
 }
