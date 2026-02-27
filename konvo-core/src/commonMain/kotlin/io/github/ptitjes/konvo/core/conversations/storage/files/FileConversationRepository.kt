@@ -174,12 +174,17 @@ class FileConversationRepository(
     override fun getDigests(sort: Sort): Flow<List<ConversationDigest>> =
         changeTicker.map { readConversations(sort) }.onStart { emit(readConversations(sort)) }.distinctUntilChanged()
 
-    override suspend fun appendAction(conversationId: String, action: Action<*>) {
+    override suspend fun appendEntry(conversationId: String, entry: ConversationEntry) {
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
+
+        // For now, only persist Actions to file. InteractionBoundaries are skipped.
+        // Full serialization support will be added in a future phase.
+        if (entry !is Action<*>) return
+
         // Append action to NDJSON by reading current content and rewriting (for portability)
         val eventsFile = eventsPath(conversationId)
-        val newLine = json.encodeToString(ActionDto.serializer(), DtoMappers.toDto(action)) + "\n"
+        val newLine = json.encodeToString(ActionDto.serializer(), DtoMappers.toDto(entry)) + "\n"
         val existingContent = if (fileSystem.exists(eventsFile)) {
             fileSystem.source(eventsFile).buffered().use(Source::readString)
         } else ""
@@ -188,6 +193,11 @@ class FileConversationRepository(
             sink.writeString(newLine)
         }
         changeTicker.value = changeTicker.value + 1
+    }
+
+    @Deprecated("Use appendEntry instead", ReplaceWith("appendEntry(conversationId, action)"))
+    override suspend fun appendAction(conversationId: String, action: Action<*>) {
+        appendEntry(conversationId, action)
     }
 
     override suspend fun updateDigest(digest: ConversationDigest) {
@@ -269,11 +279,17 @@ class FileConversationRepository(
         }
     }
 
+    override fun getTranscript(conversationId: String): Flow<ConversationTranscript> =
+        combine(
+            changeTicker.map { readConversation(conversationId) }.onStart { emit(readConversation(conversationId)) },
+            changeTicker.map { readActions(conversationId) }.onStart { emit(readActions(conversationId)) }
+        ) { digest, actions ->
+            digest?.let { ConversationTranscript(it, actions) }
+        }.filterNotNull().distinctUntilChanged()
+
+    @Deprecated("Use getTranscript instead", ReplaceWith("getTranscript(conversationId)"))
     override fun getActions(conversationId: String): Flow<List<Action<*>>> =
-        changeTicker
-            .map { readActions(conversationId) }
-            .onStart { emit(readActions(conversationId)) }
-            .distinctUntilChanged()
+        getTranscript(conversationId).map { it.filterIsInstance<Action<*>>() }
 }
 
 private fun Source.readLines(): Sequence<String> = sequence {

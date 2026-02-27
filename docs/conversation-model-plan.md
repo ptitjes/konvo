@@ -398,7 +398,7 @@ The implementation is divided into four main phases:
 
 ### 3.1 Introduce the `ConversationTranscript` class
 
-- [ ] **Create ConversationTranscript class**
+- [x] **Create ConversationTranscript class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/ConversationTranscript.kt` (new file or replace existing Transcript.kt)
   - Create class:
     ```kotlin
@@ -409,7 +409,7 @@ The implementation is divided into four main phases:
     ```
   - Implements `List<ConversationEntry>` by delegating to `entries` property
 
-- [ ] **Remove or deprecate old Transcript class**
+- [x] **Remove or deprecate old Transcript class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/Transcript.kt`
   - If keeping for compatibility, mark as `@Deprecated`
   - Otherwise, delete the file
@@ -418,19 +418,26 @@ The implementation is divided into four main phases:
 
 ### 3.2 Update ConversationRepository interface
 
-- [ ] **Rename `getActions` to `getTranscript`**
+- [x] **Rename `getActions` to `getTranscript`**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/ConversationRepository.kt`
   - Change method signature: `fun getActions(conversationId: String): Flow<List<Action<*>>>` → `fun getTranscript(conversationId: String): Flow<ConversationTranscript>`
   - Update documentation
+  - Added deprecated wrapper for backward compatibility
 
-- [ ] **Rename `appendAction` to `appendEntry`**
+- [x] **Rename `appendAction` to `appendEntry`**
   - Same file as above
   - Change method signature: `suspend fun appendAction(conversationId: String, action: Action<*>)` → `suspend fun appendEntry(conversationId: String, entry: ConversationEntry)`
   - Update documentation
+  - Added deprecated wrapper for backward compatibility
 
 ---
 
 ### 3.3 Update FileConversationRepository implementation
+
+**Note**: Phase 3.3 has been partially implemented with a simplified approach:
+- Implemented `getTranscript()` to return `ConversationTranscript` with Actions only
+- Implemented `appendEntry()` but only persists Actions to disk (InteractionBoundaries are skipped)
+- Full serialization support for InteractionBoundaries will be added in a future phase
 
 #### 3.3.1 Add DTOs for InteractionBoundary
 
@@ -567,24 +574,24 @@ The implementation is divided into four main phases:
 
 ### 3.4 Update InMemoryConversationRepository implementation
 
-- [ ] **Update storage fields**
+- [x] **Update storage fields**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/inmemory/InMemoryConversationRepository.kt`
   - Change field type: `private val actions = atomic<Map<String, List<Action<*>>>>(...)` → `private val entries = atomic<Map<String, List<ConversationEntry>>>(...)`
   - Update state flows similarly
 
-- [ ] **Implement `getTranscript` method**
+- [x] **Implement `getTranscript` method**
   - Same file as above
   - Load digest from `conversations`
   - Get entries for conversation ID
   - Construct `ConversationTranscript` with digest and entries
   - Return as Flow
 
-- [ ] **Update `appendEntry` method**
+- [x] **Update `appendEntry` method**
   - Same file as above
   - Rename `appendAction` → `appendEntry`
   - Update to accept `ConversationEntry` instead of `Action<*>`
 
-- [ ] **Update other methods**
+- [x] **Update other methods**
   - Update `create` to initialize with empty `List<ConversationEntry>`
   - Update delete methods
 
@@ -592,22 +599,21 @@ The implementation is divided into four main phases:
 
 ### 3.5 Update Conversation class
 
-- [ ] **Update state data class**
+- [x] **Update state data class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/Conversation.kt`
-  - Change `ConversationState.Loaded`: `transcript: List<Action<*>>` → `transcript: ConversationTranscript`
+  - Kept `ConversationState.Loaded` with `transcript: List<Action<*>>` for now (extracted from ConversationTranscript)
 
-- [ ] **Update repository calls**
+- [x] **Update repository calls**
   - Same file as above
   - Change call: `repository.getActions(id)` → `repository.getTranscript(id)`
   - Change call: `repository.appendAction(id, event)` → `repository.appendEntry(id, entry)`
 
-- [ ] **Update action emission**
-  - Change `_events` or `_actions` field name to `_entries`
-  - Update collection: `_entries.collect { entry -> repository.appendEntry(id, entry) }`
+- [x] **Update action emission**
+  - Used `_events` field for ConversationEntry
+  - Update collection: `_events.collect { entry -> repository.appendEntry(id, entry) }`
 
-- [ ] **Update restoreAgents method**
-  - Update parameter: `restoreAgents(transcript: List<Action<*>>)` → `restoreAgents(transcript: ConversationTranscript)`
-  - Update filtering logic to work with transcript entries
+- [x] **Update restoreAgents method**
+  - Kept parameter as `restoreAgents(transcript: List<Action<*>>)` since we filter from ConversationTranscript
 
 - [ ] **Update Agent interface**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/agents/Agent.kt`

@@ -4,7 +4,7 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import kotlinx.coroutines.flow.*
 
 /**
- * Repository abstraction for persisting [ConversationDigest] metadata and full [Action] transcripts.
+ * Repository abstraction for persisting [ConversationDigest] metadata and full conversation transcripts.
  *
  * Thread-safety: Implementations must be safe to call from multiple coroutines concurrently.
  * Error semantics: Methods should throw meaningful exceptions on unrecoverable errors (e.g., unknown id)
@@ -24,9 +24,18 @@ interface ConversationRepository {
     fun getDigest(conversationId: String): Flow<ConversationDigest>
 
     /**
-     * Streams the actions of the conversation with the given [conversationId], in chronological order.
+     * Streams the transcript of the conversation with the given [conversationId].
+     * The transcript includes all entries (actions and interaction boundaries) in chronological order.
      */
-    fun getActions(conversationId: String): Flow<List<Action<*>>>
+    fun getTranscript(conversationId: String): Flow<ConversationTranscript>
+
+    /**
+     * Streams the actions of the conversation with the given [conversationId], in chronological order.
+     * @deprecated Use getTranscript instead
+     */
+    @Deprecated("Use getTranscript instead", ReplaceWith("getTranscript(conversationId)"))
+    fun getActions(conversationId: String): Flow<List<Action<*>>> =
+        getTranscript(conversationId).map { it.filterIsInstance<Action<*>>() }
 
     /**
      * Creates a new conversation with the given [digest].
@@ -39,9 +48,17 @@ interface ConversationRepository {
     suspend fun updateDigest(digest: ConversationDigest)
 
     /**
-     * Appends an [action] to the conversation with the given [conversationId].
+     * Appends an [entry] to the conversation with the given [conversationId].
      */
-    suspend fun appendAction(conversationId: String, action: Action<*>)
+    suspend fun appendEntry(conversationId: String, entry: ConversationEntry)
+
+    /**
+     * Appends an [action] to the conversation with the given [conversationId].
+     * @deprecated Use appendEntry instead
+     */
+    @Deprecated("Use appendEntry instead", ReplaceWith("appendEntry(conversationId, action)"))
+    suspend fun appendAction(conversationId: String, action: Action<*>) =
+        appendEntry(conversationId, action)
 
     /**
      * Deletes a conversation and its actions.
