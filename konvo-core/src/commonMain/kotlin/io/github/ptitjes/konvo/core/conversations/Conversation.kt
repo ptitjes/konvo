@@ -125,7 +125,7 @@ class Conversation internal constructor(
 
         override val actions: SharedFlow<Action<*>> get() = _events
 
-        override suspend fun send(payload: Action.Agent) {
+        override suspend fun act(payload: Action.Agent) {
             _events.emit(
                 Action(
                     id = newId(),
@@ -145,7 +145,7 @@ class Conversation internal constructor(
 
         override val actions: SharedFlow<Action<*>> get() = _events
 
-        override suspend fun send(payload: Action.User) {
+        override suspend fun act(payload: Action.User) {
             _events.emit(
                 Action(
                     id = newId(),

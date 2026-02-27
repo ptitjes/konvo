@@ -58,7 +58,7 @@ internal suspend fun InteractionDevice.Agent.vetToolCalls(
 
     if (vetoableToolCalls.isEmpty()) return@coroutineScope vettedCalls.awaitAll()
 
-    send(Vetting(calls = vetoableToolCalls.keys.toList()))
+    act(Vetting(calls = vetoableToolCalls.keys.toList()))
 
     val updateJob = launch {
         actions.mapNotNull { it.payload as? ToolUsage.Approval }.collect { payload ->
