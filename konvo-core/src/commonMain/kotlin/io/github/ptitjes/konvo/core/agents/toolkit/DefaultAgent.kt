@@ -146,12 +146,15 @@ internal class DefaultAgent(
     }
 
     override suspend fun restoreSession(
-        transcript: List<Action<*>>,
+        transcript: ConversationTranscript,
         conversation: InteractionDevice.Agent,
     ): Unit = coroutineScope {
         // TODO implement this properly: restore state and prompt
 
-        val messages = transcript.mapNotNull { event ->
+        // Filter actions from transcript for message processing
+        val actions = transcript.filterIsInstance<Action<*>>()
+
+        val messages = actions.mapNotNull { event ->
             @Suppress("UNCHECKED_CAST")
             when (val details = event.payload) {
                 is Messaging.Message -> (event as Action<Messaging.Message>).toKoogMessage()
@@ -163,7 +166,7 @@ internal class DefaultAgent(
             messages(messages)
         }
 
-        if (transcript.isEmpty()) {
+        if (actions.isEmpty()) {
             conversation.act(Presence.Joining)
         }
 
@@ -197,16 +200,27 @@ internal class DefaultAgent(
                     when (val details = event.payload) {
                         is Messaging.Message -> {
                             if (event.sender is Participant.User) {
-                                conversation.act(AgentProcessing.Start)
+                                // Start a new interaction for processing this message
+                                val interaction = conversation.startInteraction(
+                                    protocol = AgentProcessing.TurnBased,
+                                    parent = event.interaction,
+                                    trigger = event
+                                )
+
+                                conversation.act(AgentProcessing.Start, interaction)
                                 val agent = buildAgent(tools, conversation)
                                 @Suppress("UNCHECKED_CAST") val result =
                                     agent.run((event as Action<Messaging.Message>).toKoogMessage() as KoogMessage.User)
                                 result.forEach {
                                     conversation.act(
-                                        Messaging.Message(content = listOf(Messaging.Part.Text(it.content)))
+                                        Messaging.Message(content = listOf(Messaging.Part.Text(it.content))),
+                                        interaction
                                     )
                                 }
-                                conversation.act(AgentProcessing.Completion)
+                                conversation.act(AgentProcessing.Completion, interaction)
+
+                                // End the interaction
+                                conversation.endInteraction(interaction)
                             }
                         }
 
