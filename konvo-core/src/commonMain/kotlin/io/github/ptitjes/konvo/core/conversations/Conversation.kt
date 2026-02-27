@@ -80,7 +80,7 @@ class Conversation internal constructor(
     }
 
     private fun restoreAgents(transcript: ConversationTranscript) {
-        val joins = transcript.filterIsInstance<Action<*>>().filter {
+        val joins = transcript.actions.filter {
             it.payload is Presence.Joining && it.sender is Participant.Agent
         }
     }
@@ -96,14 +96,14 @@ class Conversation internal constructor(
 
     suspend fun join() {
         awaitConversationLoaded()
-        newUserView().act(Presence.Joining)
+        newUserDevice().act(Presence.Joining)
     }
 
-    fun newUserView(): InteractionDevice.User {
+    fun newUserDevice(): InteractionDevice.User {
         checkConversationLoaded()
         // TODO get the current profile's user id
         val userParticipant = Participant.User(id = "user")
-        return UserViewImpl(userParticipant)
+        return UserDevice(userParticipant)
     }
 
     suspend fun inviteAgent(agentConfiguration: AgentConfiguration) {
@@ -112,11 +112,11 @@ class Conversation internal constructor(
 
         // TODO allow multiple agents
         val agentParticipant = Participant.Agent(id = "agent")
-        val agentView = AgentViewImpl(agentParticipant)
-        agent.restoreSession(state.transcript, agentView)
+        val device = AgentDevice(agentParticipant)
+        agent.restoreSession(state.transcript, device)
     }
 
-    private inner class AgentViewImpl(
+    private inner class AgentDevice(
         override val participant: Participant.Agent,
     ) : InteractionDevice.Agent {
 
@@ -133,8 +133,8 @@ class Conversation internal constructor(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
-                    payload = payload,
                     interaction = interaction,
+                    payload = payload,
                 )
             )
         }
@@ -171,11 +171,9 @@ class Conversation internal constructor(
         }
     }
 
-    private inner class UserViewImpl(
+    private inner class UserDevice(
         override val participant: Participant.User,
     ) : InteractionDevice.User {
-
-        val state: StateFlow<ConversationState> get() = _state
 
         override val actions: SharedFlow<Action<*>>
             get() = _events.filterIsInstance<Action<*>>().shareIn(
@@ -190,8 +188,8 @@ class Conversation internal constructor(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
-                    payload = payload,
                     interaction = interaction,
+                    payload = payload,
                 )
             )
         }

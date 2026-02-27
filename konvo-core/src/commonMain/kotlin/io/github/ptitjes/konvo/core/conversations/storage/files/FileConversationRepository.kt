@@ -309,7 +309,7 @@ class FileConversationRepository(
 
     @Deprecated("Use getTranscript instead", ReplaceWith("getTranscript(conversationId)"))
     override fun getActions(conversationId: String): Flow<List<Action<*>>> =
-        getTranscript(conversationId).map { it.filterIsInstance<Action<*>>() }
+        getTranscript(conversationId).map { it.actions }
 }
 
 private fun Source.readLines(): Sequence<String> = sequence {

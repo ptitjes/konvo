@@ -59,7 +59,7 @@ class FileConversationRepositoryPartialFilesTests {
 
         // Sanity: we should have two events
         val before = repo.getTranscript(conversation.id).first()
-        assertEquals(2, before.size)
+        assertEquals(2, before.entries.size)
 
         // Corrupt the events file by appending a truncated JSON line (no newline)
         val conversationsDir = Path(root, FilesLayout.CONVERSATIONS_DIR)
@@ -82,8 +82,8 @@ class FileConversationRepositoryPartialFilesTests {
         val transcript = repo.getTranscript(conversation.id).first()
 
         // Assert
-        assertEquals(2, transcript.size)
-        val actions = transcript.filterIsInstance<Action<*>>()
+        assertEquals(2, transcript.entries.size)
+        val actions = transcript.actions
         assertTrue(actions.all { it.payload is Messaging.Message })
         assertEquals(listOf("e1", "e2"), actions.map { it.id })
     }
