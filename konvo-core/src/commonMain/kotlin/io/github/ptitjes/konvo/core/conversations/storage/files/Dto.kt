@@ -210,8 +210,8 @@ internal object DtoMappers {
             a.timestamp,
             fromDto(a.sender),
             a.recipients?.map(::fromDto)?.toSet(),
-            a.payload,
             interaction,
+            a.payload,
         ).also { context.addAction(it) }
     }
 
@@ -221,8 +221,7 @@ internal object DtoMappers {
         a.timestamp,
         fromDto(a.sender),
         a.recipients?.map(::fromDto)?.toSet(),
-        a.payload,
-        null,
+        payload = a.payload,
     )
 
     fun toDto(boundary: InteractionBoundary.Start): InteractionBoundaryDto.Start = InteractionBoundaryDto.Start(
