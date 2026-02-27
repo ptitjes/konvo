@@ -325,7 +325,7 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
     coroutineScope {
         val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
-        conversation.events.collect { event ->
+        conversation.actions.collect { event ->
             when (val details = event.payload) {
                 is Processing.AssistantProcessing ->
                     if (details.isProcessing) assistantProcessing.start()

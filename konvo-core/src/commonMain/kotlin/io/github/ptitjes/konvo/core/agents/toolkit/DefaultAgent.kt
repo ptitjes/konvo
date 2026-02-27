@@ -37,17 +37,17 @@ internal class DefaultAgent(
     private val model: LLModel,
     val maxAgentIterations: Int = 50,
     val promptExecutor: PromptExecutor,
-    private val strategy: (ConversationAgentView) -> AIAgentGraphStrategy<KoogMessage.User, List<KoogMessage.Assistant>>,
+    private val strategy: (InteractionDevice.Agent) -> AIAgentGraphStrategy<KoogMessage.User, List<KoogMessage.Assistant>>,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
     private val mcpServerNames: Set<String> = emptySet(),
     private val developerSettings: DeveloperSettings = DeveloperSettings(),
-    private val installFeatures: GraphAIAgent.FeatureContext.(ConversationAgentView) -> Unit = {},
+    private val installFeatures: GraphAIAgent.FeatureContext.(InteractionDevice.Agent) -> Unit = {},
 ) : Agent {
     private var prompt: Prompt = systemPrompt
 
     private suspend fun buildAgent(
         tools: List<ToolCard>?,
-        conversationView: ConversationAgentView,
+        conversationView: InteractionDevice.Agent,
     ): AIAgent<KoogMessage.User, List<KoogMessage.Assistant>> {
         val tools = tools ?: emptyList()
 
@@ -147,7 +147,7 @@ internal class DefaultAgent(
 
     override suspend fun restoreSession(
         transcript: List<Action<*>>,
-        conversation: ConversationAgentView,
+        conversation: InteractionDevice.Agent,
     ): Unit = coroutineScope {
         // TODO implement this properly: restore state and prompt
 
@@ -193,7 +193,7 @@ internal class DefaultAgent(
                 mcpHostSession?.addServers(mcpServerNames)
                 val tools = mcpHostSession?.tools?.first()
 
-                conversation.events.buffer(Channel.UNLIMITED).collect { event ->
+                conversation.actions.buffer(Channel.UNLIMITED).collect { event ->
                     when (val details = event.payload) {
                         is Messaging.Message -> {
                             if (event.sender is Participant.User) {

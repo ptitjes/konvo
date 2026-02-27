@@ -36,7 +36,7 @@ fun AIAgentSubgraphBuilderBase<*, *>.nodeVetToolCalls(
     }
 }
 
-internal suspend fun ConversationAgentView.vetToolCalls(
+internal suspend fun InteractionDevice.Agent.vetToolCalls(
     calls: List<Message.Tool.Call>,
     tools: List<ToolCard>,
 ): List<Boolean> = coroutineScope {
@@ -61,7 +61,7 @@ internal suspend fun ConversationAgentView.vetToolCalls(
     send(Vetting(calls = vetoableToolCalls.keys.toList()))
 
     val updateJob = launch {
-        events.mapNotNull { it.payload as? ToolUsage.Approval }.collect { payload ->
+        actions.mapNotNull { it.payload as? ToolUsage.Approval }.collect { payload ->
             for ((call, approved) in payload.approvals) {
                 val index = vetoableToolCalls[call]
                 if (index != null) {
