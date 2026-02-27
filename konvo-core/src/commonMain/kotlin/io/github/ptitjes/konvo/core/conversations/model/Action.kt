@@ -9,6 +9,7 @@ data class Action<out T : Action.Payload>(
     override val sender: Participant,
     val recipients: Set<Participant>? = null,
     val payload: @Contextual T,
+    val interaction: Interaction? = null,
 ) : ConversationEntry(timestamp, sender) {
 
     interface Payload
