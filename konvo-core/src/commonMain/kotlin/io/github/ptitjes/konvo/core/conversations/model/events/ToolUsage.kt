@@ -52,4 +52,15 @@ sealed interface ToolUsage : Action.Payload {
         @SerialName("execution-failure")
         data class ExecutionFailure(val reason: String) : CallResult
     }
+
+    companion object {
+        private const val PREFIX = "$PLUGIN_ID/ToolUsage"
+
+        val VettingProtocol = InteractionProtocol(
+            id = "$PREFIX#Vetting",
+            awaitsInput = true,
+            hidesParent = false,
+            reactsTo = setOf(Approval::class),
+        )
+    }
 }
