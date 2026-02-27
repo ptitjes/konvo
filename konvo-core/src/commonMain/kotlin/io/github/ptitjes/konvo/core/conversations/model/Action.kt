@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.core.conversations.model
 
-import kotlinx.serialization.*
 import kotlin.time.*
 
 data class Action<out T : Action.Payload>(
@@ -8,8 +7,8 @@ data class Action<out T : Action.Payload>(
     override val timestamp: Instant,
     override val sender: Participant,
     val recipients: Set<Participant>? = null,
-    val payload: @Contextual T,
     val interaction: Interaction? = null,
+    val payload: T,
 ) : ConversationEntry(timestamp, sender) {
 
     interface Payload
