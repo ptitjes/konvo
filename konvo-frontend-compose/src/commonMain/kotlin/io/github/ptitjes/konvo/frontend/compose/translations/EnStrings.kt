@@ -50,6 +50,7 @@ internal val EnStrings = Strings(
         anthropicApiKeyLabel = "Anthropic API key",
         openAiApiKeyLabel = "OpenAI API key",
         googleApiKeyLabel = "Google API key",
+        mistralAiApiKeyLabel = "Mistral AI API key",
         nameEmptyError = "Name cannot be empty",
         nameUniqueError = "Name must be unique",
         addProviderConfirmAria = "Add provider",

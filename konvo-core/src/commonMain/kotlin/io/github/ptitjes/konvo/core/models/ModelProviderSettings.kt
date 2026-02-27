@@ -25,6 +25,10 @@ sealed interface ModelProviderConfiguration {
     @Serializable
     @SerialName("google")
     data class Google(val apiKey: String) : ModelProviderConfiguration
+
+    @Serializable
+    @SerialName("mistralai")
+    data class MistralAI(val apiKey: String) : ModelProviderConfiguration
 }
 
 @Serializable
