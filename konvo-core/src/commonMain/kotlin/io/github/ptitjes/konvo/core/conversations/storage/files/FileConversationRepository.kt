@@ -40,6 +40,7 @@ class FileConversationRepository(
     init {
         // Register known interaction protocols for deserialization
         InteractionProtocols.register(AgentProcessing.TurnBased)
+        InteractionProtocols.register(ToolUsage.VettingProtocol)
     }
 
     // Internal ticker to drive flows on local mutations

@@ -176,7 +176,7 @@ private fun LastViewedTimestampUpdater(
 
                             val stillOverNew = lastViewedItemIndex < lastVisibleIndex
                             if (stillOverNew) {
-                                conversation.send(Presence.ViewNotification(lastVisibleTimestamp))
+                                conversation.act(Presence.ViewNotification(lastVisibleTimestamp))
                             }
                             pendingJob = null
                         }

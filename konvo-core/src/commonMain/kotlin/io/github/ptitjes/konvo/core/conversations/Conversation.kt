@@ -96,7 +96,7 @@ class Conversation internal constructor(
 
     suspend fun join() {
         awaitConversationLoaded()
-        newUserView().send(Presence.Joining)
+        newUserView().act(Presence.Joining)
     }
 
     fun newUserView(): ConversationUserView {
