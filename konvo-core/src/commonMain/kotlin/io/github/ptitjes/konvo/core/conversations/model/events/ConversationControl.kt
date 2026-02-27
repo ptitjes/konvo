@@ -5,12 +5,12 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import kotlinx.serialization.*
 
 @Serializable
-sealed interface ConversationControl : Event.Payload {
+sealed interface ConversationControl : Action.Payload {
     @Serializable
     @SerialName("conversation-control-title-change")
     data class TitleChange(
         val title: String,
-    ) : ConversationControl, Event.Agent, Event.User
+    ) : ConversationControl, Action.Agent, Action.User
 
     @Serializable
     @SerialName("conversation-control-invite-agent")
@@ -18,5 +18,5 @@ sealed interface ConversationControl : Event.Payload {
         val agentId: String,
         // TODO make this an AgentId
         val agentConfiguration: AgentConfiguration,
-    ) : ConversationControl, Event.Agent, Event.User
+    ) : ConversationControl, Action.Agent, Action.User
 }

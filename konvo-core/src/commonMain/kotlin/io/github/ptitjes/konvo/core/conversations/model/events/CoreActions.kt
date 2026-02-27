@@ -5,8 +5,8 @@ import kotlinx.serialization.*
 import kotlinx.serialization.modules.*
 
 @OptIn(ExperimentalSerializationApi::class)
-val CoreEvents = SerializersModule {
-    polymorphic(Event.Payload::class) {
+val CoreActions = SerializersModule {
+    polymorphic(Action.Payload::class) {
         subclassesOfSealed<ConversationControl>()
         subclassesOfSealed<Presence>()
         subclassesOfSealed<AgentCapabilities>()

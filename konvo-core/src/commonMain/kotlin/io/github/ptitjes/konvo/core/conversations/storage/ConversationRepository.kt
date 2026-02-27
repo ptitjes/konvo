@@ -4,7 +4,7 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 import kotlinx.coroutines.flow.*
 
 /**
- * Repository abstraction for persisting [ConversationDigest] metadata and full [Event] transcripts.
+ * Repository abstraction for persisting [ConversationDigest] metadata and full [Action] transcripts.
  *
  * Thread-safety: Implementations must be safe to call from multiple coroutines concurrently.
  * Error semantics: Methods should throw meaningful exceptions on unrecoverable errors (e.g., unknown id)
@@ -24,9 +24,9 @@ interface ConversationRepository {
     fun getDigest(conversationId: String): Flow<ConversationDigest>
 
     /**
-     * Streams the events of the conversation with the given [conversationId], in chronological order.
+     * Streams the actions of the conversation with the given [conversationId], in chronological order.
      */
-    fun getEvents(conversationId: String): Flow<List<Event<*>>>
+    fun getActions(conversationId: String): Flow<List<Action<*>>>
 
     /**
      * Creates a new conversation with the given [digest].
@@ -39,17 +39,17 @@ interface ConversationRepository {
     suspend fun updateDigest(digest: ConversationDigest)
 
     /**
-     * Appends an [event] to the conversation with the given [conversationId].
+     * Appends an [action] to the conversation with the given [conversationId].
      */
-    suspend fun appendEvent(conversationId: String, event: Event<*>)
+    suspend fun appendAction(conversationId: String, action: Action<*>)
 
     /**
-     * Deletes a conversation and its events.
+     * Deletes a conversation and its actions.
      */
     suspend fun delete(id: String)
 
     /**
-     * Deletes all conversations and events.
+     * Deletes all conversations and actions.
      */
     suspend fun deleteAll()
 }

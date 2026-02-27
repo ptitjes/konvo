@@ -54,7 +54,7 @@ abstract class ConversationRepositoryContractTests {
         id: String,
         content: String,
         timestamp: Instant,
-    ): Event<*> = Event(
+    ): Action<*> = Action(
         id = id,
         timestamp = timestamp,
         sender = Participant.User("u1"),
@@ -67,7 +67,7 @@ abstract class ConversationRepositoryContractTests {
         id: String,
         content: String,
         timestamp: Instant,
-    ): Event<*> = Event(
+    ): Action<*> = Action(
         id = id,
         timestamp = timestamp,
         sender = Participant.Agent("a1"),
@@ -90,7 +90,7 @@ abstract class ConversationRepositoryContractTests {
     fun `append user message does not update preview and count`() = runRepositoryTest { timeProvider, repository ->
         val conversation = newConversation(timestamp = timeProvider.now())
         repository.create(conversation)
-        val event = Event(
+        val event = Action(
             id = "e1",
             timestamp = timeProvider.now(),
             sender = Participant.User("u1"),
@@ -98,11 +98,11 @@ abstract class ConversationRepositoryContractTests {
                 content = listOf(Part.Text("Hello world")),
             )
         )
-        repository.appendEvent(conversation.id, event)
+        repository.appendAction(conversation.id, event)
         val updated = repository.getDigest(conversation.id).first()
         assertEquals(0, updated.messageCount)
         assertEquals(null, updated.lastMessagePreview)
-        val events = repository.getEvents(conversation.id).first()
+        val events = repository.getActions(conversation.id).first()
         assertEquals(1, events.size)
     }
 
@@ -127,14 +127,14 @@ abstract class ConversationRepositoryContractTests {
             repository.create(conversation)
             val beforeUpdatedAt = conversation.updatedAt
             val u1 = userMessage("e1", "Hello world", timeProvider.now())
-            repository.appendEvent("c1", u1)
+            repository.appendAction("c1", u1)
             val after1 = repository.getDigest("c1").first()
             assertEquals(0, after1.messageCount)
             assertEquals(null, after1.lastMessagePreview)
             assertEquals(beforeUpdatedAt, after1.updatedAt)
 
             val a1 = assistantMessage("e2", "Hi!", timeProvider.now())
-            repository.appendEvent("c1", a1)
+            repository.appendAction("c1", a1)
             val after2 = repository.getDigest("c1").first()
             assertEquals(0, after2.messageCount)
             assertEquals(null, after2.lastMessagePreview)
@@ -171,8 +171,8 @@ abstract class ConversationRepositoryContractTests {
         runRepositoryTest { timeProvider, repository ->
             repository.create(newConversation("c1", timestamp = timeProvider.now()))
             repository.create(newConversation("c2", timestamp = timeProvider.now()))
-            repository.appendEvent("c1", userMessage("e1", "one", timestamp = timeProvider.now()))
-            repository.appendEvent("c2", userMessage("e2", "two", timestamp = timeProvider.now()))
+            repository.appendAction("c1", userMessage("e1", "one", timestamp = timeProvider.now()))
+            repository.appendAction("c2", userMessage("e2", "two", timestamp = timeProvider.now()))
 
             // delete one
             repository.delete("c1")
@@ -185,7 +185,7 @@ abstract class ConversationRepositoryContractTests {
 
     @Test
     fun `append to non-existent conversation fails`() = runRepositoryTest { timeProvider, repository ->
-        assertFails { repository.appendEvent("missing", userMessage("e1", "nope", timestamp = timeProvider.now())) }
+        assertFails { repository.appendAction("missing", userMessage("e1", "nope", timestamp = timeProvider.now())) }
     }
 
     @Test
@@ -193,13 +193,13 @@ abstract class ConversationRepositoryContractTests {
         val c = newConversation("c1", timestamp = timeProvider.now())
         repository.create(c)
         // append 5 messages alternating user/assistant
-        repository.appendEvent("c1", userMessage("e1", "m1", timestamp = timeProvider.now()))
-        repository.appendEvent("c1", assistantMessage("e2", "m2", timestamp = timeProvider.now()))
-        repository.appendEvent("c1", userMessage("e3", "m3", timestamp = timeProvider.now()))
-        repository.appendEvent("c1", assistantMessage("e4", "m4", timestamp = timeProvider.now()))
-        repository.appendEvent("c1", userMessage("e5", "m5", timestamp = timeProvider.now()))
+        repository.appendAction("c1", userMessage("e1", "m1", timestamp = timeProvider.now()))
+        repository.appendAction("c1", assistantMessage("e2", "m2", timestamp = timeProvider.now()))
+        repository.appendAction("c1", userMessage("e3", "m3", timestamp = timeProvider.now()))
+        repository.appendAction("c1", assistantMessage("e4", "m4", timestamp = timeProvider.now()))
+        repository.appendAction("c1", userMessage("e5", "m5", timestamp = timeProvider.now()))
 
-        val all = repository.getEvents("c1").first()
+        val all = repository.getActions("c1").first()
         assertEquals(5, all.size)
         assertEquals(listOf("e1", "e2", "e3", "e4", "e5"), all.map { it.id })
     }

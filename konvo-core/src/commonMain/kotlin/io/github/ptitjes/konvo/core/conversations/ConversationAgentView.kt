@@ -11,7 +11,7 @@ interface ConversationAgentView {
 
     val participant: Participant.Agent
 
-    val events: SharedFlow<Event<*>>
+    val events: SharedFlow<Action<*>>
 
-    suspend fun send(payload: Event.Agent)
+    suspend fun send(payload: Action.Agent)
 }

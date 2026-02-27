@@ -5,13 +5,13 @@ import kotlinx.serialization.*
 import kotlin.reflect.*
 
 @Serializable
-sealed interface Messaging : Event.Payload {
+sealed interface Messaging : Action.Payload {
 
     @Serializable
     @SerialName("message")
     data class Message(
         val content: List<Part>,
-    ) : Messaging, Event.Agent, Event.User
+    ) : Messaging, Action.Agent, Action.User
 
     @Serializable
     sealed interface Part {

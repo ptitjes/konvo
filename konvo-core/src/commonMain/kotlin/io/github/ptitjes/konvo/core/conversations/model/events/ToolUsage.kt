@@ -5,26 +5,26 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
 @Serializable
-sealed interface ToolUsage : Event.Payload {
+sealed interface ToolUsage : Action.Payload {
 
     @Serializable
     @SerialName("tool-usage-vetting")
     data class Vetting(
         val calls: List<Call>,
-    ) : ToolUsage, Event.Agent
+    ) : ToolUsage, Action.Agent
 
     @Serializable
     @SerialName("tool-usage-approval")
     data class Approval(
         val approvals: List<Pair<Call, Boolean>>,
-    ) : ToolUsage, Event.User
+    ) : ToolUsage, Action.User
 
     @Serializable
     @SerialName("tool-usage-notification")
     data class Notification(
         val call: Call,
         val result: CallResult,
-    ) : ToolUsage, Event.Agent
+    ) : ToolUsage, Action.Agent
 
     @Serializable
     data class Call(

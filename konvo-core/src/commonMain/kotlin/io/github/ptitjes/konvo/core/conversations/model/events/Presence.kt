@@ -16,16 +16,16 @@ UserPresence
     ViewIndication
  */
 @Serializable
-sealed interface Presence : Event.Payload {
+sealed interface Presence : Action.Payload {
     @Serializable
     @SerialName("presence-joining")
-    data object Joining : Presence, Event.Agent, Event.User
+    data object Joining : Presence, Action.Agent, Action.User
 
     @Serializable
     @SerialName("presence-leaving")
-    data object Leaving : Presence, Event.Agent, Event.User
+    data object Leaving : Presence, Action.Agent, Action.User
 
     @Serializable
     @SerialName("presence-view-notification")
-    data class ViewNotification(val upToTimestamp: Instant) : Presence, Event.User
+    data class ViewNotification(val upToTimestamp: Instant) : Presence, Action.User
 }

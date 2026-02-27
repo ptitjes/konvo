@@ -15,7 +15,7 @@ import kotlinx.io.files.*
 import ai.koog.prompt.message.ContentPart as KoogContentPart
 import ai.koog.prompt.message.Message as KoogMessage
 
-internal suspend fun Event<Message>.toKoogMessage(): KoogMessage = when (sender) {
+internal suspend fun Action<Message>.toKoogMessage(): KoogMessage = when (sender) {
     is Participant.User -> KoogMessage.User(
         parts = payload.content.map { it.toKoogContentPart() },
         metaInfo = RequestMetaInfo(timestamp = timestamp.toDeprecatedInstant()),

@@ -1,7 +1,6 @@
 package io.github.ptitjes.konvo.core.conversations.storage.inmemory
 
 import io.github.ptitjes.konvo.core.conversations.model.*
-import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
 import kotlinx.atomicfu.*
@@ -17,12 +16,12 @@ class InMemoryConversationRepository(
     // Conversation id -> Conversation
     private val conversations = atomic<Map<String, ConversationDigest>>(emptyMap())
 
-    // Conversation id -> Events list
-    private val events = atomic<Map<String, List<Event<*>>>>(emptyMap())
+    // Conversation id -> Actions list
+    private val actions = atomic<Map<String, List<Action<*>>>>(emptyMap())
 
     // Reactive state
     private val conversationsState = MutableStateFlow<Map<String, ConversationDigest>>(emptyMap())
-    private val eventsState = MutableStateFlow<Map<String, List<Event<*>>>>(emptyMap())
+    private val actionsState = MutableStateFlow<Map<String, List<Action<*>>>>(emptyMap())
 
     override suspend fun create(digest: ConversationDigest) {
         val newConversations = conversations.updateAndGet { prev ->
@@ -32,9 +31,9 @@ class InMemoryConversationRepository(
             prev + (digest.id to digest)
         }
         conversationsState.value = newConversations
-        // Initialize empty events list
-        val newEvents = events.updateAndGet { prev -> prev + (digest.id to emptyList()) }
-        eventsState.value = newEvents
+        // Initialize empty actions list
+        val newActions = actions.updateAndGet { prev -> prev + (digest.id to emptyList()) }
+        actionsState.value = newActions
     }
 
     override fun getDigest(conversationId: String): Flow<ConversationDigest> =
@@ -52,13 +51,13 @@ class InMemoryConversationRepository(
             }
         }.distinctUntilChanged()
 
-    override suspend fun appendEvent(conversationId: String, event: Event<*>) {
-        // Append event
-        val updatedEvents = events.updateAndGet { prev ->
+    override suspend fun appendAction(conversationId: String, action: Action<*>) {
+        // Append action
+        val updatedActions = actions.updateAndGet { prev ->
             val current = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
-            prev + (conversationId to (current + event))
+            prev + (conversationId to (current + action))
         }[conversationId]!!
-        eventsState.value = events.value
+        actionsState.value = actions.value
     }
 
     override suspend fun updateDigest(digest: ConversationDigest) {
@@ -71,18 +70,18 @@ class InMemoryConversationRepository(
 
     override suspend fun delete(id: String) {
         conversations.value = conversations.value - id
-        events.value = events.value - id
+        actions.value = actions.value - id
         conversationsState.value = conversations.value
-        eventsState.value = events.value
+        actionsState.value = actions.value
     }
 
     override suspend fun deleteAll() {
         conversations.value = emptyMap()
-        events.value = emptyMap()
+        actions.value = emptyMap()
         conversationsState.value = conversations.value
-        eventsState.value = events.value
+        actionsState.value = actions.value
     }
 
-    override fun getEvents(conversationId: String): Flow<List<Event<*>>> =
-        eventsState.map { it[conversationId] ?: emptyList() }.distinctUntilChanged()
+    override fun getActions(conversationId: String): Flow<List<Action<*>>> =
+        actionsState.map { it[conversationId] ?: emptyList() }.distinctUntilChanged()
 }

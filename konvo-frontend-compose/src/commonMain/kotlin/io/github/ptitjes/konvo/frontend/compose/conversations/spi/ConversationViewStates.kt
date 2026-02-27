@@ -21,13 +21,13 @@ sealed interface ConversationViewStates {
 
     @Marker
     abstract class ProducerScope<Builder> {
-        inline fun <reified P : Event.Payload> onEvent(
-            noinline action: suspend Builder.(Event<P>) -> Unit,
+        inline fun <reified P : Action.Payload> onEvent(
+            noinline action: suspend Builder.(Action<P>) -> Unit,
         ) = onEvent(P::class, action)
 
-        abstract fun <P : Event.Payload> onEvent(
+        abstract fun <P : Action.Payload> onEvent(
             klass: KClass<P>,
-            action: suspend Builder.(Event<P>) -> Unit,
+            action: suspend Builder.(Action<P>) -> Unit,
         )
     }
 
@@ -51,13 +51,13 @@ sealed interface ConversationViewStates {
 
     @Marker
     abstract class UpdaterScope<S, T : S> {
-        inline fun <reified Q : Event.Payload> onEvent(
-            noinline handler: suspend UpdateHandlerScope.(T, Event<Q>) -> T,
+        inline fun <reified Q : Action.Payload> onEvent(
+            noinline handler: suspend UpdateHandlerScope.(T, Action<Q>) -> T,
         ) = onEvent(Q::class, handler)
 
-        abstract fun <Q : Event.Payload> onEvent(
+        abstract fun <Q : Action.Payload> onEvent(
             klass: KClass<Q>,
-            handler: suspend UpdateHandlerScope.(T, Event<Q>) -> T,
+            handler: suspend UpdateHandlerScope.(T, Action<Q>) -> T,
         )
     }
 

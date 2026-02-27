@@ -23,13 +23,13 @@ internal data class ConversationDto(
 )
 
 @Serializable
-@SerialName("event")
-internal data class EventDto(
+@SerialName("action")
+internal data class ActionDto(
     val id: String,
     @Contextual val timestamp: Instant,
     val sender: ParticipantDto,
     val recipients: Set<ParticipantDto>? = null,
-    val payload: Event.Payload,
+    val payload: Action.Payload,
 )
 
 @Serializable
@@ -132,19 +132,19 @@ internal object DtoMappers {
         is ParticipantDto.Agent -> Participant.Agent(p.id)
     }
 
-    fun toDto(e: Event<*>): EventDto = EventDto(
-        e.id,
-        e.timestamp,
-        toDto(e.sender),
-        e.recipients?.map(::toDto)?.toSet(),
-        e.payload,
+    fun toDto(a: Action<*>): ActionDto = ActionDto(
+        a.id,
+        a.timestamp,
+        toDto(a.sender),
+        a.recipients?.map(::toDto)?.toSet(),
+        a.payload,
     )
 
-    fun fromDto(e: EventDto): Event<*> = Event(
-        e.id,
-        e.timestamp,
-        fromDto(e.sender),
-        e.recipients?.map(::fromDto)?.toSet(),
-        e.payload,
+    fun fromDto(a: ActionDto): Action<*> = Action(
+        a.id,
+        a.timestamp,
+        fromDto(a.sender),
+        a.recipients?.map(::fromDto)?.toSet(),
+        a.payload,
     )
 }

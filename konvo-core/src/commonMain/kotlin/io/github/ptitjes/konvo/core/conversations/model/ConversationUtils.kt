@@ -11,7 +11,7 @@ object ConversationUtils {
      * Compute a last message preview from the last user or assistant message found in [events].
      * Returns null if there is no message yet.
      */
-    fun computeLastMessagePreview(events: List<Event<*>>, maxLength: Int = 500): String? {
+    fun computeLastMessagePreview(events: List<Action<*>>, maxLength: Int = 500): String? {
         val lastMsg = events.asReversed().firstOrNull { e ->
             e.payload is Messaging.Message
         } ?: return null

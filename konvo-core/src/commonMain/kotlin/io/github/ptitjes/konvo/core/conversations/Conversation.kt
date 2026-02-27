@@ -17,7 +17,7 @@ sealed interface ConversationState {
     data object Loading : ConversationState
     data class Loaded(
         val digest: ConversationDigest,
-        val transcript: List<Event<*>>,
+        val transcript: List<Action<*>>,
     ) : ConversationState
 }
 
@@ -46,12 +46,12 @@ class Conversation internal constructor(
     private fun newTimestamp(): Instant = timeProvider.now()
 
     private val _state = MutableStateFlow<ConversationState>(ConversationState.Loading)
-    private val _events = MutableSharedFlow<Event<*>>()
+    private val _events = MutableSharedFlow<Action<*>>()
 
     init {
         coroutineScope.launch {
             val digest = repository.getDigest(id).stateIn(this)
-            val transcript = repository.getEvents(id).stateIn(this)
+            val transcript = repository.getActions(id).stateIn(this)
 
             // Process repository changes
             launch {
@@ -69,7 +69,7 @@ class Conversation internal constructor(
             launch {
                 _events.collect { event ->
                     // Persist new events to repository
-                    repository.appendEvent(id, event)
+                    repository.appendAction(id, event)
                 }
             }
 
@@ -82,7 +82,7 @@ class Conversation internal constructor(
         job.cancel()
     }
 
-    private fun restoreAgents(transcript: List<Event<*>>) {
+    private fun restoreAgents(transcript: List<Action<*>>) {
         val joins = transcript.filter {
             it.payload is Presence.Joining && it.sender is Participant.Agent
         }
@@ -123,11 +123,11 @@ class Conversation internal constructor(
         override val participant: Participant.Agent,
     ) : ConversationAgentView {
 
-        override val events: SharedFlow<Event<*>> get() = _events
+        override val events: SharedFlow<Action<*>> get() = _events
 
-        override suspend fun send(payload: Event.Agent) {
+        override suspend fun send(payload: Action.Agent) {
             _events.emit(
-                Event(
+                Action(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
@@ -143,11 +143,11 @@ class Conversation internal constructor(
 
         override val state: StateFlow<ConversationState> get() = _state
 
-        override val events: SharedFlow<Event<*>> get() = _events
+        override val events: SharedFlow<Action<*>> get() = _events
 
-        override suspend fun send(payload: Event.User) {
+        override suspend fun send(payload: Action.User) {
             _events.emit(
-                Event(
+                Action(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
