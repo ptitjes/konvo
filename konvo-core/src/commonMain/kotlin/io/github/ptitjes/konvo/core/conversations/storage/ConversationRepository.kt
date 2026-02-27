@@ -35,7 +35,7 @@ interface ConversationRepository {
      */
     @Deprecated("Use getTranscript instead", ReplaceWith("getTranscript(conversationId)"))
     fun getActions(conversationId: String): Flow<List<Action<*>>> =
-        getTranscript(conversationId).map { it.filterIsInstance<Action<*>>() }
+        getTranscript(conversationId).map { it.actions }
 
     /**
      * Creates a new conversation with the given [digest].

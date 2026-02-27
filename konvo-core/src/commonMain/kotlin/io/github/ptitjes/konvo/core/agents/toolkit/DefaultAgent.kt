@@ -147,12 +147,12 @@ internal class DefaultAgent(
 
     override suspend fun restoreSession(
         transcript: ConversationTranscript,
-        conversation: InteractionDevice.Agent,
+        device: InteractionDevice.Agent,
     ): Unit = coroutineScope {
         // TODO implement this properly: restore state and prompt
 
         // Filter actions from transcript for message processing
-        val actions = transcript.filterIsInstance<Action<*>>()
+        val actions = transcript.actions
 
         val messages = actions.mapNotNull { event ->
             @Suppress("UNCHECKED_CAST")
@@ -167,14 +167,14 @@ internal class DefaultAgent(
         }
 
         if (actions.isEmpty()) {
-            conversation.act(Presence.Joining)
+            device.act(Presence.Joining)
         }
 
         launch {
             val conversationJustStarted = prompt.messages.size == 1
             if (conversationJustStarted) {
                 welcomeMessage?.let { content ->
-                    conversation.act(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
+                    device.act(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
                     prompt = prompt(prompt) {
                         message(
                             KoogMessage.Assistant(
@@ -186,7 +186,7 @@ internal class DefaultAgent(
                 }
             }
 
-            conversation.act(
+            device.act(
                 AgentCapabilities.Messaging(
                     supportedMediaTypes = listOf(),
                 )
@@ -196,31 +196,31 @@ internal class DefaultAgent(
                 mcpHostSession?.addServers(mcpServerNames)
                 val tools = mcpHostSession?.tools?.first()
 
-                conversation.actions.buffer(Channel.UNLIMITED).collect { event ->
+                device.actions.buffer(Channel.UNLIMITED).collect { event ->
                     when (val details = event.payload) {
                         is Messaging.Message -> {
                             if (event.sender is Participant.User) {
                                 // Start a new interaction for processing this message
-                                val interaction = conversation.startInteraction(
+                                val interaction = device.startInteraction(
                                     protocol = AgentProcessing.TurnBased,
                                     parent = event.interaction,
                                     trigger = event
                                 )
 
-                                conversation.act(AgentProcessing.Start, interaction)
-                                val agent = buildAgent(tools, conversation)
+                                device.act(AgentProcessing.Start, interaction)
+                                val agent = buildAgent(tools, device)
                                 @Suppress("UNCHECKED_CAST") val result =
                                     agent.run((event as Action<Messaging.Message>).toKoogMessage() as KoogMessage.User)
                                 result.forEach {
-                                    conversation.act(
+                                    device.act(
                                         Messaging.Message(content = listOf(Messaging.Part.Text(it.content))),
                                         interaction
                                     )
                                 }
-                                conversation.act(AgentProcessing.Completion, interaction)
+                                device.act(AgentProcessing.Completion, interaction)
 
                                 // End the interaction
-                                conversation.endInteraction(interaction)
+                                device.endInteraction(interaction)
                             }
                         }
 

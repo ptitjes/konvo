@@ -103,7 +103,7 @@ abstract class ConversationRepositoryContractTests {
         assertEquals(0, updated.messageCount)
         assertEquals(null, updated.lastMessagePreview)
         val transcript = repository.getTranscript(conversation.id).first()
-        assertEquals(1, transcript.size)
+        assertEquals(1, transcript.entries.size)
     }
 
     @Test
@@ -200,7 +200,7 @@ abstract class ConversationRepositoryContractTests {
         repository.appendEntry("c1", userMessage("e5", "m5", timestamp = timeProvider.now()))
 
         val transcript = repository.getTranscript("c1").first()
-        assertEquals(5, transcript.size)
-        assertEquals(listOf("e1", "e2", "e3", "e4", "e5"), transcript.filterIsInstance<Action<*>>().map { it.id })
+        assertEquals(5, transcript.entries.size)
+        assertEquals(listOf("e1", "e2", "e3", "e4", "e5"), transcript.actions.map { it.id })
     }
 }
