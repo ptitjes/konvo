@@ -50,18 +50,15 @@ class Conversation internal constructor(
 
     init {
         coroutineScope.launch {
-            val digest = repository.getDigest(id).stateIn(this)
-            val transcript = repository.getActions(id).stateIn(this)
+            val transcript = repository.getTranscript(id).stateIn(this)
 
             // Process repository changes
             launch {
-                combine(digest, transcript) { digest, transcript ->
-                    ConversationState.Loaded(
-                        digest = digest,
-                        transcript = transcript,
+                transcript.collect { transcript ->
+                    _state.value = ConversationState.Loaded(
+                        digest = transcript.digest,
+                        transcript = transcript.entries.filterIsInstance<Action<*>>(),
                     )
-                }.collect {
-                    _state.value = it
                 }
             }
 
@@ -69,11 +66,7 @@ class Conversation internal constructor(
             launch {
                 _events.collect { entry ->
                     // Persist new entries to repository
-                    // TODO: In Phase 3, we'll update the repository to handle all entry types
-                    when (entry) {
-                        is Action<*> -> repository.appendAction(id, entry)
-                        is InteractionBoundary -> {} // Skip for now, will be persisted in Phase 3
-                    }
+                    repository.appendEntry(id, entry)
                 }
             }
 
