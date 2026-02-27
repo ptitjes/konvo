@@ -656,7 +656,7 @@ The implementation is divided into four main phases:
 
 ### 4.1 Add nullable `interaction` property to `Action`
 
-- [ ] **Update Action class**
+- [x] **Update Action class**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/model/Action.kt`
   - Add property: `val interaction: Interaction?`
   - Update constructor to accept this parameter
@@ -669,6 +669,7 @@ The implementation is divided into four main phases:
 - [ ] **Verify interactionId property exists**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Confirm `val interactionId: String?` is present in `ActionDto`
+  - Note: Deferred - serialization support will be added in future phase
 
 ---
 
@@ -678,16 +679,17 @@ The implementation is divided into four main phases:
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Confirm `toDto` serializes `action.interaction?.id` as `interactionId`
   - Confirm `fromDto` deserializes using `DeserializationContext.getOrCreateInteraction`
+  - Note: Deferred - serialization support will be added in future phase
 
 ---
 
 ### 4.4 Update InteractionDevice.Agent.act to accept interaction
 
-- [ ] **Update method signature**
+- [x] **Update method signature**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/InteractionDevice.kt`
   - Change: `suspend fun act(payload: Action.Agent)` → `suspend fun act(payload: Action.Agent, interaction: Interaction? = null)`
 
-- [ ] **Update implementation in Conversation.AgentViewImpl**
+- [x] **Update implementation in Conversation.AgentViewImpl**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/Conversation.kt`
   - Update `act` method to accept and use `interaction` parameter
   - Pass `interaction` when creating `Action` instance
@@ -696,11 +698,11 @@ The implementation is divided into four main phases:
 
 ### 4.5 Update InteractionDevice.User.act to accept interaction
 
-- [ ] **Update method signature**
+- [x] **Update method signature**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/InteractionDevice.kt`
   - Keep: `suspend fun act(payload: Action.User, interaction: Interaction? = null)` (already has default)
 
-- [ ] **Update implementation in Conversation.UserViewImpl**
+- [x] **Update implementation in Conversation.UserViewImpl**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/Conversation.kt`
   - Update `act` method implementation
   - Pass `interaction` when creating `Action` instance

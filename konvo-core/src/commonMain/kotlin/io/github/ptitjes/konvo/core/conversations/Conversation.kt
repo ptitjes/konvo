@@ -127,13 +127,14 @@ class Conversation internal constructor(
                 replay = 0
             )
 
-        override suspend fun act(payload: Action.Agent) {
+        override suspend fun act(payload: Action.Agent, interaction: Interaction?) {
             _events.emit(
                 Action(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
                     payload = payload,
+                    interaction = interaction,
                 )
             )
         }
@@ -183,13 +184,14 @@ class Conversation internal constructor(
                 replay = 0
             )
 
-        override suspend fun act(payload: Action.User) {
+        override suspend fun act(payload: Action.User, interaction: Interaction?) {
             _events.emit(
                 Action(
                     id = newId(),
                     timestamp = newTimestamp(),
                     sender = participant,
                     payload = payload,
+                    interaction = interaction,
                 )
             )
         }
