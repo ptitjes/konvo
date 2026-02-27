@@ -5,13 +5,17 @@ import kotlinx.coroutines.flow.*
 
 /**
  * Provides a view of the conversation for AI agents.
- * This interface allows agents to send assistant events into a conversation.
+ * This interface allows agents to send assistant actions into a conversation.
+ *
+ * @deprecated Use InteractionDevice.Agent instead
  */
-interface ConversationAgentView {
+@Deprecated(
+    "Use InteractionDevice.Agent instead",
+    ReplaceWith("InteractionDevice.Agent", "io.github.ptitjes.konvo.core.conversations.InteractionDevice")
+)
+interface ConversationAgentView : InteractionDevice.Agent {
 
-    val participant: Participant.Agent
-
+    @Deprecated("Use actions instead", ReplaceWith("actions"))
     val events: SharedFlow<Action<*>>
-
-    suspend fun send(payload: Action.Agent)
+        get() = actions
 }

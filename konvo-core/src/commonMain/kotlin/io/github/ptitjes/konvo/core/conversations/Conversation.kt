@@ -121,9 +121,9 @@ class Conversation internal constructor(
 
     private inner class AgentViewImpl(
         override val participant: Participant.Agent,
-    ) : ConversationAgentView {
+    ) : InteractionDevice.Agent {
 
-        override val events: SharedFlow<Action<*>> get() = _events
+        override val actions: SharedFlow<Action<*>> get() = _events
 
         override suspend fun send(payload: Action.Agent) {
             _events.emit(

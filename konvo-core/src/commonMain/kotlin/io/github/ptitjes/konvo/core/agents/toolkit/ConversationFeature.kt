@@ -11,7 +11,7 @@ import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.tools.*
 
 class ConversationFeature(
-    val view: ConversationAgentView,
+    val view: InteractionDevice.Agent,
     val tools: List<ToolCard>,
 ) {
     companion object Feature : AIAgentGraphFeature<ConversationFeatureConfig, ConversationFeature> {

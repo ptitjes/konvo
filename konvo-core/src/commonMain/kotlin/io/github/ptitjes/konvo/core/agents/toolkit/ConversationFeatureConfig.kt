@@ -5,6 +5,6 @@ import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.tools.*
 
 class ConversationFeatureConfig : FeatureConfig() {
-    var conversationViewProvider: () -> ConversationAgentView = { error("Not initialized") }
+    var conversationViewProvider: () -> InteractionDevice.Agent = { error("Not initialized") }
     var tools: List<ToolCard> = emptyList()
 }
