@@ -143,7 +143,7 @@ class Conversation internal constructor(
 
         override val state: StateFlow<ConversationState> get() = _state
 
-        override val events: SharedFlow<Action<*>> get() = _events
+        override val actions: SharedFlow<Action<*>> get() = _events
 
         override suspend fun send(payload: Action.User) {
             _events.emit(
