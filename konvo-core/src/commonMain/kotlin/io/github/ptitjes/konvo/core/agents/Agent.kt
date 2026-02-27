@@ -5,5 +5,5 @@ import io.github.ptitjes.konvo.core.conversations.model.*
 
 interface Agent {
     // TODO this should return a AgentSession
-    suspend fun restoreSession(transcript: List<Action<*>>, conversation: InteractionDevice.Agent)
+    suspend fun restoreSession(transcript: ConversationTranscript, conversation: InteractionDevice.Agent)
 }

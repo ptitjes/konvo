@@ -37,6 +37,11 @@ class FileConversationRepository(
         serializersModule = CoreActions
     }
 
+    init {
+        // Register known interaction protocols for deserialization
+        InteractionProtocols.register(AgentProcessing.TurnBased)
+    }
+
     // Internal ticker to drive flows on local mutations
     private val changeTicker = MutableStateFlow(0L)
 
@@ -178,13 +183,16 @@ class FileConversationRepository(
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
 
-        // For now, only persist Actions to file. InteractionBoundaries are skipped.
-        // Full serialization support will be added in a future phase.
-        if (entry !is Action<*>) return
+        // Serialize entry to DTO
+        val dto: ConversationEntryDto = when (entry) {
+            is Action<*> -> DtoMappers.toDto(entry)
+            is InteractionBoundary.Start -> DtoMappers.toDto(entry)
+            is InteractionBoundary.End -> DtoMappers.toDto(entry)
+        }
 
-        // Append action to NDJSON by reading current content and rewriting (for portability)
+        // Append entry to NDJSON by reading current content and rewriting (for portability)
         val eventsFile = eventsPath(conversationId)
-        val newLine = json.encodeToString(ActionDto.serializer(), DtoMappers.toDto(entry)) + "\n"
+        val newLine = json.encodeToString(ConversationEntryDto.serializer(), dto) + "\n"
         val existingContent = if (fileSystem.exists(eventsFile)) {
             fileSystem.source(eventsFile).buffered().use(Source::readString)
         } else ""
@@ -264,27 +272,38 @@ class FileConversationRepository(
         changeTicker.value = changeTicker.value + 1
     }
 
-    private fun readActions(conversationId: String): List<Action<*>> {
+    private fun readTranscript(conversationId: String): List<ConversationEntry> {
         val path = eventsPath(conversationId)
         return if (!fileSystem.exists(path)) emptyList()
         else buildList {
+            val context = DeserializationContext()
             fileSystem.source(path).buffered().use { source ->
                 for (line in source.readLines().filter { it.isNotBlank() }) {
-                    add(
-                        runCatching { DtoMappers.fromDto(json.decodeFromString<ActionDto>(line)) }
-                            .getOrElse { continue } // skip corrupt line
-                    )
+                    runCatching {
+                        val dto = json.decodeFromString<ConversationEntryDto>(line)
+                        when (dto) {
+                            is ActionDto -> DtoMappers.fromDto(dto, context)
+                            is InteractionBoundaryDto.Start -> DtoMappers.fromDto(dto, context)
+                            is InteractionBoundaryDto.End -> DtoMappers.fromDto(dto, context)
+                        }
+                    }.onSuccess { add(it) }
+                        .onFailure { /* skip corrupt line */ }
                 }
             }
         }
     }
 
+    @Deprecated("Use readTranscript instead")
+    private fun readActions(conversationId: String): List<Action<*>> {
+        return readTranscript(conversationId).filterIsInstance<Action<*>>()
+    }
+
     override fun getTranscript(conversationId: String): Flow<ConversationTranscript> =
         combine(
             changeTicker.map { readConversation(conversationId) }.onStart { emit(readConversation(conversationId)) },
-            changeTicker.map { readActions(conversationId) }.onStart { emit(readActions(conversationId)) }
-        ) { digest, actions ->
-            digest?.let { ConversationTranscript(it, actions) }
+            changeTicker.map { readTranscript(conversationId) }.onStart { emit(readTranscript(conversationId)) }
+        ) { digest, entries ->
+            digest?.let { ConversationTranscript(it, entries) }
         }.filterNotNull().distinctUntilChanged()
 
     @Deprecated("Use getTranscript instead", ReplaceWith("getTranscript(conversationId)"))

@@ -17,7 +17,7 @@ sealed interface ConversationState {
     data object Loading : ConversationState
     data class Loaded(
         val digest: ConversationDigest,
-        val transcript: List<Action<*>>,
+        val transcript: ConversationTranscript,
     ) : ConversationState
 }
 
@@ -57,7 +57,7 @@ class Conversation internal constructor(
                 transcript.collect { transcript ->
                     _state.value = ConversationState.Loaded(
                         digest = transcript.digest,
-                        transcript = transcript.entries.filterIsInstance<Action<*>>(),
+                        transcript = transcript,
                     )
                 }
             }
@@ -79,8 +79,8 @@ class Conversation internal constructor(
         job.cancel()
     }
 
-    private fun restoreAgents(transcript: List<Action<*>>) {
-        val joins = transcript.filter {
+    private fun restoreAgents(transcript: ConversationTranscript) {
+        val joins = transcript.filterIsInstance<Action<*>>().filter {
             it.payload is Presence.Joining && it.sender is Participant.Agent
         }
     }

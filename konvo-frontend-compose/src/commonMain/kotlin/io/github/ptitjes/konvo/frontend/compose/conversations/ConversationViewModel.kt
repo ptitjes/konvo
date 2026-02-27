@@ -58,7 +58,9 @@ class ConversationViewModel(
 
             val state = conversationUserView.state.filterIsInstance<ConversationState.Loaded>().first()
 
-            stateUpdater.handleTranscript(state.transcript)
+            // Extract actions from transcript for view state processing
+            val actions = state.transcript.filterIsInstance<Action<*>>()
+            stateUpdater.handleTranscript(actions)
             updateStateAndStoredDigest()
 
             transcriptHandled.complete()
