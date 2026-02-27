@@ -434,14 +434,14 @@ The implementation is divided into four main phases:
 
 ### 3.3 Update FileConversationRepository implementation
 
-**Note**: Phase 3.3 has been partially implemented with a simplified approach:
-- Implemented `getTranscript()` to return `ConversationTranscript` with Actions only
-- Implemented `appendEntry()` but only persists Actions to disk (InteractionBoundaries are skipped)
-- Full serialization support for InteractionBoundaries will be added in a future phase
+**Note**: Phase 3.3 is now fully implemented:
+- Implemented `getTranscript()` to return `ConversationTranscript` with full entries
+- Implemented `appendEntry()` to persist both Actions and InteractionBoundaries
+- Full serialization/deserialization support for InteractionBoundaries is complete
 
 #### 3.3.1 Add DTOs for InteractionBoundary
 
-- [ ] **Add InteractionBoundaryDto**
+- [x] **Add InteractionBoundaryDto**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Create sealed interface:
     ```kotlin
@@ -471,7 +471,7 @@ The implementation is divided into four main phases:
     }
     ```
 
-- [ ] **Add ConversationEntryDto union**
+- [x] **Add ConversationEntryDto union**
   - Same file as above
   - Create sealed interface to represent both Action and InteractionBoundary:
     ```kotlin
@@ -495,11 +495,11 @@ The implementation is divided into four main phases:
 
 #### 3.3.3 Update DTO mappers
 
-- [ ] **Add interaction property to ActionDto**
+- [x] **Add interaction property to ActionDto**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Add field to `ActionDto`: `val interactionId: String?`
 
-- [ ] **Add InteractionProtocolDto cache**
+- [x] **Add InteractionProtocolDto cache**
   - Same file as above
   - Create object to maintain known protocols:
     ```kotlin
@@ -514,7 +514,7 @@ The implementation is divided into four main phases:
     }
     ```
 
-- [ ] **Update DtoMappers for Interaction and InteractionBoundary**
+- [x] **Update DtoMappers for Interaction and InteractionBoundary**
   - Same file as above
   - Add mapper for `InteractionBoundary.Start`:
     ```kotlin
@@ -537,14 +537,14 @@ The implementation is divided into four main phases:
     }
     ```
 
-- [ ] **Update ActionDto mapper to include interactionId**
+- [x] **Update ActionDto mapper to include interactionId**
   - Same file as above
   - Update `toDto(a: Action<*>)` to serialize `a.interaction?.id`
   - Update `fromDto(a: ActionDto, context: DeserializationContext)` to resolve interaction from context
 
 #### 3.3.4 Update repository methods
 
-- [ ] **Update `readTranscript` method**
+- [x] **Update `readTranscript` method**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/FileConversationRepository.kt`
   - Rename `readActions` → `readTranscript`
   - Create `DeserializationContext` instance
@@ -554,21 +554,22 @@ The implementation is divided into four main phases:
   - Build list of `ConversationEntry` (both `Action` and `InteractionBoundary`)
   - Return `ConversationTranscript` with digest and entries
 
-- [ ] **Update `getTranscript` method**
+- [x] **Update `getTranscript` method**
   - Same file as above
   - Change return type: `Flow<List<Action<*>>>` → `Flow<ConversationTranscript>`
   - Load digest within the flow
   - Call `readTranscript` and construct `ConversationTranscript` instance
 
-- [ ] **Update `appendEntry` method**
+- [x] **Update `appendEntry` method**
   - Same file as above
   - Rename `appendAction` → `appendEntry`
   - Update parameter: `action: Action<*>` → `entry: ConversationEntry`
   - Handle serialization of both `Action` and `InteractionBoundary`
   - Use polymorphic serialization or manual type checking
 
-- [ ] **Update event file naming (optional)**
+- [x] **Update event file naming (optional)**
   - Consider renaming `events.ndjson` → `transcript.ndjson` or keep for compatibility
+  - Decision: Kept as `events.ndjson` for compatibility
 
 ---
 
@@ -615,7 +616,7 @@ The implementation is divided into four main phases:
 - [x] **Update restoreAgents method**
   - Kept parameter as `restoreAgents(transcript: List<Action<*>>)` since we filter from ConversationTranscript
 
-- [ ] **Update Agent interface**
+- [x] **Update Agent interface**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/agents/Agent.kt`
   - Update method: `suspend fun restoreSession(transcript: List<Action<*>>, ...)` → `suspend fun restoreSession(transcript: ConversationTranscript, ...)`
 
@@ -623,7 +624,7 @@ The implementation is divided into four main phases:
 
 ### 3.6 Update agent implementations
 
-- [ ] **Update DefaultAgent**
+- [x] **Update DefaultAgent**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/agents/toolkit/DefaultAgent.kt`
   - Update `restoreSession` parameter type: `transcript: List<Action<*>>` → `transcript: ConversationTranscript`
   - Update internal logic to work with transcript (filter actions, ignore boundaries)
@@ -666,20 +667,20 @@ The implementation is divided into four main phases:
 
 ### 4.2 Update ActionDto (already done in Phase 3.3.3)
 
-- [ ] **Verify interactionId property exists**
+- [x] **Verify interactionId property exists**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Confirm `val interactionId: String?` is present in `ActionDto`
-  - Note: Deferred - serialization support will be added in future phase
+  - Complete: serialization support fully implemented
 
 ---
 
 ### 4.3 Update repository serialization (already done in Phase 3.3.3)
 
-- [ ] **Verify interaction serialization in mappers**
+- [x] **Verify interaction serialization in mappers**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Confirm `toDto` serializes `action.interaction?.id` as `interactionId`
   - Confirm `fromDto` deserializes using `DeserializationContext.getOrCreateInteraction`
-  - Note: Deferred - serialization support will be added in future phase
+  - Complete: serialization support fully implemented
 
 ---
 
@@ -711,7 +712,7 @@ The implementation is divided into four main phases:
 
 ### 4.6 Update agent implementations to use interactions
 
-- [ ] **Update DefaultAgent to track current interaction**
+- [x] **Update DefaultAgent to track current interaction**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/agents/toolkit/DefaultAgent.kt`
   - Add field to track current interaction
   - Call `conversation.startInteraction(...)` when starting message processing
@@ -779,10 +780,11 @@ The implementation is divided into four main phases:
 
 ### 5.4 Update schema version
 
-- [ ] **Increment schema version**
+- [x] **Increment schema version**
   - File: `konvo-core/src/commonMain/kotlin/io/github/ptitjes/konvo/core/conversations/storage/files/Dto.kt`
   - Update `schemaVersion` in `ConversationDto` from `3` → `4`
   - Add comment explaining the change
+  - Complete: Schema version is now 4 with note "Schema 4: Added InteractionBoundary serialization support"
 
 ---
 
