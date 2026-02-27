@@ -235,9 +235,15 @@ class KonvoBot(
 
 private fun newChannelName(): String = "ai-${Uuid.random()}"
 
+private suspend fun InteractionDevice.User.sendMessage(content: List<Part>) =
+    act(Messaging.Message(content = content))
+
+private suspend fun InteractionDevice.User.sendToolUseApproval(approvals: Map<Call, Boolean>) =
+    act(ToolUsage.Approval(approvals = approvals.toList()))
+
 private fun MessageBuilder.conversationStartMessage(
     configuration: ConversationConfiguration,
-    conversation: ConversationUserView,
+    conversation: InteractionDevice.User,
     newChannel: TextChannel? = null,
     fullSizeCharacterAvatar: Boolean = false,
     konvo: Konvo,
@@ -321,7 +327,7 @@ private fun MessageBuilder.conversationStartMessage(
     }
 }
 
-private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: ConversationUserView): Nothing =
+private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: InteractionDevice.User): Nothing =
     coroutineScope {
         val assistantProcessing = typingToggler(this@handleAssistantEvents)
 
@@ -357,7 +363,7 @@ private suspend fun MessageChannelBehavior.handleAssistantEvents(conversation: C
     }
 
 private suspend fun MessageChannelBehavior.askForToolUse(
-    conversation: ConversationUserView,
+    conversation: InteractionDevice.User,
     details: ToolUsage.ToolUseVetting,
 ) {
     val done = CompletableDeferred<Unit>()

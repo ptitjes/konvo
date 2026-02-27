@@ -99,7 +99,7 @@ class Conversation internal constructor(
         newUserView().act(Presence.Joining)
     }
 
-    fun newUserView(): ConversationUserView {
+    fun newUserView(): InteractionDevice.User {
         checkConversationLoaded()
         // TODO get the current profile's user id
         val userParticipant = Participant.User(id = "user")
@@ -173,9 +173,9 @@ class Conversation internal constructor(
 
     private inner class UserViewImpl(
         override val participant: Participant.User,
-    ) : ConversationUserView {
+    ) : InteractionDevice.User {
 
-        override val state: StateFlow<ConversationState> get() = _state
+        val state: StateFlow<ConversationState> get() = _state
 
         override val actions: SharedFlow<Action<*>>
             get() = _events.filterIsInstance<Action<*>>().shareIn(
