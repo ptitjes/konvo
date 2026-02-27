@@ -330,6 +330,17 @@ private fun EditProviderSheetContent(
                         label = { Text(strings.models.googleApiKeyLabel) },
                     )
                 }
+
+                is MistralAI -> {
+                    OutlinedApiKeyField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = conf.apiKey,
+                        onValueChange = { newKey ->
+                            updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
+                        },
+                        label = { Text(strings.models.mistralAiApiKeyLabel) },
+                    )
+                }
             }
         },
         testResult = testResult,
@@ -352,8 +363,9 @@ private fun AddProviderSheetContent(
     var anthropicKey by remember { mutableStateOf("") }
     var openAIKey by remember { mutableStateOf("") }
     var googleKey by remember { mutableStateOf("") }
+    var mistralAIKey by remember { mutableStateOf("") }
 
-    val provider = remember(name, type, ollamaUrl, anthropicKey, openAIKey, googleKey) {
+    val provider = remember(name, type, ollamaUrl, anthropicKey, openAIKey, googleKey, mistralAIKey) {
         NamedModelProvider(
             name = name,
             configuration = when (type) {
@@ -361,6 +373,7 @@ private fun AddProviderSheetContent(
                 ProviderType.Anthropic -> Anthropic(apiKey = anthropicKey)
                 ProviderType.OpenAI -> OpenAI(apiKey = openAIKey)
                 ProviderType.Google -> Google(apiKey = googleKey)
+                ProviderType.MistralAI -> MistralAI(apiKey = mistralAIKey)
             },
         )
     }
@@ -409,6 +422,15 @@ private fun AddProviderSheetContent(
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
+
+                ProviderType.MistralAI -> {
+                    OutlinedApiKeyField(
+                        value = mistralAIKey,
+                        onValueChange = { mistralAIKey = it },
+                        label = { Text(strings.models.mistralAiApiKeyLabel) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         },
         testResult = testResult,
@@ -423,6 +445,7 @@ private fun ModelProviderConfiguration.toType(): ProviderType = when (this) {
     is Anthropic -> ProviderType.Anthropic
     is OpenAI -> ProviderType.OpenAI
     is Google -> ProviderType.Google
+    is MistralAI -> ProviderType.MistralAI
 }
 
 private fun ModelProviderConfiguration.isValid(): Boolean = when (this) {
@@ -430,6 +453,7 @@ private fun ModelProviderConfiguration.isValid(): Boolean = when (this) {
     is Anthropic -> this.apiKey.isNotBlank()
     is OpenAI -> this.apiKey.isNotBlank()
     is Google -> this.apiKey.isNotBlank()
+    is MistralAI -> this.apiKey.isNotBlank()
 }
 
 private fun ProviderType.newConfiguration(): ModelProviderConfiguration {
@@ -438,6 +462,7 @@ private fun ProviderType.newConfiguration(): ModelProviderConfiguration {
         ProviderType.Anthropic -> Anthropic(apiKey = "")
         ProviderType.OpenAI -> OpenAI(apiKey = "")
         ProviderType.Google -> Google(apiKey = "")
+        ProviderType.MistralAI -> MistralAI(apiKey = "")
     }
 }
 
@@ -577,7 +602,7 @@ private fun OutlinedNameField(
     )
 }
 
-private enum class ProviderType { Ollama, Anthropic, OpenAI, Google }
+private enum class ProviderType { Ollama, Anthropic, OpenAI, Google, MistralAI }
 
 @Composable
 private fun ModelProviderTypeSelector(

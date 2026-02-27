@@ -50,6 +50,7 @@ internal val HiStrings = Strings(
         anthropicApiKeyLabel = "Anthropic API कुंजी",
         openAiApiKeyLabel = "OpenAI API कुंजी",
         googleApiKeyLabel = "Google API कुंजी",
+        mistralAiApiKeyLabel = "Mistral AI API कुंजी",
         nameEmptyError = "नाम खाली नहीं हो सकता",
         nameUniqueError = "नाम अद्वितीय होना चाहिए",
         addProviderConfirmAria = "प्रदाता जोड़ें",

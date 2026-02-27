@@ -50,6 +50,7 @@ internal val FrStrings = Strings(
         anthropicApiKeyLabel = "Clé API Anthropic",
         openAiApiKeyLabel = "Clé API OpenAI",
         googleApiKeyLabel = "Clé API Google",
+        mistralAiApiKeyLabel = "Clé API Mistral AI",
         nameEmptyError = "Le nom ne peut pas être vide",
         nameUniqueError = "Le nom doit être unique",
         addProviderConfirmAria = "Ajouter un fournisseur",

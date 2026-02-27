@@ -50,6 +50,7 @@ internal val ZhStrings = Strings(
         anthropicApiKeyLabel = "Anthropic API 密钥",
         openAiApiKeyLabel = "OpenAI API 密钥",
         googleApiKeyLabel = "Google API 密钥",
+        mistralAiApiKeyLabel = "Mistral AI API 密钥",
         nameEmptyError = "名称不能为空",
         nameUniqueError = "名称必须唯一",
         addProviderConfirmAria = "添加提供商",

@@ -50,6 +50,7 @@ internal val EsStrings = Strings(
         anthropicApiKeyLabel = "Clave API de Anthropic",
         openAiApiKeyLabel = "Clave API de OpenAI",
         googleApiKeyLabel = "Clave API de Google",
+        mistralAiApiKeyLabel = "Clave API de Mistral AI",
         nameEmptyError = "El nombre no puede estar vacío",
         nameUniqueError = "El nombre debe ser único",
         addProviderConfirmAria = "Añadir proveedor",

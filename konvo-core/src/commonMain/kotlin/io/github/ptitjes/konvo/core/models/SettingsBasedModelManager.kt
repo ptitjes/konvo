@@ -154,4 +154,9 @@ private fun NamedModelProvider.buildModelProvider(): ModelProvider = when (confi
         name = name,
         apiKey = configuration.apiKey,
     )
+
+    is ModelProviderConfiguration.MistralAI -> MistralAIModelProvider(
+        name = name,
+        apiKey = configuration.apiKey,
+    )
 }

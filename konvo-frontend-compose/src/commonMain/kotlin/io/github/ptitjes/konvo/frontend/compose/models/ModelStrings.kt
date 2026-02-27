@@ -25,6 +25,7 @@ internal data class ModelStrings(
     val anthropicApiKeyLabel: String,
     val openAiApiKeyLabel: String,
     val googleApiKeyLabel: String,
+    val mistralAiApiKeyLabel: String,
     val nameEmptyError: String,
     val nameUniqueError: String,
     val addProviderConfirmAria: String,

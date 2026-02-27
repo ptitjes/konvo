@@ -50,6 +50,7 @@ internal val ArStrings = Strings(
         anthropicApiKeyLabel = "مفتاح Anthropic API",
         openAiApiKeyLabel = "مفتاح OpenAI API",
         googleApiKeyLabel = "مفتاح Google API",
+        mistralAiApiKeyLabel = "مفتاح Mistral AI API",
         nameEmptyError = "لا يمكن أن يكون الاسم فارغًا",
         nameUniqueError = "يجب أن يكون الاسم فريدًا",
         addProviderConfirmAria = "إضافة مزوّد",
