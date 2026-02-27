@@ -96,7 +96,7 @@ internal class DefaultAgent(
 
                 handleEvents {
                     onToolValidationFailed { eventContext ->
-                        conversationView.send(
+                        conversationView.act(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
@@ -111,7 +111,7 @@ internal class DefaultAgent(
                         val result = eventContext.toolResult
                         val structuredContent = (result as? JsonObject)?.get("structuredContent")
 
-                        conversationView.send(
+                        conversationView.act(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
@@ -125,7 +125,7 @@ internal class DefaultAgent(
                         )
                     }
                     onToolCallFailed { eventContext ->
-                        conversationView.send(
+                        conversationView.act(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
@@ -164,14 +164,14 @@ internal class DefaultAgent(
         }
 
         if (transcript.isEmpty()) {
-            conversation.send(Presence.Joining)
+            conversation.act(Presence.Joining)
         }
 
         launch {
             val conversationJustStarted = prompt.messages.size == 1
             if (conversationJustStarted) {
                 welcomeMessage?.let { content ->
-                    conversation.send(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
+                    conversation.act(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
                     prompt = prompt(prompt) {
                         message(
                             KoogMessage.Assistant(
@@ -183,7 +183,7 @@ internal class DefaultAgent(
                 }
             }
 
-            conversation.send(
+            conversation.act(
                 AgentCapabilities.Messaging(
                     supportedMediaTypes = listOf(),
                 )
@@ -197,16 +197,16 @@ internal class DefaultAgent(
                     when (val details = event.payload) {
                         is Messaging.Message -> {
                             if (event.sender is Participant.User) {
-                                conversation.send(AgentProcessing.Start)
+                                conversation.act(AgentProcessing.Start)
                                 val agent = buildAgent(tools, conversation)
                                 @Suppress("UNCHECKED_CAST") val result =
                                     agent.run((event as Action<Messaging.Message>).toKoogMessage() as KoogMessage.User)
                                 result.forEach {
-                                    conversation.send(
+                                    conversation.act(
                                         Messaging.Message(content = listOf(Messaging.Part.Text(it.content)))
                                     )
                                 }
-                                conversation.send(AgentProcessing.Completion)
+                                conversation.act(AgentProcessing.Completion)
                             }
                         }
 

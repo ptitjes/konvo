@@ -20,4 +20,7 @@ interface ConversationUserView : InteractionDevice.User {
     @Deprecated("Use actions instead", ReplaceWith("actions"))
     val events: SharedFlow<Action<*>>
         get() = actions
+
+    @Deprecated("Use act instead", ReplaceWith("act(payload)"))
+    suspend fun send(payload: Action.User) = act(payload)
 }

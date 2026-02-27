@@ -18,4 +18,7 @@ interface ConversationAgentView : InteractionDevice.Agent {
     @Deprecated("Use actions instead", ReplaceWith("actions"))
     val events: SharedFlow<Action<*>>
         get() = actions
+
+    @Deprecated("Use act instead", ReplaceWith("act(payload)"))
+    suspend fun send(payload: Action.Agent) = act(payload)
 }
