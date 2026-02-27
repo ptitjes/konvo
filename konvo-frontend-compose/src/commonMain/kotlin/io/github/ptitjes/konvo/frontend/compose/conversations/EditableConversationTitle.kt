@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-context(conversation: ConversationUserView)
+context(conversation: InteractionDevice.User)
 fun EditableConversationTitle(
     conversationTitle: String?,
 ) {
