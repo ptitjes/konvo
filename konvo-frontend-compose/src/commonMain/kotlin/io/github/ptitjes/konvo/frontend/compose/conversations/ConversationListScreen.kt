@@ -151,10 +151,6 @@ fun ConversationListScreen(
     ) { paddingValues ->
         when {
             isLoading -> FullSizeProgressIndicator(modifier = Modifier.padding(paddingValues))
-            conversations.isEmpty() -> EmptyConversationListPanel(
-                modifier = Modifier.padding(paddingValues),
-                onNewClick = onCreateConversation,
-            )
 
             else -> {
                 val listState = rememberLazyListState()
