@@ -1,15 +1,21 @@
 package io.github.ptitjes.konvo.core.agents
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 sealed interface AgentConfiguration
 
 /** Default no-op configuration used when an agent is not specified or cannot be resolved. */
+@Serializable
 object NoAgentConfiguration : AgentConfiguration
 
+@Serializable
 data class QuestionAnswerAgentConfiguration(
     val mcpServerNames: Set<String>,
     val modelName: String,
 ) : AgentConfiguration
 
+@Serializable
 data class RoleplayAgentConfiguration(
     val characterId: String,
     val characterGreetingIndex: Int?,

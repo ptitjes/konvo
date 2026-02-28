@@ -17,7 +17,8 @@ sealed class InteractionBoundary(
     /**
      * Marks the start of an interaction.
      */
-    class Start internal constructor(
+    @ConsistentCopyVisibility
+    data class Start internal constructor(
         override val timestamp: Instant,
         override val sender: Participant,
         override val interaction: Interaction,
@@ -26,7 +27,8 @@ sealed class InteractionBoundary(
     /**
      * Marks the end of an interaction.
      */
-    class End internal constructor(
+    @ConsistentCopyVisibility
+    data class End internal constructor(
         override val timestamp: Instant,
         override val sender: Participant,
         override val interaction: Interaction,

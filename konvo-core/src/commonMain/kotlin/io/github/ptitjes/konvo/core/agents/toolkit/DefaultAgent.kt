@@ -17,6 +17,7 @@ import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.model.events.AgentProcessing.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
@@ -24,10 +25,9 @@ import io.opentelemetry.exporter.otlp.trace.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
-import kotlinx.datetime.*
 import kotlinx.serialization.json.*
 import kotlin.coroutines.*
-import kotlin.time.Clock
+import kotlin.time.*
 import kotlin.uuid.*
 import ai.koog.prompt.message.Message as KoogMessage
 
@@ -44,6 +44,132 @@ internal class DefaultAgent(
     private val installFeatures: GraphAIAgent.FeatureContext.(InteractionDevice.Agent) -> Unit = {},
 ) : Agent {
     private var prompt: Prompt = systemPrompt
+
+    override suspend fun restoreSession(
+        transcript: ConversationTranscript,
+        device: InteractionDevice.Agent,
+    ): AgentSession = coroutineScope {
+        val agentSession = DefaultAgentSession(
+            coroutineContext = coroutineContext,
+            mcpSessionFactory = mcpSessionFactory,
+        )
+
+        val invite = transcript.actions
+            .last { it.payload is ConversationControl.InviteAgent }
+            .asTypedAction<ConversationControl.InviteAgent>()
+
+        val conversationJustStarted = transcript.actions.none { it.sender == device.participant }
+
+        val presenceInteraction = if (conversationJustStarted) {
+            val interaction = device.startInteraction(
+                protocol = InteractionProtocol(
+                    id = "$PLUGIN_ID/Agent#Presence",
+                    awaitsInput = true,
+                    hidesParent = false,
+                    reactsTo = setOf(Messaging.Message::class),
+                ),
+                trigger = invite,
+            )
+
+            device.act(Presence.Joining, interaction)
+
+            welcomeMessage?.let { content ->
+                device.act(content.toKonvoMessage(), interaction)
+                prompt = prompt(prompt) {
+                    message(
+                        KoogMessage.Assistant(
+                            content = content, metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
+                        )
+                    )
+                }
+            }
+
+            interaction
+        } else {
+            val pendingInteractions = mutableMapOf<String, Interaction>()
+            val messages = mutableListOf<KoogMessage>()
+
+            transcript.entries.forEach { entry ->
+                when (entry) {
+                    is InteractionBoundary.Start -> {
+                        val interaction = entry.interaction
+                        pendingInteractions[interaction.id] = entry.interaction
+                    }
+
+                    is InteractionBoundary.End -> {
+                        val interaction = entry.interaction
+                        pendingInteractions.remove(interaction.id)
+                    }
+
+                    is Action<*> -> {
+                        when (entry.payload) {
+                            is Messaging.Message -> {
+                                val action = entry.asTypedAction<Messaging.Message>()
+                                messages += action.toKoogMessage()
+                            }
+                        }
+                    }
+                }
+            }
+
+            val interaction = pendingInteractions.values.last()
+
+            check(interaction.protocol.id == "$PLUGIN_ID/Agent#Presence") {
+                "Expected presence interaction, got ${interaction.protocol.id}"
+            }
+
+            prompt = prompt(systemPrompt) {
+                messages(messages)
+            }
+
+            interaction
+        }
+
+        launch {
+            device.act(AgentCapabilities.Messaging(supportedMediaTypes = listOf()), presenceInteraction)
+
+            device.actions.buffer(Channel.UNLIMITED).collect { event ->
+                when (val details = event.payload) {
+                    is Messaging.Message -> {
+                        if (event.sender is Participant.User) {
+                            // Start a new interaction for processing this message
+                            val action = event as Action<Messaging.Message>
+
+                            device.withInteraction(
+                                protocol = AgentProcessing.TurnBased,
+                                parent = presenceInteraction,
+                                trigger = action
+                            ) {
+                                device.act(AgentProcessing.Start, this)
+
+                                @Suppress("UNCHECKED_CAST")
+                                val agentInput = action.toKoogMessage() as KoogMessage.User
+
+                                agentSession.withMcpSession { mcpSession ->
+                                    mcpSession.addServers(mcpServerNames)
+                                    val tools = mcpSession.tools.first()
+
+                                    val agent = buildAgent(tools, device)
+
+                                    val agentOutput = agent.run(agentInput)
+
+                                    agentOutput.forEach { assistantMessage ->
+                                        device.act(assistantMessage.toKonvoMessage(), this)
+                                    }
+                                }
+
+                                device.act(AgentProcessing.Completion, this)
+                            }
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
+        agentSession
+    }
 
     private suspend fun buildAgent(
         tools: List<ToolCard>?,
@@ -144,91 +270,34 @@ internal class DefaultAgent(
             },
         )
     }
+}
 
-    override suspend fun restoreSession(
-        transcript: ConversationTranscript,
-        device: InteractionDevice.Agent,
-    ): Unit = coroutineScope {
-        // TODO implement this properly: restore state and prompt
+class DefaultAgentSession(
+    private val coroutineContext: CoroutineContext,
+    private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
+) : AgentSession {
+    // make atomic?
+    private var mcpSession: McpHostSession? = null
 
-        // Filter actions from transcript for message processing
-        val actions = transcript.actions
+    suspend fun withMcpSession(block: suspend (McpHostSession) -> Unit) {
+        mcpSession = mcpSession ?: mcpSessionFactory?.invoke(coroutineContext)
+        mcpSession?.let { block(it) }
+    }
 
-        val messages = actions.mapNotNull { event ->
-            @Suppress("UNCHECKED_CAST")
-            when (val details = event.payload) {
-                is Messaging.Message -> (event as Action<Messaging.Message>).toKoogMessage()
-                else -> null
-            }
-        }
+    override val isPaused: Boolean
+        get() = TODO("Not yet implemented")
 
-        prompt = prompt(systemPrompt) {
-            messages(messages)
-        }
+    override suspend fun pause() {
+        TODO("Not yet implemented")
+    }
 
-        if (actions.isEmpty()) {
-            device.act(Presence.Joining)
-        }
+    override suspend fun resume() {
+        TODO("Not yet implemented")
+    }
 
-        launch {
-            val conversationJustStarted = prompt.messages.size == 1
-            if (conversationJustStarted) {
-                welcomeMessage?.let { content ->
-                    device.act(Messaging.Message(content = listOf(Messaging.Part.Text(content))))
-                    prompt = prompt(prompt) {
-                        message(
-                            KoogMessage.Assistant(
-                                content = content,
-                                metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
-                            )
-                        )
-                    }
-                }
-            }
-
-            device.act(
-                AgentCapabilities.Messaging(
-                    supportedMediaTypes = listOf(),
-                )
-            )
-
-            mcpSessionFactory?.invoke(coroutineContext).use { mcpHostSession ->
-                mcpHostSession?.addServers(mcpServerNames)
-                val tools = mcpHostSession?.tools?.first()
-
-                device.actions.buffer(Channel.UNLIMITED).collect { event ->
-                    when (val details = event.payload) {
-                        is Messaging.Message -> {
-                            if (event.sender is Participant.User) {
-                                // Start a new interaction for processing this message
-                                val interaction = device.startInteraction(
-                                    protocol = AgentProcessing.TurnBased,
-                                    parent = event.interaction,
-                                    trigger = event
-                                )
-
-                                device.act(AgentProcessing.Start, interaction)
-                                val agent = buildAgent(tools, device)
-                                @Suppress("UNCHECKED_CAST") val result =
-                                    agent.run((event as Action<Messaging.Message>).toKoogMessage() as KoogMessage.User)
-                                result.forEach {
-                                    device.act(
-                                        Messaging.Message(content = listOf(Messaging.Part.Text(it.content))),
-                                        interaction
-                                    )
-                                }
-                                device.act(AgentProcessing.Completion, interaction)
-
-                                // End the interaction
-                                device.endInteraction(interaction)
-                            }
-                        }
-
-                        else -> {}
-                    }
-                }
-            }
-        }
+    override suspend fun close() {
+        mcpSession?.close()
+        mcpSession = null
     }
 }
 

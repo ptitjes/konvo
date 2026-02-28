@@ -32,3 +32,18 @@ sealed interface InteractionDevice {
         suspend fun act(payload: Action.User, interaction: Interaction? = null)
     }
 }
+
+suspend fun <T> InteractionDevice.Agent.withInteraction(
+    protocol: InteractionProtocol,
+    parent: Interaction? = null,
+    trigger: Action<*>? = null,
+    block: suspend Interaction.() -> T,
+): T {
+    val interaction = startInteraction(protocol, parent, trigger)
+
+    try {
+        return interaction.block()
+    } finally {
+        endInteraction(interaction)
+    }
+}

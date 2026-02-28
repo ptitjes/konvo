@@ -4,18 +4,16 @@ import ai.koog.prompt.message.*
 import com.eygraber.uri.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.Messaging.Message
 import io.github.ptitjes.konvo.core.util.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import kotlinx.datetime.*
 import kotlinx.io.files.*
 import ai.koog.prompt.message.ContentPart as KoogContentPart
 import ai.koog.prompt.message.Message as KoogMessage
 
-internal suspend fun Action<Message>.toKoogMessage(): KoogMessage = when (sender) {
+internal suspend fun Action<Messaging.Message>.toKoogMessage(): KoogMessage = when (sender) {
     is Participant.User -> KoogMessage.User(
         parts = payload.content.map { it.toKoogContentPart() },
         metaInfo = RequestMetaInfo(timestamp = timestamp),
@@ -85,3 +83,7 @@ private suspend fun Messaging.Attachment.toKoogAttachment(): KoogContentPart {
         )
     }
 }
+
+fun KoogMessage.Assistant.toKonvoMessage(): Messaging.Message = content.toKonvoMessage()
+
+fun String.toKonvoMessage(): Messaging.Message = Messaging.Message(content = listOf(Messaging.Part.Text(this)))

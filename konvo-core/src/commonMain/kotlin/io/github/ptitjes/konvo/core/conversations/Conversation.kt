@@ -12,6 +12,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 import kotlin.time.*
+import kotlin.uuid.*
 
 sealed interface ConversationState {
     data object Loading : ConversationState
@@ -79,9 +80,36 @@ class Conversation internal constructor(
         job.cancel()
     }
 
+    private val agentSessions = mutableMapOf<Participant.Agent, AgentSession>()
+
+    private suspend fun restoreAgent(
+        agentParticipant: Participant.Agent,
+        agentConfiguration: AgentConfiguration,
+    ) {
+        val device = AgentDevice(agentParticipant)
+        val agent = agentFactory.createAgent(agentConfiguration)
+        val agentSession = agent.restoreSession(awaitConversationLoaded().transcript, device)
+        agentSessions += agentParticipant to agentSession
+    }
+
     private fun restoreAgents(transcript: ConversationTranscript) {
-        val joins = transcript.actions.filter {
-            it.payload is Presence.Joining && it.sender is Participant.Agent
+        val actions = transcript.actions
+
+        val invites = actions
+            .filter { it.payload is ConversationControl.InviteAgent }
+            .map { it.asTypedAction<ConversationControl.InviteAgent>() }
+            .filter { invite ->
+                val participantId = invite.payload.participantId
+                actions.none { it.payload is Presence.Leaving && it.sender.id == participantId }
+            }
+
+        invites.forEach { invite ->
+            val agentParticipant = Participant.Agent(id = invite.payload.participantId)
+            val agentConfiguration = invite.payload.agentConfiguration
+
+            coroutineScope.launch {
+                restoreAgent(agentParticipant, agentConfiguration)
+            }
         }
     }
 
@@ -94,11 +122,6 @@ class Conversation internal constructor(
         return _state.value as ConversationState.Loaded
     }
 
-    suspend fun join() {
-        awaitConversationLoaded()
-        newUserDevice().act(Presence.Joining)
-    }
-
     fun newUserDevice(): InteractionDevice.User {
         checkConversationLoaded()
         // TODO get the current profile's user id
@@ -106,14 +129,27 @@ class Conversation internal constructor(
         return UserDevice(userParticipant)
     }
 
-    suspend fun inviteAgent(agentConfiguration: AgentConfiguration) {
-        val state = awaitConversationLoaded()
-        val agent = agentFactory.createAgent(agentConfiguration)
+    suspend fun join() {
+        awaitConversationLoaded()
+        newUserDevice().act(Presence.Joining)
+    }
 
-        // TODO allow multiple agents
-        val agentParticipant = Participant.Agent(id = "agent")
-        val device = AgentDevice(agentParticipant)
-        agent.restoreSession(state.transcript, device)
+    // TODO replace this with an AgentId, when configuration protocols are up
+    suspend fun inviteAgent(agentConfiguration: AgentConfiguration) {
+        awaitConversationLoaded()
+
+        val agentParticipant = Participant.Agent(id = Uuid.random().toString())
+
+        newUserDevice().act(
+            ConversationControl.InviteAgent(
+                participantId = agentParticipant.id,
+                agentConfiguration = agentConfiguration
+            )
+        )
+
+        coroutineScope.launch {
+            restoreAgent(agentParticipant, agentConfiguration)
+        }
     }
 
     private inner class AgentDevice(
