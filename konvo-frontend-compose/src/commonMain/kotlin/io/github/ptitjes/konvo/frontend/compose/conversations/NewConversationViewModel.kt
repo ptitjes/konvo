@@ -252,12 +252,9 @@ class NewConversationViewModel(
         viewModelScope.launch {
             val agentConfiguration = createAgentConfiguration()
 
-            val conversation = conversationManager.newConversation()
-
-            launch {
-                conversation.join()
-                conversation.inviteAgent(agentConfiguration)
-            }
+            val conversation = conversationManager.newConversation(
+                agentConfiguration = agentConfiguration,
+            )
 
             onConversationCreated(conversation.id)
         }

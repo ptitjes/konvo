@@ -28,7 +28,16 @@ class ConversationManager(
 
     private val conversations = atomic(mapOf<String, Conversation>())
 
-    suspend fun newConversation(): Conversation {
+    suspend fun newConversation(
+        agentConfiguration: AgentConfiguration,
+    ): Conversation = newConversation().also { conversation ->
+        coroutineScope.launch {
+            conversation.join()
+            conversation.inviteAgent(agentConfiguration)
+        }
+    }
+
+    private suspend fun newConversation(): Conversation {
         val id = Uuid.random().toString()
         val now = Clock.System.now()
 

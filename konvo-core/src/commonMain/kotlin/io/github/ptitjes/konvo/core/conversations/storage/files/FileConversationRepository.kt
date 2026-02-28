@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.core.conversations.storage.files
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
@@ -24,6 +25,10 @@ class FileConversationRepository(
     private val timeProvider: TimeProvider = SystemTimeProvider,
 ) : ConversationRepository {
 
+    private companion object {
+        private val logger = KotlinLogging.logger {}
+    }
+
     constructor(
         storagePaths: StoragePaths,
         fileSystem: FileSystem = defaultFileSystem,
@@ -41,6 +46,14 @@ class FileConversationRepository(
         // Register known interaction protocols for deserialization
         InteractionProtocols.register(AgentProcessing.TurnBased)
         InteractionProtocols.register(ToolUsage.VettingProtocol)
+        InteractionProtocols.register(
+            InteractionProtocol(
+                id = "$PLUGIN_ID/Agent#Presence",
+                awaitsInput = true,
+                hidesParent = false,
+                reactsTo = setOf(Messaging.Message::class),
+            )
+        )
     }
 
     // Internal ticker to drive flows on local mutations
@@ -287,8 +300,11 @@ class FileConversationRepository(
                             is InteractionBoundaryDto.Start -> DtoMappers.fromDto(dto, context)
                             is InteractionBoundaryDto.End -> DtoMappers.fromDto(dto, context)
                         }
-                    }.onSuccess { add(it) }
-                        .onFailure { /* skip corrupt line */ }
+                    }
+                        .onSuccess { add(it) }
+                        .onFailure { throwable ->
+                            logger.warn(throwable) { "Failed to parse conversation entry: $line" }
+                        }
                 }
             }
         }

@@ -15,8 +15,8 @@ sealed interface ConversationControl : Action.Payload {
     @Serializable
     @SerialName("conversation-control-invite-agent")
     data class InviteAgent(
-        val agentId: String,
-        // TODO make this an AgentId
+        val participantId: String,
+        // TODO replace this with an AgentId, when configuration protocols are up
         val agentConfiguration: AgentConfiguration,
     ) : ConversationControl, Action.Agent, Action.User
 }
