@@ -4,7 +4,6 @@ import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
 import io.github.ptitjes.konvo.core.settings.*
-import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 
 class AgentFactory(
@@ -16,36 +15,23 @@ class AgentFactory(
 ) {
 
     suspend fun createAgent(agentConfiguration: AgentConfiguration): Agent {
-        val developerSettings = settingsRepository.getSettings(DeveloperSettingsKey).first()
-
         return when (agentConfiguration) {
             is QuestionAnswerAgentConfiguration -> {
-                val model = modelProviderManager.named(agentConfiguration.modelName)
-
-                buildQuestionAnswerAgent(
-                    model = model,
+                QuestionAnswerAgent(
+                    settingsRepository = settingsRepository,
+                    modelProviderManager = modelProviderManager,
                     mcpSessionFactory = mcpSessionFactory,
-                    mcpServerNames = agentConfiguration.mcpServerNames,
-                    developerSettings = developerSettings,
+                    configuration = agentConfiguration,
                 )
             }
 
             is RoleplayAgentConfiguration -> {
-                val roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey).first()
-                val model = modelProviderManager.named(agentConfiguration.modelName)
-                val character = characterProviderManager.withId(agentConfiguration.characterId)
-                val personaSettings = settingsRepository.getSettings(PersonaSettingsKey).first()
-                val persona = personaSettings.personas.first { it.name == agentConfiguration.personaName }
-                val lorebook = agentConfiguration.lorebookId?.let { id -> lorebookManager.withId(id) }
-
-                buildRoleplayAgent(
-                    roleplaySettings = roleplaySettings,
-                    roleplayConfiguration = agentConfiguration,
-                    model = model,
-                    character = character,
-                    persona = persona,
-                    lorebook = lorebook,
-                    developerSettings = developerSettings,
+                RoleplayAgent(
+                    modelProviderManager = modelProviderManager,
+                    characterProviderManager = characterProviderManager,
+                    settingsRepository = settingsRepository,
+                    lorebookManager = lorebookManager,
+                    configuration = agentConfiguration,
                 )
             }
 
