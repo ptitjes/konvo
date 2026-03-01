@@ -169,16 +169,18 @@ class Conversation internal constructor(
                 replay = 0
             )
 
-        override suspend fun act(payload: Action.Agent, interaction: Interaction?) {
-            _events.emit(
-                Action(
-                    id = newId(),
-                    timestamp = newTimestamp(),
-                    sender = participant,
-                    interaction = interaction,
-                    payload = payload,
-                )
+        override suspend fun <P : Action.Agent> act(
+            payload: P,
+            interaction: Interaction?,
+        ): Action<P> {
+            val action = Action(
+                id = newId(),
+                timestamp = newTimestamp(),
+                sender = participant,
+                interaction = interaction,
+                payload = payload,
             )
+            return action.also { _events.emit(it) }
         }
 
         override suspend fun startInteraction(

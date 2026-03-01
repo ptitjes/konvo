@@ -50,7 +50,7 @@ internal suspend fun InteractionDevice.Agent.vetToolCalls(
 
     val vetoableToolCalls = withVetting.associate { (index, call) ->
         Call(
-            id = call.id ?: newUniqueId(),
+            id = call.id ?: Uuid.random().toString(),
             tool = call.tool,
             arguments = call.contentJson,
         ) to index
@@ -58,9 +58,9 @@ internal suspend fun InteractionDevice.Agent.vetToolCalls(
 
     if (vetoableToolCalls.isEmpty()) return@coroutineScope vettedCalls.awaitAll()
 
-    val vettingInteraction = startInteraction(ToolUsage.VettingProtocol)
+//    val vettingInteraction = startInteraction(ToolUsage.VettingProtocol)
 
-    act(Vetting(calls = vetoableToolCalls.keys.toList()), vettingInteraction)
+    act(Vetting(calls = vetoableToolCalls.keys.toList())/*, vettingInteraction*/)
 
     val updateJob = launch {
         actions.mapNotNull { it.payload as? ToolUsage.Approval }.collect { payload ->
@@ -75,7 +75,7 @@ internal suspend fun InteractionDevice.Agent.vetToolCalls(
 
     vettedCalls.awaitAll().also {
         updateJob.cancel()
-        endInteraction(vettingInteraction)
+//        endInteraction(vettingInteraction)
     }
 }
 
