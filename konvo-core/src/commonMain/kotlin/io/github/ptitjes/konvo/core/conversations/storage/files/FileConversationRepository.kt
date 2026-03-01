@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.core.conversations.storage.files
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
@@ -59,7 +59,7 @@ class FileConversationRepository(
     // Internal ticker to drive flows on local mutations
     private val changeTicker = MutableStateFlow(0L)
 
-    private val conversationsDir: Path get() = Path(rootPath, FilesLayout.CONVERSATIONS_DIR)
+    private val conversationsDir: Path get() = rootPath
     private fun conversationDir(id: String): Path = Path(conversationsDir, id)
     private fun metaPath(id: String): Path = Path(conversationDir(id), FilesLayout.META_FILE)
     private fun eventsPath(id: String): Path = Path(conversationDir(id), FilesLayout.EVENTS_FILE)
