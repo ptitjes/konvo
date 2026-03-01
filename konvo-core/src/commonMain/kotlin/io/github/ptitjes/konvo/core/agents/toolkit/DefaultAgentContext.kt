@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.core.agents.toolkit
 
-import ai.koog.agents.core.agent.entity.AIAgentStorageKey
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.dsl.PromptBuilder
 import io.github.ptitjes.konvo.core.agents.AgentContext
