@@ -23,7 +23,7 @@ internal class McpToolCard(
     override val requiresVetting: Boolean
         get() = doesToolRequirePermission(clientName, sdkTool.name, permissions)
 
-    override suspend fun toTool(): Tool<*, *> {
+    override fun toTool(): Tool<*, *> {
         val outputSchema = sdkTool.outputSchema
         val descriptor = DefaultMcpToolDescriptorParser.parse(sdkTool)
 

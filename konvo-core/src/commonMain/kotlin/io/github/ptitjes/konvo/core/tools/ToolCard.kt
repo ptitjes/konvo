@@ -8,5 +8,5 @@ interface ToolCard {
     val parameters: ToolParameters
     val requiresVetting: Boolean
 
-    suspend fun toTool(): Tool<*, *>
+    fun toTool(): Tool<*, *>
 }
