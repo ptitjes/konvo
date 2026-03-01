@@ -1,9 +1,12 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
@@ -31,6 +34,7 @@ fun NewConversationScreen(
         viewModel = viewModel,
         onConversationCreated = { navigator.navigateToConversation(it) },
         onProviderSettingsClick = { navigator.openSettingsSection("models") },
+        onGoToSettingsClick = { navigator.openSettingsSection(it) },
         modifier = modifier,
     )
 }
@@ -48,6 +52,7 @@ fun NewConversationScreen(
     viewModel: NewConversationViewModel = viewModel(),
     onConversationCreated: (id: String) -> Unit,
     onProviderSettingsClick: () -> Unit,
+    onGoToSettingsClick: (titleKey: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val selectedAgentType = viewModel.selectedAgentType
@@ -133,6 +138,7 @@ fun NewConversationScreen(
                     selectedAgentType = selectedAgentType,
                     questionAnswer = questionAnswer,
                     roleplay = roleplay,
+                    onGoToSettingsClick = onGoToSettingsClick,
                     onSelectAgentType = viewModel::selectAgentType,
                     onSelectQuestionAnswerMcpServerNames = viewModel::selectQuestionAnswerMcpServerNames,
                     onSelectQuestionAnswerModel = viewModel::selectQuestionAnswerModel,
@@ -152,6 +158,7 @@ private fun ColumnScope.NewConversationPanel(
     selectedAgentType: AgentType,
     questionAnswer: NewQuestionAnswerState,
     roleplay: NewRoleplayState,
+    onGoToSettingsClick: (titleKey: String) -> Unit,
     onSelectAgentType: (AgentType) -> Unit,
     onSelectQuestionAnswerMcpServerNames: (Set<String>) -> Unit,
     onSelectQuestionAnswerModel: (ModelCard) -> Unit,
@@ -171,6 +178,7 @@ private fun ColumnScope.NewConversationPanel(
         AgentType.QuestionAnswer -> {
             QuestionAnswerConfigurationForm(
                 questionAnswer = questionAnswer,
+                onGoToSettingsClick = onGoToSettingsClick,
                 onSelectQuestionAnswerMcpServerNames = onSelectQuestionAnswerMcpServerNames,
                 onSelectQuestionAnswerModel = onSelectQuestionAnswerModel,
             )
@@ -179,6 +187,7 @@ private fun ColumnScope.NewConversationPanel(
         AgentType.Roleplay -> {
             RoleplayConfigurationForm(
                 roleplay = roleplay,
+                onGoToSettingsClick = onGoToSettingsClick,
                 onSelectRoleplayCharacter = onSelectRoleplayCharacter,
                 onSelectRoleplayGreetingIndex = onSelectRoleplayGreetingIndex,
                 onChangeRoleplayPersona = onChangeRoleplayPersona,
@@ -192,20 +201,13 @@ private fun ColumnScope.NewConversationPanel(
 @Composable
 private fun ColumnScope.QuestionAnswerConfigurationForm(
     questionAnswer: NewQuestionAnswerState,
+    onGoToSettingsClick: (titleKey: String) -> Unit,
     onSelectQuestionAnswerMcpServerNames: (Set<String>) -> Unit,
     onSelectQuestionAnswerModel: (ModelCard) -> Unit,
 ) {
     when (questionAnswer) {
         NewQuestionAnswerState.Loading -> {
             FullSizeProgressIndicator()
-        }
-
-        is NewQuestionAnswerState.Unavailable -> {
-            Text(
-                text = strings.conversations.qaNoModels,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(16.dp),
-            )
         }
 
         is NewQuestionAnswerState.Available -> {
@@ -216,14 +218,13 @@ private fun ColumnScope.QuestionAnswerConfigurationForm(
             )
 
             if (questionAnswer.selectableModels.isEmpty()) {
-                Text(
-                    text = strings.conversations.qaNoToolModels,
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(16.dp),
+                UnavailabilityPlaceholder(
+                    unavailabilityText = strings.conversations.qaNoModels,
+                    onGoToSettings = { onGoToSettingsClick("models") },
                 )
             } else {
                 ModelSelector(
-                    selectedModel = questionAnswer.selectedModel,
+                    selectedModel = questionAnswer.selectedModel ?: questionAnswer.selectableModels.first(),
                     onModelSelected = onSelectQuestionAnswerModel,
                     models = questionAnswer.selectableModels
                 )
@@ -236,6 +237,7 @@ private fun ColumnScope.QuestionAnswerConfigurationForm(
 @Composable
 private fun ColumnScope.RoleplayConfigurationForm(
     roleplay: NewRoleplayState,
+    onGoToSettingsClick: (titleKey: String) -> Unit,
     onSelectRoleplayCharacter: (CharacterCard) -> Unit,
     onSelectRoleplayGreetingIndex: (Int?) -> Unit,
     onChangeRoleplayPersona: (Persona) -> Unit,
@@ -247,92 +249,169 @@ private fun ColumnScope.RoleplayConfigurationForm(
             FullSizeProgressIndicator()
         }
 
-        is NewRoleplayState.Unavailable -> {
-            Text(
-                text = strings.conversations.rpNoCharactersOrModels,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(16.dp),
-            )
-        }
-
         is NewRoleplayState.Available -> {
-            CharacterGridSelector(
-                modifier = Modifier.weight(1f),
-                selectedCharacter = roleplay.selectedCharacter,
-                onCharacterSelected = { character ->
-                    onSelectRoleplayCharacter(character)
-                    // Reset greeting index when the character changes
-                    onSelectRoleplayGreetingIndex(null)
-                },
-                characters = roleplay.availableCharacters,
-            )
-
-            if (roleplay.selectedCharacter.greetings.size > 1) {
-                CharacterGreetingSelector(
-                    selectedGreetingIndex = roleplay.selectedGreetingIndex,
-                    onGreetingIndexSelected = onSelectRoleplayGreetingIndex,
-                    character = roleplay.selectedCharacter,
-                    personaName = roleplay.selectedPersona.nickname,
+            if (roleplay.availableCharacters.isEmpty()) {
+                UnavailabilityPlaceholder(
+                    unavailabilityText = strings.conversations.rpNoAvailableCharacters,
+                    onGoToSettings = { onGoToSettingsClick("characters") },
                 )
+            } else {
+                val selectedCharacter = roleplay.selectedCharacter ?: roleplay.availableCharacters.first()
+
+                CharacterGridSelector(
+                    modifier = Modifier.weight(1f),
+                    selectedCharacter = selectedCharacter,
+                    onCharacterSelected = { character ->
+                        onSelectRoleplayCharacter(character)
+                        // Reset greeting index when the character changes
+                        onSelectRoleplayGreetingIndex(null)
+                    },
+                    characters = roleplay.availableCharacters,
+                )
+
+                if (selectedCharacter.greetings.size > 1) {
+                    CharacterGreetingSelector(
+                        selectedGreetingIndex = roleplay.selectedGreetingIndex,
+                        onGreetingIndexSelected = onSelectRoleplayGreetingIndex,
+                        character = selectedCharacter,
+                        personaName = roleplay.selectedPersona?.nickname ?: "<user>",
+                    )
+                }
             }
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                var showLorebookSheet by remember { mutableStateOf(false) }
-
-                val personas by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    PersonaSelector(
-                        selectedPersona = roleplay.selectedPersona,
-                        onPersonaSelected = { persona ->
-                            onChangeRoleplayPersona(persona)
-                            val preferredLorebook =
-                                roleplay.availableLorebooks.firstOrNull { it.id == persona.defaultLorebookId }
-                            if (preferredLorebook != null) onSelectRoleplayLorebook(preferredLorebook)
-                        },
-                        personas = personas,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-
-                FilledTonalIconButton(
-                    modifier = Modifier.offset(y = 4.dp),
-                    onClick = { showLorebookSheet = true },
+            if (roleplay.availablePersonas.isEmpty()) {
+                UnavailabilityPlaceholder(
+                    unavailabilityText = strings.conversations.rpNoAvailablePersonas,
+                    onGoToSettings = { onGoToSettingsClick("personas") },
+                )
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_settings),
-                        contentDescription = strings.conversations.personaSettingsAria
-                    )
-                }
-                if (showLorebookSheet) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showLorebookSheet = false },
+                    var showLorebookSheet by remember { mutableStateOf(false) }
+
+                    val personas by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        PersonaSelector(
+                            selectedPersona = roleplay.selectedPersona ?: roleplay.availablePersonas.first(),
+                            onPersonaSelected = { persona ->
+                                onChangeRoleplayPersona(persona)
+                                val preferredLorebook =
+                                    roleplay.availableLorebooks.firstOrNull { it.id == persona.defaultLorebookId }
+                                if (preferredLorebook != null) onSelectRoleplayLorebook(preferredLorebook)
+                            },
+                            personas = personas,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    FilledTonalIconButton(
+                        modifier = Modifier.offset(y = 4.dp),
+                        onClick = { showLorebookSheet = true },
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_settings),
+                            contentDescription = strings.conversations.personaSettingsAria
+                        )
+                    }
+                    if (showLorebookSheet) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showLorebookSheet = false },
                         ) {
-                            LorebookSelector(
-                                label = strings.conversations.additionalLorebookLabel,
-                                selectedLorebook = roleplay.selectedLorebook,
-                                onLorebookSelected = { selected ->
-                                    onSelectRoleplayLorebook(selected)
-                                    showLorebookSheet = false
-                                },
-                                lorebooks = roleplay.availableLorebooks,
-                            )
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                            ) {
+                                if (roleplay.availableLorebooks.isEmpty()) {
+                                    Text(
+                                        text = strings.conversations.rpNoAvailableLorebooks,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier.padding(16.dp),
+                                    )
+                                } else {
+                                    LorebookSelector(
+                                        label = strings.conversations.additionalLorebookLabel,
+                                        selectedLorebook = roleplay.selectedLorebook,
+                                        onLorebookSelected = { selected ->
+                                            onSelectRoleplayLorebook(selected)
+                                            showLorebookSheet = false
+                                        },
+                                        lorebooks = roleplay.availableLorebooks,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            ModelSelector(
-                selectedModel = roleplay.selectedModel,
-                onModelSelected = onSelectRoleplayModel,
-                models = roleplay.availableModels
-            )
+            if (roleplay.availableModels.isEmpty()) {
+                UnavailabilityPlaceholder(
+                    unavailabilityText = strings.conversations.rpNoAvailableModel,
+                    onGoToSettings = { onGoToSettingsClick("models") },
+                )
+            } else {
+                ModelSelector(
+                    selectedModel = roleplay.selectedModel ?: roleplay.availableModels.first(),
+                    onModelSelected = onSelectRoleplayModel,
+                    models = roleplay.availableModels
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun UnavailabilityPlaceholder(
+    unavailabilityText: String,
+    onGoToSettings: (() -> Unit)? = null,
+) {
+    Row(
+        modifier = Modifier.height(56.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = unavailabilityText,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(8.dp).weight(1f),
+        )
+
+        if (onGoToSettings != null) {
+            TextButton(
+                modifier = Modifier.height(32.dp),
+                onClick = { onGoToSettings() },
+                contentPadding =
+                    PaddingValues(
+                        start = 12.dp,
+                        end = 12.dp,
+                        top = 6.dp,
+                        bottom = 6.dp,
+                    ),
+                shape = MaterialTheme.shapes.small,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    val contentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+
+                    Icon(
+                        modifier = Modifier.size(16.dp),
+                        painter = painterResource(Res.drawable.ic_settings),
+                        contentDescription = strings.settings.listTitle,
+                        tint = contentColor,
+                    )
+
+                    Text(
+                        text = strings.settings.listTitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor,
+                    )
+                }
+            }
         }
     }
 }

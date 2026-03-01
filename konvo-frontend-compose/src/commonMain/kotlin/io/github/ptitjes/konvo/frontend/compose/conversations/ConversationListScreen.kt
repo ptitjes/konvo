@@ -210,7 +210,10 @@ fun ConversationListScreen(
                             IconButton(onClick = {
                                 onSettingsClick()
                             }) {
-                                Icon(painter = painterResource(Res.drawable.ic_settings), contentDescription = "Settings")
+                                Icon(
+                                    painter = painterResource(Res.drawable.ic_settings),
+                                    contentDescription = strings.settings.listTitle,
+                                )
                             }
 
                             DropdownMenu(
