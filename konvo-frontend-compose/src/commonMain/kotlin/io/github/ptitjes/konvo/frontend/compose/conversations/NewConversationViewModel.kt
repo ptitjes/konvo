@@ -101,15 +101,13 @@ class NewConversationViewModel(
         availableModels: List<ModelCard>,
         availableMcpServerNames: Set<String>,
     ) {
+        val sortedModels by lazy { availableModels.sortedBy { it.name } }
+
         _questionAnswer.update { previous ->
             when {
-                availableModels.isEmpty() -> NewQuestionAnswerState.Unavailable(
-                    noAvailableModels = true,
-                )
-
                 previous is NewQuestionAnswerState.Available -> {
                     previous.copy(
-                        availableModels = availableModels,
+                        availableModels = sortedModels,
                         availableMcpServers = availableMcpServerNames,
                         selectedModel = previous.selectedModel,
                         selectedMcpServers = previous.selectedMcpServers,
@@ -117,7 +115,7 @@ class NewConversationViewModel(
                 }
 
                 else -> NewQuestionAnswerState.Available(
-                    availableModels = availableModels,
+                    availableModels = sortedModels,
                     availableMcpServers = availableMcpServerNames,
                     selectedModel = availableModels.first(),
                     selectedMcpServers = emptySet(),
@@ -135,35 +133,29 @@ class NewConversationViewModel(
     ) {
         _roleplay.update { previous ->
             when {
-                availableCharacters.isEmpty() || availableModels.isEmpty() -> NewRoleplayState.Unavailable(
-                    noAvailableCharacters = availableModels.isEmpty(),
-                    noAvailableModels = availableCharacters.isEmpty(),
-                    noAvailablePersonas = availablePersonas.isEmpty(),
-                )
-
                 previous is NewRoleplayState.Available -> {
-                    val previouslySelectedModel = availableModels.firstOrNull {
-                        it.name == previous.selectedModel.name
-                    }
-                    val previouslySelectedCharacter = availableCharacters.firstOrNull {
-                        it.id == previous.selectedCharacter.id
-                    }
-                    val previouslySelectedPersona = availablePersonas.firstOrNull {
-                        it.name == previous.selectedPersona.name
-                    }
-                    val previouslySelectedLorebook = availableLorebooks.firstOrNull {
-                        it.id == previous.selectedLorebook?.id
-                    }
+//                    val previouslySelectedModel = previous.selectedModel?.name?.let { modelName ->
+//                        availableModels.firstOrNull { it.name == modelName }
+//                    }
+//                    val previouslySelectedCharacter = previous.selectedCharacter?.id?.let { characterId ->
+//                        availableCharacters.firstOrNull { it.id == characterId }
+//                    }
+//                    val previouslySelectedPersona = previous.selectedPersona?.name?.let { personaName ->
+//                        availablePersonas.firstOrNull { it.name == personaName }
+//                    }
+//                    val previouslySelectedLorebook = previous.selectedLorebook?.id?.let { lorebookId ->
+//                        availableLorebooks.firstOrNull { it.id == lorebookId }
+//                    }
 
                     previous.copy(
                         availableModels = availableModels,
                         availableCharacters = availableCharacters,
                         availablePersonas = availablePersonas,
                         availableLorebooks = availableLorebooks,
-                        selectedModel = previouslySelectedModel ?: availableModels.first(),
-                        selectedCharacter = previouslySelectedCharacter ?: availableCharacters.first(),
-                        selectedPersona = previouslySelectedPersona ?: availablePersonas.first(),
-                        selectedLorebook = previouslySelectedLorebook,
+                        selectedModel = previous.selectedModel ?: availableModels.firstOrNull(),
+                        selectedCharacter = previous.selectedCharacter ?: availableCharacters.firstOrNull(),
+                        selectedPersona = previous.selectedPersona ?: availablePersonas.firstOrNull(),
+                        selectedLorebook = previous.selectedLorebook,
                     )
                 }
 
@@ -179,11 +171,11 @@ class NewConversationViewModel(
                         availableCharacters = availableCharacters,
                         availablePersonas = availablePersonas,
                         availableLorebooks = availableLorebooks,
-                        selectedCharacter = availableCharacters.first(),
+                        selectedModel = preferredModel ?: availableModels.firstOrNull(),
+                        selectedCharacter = availableCharacters.firstOrNull(),
                         selectedGreetingIndex = null,
+                        selectedPersona = preferredPersona ?: availablePersonas.firstOrNull(),
                         selectedLorebook = null,
-                        selectedPersona = preferredPersona ?: availablePersonas.first(),
-                        selectedModel = preferredModel ?: availableModels.first(),
                     )
                 }
             }
@@ -216,8 +208,8 @@ class NewConversationViewModel(
         state.copy(
             selectedMcpServers = mcpServerNames,
             selectedModel =
-                if (mcpServerNames.isEmpty() || state.selectedModel.supportsTools) state.selectedModel
-                else state.availableModels.first { it.supportsTools },
+                if (mcpServerNames.isEmpty() || state.selectedModel?.supportsTools ?: false) state.selectedModel
+                else state.availableModels.firstOrNull { it.supportsTools },
         )
     }
 
@@ -228,7 +220,7 @@ class NewConversationViewModel(
     fun selectRoleplayCharacter(character: CharacterCard) = updateRoleplayState {
         it.copy(
             selectedCharacter = character,
-            selectedGreetingIndex = if (character.id != it.selectedCharacter.id) null else it.selectedGreetingIndex,
+            selectedGreetingIndex = if (character.id != it.selectedCharacter?.id) null else it.selectedGreetingIndex,
         )
     }
 
@@ -270,14 +262,11 @@ class NewConversationViewModel(
 
 sealed interface NewQuestionAnswerState {
     data object Loading : NewQuestionAnswerState
-    data class Unavailable(
-        val noAvailableModels: Boolean,
-    ) : NewQuestionAnswerState
 
     data class Available(
         val availableModels: List<ModelCard>,
         val availableMcpServers: Set<String>,
-        val selectedModel: ModelCard,
+        val selectedModel: ModelCard?,
         val selectedMcpServers: Set<String>,
     ) : NewQuestionAnswerState
 }
@@ -289,13 +278,13 @@ val NewQuestionAnswerState.Available.selectableModels: List<ModelCard>
 
 val NewQuestionAnswerState.canCreate: Boolean
     get() = when (this) {
-        is NewQuestionAnswerState.Available -> true
+        is NewQuestionAnswerState.Available -> selectedModel != null
         else -> false
     }
 
 fun NewQuestionAnswerState.createConfiguration(): QuestionAnswerAgentConfiguration =
     when (this) {
-        is NewQuestionAnswerState.Available -> QuestionAnswerAgentConfiguration(
+        is NewQuestionAnswerState.Available if (selectedModel != null) -> QuestionAnswerAgentConfiguration(
             mcpServerNames = selectedMcpServers,
             modelName = selectedModel.name,
         )
@@ -305,40 +294,36 @@ fun NewQuestionAnswerState.createConfiguration(): QuestionAnswerAgentConfigurati
 
 sealed interface NewRoleplayState {
     data object Loading : NewRoleplayState
-    data class Unavailable(
-        val noAvailableCharacters: Boolean,
-        val noAvailablePersonas: Boolean,
-        val noAvailableModels: Boolean,
-    ) : NewRoleplayState
 
     data class Available(
         val availableModels: List<ModelCard>,
         val availableCharacters: List<CharacterCard>,
         val availablePersonas: List<Persona>,
         val availableLorebooks: List<Lorebook>,
-        val selectedCharacter: CharacterCard,
+        val selectedCharacter: CharacterCard?,
         val selectedGreetingIndex: Int?,
         val selectedLorebook: Lorebook?,
-        val selectedPersona: Persona,
-        val selectedModel: ModelCard,
+        val selectedPersona: Persona?,
+        val selectedModel: ModelCard?,
     ) : NewRoleplayState
 }
 
 val NewRoleplayState.canCreate: Boolean
     get() = when (this) {
-        is NewRoleplayState.Available -> true
+        is NewRoleplayState.Available -> selectedCharacter != null && selectedModel != null && selectedPersona != null
         else -> false
     }
 
 fun NewRoleplayState.createConfiguration(): RoleplayAgentConfiguration =
     when (this) {
-        is NewRoleplayState.Available -> RoleplayAgentConfiguration(
-            characterId = selectedCharacter.id,
-            characterGreetingIndex = selectedGreetingIndex,
-            personaName = selectedPersona.name,
-            modelName = selectedModel.name,
-            lorebookId = selectedLorebook?.id,
-        )
+        is NewRoleplayState.Available if (selectedCharacter != null && selectedModel != null && selectedPersona != null) ->
+            RoleplayAgentConfiguration(
+                characterId = selectedCharacter.id,
+                characterGreetingIndex = selectedGreetingIndex,
+                personaName = selectedPersona.name,
+                modelName = selectedModel.name,
+                lorebookId = selectedLorebook?.id,
+            )
 
         else -> error("Invalid state: $this")
     }
