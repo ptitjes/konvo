@@ -3,22 +3,16 @@ package io.github.ptitjes.konvo.core.agents.toolkit
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.environment.*
 import ai.koog.prompt.message.*
-import io.github.ptitjes.konvo.core.conversations.*
+import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.ToolUsage.*
-import io.github.ptitjes.konvo.core.tools.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlin.uuid.*
 
-@AIAgentBuilderDslMarker
-fun AIAgentSubgraphBuilderBase<*, *>.dumpToPrompt(
-    name: String? = null,
-) = node<Message.User, Unit>(name) { message ->
-    llm.writeSession {
-        prompt = prompt.withMessages { messages -> messages + message }
+fun AIAgentSubgraphBuilderBase<*, *>.dumpMessageAction(): AIAgentNodeDelegate<Action<Messaging.Message>, Unit> =
+    node { action ->
+        llm.writeSession {
+            val message = action.toKoogMessage()
+            prompt = prompt.withMessages { messages -> messages + message }
+        }
     }
-}
 
 @AIAgentBuilderDslMarker
 fun AIAgentSubgraphBuilderBase<*, *>.requestLLM(
@@ -27,55 +21,19 @@ fun AIAgentSubgraphBuilderBase<*, *>.requestLLM(
     llm.writeSession { requestLLMMultiple() }
 }
 
-@AIAgentBuilderDslMarker
-fun AIAgentSubgraphBuilderBase<*, *>.nodeVetToolCalls(
-    name: String? = null,
-) = node<List<Message.Tool.Call>, List<VettedToolCall>>(name) { calls ->
-    withConversationFeature {
-        calls.zip(view.vetToolCalls(calls, tools)).map { (call, vetted) -> VettedToolCall(call, vetted) }
-    }
-}
-
-internal suspend fun InteractionDevice.Agent.vetToolCalls(
-    calls: List<Message.Tool.Call>,
-    tools: List<ToolCard>,
-): List<Boolean> = coroutineScope {
-    val vettedCalls = calls.map { CompletableDeferred<Boolean>() }
-
-    val (withVetting, withoutVetting) = calls.withIndex().partition { (_, call) ->
-        tools.firstOrNull { it.name == call.tool }?.requiresVetting ?: false
+fun AIAgentSubgraphBuilderBase<*, *>.actOnMessages(): AIAgentNodeDelegate<List<Message.Response>, List<Message.Response>> =
+    node { responses ->
+        responses
+            .filter { it.role == Message.Role.Assistant }
+            .forEach { interaction.act(it.toKonvoMessage()) }
+        responses
     }
 
-    withoutVetting.forEach { (index, _) -> vettedCalls[index].complete(true) }
-
-    val vetoableToolCalls = withVetting.associate { (index, call) ->
-        Call(
-            id = call.id ?: Uuid.random().toString(),
-            tool = call.tool,
-            arguments = call.contentJson,
-        ) to index
-    }
-
-    if (vetoableToolCalls.isEmpty()) return@coroutineScope vettedCalls.awaitAll()
-
-//    val vettingInteraction = startInteraction(ToolUsage.VettingProtocol)
-
-    act(Vetting(calls = vetoableToolCalls.keys.toList())/*, vettingInteraction*/)
-
-    val updateJob = launch {
-        actions.mapNotNull { it.payload as? ToolUsage.Approval }.collect { payload ->
-            for ((call, approved) in payload.approvals) {
-                val index = vetoableToolCalls[call]
-                if (index != null) {
-                    vettedCalls[index].complete(approved)
-                }
-            }
-        }
-    }
-
-    vettedCalls.awaitAll().also {
-        updateJob.cancel()
-//        endInteraction(vettingInteraction)
+inline fun <P : Action.Payload, reified S> AIAgentSubgraphBuilderBase<*, *>.runInteraction(
+    interaction: InteractionDriver<P, S>,
+): AIAgentNodeDelegate<Action<P>, S> = node { action ->
+    withInteractionFeature {
+        runInteraction(interaction, action)
     }
 }
 
@@ -115,5 +73,3 @@ fun AIAgentSubgraphBuilderBase<*, *>.nodeExecuteVettedToolCalls(
 
     executedResults + rejectedResults
 }
-
-private fun newUniqueId(): String = Uuid.random().toString()
