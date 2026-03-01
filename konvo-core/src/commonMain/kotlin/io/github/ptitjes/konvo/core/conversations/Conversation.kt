@@ -73,6 +73,8 @@ class Conversation internal constructor(
 
             val state = awaitConversationLoaded()
             restoreAgents(state.transcript)
+
+            watchAgents()
         }
     }
 
@@ -83,12 +85,15 @@ class Conversation internal constructor(
     private val agentSessions = mutableMapOf<Participant.Agent, AgentSession>()
 
     private suspend fun restoreAgent(
-        agentParticipant: Participant.Agent,
-        agentConfiguration: AgentConfiguration,
+        invite: Action<ConversationControl.InviteAgent>,
     ) {
+        val state = checkConversationLoaded()
+
+        val agentParticipant = Participant.Agent(id = invite.payload.participantId)
+        val agentConfiguration = invite.payload.agentConfiguration
         val device = AgentDevice(agentParticipant)
         val agent = agentFactory.createAgent(agentConfiguration)
-        val agentSession = agent.restoreSession(awaitConversationLoaded().transcript, device)
+        val agentSession = agent.restoreSession(state.transcript, invite, device)
         agentSessions += agentParticipant to agentSession
     }
 
@@ -104,13 +109,18 @@ class Conversation internal constructor(
             }
 
         invites.forEach { invite ->
-            val agentParticipant = Participant.Agent(id = invite.payload.participantId)
-            val agentConfiguration = invite.payload.agentConfiguration
-
-            coroutineScope.launch {
-                restoreAgent(agentParticipant, agentConfiguration)
-            }
+            coroutineScope.launch { restoreAgent(invite) }
         }
+    }
+
+    private fun CoroutineScope.watchAgents() = launch {
+        _events
+            .filterIsInstance<Action<*>>()
+            .filter { it.payload is ConversationControl.InviteAgent }
+            .map { it.asTypedAction<ConversationControl.InviteAgent>() }
+            .collect { invite ->
+                coroutineScope.launch { restoreAgent(invite) }
+            }
     }
 
     suspend fun awaitConversationLoaded(): ConversationState.Loaded {
@@ -138,18 +148,14 @@ class Conversation internal constructor(
     suspend fun inviteAgent(agentConfiguration: AgentConfiguration) {
         awaitConversationLoaded()
 
-        val agentParticipant = Participant.Agent(id = Uuid.random().toString())
+        val participantId = Uuid.random().toString()
 
         newUserDevice().act(
             ConversationControl.InviteAgent(
-                participantId = agentParticipant.id,
+                participantId = participantId,
                 agentConfiguration = agentConfiguration
             )
         )
-
-        coroutineScope.launch {
-            restoreAgent(agentParticipant, agentConfiguration)
-        }
     }
 
     private inner class AgentDevice(
