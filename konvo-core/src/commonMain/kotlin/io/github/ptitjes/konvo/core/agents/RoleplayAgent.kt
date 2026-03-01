@@ -8,73 +8,143 @@ import ai.koog.prompt.message.*
 import ai.koog.prompt.tokenizer.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.toolkit.*
-import io.github.ptitjes.konvo.core.settings.*
+import io.github.ptitjes.konvo.core.conversations.model.*
+import io.github.ptitjes.konvo.core.conversations.model.events.*
+import io.github.ptitjes.konvo.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.core.roleplay.*
+import io.github.ptitjes.konvo.core.settings.*
+import kotlinx.coroutines.flow.*
 import kotlin.random.*
 
-private val logger = KotlinLogging.logger { }
+class RoleplayAgent(
+    private val modelProviderManager: ModelManager,
+    private val characterProviderManager: CharacterManager,
+    private val settingsRepository: SettingsRepository,
+    private val lorebookManager: LorebookManager,
+    private val configuration: RoleplayAgentConfiguration,
+) : InteractiveAgent(
+    initialPrompt = { prompt("roleplay") { } },
+) {
+    companion object {
+        val agentId = "urn:$PLUGIN_ID/${RoleplayAgent::class.simpleName}"
 
-fun buildRoleplayAgent(
-    roleplaySettings: RoleplaySettings,
-    roleplayConfiguration: RoleplayAgentConfiguration,
-    model: ModelCard,
-    character: CharacterCard,
-    persona: Persona,
-    lorebook: Lorebook?,
-    developerSettings: DeveloperSettings = DeveloperSettings(),
-): Agent {
-    val characterGreetingIndex = roleplayConfiguration.characterGreetingIndex
-    val userName = persona.nickname
+        val presence = InteractionProtocol(
+            id = "$agentId#Presence",
+            awaitsInput = false,
+            hidesParent = false,
+            reactsTo = setOf(Messaging.Message::class)
+        )
 
-    val initialSystemPrompt = buildRoleplaySystemPrompt(
-        defaultSystemPrompt = roleplaySettings.defaultSystemPrompt
-            .takeIf { it.isNotBlank() }
-            ?: DEFAULT_SYSTEM_PROMPT,
-        character = character,
-        userName = userName,
-    )
+        val processing = InteractionProtocol(
+            id = "$agentId#Processing",
+            awaitsInput = false,
+            hidesParent = false,
+            reactsTo = setOf(AgentProcessing.Cancellation::class)
+        )
 
-    val greetings = character.greetings
-    val greetingIndex = characterGreetingIndex ?: Random.nextInt(0, greetings.size)
-    val initialAssistantMessage = greetings[greetingIndex].replaceTags(userName, character.name)
+        val protocols = setOf(presence, processing)
 
-    val welcomeMessage = buildString {
-        appendLine("![${character.name}](${character.avatarUrl})")
-        appendLine()
-        append(initialAssistantMessage)
+        init {
+            protocols.forEach { InteractionProtocols.register(it) }
+        }
     }
 
-    val lorebooks: List<Lorebook> = buildList {
-        character.characterBook?.let { add(it) }
-        lorebook?.let { add(it) }
+    override val initialInteraction by interaction<ConversationControl.InviteAgent, Unit>(presence) {
+        onEnter {
+            act(Presence.Joining)
+
+            val character = characterProviderManager.withId(configuration.characterId)
+            val personaSettings = settingsRepository.getSettings(PersonaSettingsKey).first()
+            val persona = personaSettings.personas.first { it.name == configuration.personaName }
+
+            val greetings = character.greetings
+            val greetingIndex = configuration.characterGreetingIndex
+                ?: Random.nextInt(0, greetings.size)
+            val initialAssistantMessage = greetings[greetingIndex]
+                .replaceTags(persona.nickname, character.name)
+
+            val welcomeMessage = buildString {
+                appendLine("![${character.name}](${character.avatarUrl})")
+                appendLine()
+                append(initialAssistantMessage)
+            }
+
+            act(welcomeMessage.toKonvoMessage())
+            appendToPrompt { message(welcomeMessage.toKoogAssistantMessage()) }
+
+            act(AgentCapabilities.Messaging())
+        }
+        onAction<Messaging.Message> { event ->
+            runInteraction(processing, event)
+        }
+//      onEvent<AgentState.Update> { event ->
+//          if (event.property == "configuration") {
+//              model.update(modelManager.getModel(event.value))
+//          }
+//      }
+        onLeave {
+            act(Presence.Leaving)
+        }
     }
 
-    return DefaultAgent(
-        systemPrompt = prompt("role-play") { system { +initialSystemPrompt } },
-        welcomeMessage = welcomeMessage,
-        model = model.toLLModel(),
-        promptExecutor = SingleLLMPromptExecutor(model.getLLMClient()),
-        strategy = {
-            strategy("role-play") {
-                val dumpRequest by dumpToPrompt()
+    val processing by interaction<Messaging.Message, Unit>(RoleplayAgent.processing) {
+        onEnter {
+            act(AgentProcessing.Start)
+        }
+        onExecute { input ->
+            val roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey).first()
+            val model = modelProviderManager.named(configuration.modelName)
+            val promptExecutor = SingleLLMPromptExecutor(model.getLLMClient())
+            val character = characterProviderManager.withId(configuration.characterId)
+            val personaSettings = settingsRepository.getSettings(PersonaSettingsKey).first()
+            val persona = personaSettings.personas.first { it.name == configuration.personaName }
+            val lorebook = configuration.lorebookId?.let { id -> lorebookManager.withId(id) }
+            val developerSettings = settingsRepository.getSettings(DeveloperSettingsKey).first()
+
+            val lorebooks: List<Lorebook> = buildList {
+                character.characterBook?.let { add(it) }
+                lorebook?.let { add(it) }
+            }
+
+            runGraph<Action<Messaging.Message>, Unit>(
+                promptExecutor = promptExecutor,
+                model = model.toLLModel(),
+                maxAgentIterations = 50,
+                input = input
+            ) {
+                val dumpRequest by dumpMessageAction()
 
                 val request by executeRoleplayRequest(
                     roleplaySettings = roleplaySettings,
-                    roleplayConfiguration = roleplayConfiguration,
+                    roleplayConfiguration = configuration,
                     character = character,
                     persona = persona,
                     lorebooks = lorebooks,
                 )
 
+                val emitResponses by actOnMessages()
+
                 edge(nodeStart forwardTo dumpRequest)
                 edge(dumpRequest forwardTo request)
-                edge(request forwardTo nodeFinish onMultipleAssistantMessages { true })
+                edge(request forwardTo emitResponses onMultipleAssistantMessages { true })
+                edge(emitResponses forwardTo nodeFinish transformed { })
             }
-        },
-        developerSettings = developerSettings,
-    )
+        }
+        onError {
+            act(AgentProcessing.Failure(it.message ?: "Unknown error"))
+        }
+        onLeave {
+            act(AgentProcessing.Completion)
+        }
+        onAction<AgentProcessing.Cancellation> {
+            act(AgentProcessing.Failure("Cancelled by user"))
+            leaveInteraction()
+        }
+    }
 }
+
+private val logger = KotlinLogging.logger { }
 
 private fun AIAgentSubgraphBuilderBase<*, *>.executeRoleplayRequest(
     roleplaySettings: RoleplaySettings,
@@ -213,7 +283,7 @@ private fun Lorebook.selectEntries(
         return if (entry.useRegex) {
             // Per spec, applications MAY use only the first regex for performance
             val patternRaw = entry.keys.firstOrNull() ?: return false
-            return try {
+            try {
                 val regex = if (caseSensitive) Regex(patternRaw) else Regex(patternRaw, RegexOption.IGNORE_CASE)
                 regex.containsMatchIn(text)
             } catch (_: Throwable) {
