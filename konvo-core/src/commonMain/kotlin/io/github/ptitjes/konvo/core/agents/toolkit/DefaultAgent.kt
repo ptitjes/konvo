@@ -17,7 +17,6 @@ import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.model.events.*
-import io.github.ptitjes.konvo.core.conversations.model.events.AgentProcessing.*
 import io.github.ptitjes.konvo.core.mcp.*
 import io.github.ptitjes.konvo.core.settings.*
 import io.github.ptitjes.konvo.core.tools.*
@@ -43,20 +42,20 @@ internal class DefaultAgent(
     private val developerSettings: DeveloperSettings = DeveloperSettings(),
     private val installFeatures: GraphAIAgent.FeatureContext.(InteractionDevice.Agent) -> Unit = {},
 ) : Agent {
-    private var prompt: Prompt = systemPrompt
-
     override suspend fun restoreSession(
         transcript: ConversationTranscript,
+        invite: Action<ConversationControl.InviteAgent>,
         device: InteractionDevice.Agent,
     ): AgentSession = coroutineScope {
-        val agentSession = DefaultAgentSession(
+        val context = DefaultAgentContext(
             coroutineContext = coroutineContext,
             mcpSessionFactory = mcpSessionFactory,
+            initialPrompt = { systemPrompt },
         )
 
-        val invite = transcript.actions
-            .last { it.payload is ConversationControl.InviteAgent }
-            .asTypedAction<ConversationControl.InviteAgent>()
+        val session = DefaultAgentSession(
+            context = context,
+        )
 
         val conversationJustStarted = transcript.actions.none { it.sender == device.participant }
 
@@ -75,7 +74,7 @@ internal class DefaultAgent(
 
             welcomeMessage?.let { content ->
                 device.act(content.toKonvoMessage(), interaction)
-                prompt = prompt(prompt) {
+                context.appendToPrompt {
                     message(
                         KoogMessage.Assistant(
                             content = content, metaInfo = ResponseMetaInfo(timestamp = Clock.System.now())
@@ -118,7 +117,7 @@ internal class DefaultAgent(
                 "Expected presence interaction, got ${interaction.protocol.id}"
             }
 
-            prompt = prompt(systemPrompt) {
+            context.appendToPrompt {
                 messages(messages)
             }
 
@@ -145,11 +144,11 @@ internal class DefaultAgent(
                                 @Suppress("UNCHECKED_CAST")
                                 val agentInput = action.toKoogMessage() as KoogMessage.User
 
-                                agentSession.withMcpSession { mcpSession ->
+                                context.withMcpSession { mcpSession ->
                                     mcpSession.addServers(mcpServerNames)
                                     val tools = mcpSession.tools.first()
 
-                                    val agent = buildAgent(tools, device)
+                                    val agent = buildAgent(context, tools, device)
 
                                     val agentOutput = agent.run(agentInput)
 
@@ -168,17 +167,18 @@ internal class DefaultAgent(
             }
         }
 
-        agentSession
+        session
     }
 
     private suspend fun buildAgent(
+        context: DefaultAgentContext,
         tools: List<ToolCard>?,
-        conversationView: InteractionDevice.Agent,
+        device: InteractionDevice.Agent,
     ): AIAgent<KoogMessage.User, List<KoogMessage.Assistant>> {
         val tools = tools ?: emptyList()
 
         val agentConfig = AIAgentConfig(
-            prompt = prompt,
+            prompt = context.prompt,
             model = model,
             maxAgentIterations = maxAgentIterations,
         )
@@ -191,18 +191,18 @@ internal class DefaultAgent(
 
         return AIAgent(
             promptExecutor = promptExecutor,
-            strategy = strategy(conversationView),
+            strategy = strategy(device),
             agentConfig = agentConfig,
             toolRegistry = toolRegistry,
             installFeatures = {
                 install(PromptCollector) {
                     collectPrompt = { newPrompt ->
-                        prompt = newPrompt
+                        context.resetPrompt(newPrompt)
                     }
                 }
 
                 install(ConversationFeature) {
-                    conversationViewProvider = { conversationView }
+                    conversationViewProvider = { device }
                     this.tools = tools
                 }
 
@@ -222,7 +222,7 @@ internal class DefaultAgent(
 
                 handleEvents {
                     onToolValidationFailed { eventContext ->
-                        conversationView.act(
+                        device.act(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
@@ -237,7 +237,7 @@ internal class DefaultAgent(
                         val result = eventContext.toolResult
                         val structuredContent = (result as? JsonObject)?.get("structuredContent")
 
-                        conversationView.act(
+                        device.act(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
@@ -251,7 +251,7 @@ internal class DefaultAgent(
                         )
                     }
                     onToolCallFailed { eventContext ->
-                        conversationView.act(
+                        device.act(
                             ToolUsage.Notification(
                                 call = ToolUsage.Call(
                                     id = eventContext.toolCallId ?: newUniqueId(),
@@ -266,38 +266,9 @@ internal class DefaultAgent(
                     }
                 }
 
-                installFeatures(conversationView)
+                installFeatures(device)
             },
         )
-    }
-}
-
-class DefaultAgentSession(
-    private val coroutineContext: CoroutineContext,
-    private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
-) : AgentSession {
-    // make atomic?
-    private var mcpSession: McpHostSession? = null
-
-    suspend fun withMcpSession(block: suspend (McpHostSession) -> Unit) {
-        mcpSession = mcpSession ?: mcpSessionFactory?.invoke(coroutineContext)
-        mcpSession?.let { block(it) }
-    }
-
-    override val isPaused: Boolean
-        get() = TODO("Not yet implemented")
-
-    override suspend fun pause() {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun resume() {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun close() {
-        mcpSession?.close()
-        mcpSession = null
     }
 }
 
