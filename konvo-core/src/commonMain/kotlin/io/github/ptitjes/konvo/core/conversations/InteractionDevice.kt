@@ -15,7 +15,7 @@ sealed interface InteractionDevice {
      */
     interface Agent : InteractionDevice {
         override val participant: Participant.Agent
-        suspend fun act(payload: Action.Agent, interaction: Interaction? = null)
+        suspend fun <P : Action.Agent> act(payload: P, interaction: Interaction? = null): Action<P>
         suspend fun startInteraction(
             protocol: InteractionProtocol,
             parent: Interaction? = null,

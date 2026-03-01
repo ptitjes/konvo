@@ -10,8 +10,19 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import kotlinx.io.files.*
+import kotlinx.serialization.json.*
+import kotlin.time.*
+import kotlin.uuid.Uuid
 import ai.koog.prompt.message.ContentPart as KoogContentPart
 import ai.koog.prompt.message.Message as KoogMessage
+import ai.koog.prompt.message.Message.Tool.Call as KoogCall
+
+internal fun String.toKoogAssistantMessage(): KoogMessage.Assistant {
+    return KoogMessage.Assistant(
+        content = this,
+        metaInfo = ResponseMetaInfo(timestamp = Clock.System.now()),
+    )
+}
 
 internal suspend fun Action<Messaging.Message>.toKoogMessage(): KoogMessage = when (sender) {
     is Participant.User -> KoogMessage.User(
@@ -84,6 +95,22 @@ private suspend fun Messaging.Attachment.toKoogAttachment(): KoogContentPart {
     }
 }
 
-fun KoogMessage.Assistant.toKonvoMessage(): Messaging.Message = content.toKonvoMessage()
+internal fun ToolUsage.Call.toKoogCall(): KoogCall = KoogCall(
+    id = id,
+    tool = tool,
+    content = Json.encodeToString(this.arguments),
+    metaInfo = ResponseMetaInfo.create(Clock.System),
+)
+
+// TODO add Event.metadata field and copy Koog messages' metadata
+fun KoogMessage.Response.toKonvoMessage(): Messaging.Message = content.toKonvoMessage()
 
 fun String.toKonvoMessage(): Messaging.Message = Messaging.Message(content = listOf(Messaging.Part.Text(this)))
+
+internal fun KoogCall.toKonvoCall(): ToolUsage.Call {
+    return ToolUsage.Call(
+        id = id ?: Uuid.random().toString(),
+        tool = tool,
+        arguments = contentJson,
+    )
+}

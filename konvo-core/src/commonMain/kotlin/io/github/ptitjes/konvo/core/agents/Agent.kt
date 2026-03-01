@@ -29,3 +29,9 @@ interface AgentContext {
 
     suspend fun <T> withMcpSession(block: suspend (McpHostSession) -> T): T
 }
+
+context(context: AgentContext)
+fun appendToPrompt(builder: PromptBuilder.() -> Unit) = context.appendToPrompt(builder)
+
+suspend context(context: AgentContext)
+fun <T> withMcpSession(block: suspend (McpHostSession) -> T) = context.withMcpSession(block)
