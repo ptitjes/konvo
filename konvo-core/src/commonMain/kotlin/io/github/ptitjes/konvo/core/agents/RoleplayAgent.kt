@@ -22,8 +22,8 @@ class RoleplayAgent(
     private val characterProviderManager: CharacterManager,
     private val settingsRepository: SettingsRepository,
     private val lorebookManager: LorebookManager,
-    private val configuration: RoleplayAgentConfiguration,
-) : InteractiveAgent(
+) : InteractiveAgent<RoleplayAgentConfiguration>(
+    configurationClass = RoleplayAgentConfiguration::class,
     initialPrompt = { Prompt.Empty.copy(id = "roleplay") },
 ) {
     companion object {

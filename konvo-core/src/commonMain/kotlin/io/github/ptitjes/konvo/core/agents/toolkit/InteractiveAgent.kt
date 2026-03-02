@@ -14,7 +14,8 @@ import kotlin.coroutines.*
 import kotlin.reflect.*
 import ai.koog.prompt.message.Message as KoogMessage
 
-abstract class InteractiveAgent(
+abstract class InteractiveAgent<C : Any>(
+    val configurationClass: KClass<C>,
     private val initialPrompt: () -> Prompt,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
 ) : Agent {
@@ -62,6 +63,8 @@ abstract class InteractiveAgent(
             initialPrompt = initialPrompt,
         )
 
+        context.updateState(AgentConfigurationStateKey, invite.payload.agentConfiguration)
+
         val session = DefaultAgentSession(
             context = context,
         )
@@ -104,11 +107,10 @@ abstract class InteractiveAgent(
                 }
             }
 
-            val interaction = pendingInteractions.values.last()
-
-            check(interaction.protocol.id == "$PLUGIN_ID/Agent#Presence") {
-                "Expected presence interaction, got ${interaction.protocol.id}"
+            check(pendingInteractions.size == 1) {
+                "Expected exactly one pending interaction, got ${pendingInteractions.size}"
             }
+            val interaction = pendingInteractions.values.last()
 
             context.appendToPrompt {
                 messages(messages)
@@ -248,3 +250,14 @@ private class InteractionRunner<P : Action.Payload, S>(
         return@coroutineScope state.load()
     }
 }
+
+/** Key for storing the [AgentConfiguration] in the agent state. */
+private val AgentConfigurationStateKey: AgentStateKey<AgentConfiguration> =
+    createAgentStateKey<AgentConfiguration>("konvo-interactive-agent-configuration")
+
+@Suppress("UNCHECKED_CAST")
+context(_: AgentContext)
+val <C : Any> InteractiveAgent<C>.configuration: C
+    get() =
+        loadState<AgentConfiguration>(AgentConfigurationStateKey) as? C
+            ?: throw IllegalStateException("Agent configuration not found in state")

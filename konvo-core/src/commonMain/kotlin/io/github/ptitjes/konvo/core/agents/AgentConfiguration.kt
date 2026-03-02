@@ -7,7 +7,7 @@ sealed interface AgentConfiguration
 
 /** Default no-op configuration used when an agent is not specified or cannot be resolved. */
 @Serializable
-object NoAgentConfiguration : AgentConfiguration
+data object NoAgentConfiguration : AgentConfiguration
 
 @Serializable
 data class QuestionAnswerAgentConfiguration(

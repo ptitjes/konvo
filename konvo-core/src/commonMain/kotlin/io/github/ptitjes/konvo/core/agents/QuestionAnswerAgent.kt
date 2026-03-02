@@ -24,8 +24,8 @@ class QuestionAnswerAgent(
     private val settingsRepository: SettingsRepository,
     private val modelProviderManager: ModelManager,
     mcpSessionFactory: (coroutineContext: CoroutineContext) -> McpHostSession,
-    configuration: QuestionAnswerAgentConfiguration,
-) : InteractiveAgent(
+) : InteractiveAgent<QuestionAnswerAgentConfiguration>(
+    configurationClass = QuestionAnswerAgentConfiguration::class,
     initialPrompt = {
         val dateString = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.format(dateFormat)
 

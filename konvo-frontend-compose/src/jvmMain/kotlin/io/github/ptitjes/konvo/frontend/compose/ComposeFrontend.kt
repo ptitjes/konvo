@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import io.github.ptitjes.konvo.core.agents.*
+import io.github.ptitjes.konvo.core.agents.toolkit.*
 import io.github.ptitjes.konvo.core.conversations.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.conversations.storage.files.*
@@ -110,14 +111,34 @@ fun CoroutineScope.buildDi() = DI {
 
     bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
 
+    bindSet<InteractiveAgent<*>>()
+
+    inBindSet<InteractiveAgent<*>> {
+        add {
+            singleton {
+                QuestionAnswerAgent(
+                    settingsRepository = instance(),
+                    modelProviderManager = instance(),
+                    mcpSessionFactory = factory(),
+                )
+            }
+        }
+        add {
+            singleton {
+                RoleplayAgent(
+                    modelProviderManager = instance(),
+                    characterProviderManager = instance(),
+                    settingsRepository = instance(),
+                    lorebookManager = instance(),
+                )
+            }
+        }
+    }
+
     bind {
         singleton {
             AgentFactory(
-                modelProviderManager = instance(),
-                mcpSessionFactory = factory(),
-                characterProviderManager = instance(),
-                settingsRepository = instance(),
-                lorebookManager = instance(),
+                agents = instance(),
             )
         }
     }
