@@ -24,7 +24,7 @@ class RoleplayAgent(
     private val lorebookManager: LorebookManager,
     private val configuration: RoleplayAgentConfiguration,
 ) : InteractiveAgent(
-    initialPrompt = { prompt("roleplay") { } },
+    initialPrompt = { Prompt.Empty.copy(id = "roleplay") },
 ) {
     companion object {
         val agentId = "urn:$PLUGIN_ID/${RoleplayAgent::class.simpleName}"
