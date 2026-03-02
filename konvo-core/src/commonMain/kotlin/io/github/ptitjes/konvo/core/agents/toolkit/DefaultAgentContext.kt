@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.core.agents.toolkit
 import ai.koog.prompt.dsl.Prompt
 import ai.koog.prompt.dsl.PromptBuilder
 import io.github.ptitjes.konvo.core.agents.AgentContext
+import io.github.ptitjes.konvo.core.agents.AgentStateKey
 import io.github.ptitjes.konvo.core.mcp.McpHostSession
 import kotlin.coroutines.CoroutineContext
 
@@ -11,6 +12,20 @@ class DefaultAgentContext(
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
     private val initialPrompt: () -> Prompt,
 ) : AgentContext {
+    // TODO make atomic
+    private val state = mutableMapOf<AgentStateKey<*>, Any?>()
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <S> loadState(key: AgentStateKey<S>): S? = state[key] as S?
+
+    override fun <S> updateState(key: AgentStateKey<S>, state: S) {
+        this@DefaultAgentContext.state[key] = state
+    }
+
+    override fun <S> updateState(key: AgentStateKey<S>, updater: (previous: S?) -> S) {
+        updateState(key, updater(loadState(key)))
+    }
+
     // TODO make atomic
     override var prompt: Prompt = initialPrompt()
         private set

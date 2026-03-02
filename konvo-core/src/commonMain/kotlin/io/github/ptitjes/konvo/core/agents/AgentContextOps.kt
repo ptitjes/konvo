@@ -4,6 +4,15 @@ import ai.koog.prompt.dsl.*
 import io.github.ptitjes.konvo.core.mcp.*
 
 context(context: AgentContext)
+fun <S> loadState(key: AgentStateKey<S>): S? = context.loadState(key)
+
+context(context: AgentContext)
+fun <S> updateState(key: AgentStateKey<S>, state: S) = context.updateState(key, state)
+
+context(context: AgentContext)
+fun <S> updateState(key: AgentStateKey<S>, updater: (previous: S?) -> S) = context.updateState(key, updater)
+
+context(context: AgentContext)
 val prompt: Prompt get() = context.prompt
 
 context(context: AgentContext)
