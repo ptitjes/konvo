@@ -1,11 +1,10 @@
 package io.github.ptitjes.konvo.core.agents.toolkit
 
-import ai.koog.prompt.dsl.Prompt
-import io.github.ptitjes.konvo.core.agents.createAgentStateKey
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlinx.coroutines.test.runTest
+import ai.koog.prompt.dsl.*
+import io.github.ptitjes.konvo.core.agents.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.*
+import kotlin.test.*
 
 class AgentStateTests {
 
@@ -42,5 +41,30 @@ class AgentStateTests {
 
         assertEquals(10, context.loadState(key1))
         assertEquals("Konvo", context.loadState(key2))
+    }
+
+    @Test
+    fun `concurrent updates`() = runTest {
+        val context = DefaultAgentContext(
+            coroutineContext = coroutineContext,
+            initialPrompt = { Prompt.Empty }
+        )
+
+        val key = createAgentStateKey<Int>("counter")
+        context.updateState(key, 0)
+
+        val n = 100
+        withContext(Dispatchers.Default) {
+            val jobs = List(n) {
+                launch {
+                    repeat(100) {
+                        context.updateState(key) { (it ?: 0) + 1 }
+                    }
+                }
+            }
+            jobs.joinAll()
+        }
+
+        assertEquals(n * 100, context.loadState(key))
     }
 }
