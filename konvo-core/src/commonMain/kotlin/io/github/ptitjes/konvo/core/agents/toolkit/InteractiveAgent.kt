@@ -150,13 +150,13 @@ private class InteractionRunner<P : Action.Payload, S>(
                 parent = parent?.interaction,
                 trigger = triggerAction,
             )
-            execute(interaction, triggerAction)
+            execute(interaction, triggerAction, newlyStarted = true)
         }
     }
 
     suspend fun recover(interaction: Interaction, triggerAction: Action<P>) {
         job = coroutineScope.launch {
-            execute(interaction, triggerAction)
+            execute(interaction, triggerAction, newlyStarted = false)
         }
     }
 
@@ -167,7 +167,11 @@ private class InteractionRunner<P : Action.Payload, S>(
     }
 
     @OptIn(ExperimentalAtomicApi::class)
-    private suspend fun execute(interaction: Interaction, triggerAction: Action<P>): S = coroutineScope {
+    private suspend fun execute(
+        interaction: Interaction,
+        triggerAction: Action<P>,
+        newlyStarted: Boolean,
+    ): S = coroutineScope {
         this@InteractionRunner.interaction = interaction
         logger.debug { "Executing interaction ${interaction.id} (protocol: ${interaction.protocol.id})" }
 
@@ -225,8 +229,10 @@ private class InteractionRunner<P : Action.Payload, S>(
         }
 
         try {
-            logger.debug { "Starting interaction ${interaction.id}" }
-            driver.onEnter?.invoke(context, scope, triggerAction)
+            if (newlyStarted) {
+                logger.debug { "Starting interaction ${interaction.id}" }
+                driver.onEnter?.invoke(context, scope, triggerAction)
+            }
             logger.debug { "Before execution of interaction ${interaction.id}" }
             driver.onExecute?.invoke(context, scope, triggerAction) ?: awaitCancellation()
             logger.debug { "After execution of interaction ${interaction.id}" }
