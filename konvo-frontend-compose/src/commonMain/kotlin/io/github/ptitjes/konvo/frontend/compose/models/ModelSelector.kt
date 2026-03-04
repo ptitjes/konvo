@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.core.models.*
 import io.github.ptitjes.konvo.frontend.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.frontend.compose.translations.*
+import org.jetbrains.compose.resources.painterResource
 
 /**
  * A selector for models.
@@ -33,17 +34,28 @@ fun ModelSelector(
         onSelectItem = onModelSelected,
         options = models,
         itemLabeler = { it.name },
-        itemOption = {
+        itemOption = { item ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                it.provider.name?.let { providerName ->
+                item.provider.name?.let { providerName ->
+                    val providerIcon = ModelProviderIcons.iconFor(item.provider)
+
                     FilterChip(
                         label = {
                             Text(
                                 text = providerName,
                                 style = MaterialTheme.typography.bodySmall,
                             )
+                        },
+                        leadingIcon = providerIcon?.let {
+                            {
+                                Icon(
+                                    painter = painterResource(it),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
                         },
                         onClick = {},
                         selected = false,
@@ -52,7 +64,7 @@ fun ModelSelector(
                     )
                 }
                 Text(
-                    text = it.name,
+                    text = item.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )

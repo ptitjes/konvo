@@ -105,6 +105,14 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                         )
                                     }
 
+                                    ModelProviderIcons.iconFor(provider.configuration)?.let { icon ->
+                                        Icon(
+                                            painter = painterResource(icon),
+                                            contentDescription = null,
+                                            modifier = Modifier.size(24.dp),
+                                        )
+                                    }
+
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = provider.name,
@@ -616,6 +624,21 @@ private fun ModelProviderTypeSelector(
         onSelectItem = onSelected,
         options = ProviderType.entries,
         itemLabeler = { it.name },
+        itemOption = { providerType ->
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ModelProviderIcons.iconFor(providerType.newConfiguration())?.let { icon ->
+                    Icon(
+                        painter = painterResource(icon),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                Text(text = providerType.name)
+            }
+        },
         modifier = modifier,
     )
 }
