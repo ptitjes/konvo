@@ -31,6 +31,7 @@ fun ConversationPane(
     state: ConversationViewState.Loaded,
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
+    sharedTransitionScope: SharedTransitionScope,
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -58,9 +59,27 @@ fun ConversationPane(
             )
         }
 
-        ConversationSuggestions()
-
-        ConversationInputBox()
+        with(sharedTransitionScope) {
+            AnimatedVisibility(
+                visible = state.items.isEmpty(),
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut(),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxWidth()
+                        .sharedElement(
+                            sharedContentState = rememberSharedContentState("input-box"),
+                            animatedVisibilityScope = this,
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    ConversationSuggestions()
+                    ConversationInputBox()
+                }
+            }
+        }
     }
 }
 
@@ -83,7 +102,7 @@ private fun ConversationPreamble() {
 
 @Composable
 context(conversation: InteractionDevice.User)
-private fun ConversationLog(
+internal fun ConversationLog(
     state: ConversationViewState.Loaded,
     paddingValues: PaddingValues,
 ) {
@@ -196,14 +215,14 @@ private object ProcessingIndicatorKey
 
 @Composable
 context(_: InteractionDevice.User)
-private fun ConversationSuggestions() {
+internal fun ConversationSuggestions() {
     // ConversationSuggestions slot
     // ConversationSuggestions()
 }
 
 @Composable
 context(conversation: InteractionDevice.User)
-private fun ConversationInputBox() {
+internal fun ConversationInputBox() {
     // UserInputBox slot (itself having sub slots)
     // - AttachmentButtonSlot slot
     //   - AttachmentMenu slot
@@ -213,7 +232,7 @@ private fun ConversationInputBox() {
     val coroutineScope = rememberCoroutineScope()
 
     UserInputBox(
-        modifier = Modifier.widthIn(max = 800.dp).padding(16.dp),
+        modifier = Modifier.widthIn(max = 800.dp).padding(horizontal = 16.dp),
         onSendMessage = { content, attachments ->
             coroutineScope.launch {
                 conversation.sendMessage(

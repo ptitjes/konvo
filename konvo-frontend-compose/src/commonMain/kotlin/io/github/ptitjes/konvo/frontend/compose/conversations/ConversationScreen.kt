@@ -1,10 +1,12 @@
 package io.github.ptitjes.konvo.frontend.compose.conversations
 
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.*
@@ -51,63 +53,106 @@ fun ConversationScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            val barHeightPx = with(LocalDensity.current) { 64.dp.toPx() }
+    val barHeightPx = with(LocalDensity.current) { 64.dp.toPx() }
 
-            val transparentToBlack =  Brush.linearGradient(
-                0.0f to MaterialTheme.colorScheme.background,
-                1.0f to Color.Transparent,
-                start = Offset(0.0f, 0.0f),
-                end = Offset(0.0f, barHeightPx)
-            )
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val topBarGradient = Brush.linearGradient(
+        0.0f to backgroundColor,
+        1.0f to Color.Transparent,
+        start = Offset(0.0f, 0.0f),
+        end = Offset(0.0f, barHeightPx)
+    )
+    val bottomBarGradient = Brush.linearGradient(
+        0.0f to Color.Transparent,
+        0.4f to backgroundColor,
+        0.6f to backgroundColor,
+        1.0f to backgroundColor.copy(alpha = 0.65f),
+        start = Offset(0.0f, 0.0f),
+        end = Offset(0.0f, barHeightPx)
+    )
 
-            TopAppBar(
-                modifier = Modifier.background(transparentToBlack),
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                title = {
-                    when (val state = state) {
-                        is ConversationViewState.Loading -> Text(
-                            text = "Conversation title",
-                            modifier = Modifier
-                                .padding(start = 16.dp, end = 16.dp)
-                                .fillMaxWidth().placeholder(
-                                    visible = true,
-                                    highlight = PlaceholderHighlight.shimmer(),
-                                ),
-                        )
+    SharedTransitionLayout {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                TopAppBar(
+                    modifier = Modifier.background(topBarGradient),
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    title = {
+                        when (val state = state) {
+                            is ConversationViewState.Loading -> Text(
+                                text = "Conversation title",
+                                modifier = Modifier
+                                    .padding(start = 16.dp, end = 16.dp)
+                                    .fillMaxWidth().placeholder(
+                                        visible = true,
+                                        highlight = PlaceholderHighlight.shimmer(),
+                                    ),
+                            )
 
-                        is ConversationViewState.Loaded -> with(viewModel.conversation) {
-                            EditableConversationTitle(
-                                conversationTitle = state.preview.title,
+                            is ConversationViewState.Loaded -> with(viewModel.conversation) {
+                                EditableConversationTitle(
+                                    conversationTitle = state.preview.title,
+                                )
+                            }
+                        }
+                    },
+                    navigationIcon = {
+                        LocalCenterStageControl.current.NavigationButton {
+                            Icon(
+                                modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                                painter = painterResource(Res.drawable.ic_chat),
+                                contentDescription = strings.conversations.conversationAria
                             )
                         }
+                    },
+                    actions = {
+                        LocalCenterStageControl.current.ExtraPaneButton()
                     }
-                },
-                navigationIcon = {
-                    LocalCenterStageControl.current.NavigationButton {
-                        Icon(
-                            modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                            painter = painterResource(Res.drawable.ic_chat),
-                            contentDescription = strings.conversations.conversationAria
-                        )
-                    }
-                },
-                actions = {
-                    LocalCenterStageControl.current.ExtraPaneButton()
-                }
-            )
-        }
-    ) { paddingValues ->
-        when (val state = state) {
-            is ConversationViewState.Loading -> FullSizeProgressIndicator()
-            is ConversationViewState.Loaded -> with(viewModel.conversation) {
-                ConversationPane(
-                    state = state,
-                    modifier = Modifier.fillMaxSize(),
-                    paddingValues = paddingValues,
                 )
+            },
+            bottomBar = {
+                // TODO on mobile only show bottom only when at the bottom of the conversation log or dragging up
+                when (val state = state) {
+                    is ConversationViewState.Loading -> {}
+                    is ConversationViewState.Loaded -> AnimatedVisibility(
+                        visible = state.items.isNotEmpty(),
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .background(bottomBarGradient)
+                                .padding(vertical = 16.dp)
+                                .fillMaxWidth()
+                                .sharedElement(
+                                    sharedContentState = rememberSharedContentState("input-box"),
+                                    animatedVisibilityScope = this,
+                                ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            with(viewModel.conversation) {
+                                ConversationSuggestions()
+                                ConversationInputBox()
+                            }
+                        }
+                    }
+                }
+            }
+        ) { paddingValues ->
+            when (val state = state) {
+                is ConversationViewState.Loading -> FullSizeProgressIndicator(
+                    modifier = Modifier.padding(paddingValues),
+                )
+
+                is ConversationViewState.Loaded -> with(viewModel.conversation) {
+                    ConversationPane(
+                        state = state,
+                        modifier = Modifier.fillMaxSize(),
+                        paddingValues = paddingValues,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                    )
+                }
             }
         }
     }
