@@ -71,93 +71,64 @@ fun CoroutineScope.buildDi() = DI {
     bindSingleton<StoragePaths> { DesktopHomeStoragePaths() }
 
     inBindSet<PromptProvider> {
-        add { singleton { McpPromptProvider(instance()) } }
+        addSingleton { new(::McpPromptProvider) }
     }
 
     bindSingleton { ToolPermissions(default = ToolPermission.ASK) }
 
     inBindSet<ToolProvider> {
-        add { singleton { McpToolProvider(instance(), permissions = instance()) } }
+        addSingleton { new(::McpToolProvider) }
     }
 
-    bindSingletonOf(::FileSystemCharacterProvider)
-    bindSingletonOf(::FileSystemLorebookProvider)
+    bindSingleton { new(::FileSystemCharacterProvider) }
+    bindSingleton { new(::FileSystemLorebookProvider) }
 
     inBindSet<CharacterProvider> {
-        add { singleton { instance<FileSystemCharacterProvider>() } }
+        addSingleton { instance<FileSystemCharacterProvider>() }
     }
 
     inBindSet<LorebookProvider> {
-        add { singleton { instance<FileSystemLorebookProvider>() } }
+        addSingleton { instance<FileSystemLorebookProvider>() }
     }
 
-    bind<McpServerSpecificationsManager> {
-        singleton {
-            SettingsBasedMcpServerSpecificationsManager(coroutineContext, instance())
-        }
+    bindSingleton<McpServerSpecificationsManager> {
+        new(
+            ::SettingsBasedMcpServerSpecificationsManager,
+            coroutineContext
+        )
+    }
+    bindSingleton<SettingsBasedModelManager> { new(::SettingsBasedModelManager, coroutineContext) }
+    bindSingleton<ModelManager> { instance<SettingsBasedModelManager>() }
+
+    bindSingleton<PromptManager> { new(::DiPromptManager, coroutineContext) }
+    bindSingleton<ToolManager> { new(::DiToolManager, coroutineContext) }
+    bindSingleton<CharacterManager> { new(::DiCharacterManager, coroutineContext) }
+    bindSingleton<LorebookManager> { new(::DiLorebookManager, coroutineContext) }
+
+    bindSingleton<(CoroutineContext) -> McpHostSession> {
+        { coroutineContext: CoroutineContext -> new(::McpHostSession, coroutineContext) }
     }
 
-    bind<SettingsBasedModelManager> { singleton { SettingsBasedModelManager(coroutineContext, instance()) } }
-    bind<ModelManager> { singleton { instance<SettingsBasedModelManager>() } }
-
-    bind<PromptManager> { singleton { DiPromptManager(coroutineContext, instance()) } }
-    bind<ToolManager> { singleton { DiToolManager(coroutineContext, instance()) } }
-    bind<CharacterManager> { singleton { DiCharacterManager(coroutineContext, instance()) } }
-    bind<LorebookManager> { singleton { DiLorebookManager(coroutineContext, instance()) } }
-
-    bindFactory<CoroutineContext, McpHostSession> { coroutineContext: CoroutineContext ->
-        McpHostSession(coroutineContext, instance(), instance())
-    }
-
-    bind<SettingsRepository> { singleton { FileSystemSettingsRepository(instance()) } }
+    bindSingleton<SettingsRepository> { new(::FileSystemSettingsRepository) }
 
     bindSet<InteractiveAgent<*>>()
 
     inBindSet<InteractiveAgent<*>> {
-        add {
-            singleton {
-                QuestionAnswerAgent(
-                    settingsRepository = instance(),
-                    modelProviderManager = instance(),
-                    mcpSessionFactory = factory(),
-                )
-            }
-        }
-        add {
-            singleton {
-                RoleplayAgent(
-                    modelProviderManager = instance(),
-                    characterProviderManager = instance(),
-                    settingsRepository = instance(),
-                    lorebookManager = instance(),
-                )
-            }
-        }
+        addSingleton { new(::QuestionAnswerAgent) }
+        addSingleton { new(::RoleplayAgent) }
     }
 
-    bind {
-        singleton {
-            AgentFactory(
-                agents = instance(),
-            )
-        }
-    }
+    bindSingleton { new(::AgentFactory) }
 
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
-    bindSingleton<ConversationRepository> {
-        FileConversationRepository(
-            storagePaths = instance(),
-        )
-    }
+    bindSingleton<ConversationRepository> { new(::FileConversationRepository) }
 
-    bindSingleton { ConversationManager(coroutineContext, instance(), instance()) }
+    bindSingleton { new(::ConversationManager, coroutineContext) }
 
     bindProviderOf(::SettingsListViewModel)
     bindProviderOf(::SettingsViewModel)
     bindProviderOf(::ConversationListViewModel)
     bindProviderOf(::NewConversationViewModel)
     bindProviderOf(::MainScreenViewModel)
-    bindFactory { conversationId: String ->
-        ConversationViewModel(instance(), instance(), conversationId)
-    }
+    bindFactory { conversationId: String -> new(::ConversationViewModel, conversationId) }
 }

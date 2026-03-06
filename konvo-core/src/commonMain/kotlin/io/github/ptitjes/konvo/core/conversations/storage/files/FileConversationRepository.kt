@@ -19,7 +19,7 @@ import kotlinx.serialization.json.*
  * - conversations/<id>/meta.json (ConversationDto)
  * - conversations/<id>/events.ndjson (one ActionDto per line)
  */
-class FileConversationRepository(
+class FileConversationRepository private constructor(
     private val rootPath: Path,
     private val fileSystem: FileSystem = defaultFileSystem,
     private val timeProvider: TimeProvider = SystemTimeProvider,
@@ -31,11 +31,7 @@ class FileConversationRepository(
 
     constructor(
         storagePaths: StoragePaths,
-        fileSystem: FileSystem = defaultFileSystem,
-    ) : this(
-        rootPath = Path(storagePaths.dataDirectory, FilesLayout.CONVERSATIONS_DIR),
-        fileSystem = fileSystem,
-    )
+    ) : this(rootPath = Path(storagePaths.dataDirectory, FilesLayout.CONVERSATIONS_DIR))
 
     private val json = Json {
         ignoreUnknownKeys = true

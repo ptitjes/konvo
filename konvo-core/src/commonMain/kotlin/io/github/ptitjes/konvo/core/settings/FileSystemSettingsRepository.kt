@@ -15,9 +15,9 @@ import kotlinx.serialization.json.*
  * - Each settings section is stored in its own `${name}.json5` file.
  * - JSON is configured to be pretty and lenient, and ignore unknown keys.
  */
-class FileSystemSettingsRepository(
+class FileSystemSettingsRepository private constructor(
     private val storagePaths: StoragePaths,
-    private val fileSystem: FileSystem = defaultFileSystem,
+    private val fileSystem: FileSystem,
 ) : SettingsRepository {
 
     companion object {
@@ -30,6 +30,8 @@ class FileSystemSettingsRepository(
             ignoreUnknownKeys = true
         }
     }
+
+    constructor(storagePaths: StoragePaths) : this(storagePaths = storagePaths, fileSystem = defaultFileSystem)
 
     private val baseDir: Path get() = storagePaths.configDirectory
 

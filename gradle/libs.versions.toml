@@ -17,7 +17,7 @@ koog = "0.6.3"
 mcp = "0.8.1"
 xemanticJsonSchema = "1.1.2"
 uriKmp = "0.0.20"
-kodein = "7.25.0"
+kodein = "7.31.0"
 kim = "0.26.2"
 
 opentelemetry = "1.51.0"

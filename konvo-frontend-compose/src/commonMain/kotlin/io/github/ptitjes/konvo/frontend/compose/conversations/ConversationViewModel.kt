@@ -16,12 +16,12 @@ import kotlin.time.*
  */
 @OptIn(ExperimentalTime::class, FlowPreview::class)
 class ConversationViewModel(
+    private val conversationId: String,
     private val conversationRepository: ConversationRepository,
     conversationManager: ConversationManager,
     // TODO
     // private val viewStateContributions: Set<ConversationViewStates.Contribution>,
     // private val componentContributions: Set<ConversationComponents.Contribution>,
-    private val conversationId: String,
 ) : ViewModel() {
     private val liveConversation = conversationManager.getConversation(conversationId)
 
