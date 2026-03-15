@@ -19,10 +19,9 @@ import kotlinx.serialization.json.*
  * - conversations/<id>/meta.json (ConversationDto)
  * - conversations/<id>/events.ndjson (one ActionDto per line)
  */
-class FileConversationRepository private constructor(
+class FileConversationRepository internal constructor(
     private val rootPath: Path,
     private val fileSystem: FileSystem = defaultFileSystem,
-    private val timeProvider: TimeProvider = SystemTimeProvider,
 ) : ConversationRepository {
 
     private companion object {

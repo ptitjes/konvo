@@ -10,6 +10,6 @@ class FileConversationRepositoryContractTests : ConversationRepositoryContractTe
     override fun createRepository(timeProvider: TimeProvider): ConversationRepository {
         val tmp = createTempDirectory("konvo-file-repo-")
         val root = Path(tmp.toString())
-        return FileConversationRepository(root, timeProvider = timeProvider)
+        return FileConversationRepository(root)
     }
 }
