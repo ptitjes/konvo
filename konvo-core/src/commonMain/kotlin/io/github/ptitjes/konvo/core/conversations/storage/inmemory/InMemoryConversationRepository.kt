@@ -3,28 +3,29 @@ package io.github.ptitjes.konvo.core.conversations.storage.inmemory
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
 import io.github.ptitjes.konvo.core.util.*
-import kotlinx.atomicfu.*
 import kotlinx.coroutines.flow.*
+import kotlin.concurrent.atomics.*
 
 /**
  * In-memory implementation of [ConversationRepository] using atomic, lock-free snapshot updates.
  */
+@OptIn(ExperimentalAtomicApi::class)
 class InMemoryConversationRepository(
     private val timeProvider: TimeProvider = SystemTimeProvider,
 ) : ConversationRepository {
 
     // Conversation id -> Conversation
-    private val conversations = atomic<Map<String, ConversationDigest>>(emptyMap())
+    private val conversations = AtomicReference<Map<String, ConversationDigest>>(emptyMap())
 
     // Conversation id -> Entries list
-    private val entries = atomic<Map<String, List<ConversationEntry>>>(emptyMap())
+    private val entries = AtomicReference<Map<String, List<ConversationEntry>>>(emptyMap())
 
     // Reactive state
     private val conversationsState = MutableStateFlow<Map<String, ConversationDigest>>(emptyMap())
     private val entriesState = MutableStateFlow<Map<String, List<ConversationEntry>>>(emptyMap())
 
     override suspend fun create(digest: ConversationDigest) {
-        val newConversations = conversations.updateAndGet { prev ->
+        val newConversations = conversations.updateAndFetch { prev ->
             if (prev.containsKey(digest.id)) {
                 throw IllegalStateException("Conversation already exists: ${digest.id}")
             }
@@ -32,7 +33,7 @@ class InMemoryConversationRepository(
         }
         conversationsState.value = newConversations
         // Initialize empty entries list
-        val newEntries = entries.updateAndGet { prev -> prev + (digest.id to emptyList()) }
+        val newEntries = entries.updateAndFetch { prev -> prev + (digest.id to emptyList()) }
         entriesState.value = newEntries
     }
 
@@ -53,11 +54,11 @@ class InMemoryConversationRepository(
 
     override suspend fun appendEntry(conversationId: String, entry: ConversationEntry) {
         // Append entry
-        val updatedEntries = entries.updateAndGet { prev ->
+        val updatedEntries = entries.updateAndFetch { prev ->
             val current = prev[conversationId] ?: throw NoSuchElementException("Unknown conversation: $conversationId")
             prev + (conversationId to (current + entry))
         }[conversationId]!!
-        entriesState.value = entries.value
+        entriesState.value = entries.load()
     }
 
     @Deprecated("Use appendEntry instead", ReplaceWith("appendEntry(conversationId, action)"))
@@ -66,25 +67,25 @@ class InMemoryConversationRepository(
     }
 
     override suspend fun updateDigest(digest: ConversationDigest) {
-        conversations.updateAndGet { prev ->
+        conversations.updateAndFetch { prev ->
             if (!prev.containsKey(digest.id)) throw NoSuchElementException("Unknown conversation: ${digest.id}")
             prev + (digest.id to digest)
         }
-        conversationsState.value = conversations.value
+        conversationsState.value = conversations.load()
     }
 
     override suspend fun delete(id: String) {
-        conversations.value = conversations.value - id
-        entries.value = entries.value - id
-        conversationsState.value = conversations.value
-        entriesState.value = entries.value
+        conversations.update { previous -> previous - id }
+        entries.update { previous -> previous - id }
+        conversationsState.value = conversations.load()
+        entriesState.value = entries.load()
     }
 
     override suspend fun deleteAll() {
-        conversations.value = emptyMap()
-        entries.value = emptyMap()
-        conversationsState.value = conversations.value
-        entriesState.value = entries.value
+        conversations.exchange(emptyMap())
+        entries.exchange(emptyMap())
+        conversationsState.value = conversations.load()
+        entriesState.value = entries.load()
     }
 
     override fun getTranscript(conversationId: String): Flow<ConversationTranscript> =

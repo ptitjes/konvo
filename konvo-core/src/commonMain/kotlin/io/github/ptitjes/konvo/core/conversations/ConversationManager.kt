@@ -4,12 +4,13 @@ import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.agents.*
 import io.github.ptitjes.konvo.core.conversations.model.*
 import io.github.ptitjes.konvo.core.conversations.storage.*
-import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
+import kotlin.concurrent.atomics.*
 import kotlin.coroutines.*
 import kotlin.time.*
 import kotlin.uuid.*
 
+@OptIn(ExperimentalAtomicApi::class)
 class ConversationManager(
     coroutineContext: CoroutineContext,
     private val conversationRepository: ConversationRepository,
@@ -26,7 +27,7 @@ class ConversationManager(
 
     private val coroutineScope = CoroutineScope(coroutineContext + job + handler)
 
-    private val conversations = atomic(mapOf<String, Conversation>())
+    private val conversations = AtomicReference(mapOf<String, Conversation>())
 
     suspend fun newConversation(
         agentConfiguration: AgentConfiguration,
@@ -53,7 +54,7 @@ class ConversationManager(
     }
 
     fun getConversation(conversationId: String): Conversation {
-        val updatedLiveConversations = conversations.updateAndGet {
+        val updatedLiveConversations = conversations.updateAndFetch {
             if (it.containsKey(conversationId)) it
             else it + (conversationId to buildLiveConversation(conversationId))
         }

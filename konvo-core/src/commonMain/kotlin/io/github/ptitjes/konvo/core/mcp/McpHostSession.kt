@@ -2,12 +2,13 @@ package io.github.ptitjes.konvo.core.mcp
 
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.core.tools.*
-import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.*
+import kotlin.concurrent.atomics.*
 import kotlin.coroutines.*
 
+@OptIn(ExperimentalAtomicApi::class)
 class McpHostSession(
     coroutineContext: CoroutineContext,
     serverSettingsManager: McpServerSpecificationsManager,
@@ -23,7 +24,7 @@ class McpHostSession(
     private lateinit var serverSpecifications: StateFlow<Map<String, ServerSpecification>>
 
     private val mutex = Mutex()
-    private val selectedServerNames = atomic(setOf<String>())
+    private val selectedServerNames = AtomicReference(setOf<String>())
     private val servers = MutableStateFlow(mapOf<String, Server>())
 
     private class Server(
@@ -52,7 +53,7 @@ class McpHostSession(
             val currentServerNames = currentServerSpecifications.keys
 
             val serversToAdd = currentServerSpecifications.filter { (serverName, _) ->
-                serverName !in servers.value && serverName in selectedServerNames.value
+                serverName !in servers.value && serverName in selectedServerNames.load()
             }
             val serversToRemove = servers.value - currentServerNames
             val serversToRestart = servers.value.filter { (serverName, server) ->

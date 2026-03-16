@@ -1,12 +1,12 @@
 package io.github.ptitjes.konvo.core.settings
 
 import io.github.ptitjes.konvo.core.platform.*
-import kotlinx.atomicfu.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
+import kotlin.concurrent.atomics.*
 
 /**
  * File system implementation of [SettingsRepository].
@@ -15,6 +15,7 @@ import kotlinx.serialization.json.*
  * - Each settings section is stored in its own `${name}.json5` file.
  * - JSON is configured to be pretty and lenient, and ignore unknown keys.
  */
+@OptIn(ExperimentalAtomicApi::class)
 class FileSystemSettingsRepository private constructor(
     private val storagePaths: StoragePaths,
     private val fileSystem: FileSystem,
@@ -37,11 +38,11 @@ class FileSystemSettingsRepository private constructor(
 
     private fun fileFor(name: String): Path = Path(baseDir, "$name.json5")
 
-    private val settingsFlows = atomic(mapOf<SettingsKey<*>, MutableStateFlow<Any?>>())
+    private val settingsFlows = AtomicReference(mapOf<SettingsKey<*>, MutableStateFlow<Any?>>())
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getSettings(key: SettingsKey<T>): StateFlow<T> {
-        val newFlow = settingsFlows.updateAndGet { previous ->
+        val newFlow = settingsFlows.updateAndFetch { previous ->
             if (previous.containsKey(key)) previous
             else previous + (key to MutableStateFlow(readFromDisk(key)))
         }[key]!!
@@ -52,7 +53,7 @@ class FileSystemSettingsRepository private constructor(
     override suspend fun <T> updateSettings(key: SettingsKey<T>, value: T) {
         writeToDisk(key, value)
 
-        val previousFlow = settingsFlows.getAndUpdate { previous ->
+        val previousFlow = settingsFlows.fetchAndUpdate { previous ->
             if (previous.containsKey(key)) previous
             else previous + (key to MutableStateFlow(value))
         }[key]
