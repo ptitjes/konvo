@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.settings
+package io.github.ptitjes.konvo.plugin.core.ui.compose.appearance
 
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import kotlinx.serialization.*

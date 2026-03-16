@@ -1,8 +1,9 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.settings
+package io.github.ptitjes.konvo.plugin.core.ui.compose.appearance
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.SettingsPanelScope
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*

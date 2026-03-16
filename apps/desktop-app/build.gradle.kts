@@ -17,6 +17,8 @@ kotlin {
 
             implementation(project(":plugins:konvo-plugin-core"))
             implementation(project(":plugins:konvo-plugin-core-ui-compose"))
+            implementation(project(":plugins:konvo-plugin-roleplay"))
+            implementation(project(":plugins:konvo-plugin-roleplay-ui-compose"))
         }
 
         jvmMain.dependencies {

@@ -19,6 +19,8 @@ includeBuild("build-logic")
 // Plugins
 include(":plugins:konvo-plugin-core")
 include(":plugins:konvo-plugin-core-ui-compose")
+include(":plugins:konvo-plugin-roleplay")
+include(":plugins:konvo-plugin-roleplay-ui-compose")
 
 // MCP servers
 include(":mcp:konvo-mcp-prompt-collection")

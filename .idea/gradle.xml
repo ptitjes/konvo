@@ -28,6 +28,8 @@
             <option value="$PROJECT_DIR$/plugins" />
             <option value="$PROJECT_DIR$/plugins/konvo-plugin-core" />
             <option value="$PROJECT_DIR$/plugins/konvo-plugin-core-ui-compose" />
+            <option value="$PROJECT_DIR$/plugins/konvo-plugin-roleplay" />
+            <option value="$PROJECT_DIR$/plugins/konvo-plugin-roleplay-ui-compose" />
           </set>
         </option>
       </GradleProjectSettings>

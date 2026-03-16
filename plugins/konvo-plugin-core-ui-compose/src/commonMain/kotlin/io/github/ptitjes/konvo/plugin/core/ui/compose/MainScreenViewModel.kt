@@ -5,12 +5,15 @@ import androidx.lifecycle.*
 import androidx.navigation3.runtime.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
+import io.github.ptitjes.syrup.*
 import kotlinx.serialization.*
 
 /**
  * ViewModel managing the current high-level application navigation state.
  */
-class MainScreenViewModel : ViewModel() {
+class MainScreenViewModel(
+    pluginContext: PluginContext,
+) : ViewModel() {
 
     private val _backStack = NavBackStack<Destination>(
         Destination.Conversation.List,
@@ -21,7 +24,8 @@ class MainScreenViewModel : ViewModel() {
     val navigationPaneState = PaneState.Companion()
     val extraPaneState = PaneState.Companion()
 
-    private val firstSettingsSection = defaultSettingsSections
+    private val settingsSections by pluginContext.contributions(SettingsSections)
+    private val firstSettingsSection = settingsSections.toList()
         .recursivelySortedBy { it.titleKey }.first()
 
     val navigator = Navigator(

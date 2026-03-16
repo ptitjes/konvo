@@ -1,11 +1,15 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.settings
 
 import androidx.lifecycle.*
+import io.github.ptitjes.syrup.*
 import kotlinx.coroutines.flow.*
 
-class SettingsListViewModel() : ViewModel() {
+class SettingsListViewModel(
+    pluginContext: PluginContext,
+) : ViewModel() {
 
-    private val _sections = MutableStateFlow(defaultSettingsSections)
+    private val settingsSections by pluginContext.contributions(SettingsSections)
+    private val _sections = MutableStateFlow(settingsSections.toList())
     val sections: StateFlow<List<SettingsSection>> = _sections.asStateFlow()
 
     init {

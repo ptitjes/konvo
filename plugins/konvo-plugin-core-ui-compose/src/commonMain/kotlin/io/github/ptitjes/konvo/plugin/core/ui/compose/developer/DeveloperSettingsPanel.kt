@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.settings
+package io.github.ptitjes.konvo.plugin.core.ui.compose.developer
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
