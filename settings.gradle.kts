@@ -15,12 +15,14 @@ plugins {
 includeBuild("build-logic")
 
 // Core libraries
-include(":konvo-core")
-include(":konvo-frontend-compose")
+
+// Plugins
+include(":plugins:konvo-plugin-core")
+include(":plugins:konvo-plugin-core-ui-compose")
 
 // MCP servers
-include(":konvo-mcp-prompt-collection")
-include(":konvo-mcp-web-tools")
+include(":mcp:konvo-mcp-prompt-collection")
+include(":mcp:konvo-mcp-web-tools")
 
 // Frontends
 include(":apps:desktop-app")

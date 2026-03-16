@@ -13,9 +13,10 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.slf4jSimple)
             implementation(libs.kotlinLogging)
+            implementation(libs.syrupHost)
 
-            implementation(project(":konvo-core"))
-            implementation(project(":konvo-frontend-compose"))
+            implementation(project(":plugins:konvo-plugin-core"))
+            implementation(project(":plugins:konvo-plugin-core-ui-compose"))
         }
 
         jvmMain.dependencies {

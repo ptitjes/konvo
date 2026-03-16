@@ -1,0 +1,19 @@
+package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+
+@Composable
+fun FullSizeProgressIndicator(
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CircularProgressIndicator()
+    }
+}

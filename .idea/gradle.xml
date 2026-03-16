@@ -22,10 +22,12 @@
             <option value="$PROJECT_DIR$/apps" />
             <option value="$PROJECT_DIR$/apps/desktop-app" />
             <option value="$PROJECT_DIR$/build-logic" />
-            <option value="$PROJECT_DIR$/konvo-core" />
-            <option value="$PROJECT_DIR$/konvo-frontend-compose" />
-            <option value="$PROJECT_DIR$/konvo-mcp-prompt-collection" />
-            <option value="$PROJECT_DIR$/konvo-mcp-web-tools" />
+            <option value="$PROJECT_DIR$/mcp" />
+            <option value="$PROJECT_DIR$/mcp/konvo-mcp-prompt-collection" />
+            <option value="$PROJECT_DIR$/mcp/konvo-mcp-web-tools" />
+            <option value="$PROJECT_DIR$/plugins" />
+            <option value="$PROJECT_DIR$/plugins/konvo-plugin-core" />
+            <option value="$PROJECT_DIR$/plugins/konvo-plugin-core-ui-compose" />
           </set>
         </option>
       </GradleProjectSettings>

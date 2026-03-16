@@ -1,0 +1,50 @@
+package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings
+
+import androidx.compose.runtime.*
+import io.github.ptitjes.konvo.plugin.core.settings.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import org.kodein.di.*
+import org.kodein.di.compose.*
+
+@Composable
+fun <T, R> rememberSetting(key: SettingsKey<T>, initial: R, mapper: (T) -> R): State<R> {
+    val repository by rememberInstance<SettingsRepository>()
+    return repository.getSettings(key).map(mapper).collectAsState(initial)
+}
+
+@Composable
+fun <T, R> rememberSetting(key: SettingsKey<T>, mapper: (T) -> R): State<R> {
+    val initialValue = with(localDI()) {
+        mapper(direct.instance<SettingsRepository>().getSettings(key).value)
+    }
+    return rememberSetting(key, initialValue, mapper)
+}
+
+@Composable
+fun <T> rememberMutableSettings(key: SettingsKey<T>): MutableState<T> {
+    val repository by rememberInstance<SettingsRepository>()
+    val settings by repository.getSettings(key).collectAsState()
+
+    val coroutineScope = rememberCoroutineScope()
+
+    fun updateSettings(newSettings: T) {
+        coroutineScope.launch {
+            repository.updateSettings(key, newSettings)
+        }
+    }
+
+    return object : MutableState<T> {
+        override var value: T
+            get() = settings
+            set(value) = updateSettings(value)
+
+        override fun component1(): T {
+            return settings
+        }
+
+        override fun component2(): (T) -> Unit {
+            return ::updateSettings
+        }
+    }
+}

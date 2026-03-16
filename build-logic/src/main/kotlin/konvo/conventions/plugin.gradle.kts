@@ -8,6 +8,14 @@ plugins {
     id("dev.whyoleg.sweetspi")
 }
 
+val versionCatalog = versionCatalogs.named("libs")
+
 kotlin {
     withSweetSpi()
+
+    sourceSets {
+        commonMain.dependencies {
+            implementation(versionCatalog.findLibrary("syrupRuntime").get())
+        }
+    }
 }

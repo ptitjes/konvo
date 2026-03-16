@@ -1,17 +1,19 @@
 package io.github.ptitjes.konvo
 
 import io.github.oshai.kotlinlogging.*
-import io.github.ptitjes.konvo.frontend.compose.*
+import io.github.ptitjes.konvo.plugin.core.plugins.*
 import java.awt.*
 
-val logger = KotlinLogging.logger { }
+private val logger = KotlinLogging.logger { }
 
-fun main() {
+suspend fun main() {
     logger.info { "Starting Konvo desktop app" }
-
     dumpEnvironmentInformation()
 
-    runComposeFrontend()
+    val pluginManager = bootstrapPlugins()
+    val di = pluginManager.mainDi
+
+    di.startComposeFrontend()
 }
 
 private fun dumpEnvironmentInformation() {

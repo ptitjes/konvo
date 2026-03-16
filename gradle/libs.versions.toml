@@ -17,7 +17,7 @@ slf4j = "2.0.17"
 
 # Plugin System
 syrup = "0.1.0-SNAPSHOT"
-ksp = "2.3.5"
+ksp = "2.3.6"
 sweetSpi = "0.1.3"
 kodein = "7.31.0"
 

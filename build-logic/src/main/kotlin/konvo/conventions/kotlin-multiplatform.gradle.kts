@@ -7,15 +7,25 @@ plugins {
 }
 
 kotlin {
-    jvm()
-
     jvmToolchain(21)
 
     sourceSets.all {
         languageSettings.enableLanguageFeature("WhenGuards")
         languageSettings.enableLanguageFeature("MultiDollarInterpolation")
+        languageSettings.enableLanguageFeature("NestedTypeAliases")
+        languageSettings.enableLanguageFeature("ContextParameters")
         languageSettings.optIn("kotlin.time.ExperimentalTime")
         languageSettings.optIn("kotlin.uuid.ExperimentalUuidApi")
+        languageSettings.optIn("androidx.compose.ui.test.ExperimentalTestApi")
+    }
+
+    sourceSets {
+        commonMain.dependencies {
+        }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
     }
 }
 
