@@ -96,7 +96,7 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
         if (files.isNullOrEmpty()) return@rememberFilePickerLauncher
         scope.launch {
             files.forEach { file ->
-                runCatching { file.importCharacter(provider) }
+                runCatching { provider.add(file.toKotlinxIoPath()) }
                     .onSuccess { reload() }
                     .onFailure { exception ->
                         logger.error(exception) { "Failed to import character" }
@@ -160,6 +160,3 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
         )
     }
 }
-
-// Expect/actual helper to import a PlatformFile using the provider
-expect suspend fun PlatformFile.importCharacter(provider: FileSystemCharacterProvider)

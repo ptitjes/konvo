@@ -54,7 +54,7 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
         if (files.isNullOrEmpty()) return@rememberFilePickerLauncher
         scope.launch {
             files.forEach { file ->
-                runCatching { file.importLorebook(provider) }
+                runCatching { provider.add(file.toKotlinxIoPath()) }
                     .onSuccess { reload() }
                     .onFailure { exception ->
                         logger.error(exception) { "Failed to import lorebook" }
@@ -69,7 +69,10 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
         description = strings.roleplay.importedLorebooksDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
-                Icon(painter = painterResource(Res.drawable.ic_file_download), contentDescription = strings.roleplay.importLorebookAria)
+                Icon(
+                    painter = painterResource(Res.drawable.ic_file_download),
+                    contentDescription = strings.roleplay.importLorebookAria
+                )
             }
         },
         bottomContent = {
@@ -142,6 +145,3 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
         )
     }
 }
-
-// Expect/actual helper to import a PlatformFile using the provider
-expect suspend fun PlatformFile.importLorebook(provider: FileSystemLorebookProvider)
