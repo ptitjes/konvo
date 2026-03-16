@@ -6,18 +6,25 @@ kotlin = "2.3.0"
 kotlinxDatetime = "0.7.1"
 kotlinxSerialization = "1.10.0"
 kotlinxCoroutines = "1.10.2"
-kotlinxAtomicfu = "0.29.0"
 kotlinxIo = "0.8.0"
+kotlinxBenchmark = "0.4.15"
+kotlinxKover = "0.9.4"
+kotlinDokka = "2.1.0"
 ktor = "3.2.3"
 
 kotlinLogging = "7.0.7"
 slf4j = "2.0.17"
 
+# Plugin System
+syrup = "0.1.0-SNAPSHOT"
+ksp = "2.3.5"
+sweetSpi = "0.1.3"
+kodein = "7.31.0"
+
 koog = "0.6.3"
 mcp = "0.8.1"
 xemanticJsonSchema = "1.1.2"
 uriKmp = "0.0.20"
-kodein = "7.31.0"
 kim = "0.26.2"
 
 opentelemetry = "1.51.0"
@@ -52,7 +59,6 @@ ksoup = "0.2.3"
 flexmark = "0.64.8"
 
 [libraries]
-kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
@@ -72,12 +78,14 @@ ktorServerCio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 kotlinLogging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlinLogging" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
+syrupRuntime = { module = "io.github.ptitjes:syrup-runtime", version.ref = "syrup" }
+syrupHost = { module = "io.github.ptitjes:syrup-host", version.ref = "syrup" }
+
 koog = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" }
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
 xemanticJsonSchema = { module = "com.xemantic.ai:xemantic-ai-tool-schema", version.ref = "xemanticJsonSchema" }
 uriKmp = { module = "com.eygraber:uri-kmp", version.ref = "uriKmp" }
-kodein = { module = "org.kodein.di:kodein-di", version.ref = "kodein" }
 kim = { module = "com.ashampoo:kim", version.ref = "kim" }
 
 opentelemetry-bom = { module = "io.opentelemetry:opentelemetry-bom", version.ref = "opentelemetry" }
@@ -133,12 +141,21 @@ composeUi = ["composeUiTooling", "composeUiToolingPreview", "composeComponentsRe
 fileKit = ["fileKitCore", "fileKitDialogs", "fileKitDialogsCompose", "fileKitCoil"]
 
 [plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlinPluginAtomicfu = { id = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlinxAtomicfu" }
+
+kotlinBenchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinxBenchmark" }
+kotlinKover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKover" }
+kotlinDokka = { id = "org.jetbrains.dokka", version.ref = "kotlinDokka" }
+
+# Plugin System
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+sweetSpi = { id = "dev.whyoleg.sweetspi", version.ref = "sweetSpi" }
 
 # Compose Frontend
-composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-composeGradle = { id = "org.jetbrains.compose", version.ref = "compose" }
+kotlinPluginCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose = { id = "org.jetbrains.compose", version.ref = "compose" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 
 # For tools

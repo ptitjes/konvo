@@ -1,4 +1,4 @@
-package buildsrc.convention
+package konvo.conventions
 
 import org.gradle.api.tasks.testing.logging.*
 

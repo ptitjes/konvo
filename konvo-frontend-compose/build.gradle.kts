@@ -1,9 +1,6 @@
 plugins {
-    id("buildsrc.convention.kotlin-multiplatform")
-    alias(libs.plugins.kotlinPluginAtomicfu)
-    alias(libs.plugins.kotlinPluginSerialization)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeGradle)
+    id("konvo.conventions.library")
+    id("konvo.conventions.compose")
 }
 
 kotlin {

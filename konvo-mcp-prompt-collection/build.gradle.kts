@@ -4,8 +4,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.*
 import org.jetbrains.kotlin.gradle.*
 
 plugins {
-    id("buildsrc.convention.kotlin-multiplatform")
-    alias(libs.plugins.kotlinPluginSerialization)
+    id("konvo.conventions.library")
     alias(libs.plugins.shadow)
 }
 

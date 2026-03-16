@@ -1,7 +1,5 @@
 plugins {
-    id("buildsrc.convention.kotlin-multiplatform")
-    alias(libs.plugins.kotlinPluginAtomicfu)
-    alias(libs.plugins.kotlinPluginSerialization)
+    id("konvo.conventions.library")
 }
 
 kotlin {
@@ -13,7 +11,7 @@ kotlin {
                 api(libs.bundles.kotlinxEcosystem)
                 api(libs.koog)
                 api(libs.xemanticJsonSchema)
-                api(libs.kodein)
+                api(libs.syrupRuntime)
 
                 implementation(libs.kotlinLogging)
                 implementation(libs.mcp)

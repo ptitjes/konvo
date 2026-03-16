@@ -1,20 +1,27 @@
 import org.jetbrains.compose.desktop.application.dsl.*
 
 plugins {
-    id("buildsrc.convention.kotlin-jvm")
-    alias(libs.plugins.kotlinPluginSerialization)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeGradle)
+    id("konvo.conventions.library")
+    id("konvo.conventions.compose")
     alias(libs.plugins.composeHotReload)
 }
 
-dependencies {
-    implementation(libs.slf4jSimple)
-    implementation(libs.kotlinLogging)
-    implementation(compose.desktop.currentOs)
+kotlin {
+    jvm()
 
-    implementation(project(":konvo-core"))
-    implementation(project(":konvo-frontend-compose"))
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.slf4jSimple)
+            implementation(libs.kotlinLogging)
+
+            implementation(project(":konvo-core"))
+            implementation(project(":konvo-frontend-compose"))
+        }
+
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+        }
+    }
 }
 
 compose.desktop {
