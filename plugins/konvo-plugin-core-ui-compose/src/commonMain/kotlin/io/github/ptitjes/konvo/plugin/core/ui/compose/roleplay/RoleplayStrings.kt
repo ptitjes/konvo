@@ -12,6 +12,12 @@ data class RoleplayStrings(
     val deleteConfirm: String,
     val cancel: String,
 
+    // Settings section titles
+    val roleplaySettingsTitle: String,
+    val charactersSettingsTitle: String,
+    val lorebooksSettingsTitle: String,
+    val personasSettingsTitle: String,
+
     // Persona selector & editor
     val personaLabel: String,
     val personasTitle: String,

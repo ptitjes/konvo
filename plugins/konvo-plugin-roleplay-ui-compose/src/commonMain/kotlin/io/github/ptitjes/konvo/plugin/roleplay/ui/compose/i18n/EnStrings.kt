@@ -5,6 +5,10 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 internal val EnStrings = RoleplayStrings(
     deleteConfirm = "Delete",
     cancel = "Cancel",
+    roleplaySettingsTitle = "Roleplay",
+    charactersSettingsTitle = "Characters",
+    lorebooksSettingsTitle = "Lorebooks",
+    personasSettingsTitle = "Personas",
     personaLabel = "Persona",
     personasTitle = "Personas",
     personasDescription = "Add, remove, and edit personas.",

@@ -5,6 +5,10 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 internal val HiStrings = RoleplayStrings(
     deleteConfirm = "हटाएँ",
     cancel = "रद्द करें",
+    roleplaySettingsTitle = "भूमिका निभाना",
+    charactersSettingsTitle = "चरित्र",
+    lorebooksSettingsTitle = "लोरबुक",
+    personasSettingsTitle = "व्यक्तित्व",
     personaLabel = "व्यक्तित्व",
     personasTitle = "व्यक्तित्व",
     personasDescription = "व्यक्तित्व जोड़ें, हटाएँ और संपादित करें।",

@@ -5,6 +5,10 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 internal val ZhStrings = RoleplayStrings(
     deleteConfirm = "删除",
     cancel = "取消",
+    roleplaySettingsTitle = "角色扮演",
+    charactersSettingsTitle = "角色",
+    lorebooksSettingsTitle = "设定集",
+    personasSettingsTitle = "人设",
     personaLabel = "人设",
     personasTitle = "人设",
     personasDescription = "添加、删除并编辑人设。",

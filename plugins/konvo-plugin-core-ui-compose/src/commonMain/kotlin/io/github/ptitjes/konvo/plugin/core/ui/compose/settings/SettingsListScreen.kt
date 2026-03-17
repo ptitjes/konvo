@@ -77,7 +77,7 @@ fun SettingsListScreen(
                 val section = flattenedSection.section
                 val selected = section == selectedSection
                 val selectSectionAria = strings.settings.selectSectionAria
-                val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
+                val title = section.title()
                 val depthPadding = 16.dp * flattenedSection.depth
 
                 Surface(
@@ -99,11 +99,11 @@ fun SettingsListScreen(
                         Icon(
                             modifier = Modifier.size(20.dp),
                             painter = painterResource(section.icon),
-                            contentDescription = localizedTitle,
+                            contentDescription = title,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = localizedTitle,
+                            text = title,
                         )
                     }
                 }

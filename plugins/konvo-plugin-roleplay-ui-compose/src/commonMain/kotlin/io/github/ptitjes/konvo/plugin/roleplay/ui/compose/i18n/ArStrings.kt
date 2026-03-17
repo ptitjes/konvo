@@ -5,6 +5,10 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 internal val ArStrings = RoleplayStrings(
     deleteConfirm = "حذف",
     cancel = "إلغاء",
+    roleplaySettingsTitle = "تمثيل الأدوار",
+    charactersSettingsTitle = "الشخصيات",
+    lorebooksSettingsTitle = "كتب الخلفية",
+    personasSettingsTitle = "الشخصيات",
     personaLabel = "الشخصية",
     personasTitle = "الشخصيات",
     personasDescription = "إضافة وإزالة وتحرير الشخصيات.",

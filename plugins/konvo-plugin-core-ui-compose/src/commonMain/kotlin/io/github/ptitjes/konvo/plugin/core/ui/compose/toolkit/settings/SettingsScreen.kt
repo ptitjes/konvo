@@ -11,7 +11,6 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 @Composable
@@ -23,10 +22,8 @@ fun SettingsScreen(
     key(titleKey) {
         val sections by viewModel.sections.collectAsState()
         val section = remember { sections.findSectionByTitleKey(titleKey)!! }
-        val localizedTitle = strings.settings.sectionTitles[section.titleKey] ?: section.titleKey
 
         SettingsScreen(
-            title = localizedTitle,
             section = section,
             onBackClick = { navigator.navigateBack() },
         )
@@ -36,13 +33,13 @@ fun SettingsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    title: String,
     section: SettingsSection,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val paneType = LocalListDetailPaneType.current
+    val title = section.title()
 
+    val paneType = LocalListDetailPaneType.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
