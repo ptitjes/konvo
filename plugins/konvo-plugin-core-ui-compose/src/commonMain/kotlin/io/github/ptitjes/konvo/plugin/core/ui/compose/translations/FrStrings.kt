@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
@@ -125,6 +126,13 @@ internal val FrStrings = Strings(
         successAria = "Succès",
         failureAria = "Échec",
     ),
+    appearance = AppearanceStrings(
+        baseColorSchemeTitle = "Schéma de couleurs de base",
+        baseColorSchemeDescription = "Le schéma de couleurs utilisé pour l'application.",
+        baseColorSchemeOptionDark = "Sombre",
+        baseColorSchemeOptionLight = "Clair",
+        baseColorSchemeOptionSystem = "Adapté au système",
+    ),
     settings = SettingsStrings(
         listTitle = "Paramètres",
         selectSectionAria = "Sélectionner une section des paramètres",
@@ -134,11 +142,6 @@ internal val FrStrings = Strings(
             "models" to "Fournisseurs de modèles",
             "developer" to "Développeur",
         ),
-        appearanceBaseColorSchemeTitle = "Schéma de couleurs de base",
-        appearanceBaseColorSchemeDescription = "Le schéma de couleurs utilisé pour l'application.",
-        appearanceBaseColorSchemeOptionDark = "Sombre",
-        appearanceBaseColorSchemeOptionLight = "Clair",
-        appearanceBaseColorSchemeOptionSystem = "Adapté au système",
         developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
         developerOpenTelemetryDescription = "Exporter les traces vers un collecteur OpenTelemetry via gRPC.",
         developerOpenTelemetryEnabledLabel = "Activer l'export OpenTelemetry",

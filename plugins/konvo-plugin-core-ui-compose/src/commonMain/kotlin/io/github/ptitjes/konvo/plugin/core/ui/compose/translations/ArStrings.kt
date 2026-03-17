@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
@@ -125,6 +126,13 @@ internal val ArStrings = Strings(
         successAria = "نجاح",
         failureAria = "فشل",
     ),
+    appearance = AppearanceStrings(
+        baseColorSchemeTitle = "نظام الألوان الأساسي",
+        baseColorSchemeDescription = "نظام الألوان المستخدم للتطبيق.",
+        baseColorSchemeOptionDark = "داكن",
+        baseColorSchemeOptionLight = "فاتح",
+        baseColorSchemeOptionSystem = "متوافق مع النظام",
+    ),
     settings = SettingsStrings(
         listTitle = "الإعدادات",
         selectSectionAria = "اختيار قسم الإعدادات",
@@ -134,11 +142,6 @@ internal val ArStrings = Strings(
             "models" to "مزوّدو النماذج",
             "developer" to "المطور",
         ),
-        appearanceBaseColorSchemeTitle = "نظام الألوان الأساسي",
-        appearanceBaseColorSchemeDescription = "نظام الألوان المستخدم للتطبيق.",
-        appearanceBaseColorSchemeOptionDark = "داكن",
-        appearanceBaseColorSchemeOptionLight = "فاتح",
-        appearanceBaseColorSchemeOptionSystem = "متوافق مع النظام",
         developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
         developerOpenTelemetryDescription = "تصدير الآثار إلى مجمّع OpenTelemetry باستخدام gRPC.",
         developerOpenTelemetryEnabledLabel = "تمكين تصدير OpenTelemetry",

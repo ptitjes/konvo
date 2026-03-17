@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
@@ -125,6 +126,13 @@ internal val ZhStrings = Strings(
         successAria = "成功",
         failureAria = "失败",
     ),
+    appearance = AppearanceStrings(
+        baseColorSchemeTitle = "基础配色方案",
+        baseColorSchemeDescription = "应用使用的配色方案。",
+        baseColorSchemeOptionDark = "深色",
+        baseColorSchemeOptionLight = "浅色",
+        baseColorSchemeOptionSystem = "跟随系统",
+    ),
     settings = SettingsStrings(
         listTitle = "设置",
         selectSectionAria = "选择设置部分",
@@ -134,11 +142,6 @@ internal val ZhStrings = Strings(
             "models" to "模型提供商",
             "developer" to "开发者",
         ),
-        appearanceBaseColorSchemeTitle = "基础配色方案",
-        appearanceBaseColorSchemeDescription = "应用使用的配色方案。",
-        appearanceBaseColorSchemeOptionDark = "深色",
-        appearanceBaseColorSchemeOptionLight = "浅色",
-        appearanceBaseColorSchemeOptionSystem = "跟随系统",
         developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
         developerOpenTelemetryDescription = "使用 gRPC 将追踪导出到 OpenTelemetry 收集器。",
         developerOpenTelemetryEnabledLabel = "启用 OpenTelemetry 导出",
