@@ -6,6 +6,7 @@ import io.github.ptitjes.konvo.plugin.core.agents.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.files.*
+import io.github.ptitjes.konvo.plugin.core.i18n.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.platform.*
@@ -23,6 +24,9 @@ import kotlin.coroutines.*
 object CorePlugin : Plugin {
 
     override fun PluginSpecificationBuilder.specification() {
+        extensionPoint(I18nStringsProviders)
+        exposedType<I18nManager>()
+
         exposedType<StoragePaths>()
         exposedType<SettingsRepository>()
 
@@ -43,6 +47,8 @@ object CorePlugin : Plugin {
 
     override fun DI.Builder.implementation() {
         import(platformModule)
+
+        bindSingletonOf(::I18nManager)
 
         bindSet<PromptProvider>()
         bindSet<ToolProvider>()
