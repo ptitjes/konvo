@@ -18,6 +18,10 @@ fun PluginSpecificationBuilder.appearanceSettings() {
         }
     }
 
+    appearanceStrings()
+}
+
+private fun PluginSpecificationBuilder.appearanceStrings() {
     i18nStrings<AppearanceStrings>("ar-SA") { ArStrings.appearance }
     i18nStrings<AppearanceStrings>("en-US") { EnStrings.appearance }
     i18nStrings<AppearanceStrings>("es-ES") { EsStrings.appearance }

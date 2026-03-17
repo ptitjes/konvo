@@ -1,7 +1,9 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text
 
 import androidx.compose.runtime.*
+import io.github.ptitjes.konvo.plugin.core.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.syrup.specification.*
 import kotlinx.datetime.*
 import nl.jacobras.humanreadable.*
 import kotlin.time.Clock
@@ -29,3 +31,12 @@ internal class RelativeTimestampFormatter(private val formats: FormatStrings) {
 internal data class FormatStrings(
     val now: String,
 )
+
+fun PluginSpecificationBuilder.formatStrings() {
+    i18nStrings<FormatStrings>("ar-SA") { ArStrings.formats }
+    i18nStrings<FormatStrings>("en-US") { EnStrings.formats }
+    i18nStrings<FormatStrings>("es-ES") { EsStrings.formats }
+    i18nStrings<FormatStrings>("fr-FR") { FrStrings.formats }
+    i18nStrings<FormatStrings>("hi-IN") { HiStrings.formats }
+    i18nStrings<FormatStrings>("zh-CN") { ZhStrings.formats }
+}

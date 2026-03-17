@@ -18,6 +18,10 @@ fun PluginSpecificationBuilder.developerSettings() {
         }
     }
 
+    developerStrings()
+}
+
+private fun PluginSpecificationBuilder.developerStrings() {
     i18nStrings<DeveloperStrings>("ar-SA") { ArStrings.developer }
     i18nStrings<DeveloperStrings>("en-US") { EnStrings.developer }
     i18nStrings<DeveloperStrings>("es-ES") { EsStrings.developer }

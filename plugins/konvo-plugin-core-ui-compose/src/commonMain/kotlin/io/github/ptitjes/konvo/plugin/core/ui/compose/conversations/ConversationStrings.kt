@@ -1,5 +1,9 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.conversations
 
+import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.syrup.specification.*
+
 internal data class ConversationStrings(
     val untitledConversationTitle: String,
 
@@ -54,3 +58,12 @@ internal data class ConversationStrings(
     val successAria: String,
     val failureAria: String,
 )
+
+fun PluginSpecificationBuilder.conversationStrings() {
+    i18nStrings<ConversationStrings>("ar-SA") { ArStrings.conversations }
+    i18nStrings<ConversationStrings>("en-US") { EnStrings.conversations }
+    i18nStrings<ConversationStrings>("es-ES") { EsStrings.conversations }
+    i18nStrings<ConversationStrings>("fr-FR") { FrStrings.conversations }
+    i18nStrings<ConversationStrings>("hi-IN") { HiStrings.conversations }
+    i18nStrings<ConversationStrings>("zh-CN") { ZhStrings.conversations }
+}
