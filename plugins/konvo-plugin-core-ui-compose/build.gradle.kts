@@ -10,13 +10,11 @@ kotlin {
         commonMain.dependencies {
             implementation(project(":plugins:konvo-plugin-core"))
 
-
             implementation(libs.bundles.kotlinxEcosystem)
             implementation(libs.kotlinxIoOkio)
 
             api(libs.kodeinCompose)
 
-            implementation(libs.lyricist)
             implementation(libs.humanReadable)
 
             implementation(libs.markdownRenderer)
