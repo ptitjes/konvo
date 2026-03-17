@@ -1,7 +1,10 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
+package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit
 
 import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
+
+internal val I18nStrings.navigation: NavigationStrings get() = byType()
 
 data class NavigationStrings(
     val navigationOpenAria: String,

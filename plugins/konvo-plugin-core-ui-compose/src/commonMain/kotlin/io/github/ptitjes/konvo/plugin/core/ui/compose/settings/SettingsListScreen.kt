@@ -10,9 +10,9 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 @Composable
@@ -76,7 +76,7 @@ fun SettingsListScreen(
             items(flattenedSections, key = { it.section.titleKey }) { flattenedSection ->
                 val section = flattenedSection.section
                 val selected = section == selectedSection
-                val selectSectionAria = strings.settings.selectSectionAria
+                val selectSectionAria = i18n.settings.selectSectionAria
                 val title = section.title()
                 val depthPadding = 16.dp * flattenedSection.depth
 

@@ -14,11 +14,11 @@ import com.eygraber.compose.placeholder.*
 import com.eygraber.compose.placeholder.material3.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 @Composable
@@ -101,7 +101,7 @@ fun ConversationScreen(
                             Icon(
                                 modifier = Modifier.padding(start = 16.dp, end = 8.dp),
                                 painter = painterResource(Res.drawable.ic_chat),
-                                contentDescription = strings.conversations.conversationAria
+                                contentDescription = i18n.conversations.conversationAria
                             )
                         }
                     },

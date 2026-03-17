@@ -3,8 +3,8 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.prompts
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.plugin.core.prompts.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 /**
  * A selector for prompts.
@@ -22,7 +22,7 @@ fun PromptSelector(
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(
-        label = strings.prompts.selectorLabel,
+        label = i18n.prompts.selectorLabel,
         selectedItem = selectedPrompt,
         onSelectItem = onPromptSelected,
         options = prompts,

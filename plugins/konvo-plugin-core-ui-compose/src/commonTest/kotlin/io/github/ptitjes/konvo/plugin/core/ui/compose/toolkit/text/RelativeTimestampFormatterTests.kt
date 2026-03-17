@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text
 
 import androidx.compose.ui.test.v2.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import kotlin.test.*
 import kotlin.time.*
 
@@ -9,7 +9,7 @@ class RelativeTimestampFormatterTests {
     @Test
     fun `formatTimestampRelative returns minutes and hours for recent times`() = runComposeUiTest {
         setContent {
-            ProvideStrings(rememberStrings(currentLanguageTag = "en-US")) {
+            ProvideI18nStrings {
                 val timestampFormatter = rememberRelativeTimestampFormatter()
 
                 val base = Instant.fromEpochMilliseconds(0L)
@@ -32,7 +32,7 @@ class RelativeTimestampFormatterTests {
     @Test
     fun `formatTimestampRelative returns ISO date for older times`() = runComposeUiTest {
         setContent {
-            ProvideStrings(rememberStrings(currentLanguageTag = "en-US")) {
+            ProvideI18nStrings {
                 val timestampFormatter = rememberRelativeTimestampFormatter()
                 val base = Instant.fromEpochMilliseconds(0L)
                 val sixtyDaysLater = Instant.fromEpochMilliseconds(60 * 24L * 60L * 60L * 1000L)

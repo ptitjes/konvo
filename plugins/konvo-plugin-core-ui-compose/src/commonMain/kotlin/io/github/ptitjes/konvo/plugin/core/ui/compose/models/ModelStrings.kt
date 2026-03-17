@@ -1,5 +1,11 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.models
 
+import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.syrup.specification.*
+
+internal val I18nStrings.models: ModelStrings get() = byType()
+
 /**
  * Translated strings for the models package (model selector and provider settings UI).
  */
@@ -38,3 +44,12 @@ internal data class ModelStrings(
     val deleteAction: String,
     val testFailedMessage: (String) -> String,
 )
+
+fun PluginSpecificationBuilder.modelStrings() {
+    i18nStrings<ModelStrings>("ar-SA") { ArStrings.models }
+    i18nStrings<ModelStrings>("en-US") { EnStrings.models }
+    i18nStrings<ModelStrings>("es-ES") { EsStrings.models }
+    i18nStrings<ModelStrings>("fr-FR") { FrStrings.models }
+    i18nStrings<ModelStrings>("hi-IN") { HiStrings.models }
+    i18nStrings<ModelStrings>("zh-CN") { ZhStrings.models }
+}

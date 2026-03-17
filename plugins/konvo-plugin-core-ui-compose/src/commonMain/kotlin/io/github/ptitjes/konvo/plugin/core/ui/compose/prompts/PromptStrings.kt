@@ -4,6 +4,8 @@ import io.github.ptitjes.konvo.plugin.core.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
 
+internal val I18nStrings.prompts: PromptStrings get() = byType()
+
 /**
  * Translated strings for the prompts package (prompt selector UI).
  */

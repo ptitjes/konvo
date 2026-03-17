@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.mcp
 
 import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
@@ -12,7 +13,7 @@ fun PluginSpecificationBuilder.mcpSettingsSection() {
             SettingsSection(
                 titleKey = "mcp",
                 icon = Res.drawable.ic_extension,
-                title = { strings.mcp.settingsTitle },
+                title = { i18n.mcp.settingsTitle },
                 panel = { McpSettingsPanel() },
             )
         }

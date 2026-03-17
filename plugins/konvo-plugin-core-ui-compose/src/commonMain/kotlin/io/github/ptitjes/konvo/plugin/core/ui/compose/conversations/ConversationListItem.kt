@@ -10,9 +10,9 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 @Composable
@@ -25,7 +25,7 @@ fun ConversationListItem(
     val timestampFormatter = rememberRelativeTimestampFormatter()
     var showConfirm by remember { mutableStateOf(false) }
 
-    val openConversationAria = strings.conversations.openConversationAria
+    val openConversationAria = i18n.conversations.openConversationAria
 
     Surface(
         color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
@@ -61,14 +61,14 @@ fun ConversationListItem(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_chat),
-                        contentDescription = strings.conversations.conversationAria,
+                        contentDescription = i18n.conversations.conversationAria,
                     )
                 }
 
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = conversation.title ?: strings.conversations.untitledConversationTitle,
+                    text = conversation.title ?: i18n.conversations.untitledConversationTitle,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -84,7 +84,7 @@ fun ConversationListItem(
                 IconButton(onClick = { showConfirm = true }) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_delete),
-                        contentDescription = strings.conversations.deleteConversationAria
+                        contentDescription = i18n.conversations.deleteConversationAria
                     )
                 }
             }
@@ -106,19 +106,19 @@ fun ConversationListItem(
             onDismissRequest = { showConfirm = false },
             confirmButton = {
                 TextButton(onClick = { showConfirm = false; onDelete() }) {
-                    Text(strings.conversations.deleteConfirm)
+                    Text(i18n.conversations.deleteConfirm)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showConfirm = false }) {
-                    Text(strings.conversations.cancel)
+                    Text(i18n.conversations.cancel)
                 }
             },
-            title = { Text(strings.conversations.deleteDialogTitle) },
+            title = { Text(i18n.conversations.deleteDialogTitle) },
             text = {
                 Text(
-                    strings.conversations.deleteDialogText(
-                        conversation.title ?: strings.conversations.untitledConversationTitle
+                    i18n.conversations.deleteDialogText(
+                        conversation.title ?: i18n.conversations.untitledConversationTitle
                     )
                 )
             },

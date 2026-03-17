@@ -9,15 +9,16 @@ import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
 
@@ -89,7 +90,7 @@ fun NewConversationScreen(
                 title = {
                     Text(
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp),
-                        text = strings.conversations.newConversationTitle,
+                        text = i18n.conversations.newConversationTitle,
                     )
                 },
                 navigationIcon = {
@@ -97,7 +98,7 @@ fun NewConversationScreen(
                         Icon(
                             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
                             painter = painterResource(Res.drawable.ic_chat_bubble_outline),
-                            contentDescription = strings.conversations.newConversationIconAria,
+                            contentDescription = i18n.conversations.newConversationIconAria,
                         )
                     }
                 },
@@ -110,7 +111,7 @@ fun NewConversationScreen(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_check),
-                            contentDescription = strings.conversations.createAria,
+                            contentDescription = i18n.conversations.createAria,
                         )
                     }
                 }
@@ -216,7 +217,7 @@ private fun ColumnScope.QuestionAnswerConfigurationForm(
 
             if (questionAnswer.selectableModels.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = strings.conversations.qaNoModels,
+                    unavailabilityText = i18n.conversations.qaNoModels,
                     onGoToSettings = { onGoToSettingsClick("models") },
                 )
             } else {
@@ -249,7 +250,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
         is NewRoleplayState.Available -> {
             if (roleplay.availableCharacters.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = strings.conversations.rpNoAvailableCharacters,
+                    unavailabilityText = i18n.conversations.rpNoAvailableCharacters,
                     onGoToSettings = { onGoToSettingsClick("characters") },
                 )
             } else {
@@ -278,7 +279,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
 
             if (roleplay.availablePersonas.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = strings.conversations.rpNoAvailablePersonas,
+                    unavailabilityText = i18n.conversations.rpNoAvailablePersonas,
                     onGoToSettings = { onGoToSettingsClick("personas") },
                 )
             } else {
@@ -310,7 +311,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
                     ) {
                         Icon(
                             painter = painterResource(Res.drawable.ic_settings),
-                            contentDescription = strings.conversations.personaSettingsAria
+                            contentDescription = i18n.conversations.personaSettingsAria
                         )
                     }
                     if (showLorebookSheet) {
@@ -322,13 +323,13 @@ private fun ColumnScope.RoleplayConfigurationForm(
                             ) {
                                 if (roleplay.availableLorebooks.isEmpty()) {
                                     Text(
-                                        text = strings.conversations.rpNoAvailableLorebooks,
+                                        text = i18n.conversations.rpNoAvailableLorebooks,
                                         style = MaterialTheme.typography.titleMedium,
                                         modifier = Modifier.padding(16.dp),
                                     )
                                 } else {
                                     LorebookSelector(
-                                        label = strings.conversations.additionalLorebookLabel,
+                                        label = i18n.conversations.additionalLorebookLabel,
                                         selectedLorebook = roleplay.selectedLorebook,
                                         onLorebookSelected = { selected ->
                                             onSelectRoleplayLorebook(selected)
@@ -345,7 +346,7 @@ private fun ColumnScope.RoleplayConfigurationForm(
 
             if (roleplay.availableModels.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = strings.conversations.rpNoAvailableModel,
+                    unavailabilityText = i18n.conversations.rpNoAvailableModel,
                     onGoToSettings = { onGoToSettingsClick("models") },
                 )
             } else {
@@ -398,12 +399,12 @@ private fun UnavailabilityPlaceholder(
                     Icon(
                         modifier = Modifier.size(16.dp),
                         painter = painterResource(Res.drawable.ic_settings),
-                        contentDescription = strings.settings.listTitle,
+                        contentDescription = i18n.settings.listTitle,
                         tint = contentColor,
                     )
 
                     Text(
-                        text = strings.settings.listTitle,
+                        text = i18n.settings.listTitle,
                         style = MaterialTheme.typography.labelSmall,
                         color = contentColor,
                     )

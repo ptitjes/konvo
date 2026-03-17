@@ -20,9 +20,9 @@ import io.github.ptitjes.konvo.plugin.core.conversations.model.events.Messaging.
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.ToolUsage.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
 import kotlin.math.*
@@ -117,7 +117,7 @@ private fun ToolUsageVettingPanel(
 
                         Text(
                             text = buildAnnotatedString {
-                                append(strings.conversations.agentWantsToCallToolPrefix)
+                                append(i18n.conversations.agentWantsToCallToolPrefix)
                                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                                     append(call.tool)
                                 }
@@ -219,7 +219,7 @@ private fun ToolUsageNotificationPanel(
 
                 Text(
                     text = buildAnnotatedString {
-                        append(strings.conversations.agentCalledToolPrefix)
+                        append(i18n.conversations.agentCalledToolPrefix)
                         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                             append(viewState.call.tool)
                         }
@@ -229,7 +229,7 @@ private fun ToolUsageNotificationPanel(
                 )
 
                 Text(
-                    text = strings.conversations.detailsLabel,
+                    text = i18n.conversations.detailsLabel,
                     fontSize = MaterialTheme.typography.titleSmall.fontSize,
                 )
             },
@@ -303,8 +303,8 @@ private fun ExpandableBox(
                         modifier = Modifier.rotate(rotation),
                         painter = painterResource(Res.drawable.ic_expand_more),
                         contentDescription =
-                            if (expanded) strings.conversations.collapseAria
-                            else strings.conversations.expandAria,
+                            if (expanded) i18n.conversations.collapseAria
+                            else i18n.conversations.expandAria,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
@@ -421,7 +421,7 @@ private fun AskIcon(modifier: Modifier = Modifier) {
 private fun SuccessIcon(modifier: Modifier = Modifier) {
     Icon(
         painter = painterResource(Res.drawable.ic_check_circle),
-        contentDescription = strings.conversations.successAria,
+        contentDescription = i18n.conversations.successAria,
         tint = MaterialTheme.colorScheme.primary,
         modifier = modifier,
     )
@@ -431,7 +431,7 @@ private fun SuccessIcon(modifier: Modifier = Modifier) {
 private fun FailureIcon(modifier: Modifier = Modifier) {
     Icon(
         painter = painterResource(Res.drawable.ic_error),
-        contentDescription = strings.conversations.failureAria,
+        contentDescription = i18n.conversations.failureAria,
         tint = MaterialTheme.colorScheme.error,
         modifier = modifier,
     )

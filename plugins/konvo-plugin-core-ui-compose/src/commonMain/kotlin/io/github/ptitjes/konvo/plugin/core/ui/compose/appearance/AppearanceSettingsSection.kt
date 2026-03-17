@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.appearance
 
 import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
@@ -12,7 +13,7 @@ fun PluginSpecificationBuilder.appearanceSettings() {
             SettingsSection(
                 titleKey = "appearance",
                 icon = Res.drawable.ic_palette,
-                title = { strings.appearance.settingsTitle },
+                title = { i18n.appearance.settingsTitle },
                 panel = { AppearanceSettingsPanel() },
             )
         }

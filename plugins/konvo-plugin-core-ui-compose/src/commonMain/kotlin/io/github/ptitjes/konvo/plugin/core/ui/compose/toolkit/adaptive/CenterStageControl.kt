@@ -2,8 +2,9 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.*
 import org.jetbrains.compose.resources.*
 
 data class CenterStageControl(
@@ -30,21 +31,21 @@ fun CenterStageControl.NavigationButton(
                 CenterStageButtonRole.Back -> {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_back),
-                        contentDescription = strings.navigation.backAria
+                        contentDescription = i18n.navigation.backAria
                     )
                 }
 
                 CenterStageButtonRole.MenuOpen -> {
                     Icon(
                         painterResource(Res.drawable.ic_left_panel_open),
-                        contentDescription = strings.navigation.navigationOpenAria
+                        contentDescription = i18n.navigation.navigationOpenAria
                     )
                 }
 
                 CenterStageButtonRole.MenuClose -> {
                     Icon(
                         painterResource(Res.drawable.ic_left_panel_close),
-                        contentDescription = strings.navigation.navigationCloseAria
+                        contentDescription = i18n.navigation.navigationCloseAria
                     )
                 }
             }
@@ -62,21 +63,21 @@ fun CenterStageControl.ExtraPaneButton() {
                 CenterStageButtonRole.Back -> {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_back),
-                        contentDescription = strings.navigation.backAria
+                        contentDescription = i18n.navigation.backAria
                     )
                 }
 
                 CenterStageButtonRole.MenuOpen -> {
                     Icon(
                         painterResource(Res.drawable.ic_right_panel_open),
-                        contentDescription = strings.navigation.detailsOpenAria
+                        contentDescription = i18n.navigation.detailsOpenAria
                     )
                 }
 
                 CenterStageButtonRole.MenuClose -> {
                     Icon(
                         painterResource(Res.drawable.ic_right_panel_close),
-                        contentDescription = strings.navigation.detailsCloseAria
+                        contentDescription = i18n.navigation.detailsCloseAria
                     )
                 }
             }

@@ -5,8 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 /**
  * A selector for MCP servers.
@@ -25,12 +25,12 @@ fun McpServerSelector(
     modifier: Modifier = Modifier,
 ) {
     OutlineBox(
-        label = strings.mcp.selectorLabel,
+        label = i18n.mcp.selectorLabel,
         modifier = modifier,
     ) {
         if (servers.isEmpty()) {
             Text(
-                text = strings.mcp.selectorEmpty,
+                text = i18n.mcp.selectorEmpty,
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         } else {

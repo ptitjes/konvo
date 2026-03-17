@@ -1,9 +1,13 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.mcp
 
+import io.github.ptitjes.konvo.plugin.core.i18n.*
+
+internal val I18nStrings.mcp: McpStrings get() = byType()
+
 /**
  * Translated strings for the MCP package (servers selector and settings UI).
  */
-internal data class McpStrings(
+data class McpStrings(
     val settingsTitle: String,
     val configuredServersTitle: String,
     val configuredServersDescription: String,

@@ -11,11 +11,11 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.plugin.core.models.providers.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.utils.*
 import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
@@ -61,19 +61,19 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
     var providerPendingDeletionIndex by remember { mutableStateOf<Int?>(null) }
 
     SettingsBox(
-        title = strings.models.configuredProvidersTitle,
-        description = strings.models.configuredProvidersDescription,
+        title = i18n.models.configuredProvidersTitle,
+        description = i18n.models.configuredProvidersDescription,
         trailingContent = {
             FilledTonalIconButton(
                 onClick = { sheetState = ModelProvidersSheetState.Adding },
             ) {
-                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = strings.models.addProviderAria)
+                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = i18n.models.addProviderAria)
             }
         },
         bottomContent = {
             if (settings.providers.isEmpty()) {
                 Text(
-                    text = strings.models.noProvidersMessage,
+                    text = i18n.models.noProvidersMessage,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -101,7 +101,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                     ) {
                                         Icon(
                                             painter = painterResource(Res.drawable.ic_drag_handle),
-                                            contentDescription = strings.models.dragHandleAria,
+                                            contentDescription = i18n.models.dragHandleAria,
                                         )
                                     }
 
@@ -142,7 +142,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                                     is ModelProviderStatus.Available -> {
                                                         Icon(
                                                             painter = painterResource(Res.drawable.ic_check),
-                                                            contentDescription = strings.models.testProviderSuccessAria,
+                                                            contentDescription = i18n.models.testProviderSuccessAria,
                                                             tint = Color.Green,
                                                         )
                                                     }
@@ -150,7 +150,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                                     is ModelProviderStatus.Unavailable -> {
                                                         Icon(
                                                             painter = painterResource(Res.drawable.ic_error),
-                                                            contentDescription = strings.models.testProviderFailureAria,
+                                                            contentDescription = i18n.models.testProviderFailureAria,
                                                             tint = Color.Red,
                                                         )
                                                     }
@@ -158,7 +158,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                                     null -> {
                                                         Icon(
                                                             painter = painterResource(Res.drawable.ic_play),
-                                                            contentDescription = strings.models.testProviderAria,
+                                                            contentDescription = i18n.models.testProviderAria,
                                                             tint = Color.Gray,
                                                         )
                                                     }
@@ -172,7 +172,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                     ) {
                                         Icon(
                                             painter = painterResource(Res.drawable.ic_edit),
-                                            contentDescription = strings.models.editProviderAria,
+                                            contentDescription = i18n.models.editProviderAria,
                                         )
                                     }
 
@@ -181,7 +181,7 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                                     ) {
                                         Icon(
                                             painter = painterResource(Res.drawable.ic_delete),
-                                            contentDescription = strings.models.deleteProviderAria,
+                                            contentDescription = i18n.models.deleteProviderAria,
                                         )
                                     }
                                 }
@@ -196,11 +196,11 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
     // Deletion confirmation dialog
     providerPendingDeletionIndex?.let { indexToDelete ->
         val nameToDelete =
-            settings.providers.getOrNull(indexToDelete)?.name ?: strings.models.nameLabel.lowercase()
+            settings.providers.getOrNull(indexToDelete)?.name ?: i18n.models.nameLabel.lowercase()
         AlertDialog(
             onDismissRequest = { providerPendingDeletionIndex = null },
-            title = { Text(strings.models.deleteProviderDialogTitle) },
-            text = { Text(strings.models.deleteProviderDialogText(nameToDelete)) },
+            title = { Text(i18n.models.deleteProviderDialogTitle) },
+            text = { Text(i18n.models.deleteProviderDialogText(nameToDelete)) },
             confirmButton = {
                 TextButton(onClick = {
                     // Confirm deletion
@@ -211,11 +211,11 @@ fun SettingsPanelScope.ModelProviderSettingsPanel() {
                         sheetState = ModelProvidersSheetState.Closed
                     }
                 }) {
-                    Text(strings.models.deleteConfirm)
+                    Text(i18n.models.deleteConfirm)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { providerPendingDeletionIndex = null }) { Text(strings.models.cancel) }
+                TextButton(onClick = { providerPendingDeletionIndex = null }) { Text(i18n.models.cancel) }
             },
         )
     }
@@ -302,7 +302,7 @@ private fun EditProviderSheetContent(
                         onValueChange = { newUrl ->
                             updateDraft { it.copy(configuration = conf.copy(url = newUrl)) }
                         },
-                        label = { Text(strings.models.ollamaBaseUrlLabel) },
+                        label = { Text(i18n.models.ollamaBaseUrlLabel) },
                     )
                 }
 
@@ -313,7 +313,7 @@ private fun EditProviderSheetContent(
                         onValueChange = { newKey ->
                             updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
                         },
-                        label = { Text(strings.models.anthropicApiKeyLabel) },
+                        label = { Text(i18n.models.anthropicApiKeyLabel) },
                     )
                 }
 
@@ -324,7 +324,7 @@ private fun EditProviderSheetContent(
                         onValueChange = { newKey ->
                             updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
                         },
-                        label = { Text(strings.models.openAiApiKeyLabel) },
+                        label = { Text(i18n.models.openAiApiKeyLabel) },
                     )
                 }
 
@@ -335,7 +335,7 @@ private fun EditProviderSheetContent(
                         onValueChange = { newKey ->
                             updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
                         },
-                        label = { Text(strings.models.googleApiKeyLabel) },
+                        label = { Text(i18n.models.googleApiKeyLabel) },
                     )
                 }
 
@@ -346,7 +346,7 @@ private fun EditProviderSheetContent(
                         onValueChange = { newKey ->
                             updateDraft { it.copy(configuration = conf.copy(apiKey = newKey)) }
                         },
-                        label = { Text(strings.models.mistralAiApiKeyLabel) },
+                        label = { Text(i18n.models.mistralAiApiKeyLabel) },
                     )
                 }
             }
@@ -399,7 +399,7 @@ private fun AddProviderSheetContent(
                     OutlinedUrlField(
                         value = ollamaUrl,
                         onValueChange = { ollamaUrl = it },
-                        label = { Text(strings.models.ollamaBaseUrlLabel) },
+                        label = { Text(i18n.models.ollamaBaseUrlLabel) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -408,7 +408,7 @@ private fun AddProviderSheetContent(
                     OutlinedApiKeyField(
                         value = anthropicKey,
                         onValueChange = { anthropicKey = it },
-                        label = { Text(strings.models.anthropicApiKeyLabel) },
+                        label = { Text(i18n.models.anthropicApiKeyLabel) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -417,7 +417,7 @@ private fun AddProviderSheetContent(
                     OutlinedApiKeyField(
                         value = openAIKey,
                         onValueChange = { openAIKey = it },
-                        label = { Text(strings.models.openAiApiKeyLabel) },
+                        label = { Text(i18n.models.openAiApiKeyLabel) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -426,7 +426,7 @@ private fun AddProviderSheetContent(
                     OutlinedApiKeyField(
                         value = googleKey,
                         onValueChange = { googleKey = it },
-                        label = { Text(strings.models.googleApiKeyLabel) },
+                        label = { Text(i18n.models.googleApiKeyLabel) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -435,7 +435,7 @@ private fun AddProviderSheetContent(
                     OutlinedApiKeyField(
                         value = mistralAIKey,
                         onValueChange = { mistralAIKey = it },
-                        label = { Text(strings.models.mistralAiApiKeyLabel) },
+                        label = { Text(i18n.models.mistralAiApiKeyLabel) },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -499,8 +499,8 @@ private fun ModelProviderSheetLayout(
     }
 
     val nameErrorText = when {
-        name.isBlank() -> strings.models.nameEmptyError
-        uniqueProviderNames.contains(name) -> strings.models.nameUniqueError
+        name.isBlank() -> i18n.models.nameEmptyError
+        uniqueProviderNames.contains(name) -> i18n.models.nameUniqueError
         else -> null
     }
 
@@ -561,7 +561,7 @@ private fun ModelProviderSheetLayout(
         when (testResult) {
             is TestResult.Failure -> {
                 Text(
-                    text = strings.models.testFailedMessage(testResult.error),
+                    text = i18n.models.testFailedMessage(testResult.error),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -604,7 +604,7 @@ private fun OutlinedNameField(
         modifier = modifier.height(64.dp),
         value = value,
         onValueChange = onValueChange,
-        label = { Text(strings.models.nameLabel) },
+        label = { Text(i18n.models.nameLabel) },
         singleLine = true,
         isError = isError,
     )
@@ -619,7 +619,7 @@ private fun ModelProviderTypeSelector(
     modifier: Modifier = Modifier,
 ) {
     GenericSelector(
-        label = strings.models.typeLabel,
+        label = i18n.models.typeLabel,
         selectedItem = selected,
         onSelectItem = onSelected,
         options = ProviderType.entries,
@@ -706,7 +706,7 @@ private fun TestButton(
                 is TestResult.Success -> {
                     Icon(
                         painter = painterResource(Res.drawable.ic_check),
-                        contentDescription = strings.models.testProviderSuccessAria,
+                        contentDescription = i18n.models.testProviderSuccessAria,
                         tint = Color.Green,
                     )
                 }
@@ -714,7 +714,7 @@ private fun TestButton(
                 is TestResult.Failure -> {
                     Icon(
                         painter = painterResource(Res.drawable.ic_error),
-                        contentDescription = strings.models.testProviderFailureAria,
+                        contentDescription = i18n.models.testProviderFailureAria,
                         tint = Color.Red,
                     )
                 }
@@ -722,12 +722,12 @@ private fun TestButton(
                 is TestResult.Unknown -> {
                     Icon(
                         painter = painterResource(Res.drawable.ic_cached),
-                        contentDescription = strings.models.testProviderAria,
+                        contentDescription = i18n.models.testProviderAria,
                     )
                 }
             }
         },
-        label = { Text(strings.models.testAction) },
+        label = { Text(i18n.models.testAction) },
     )
 }
 
@@ -737,8 +737,8 @@ private fun DeleteButton(
 ) {
     OutlinedActionButton(
         onClick = onClick,
-        icon = { Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = strings.models.deleteProviderAria) },
-        label = { Text(strings.models.deleteAction) },
+        icon = { Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = i18n.models.deleteProviderAria) },
+        label = { Text(i18n.models.deleteAction) },
     )
 }
 
@@ -757,17 +757,17 @@ private fun AddSaveButton(
             icon = {
                 Icon(
                     painter = painterResource(Res.drawable.ic_add),
-                    contentDescription = strings.models.addProviderConfirmAria
+                    contentDescription = i18n.models.addProviderConfirmAria
                 )
             },
-            label = { Text(strings.models.addAction) },
+            label = { Text(i18n.models.addAction) },
         )
 
         AddSaveActionType.Save -> FilledActionButton(
             onClick = onClick,
             enabled = enabled,
-            icon = { Icon(painter = painterResource(Res.drawable.ic_save), contentDescription = strings.models.saveAction) },
-            label = { Text(strings.models.saveAction) },
+            icon = { Icon(painter = painterResource(Res.drawable.ic_save), contentDescription = i18n.models.saveAction) },
+            label = { Text(i18n.models.saveAction) },
         )
     }
 }

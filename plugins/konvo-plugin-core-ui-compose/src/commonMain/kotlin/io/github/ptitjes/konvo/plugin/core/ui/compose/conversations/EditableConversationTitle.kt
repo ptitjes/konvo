@@ -8,7 +8,7 @@ import androidx.compose.ui.focus.*
 import androidx.compose.ui.graphics.*
 import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.time.Duration.Companion.milliseconds
@@ -34,7 +34,7 @@ fun EditableConversationTitle(
 
     TextField(
         state = titleFieldState,
-        placeholder = { Text(text = LocalStrings.current.conversations.untitledConversationTitle) },
+        placeholder = { Text(text = i18n.conversations.untitledConversationTitle) },
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier.onFocusChanged { focusState -> isFocused = focusState.isFocused },
         colors = TextFieldDefaults.colors(

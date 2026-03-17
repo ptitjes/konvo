@@ -4,6 +4,8 @@ import io.github.ptitjes.konvo.plugin.core.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
 
+internal val I18nStrings.tools: ToolStrings get() = byType()
+
 /**
  * Translated strings for the tools package (tools selector UI).
  */

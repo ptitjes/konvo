@@ -4,6 +4,8 @@ import io.github.ptitjes.konvo.plugin.core.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
 
+internal val I18nStrings.conversations: ConversationStrings get() = byType()
+
 internal data class ConversationStrings(
     val untitledConversationTitle: String,
 

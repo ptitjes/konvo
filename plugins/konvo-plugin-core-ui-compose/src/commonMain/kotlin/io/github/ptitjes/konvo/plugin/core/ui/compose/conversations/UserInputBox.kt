@@ -9,8 +9,8 @@ import androidx.compose.ui.text.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.Messaging.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 @Composable
@@ -74,7 +74,7 @@ fun UserInputBox(
                         },
                     placeholder = {
                         Text(
-                            text = strings.conversations.inputPlaceholder,
+                            text = i18n.conversations.inputPlaceholder,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     },
@@ -101,7 +101,7 @@ fun UserInputBox(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_send),
-                        contentDescription = strings.conversations.sendMessageAria,
+                        contentDescription = i18n.conversations.sendMessageAria,
                     )
                 }
             }

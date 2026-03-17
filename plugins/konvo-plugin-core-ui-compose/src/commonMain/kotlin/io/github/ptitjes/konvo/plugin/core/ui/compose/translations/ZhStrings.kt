@@ -8,6 +8,7 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.tools.*
 

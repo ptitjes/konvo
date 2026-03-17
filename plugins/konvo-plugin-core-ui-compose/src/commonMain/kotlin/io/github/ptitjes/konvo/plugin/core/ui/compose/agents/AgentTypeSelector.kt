@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 
 /**
  * A selector for agent types.
@@ -33,7 +33,7 @@ fun AgentTypeSelector(
                 ElevatedFilterChip(
                     selected = selectedAgentType == agentType,
                     onClick = { onSelectAgentType(agentType) },
-                    label = { Text(strings.agents.agentTypeDisplayName(agentType)) },
+                    label = { Text(i18n.agents.agentTypeDisplayName(agentType)) },
                 )
             }
         }

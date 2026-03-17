@@ -2,6 +2,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text
 
 import androidx.compose.runtime.*
 import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
 import kotlinx.datetime.*
@@ -9,9 +10,11 @@ import nl.jacobras.humanreadable.*
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+internal val I18nStrings.formats: FormatStrings get() = byType()
+
 @Composable
 internal fun rememberRelativeTimestampFormatter(): RelativeTimestampFormatter {
-    val formats = strings.formats
+    val formats = i18n.formats
     return remember { RelativeTimestampFormatter(formats) }
 }
 

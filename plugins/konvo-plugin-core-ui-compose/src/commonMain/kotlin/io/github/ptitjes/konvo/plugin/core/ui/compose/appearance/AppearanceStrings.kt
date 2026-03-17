@@ -2,7 +2,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.appearance
 
 import io.github.ptitjes.konvo.plugin.core.i18n.*
 
-val I18nStrings.appearance: AppearanceStrings get() = byType()
+internal val I18nStrings.appearance: AppearanceStrings get() = byType()
 
 /**
  * Translated strings for the appearance package.

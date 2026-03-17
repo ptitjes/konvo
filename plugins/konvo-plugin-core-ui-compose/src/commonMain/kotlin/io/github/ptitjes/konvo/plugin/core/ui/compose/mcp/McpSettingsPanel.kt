@@ -6,10 +6,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -41,17 +41,17 @@ fun McpSettingsPanel() {
     var serverPendingDeletion by remember { mutableStateOf<String?>(null) }
 
     SettingsBox(
-        title = strings.mcp.configuredServersTitle,
-        description = strings.mcp.configuredServersDescription,
+        title = i18n.mcp.configuredServersTitle,
+        description = i18n.mcp.configuredServersDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { sheetState = McpServersSheetState.Adding }) {
-                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = strings.mcp.addServerAria)
+                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = i18n.mcp.addServerAria)
             }
         },
         bottomContent = {
             if (settings.servers.isEmpty()) {
                 Text(
-                    text = strings.mcp.noServersMessage,
+                    text = i18n.mcp.noServersMessage,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -81,14 +81,14 @@ fun McpSettingsPanel() {
                                 IconButton(onClick = { sheetState = McpServersSheetState.Editing(name) }) {
                                     Icon(
                                         painter = painterResource(Res.drawable.ic_edit),
-                                        contentDescription = strings.mcp.editServerAria
+                                        contentDescription = i18n.mcp.editServerAria
                                     )
                                 }
 
                                 IconButton(onClick = { serverPendingDeletion = name }) {
                                     Icon(
                                         painter = painterResource(Res.drawable.ic_delete),
-                                        contentDescription = strings.mcp.deleteServerAria
+                                        contentDescription = i18n.mcp.deleteServerAria
                                     )
                                 }
                             }
@@ -103,8 +103,8 @@ fun McpSettingsPanel() {
     serverPendingDeletion?.let { nameToDelete ->
         AlertDialog(
             onDismissRequest = { serverPendingDeletion = null },
-            title = { Text(strings.mcp.deleteServerDialogTitle) },
-            text = { Text(strings.mcp.deleteServerDialogText(nameToDelete)) },
+            title = { Text(i18n.mcp.deleteServerDialogTitle) },
+            text = { Text(i18n.mcp.deleteServerDialogText(nameToDelete)) },
             confirmButton = {
                 TextButton(onClick = {
                     removeServer(nameToDelete)
@@ -114,11 +114,11 @@ fun McpSettingsPanel() {
                         sheetState = McpServersSheetState.Closed
                     }
                 }) {
-                    Text(strings.mcp.deleteConfirm)
+                    Text(i18n.mcp.deleteConfirm)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { serverPendingDeletion = null }) { Text(strings.mcp.cancel) }
+                TextButton(onClick = { serverPendingDeletion = null }) { Text(i18n.mcp.cancel) }
             },
         )
     }
@@ -190,7 +190,7 @@ private fun EditServerSheetContent(
                 modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { newName -> onRename(newName) },
-                label = { Text(strings.mcp.nameLabel) },
+                label = { Text(i18n.mcp.nameLabel) },
                 isError = name.isBlank() || otherNames.contains(element = name),
                 singleLine = true,
             )
@@ -200,7 +200,7 @@ private fun EditServerSheetContent(
             }
 
             GenericSelector(
-                label = strings.mcp.transportLabel,
+                label = i18n.mcp.transportLabel,
                 selectedItem = transportType,
                 onSelectItem = { selected ->
                     transportType = selected
@@ -222,7 +222,7 @@ private fun EditServerSheetContent(
                 modifier = Modifier.offset(y = 4.dp),
                 onClick = onRemove,
             ) {
-                Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = strings.mcp.removeServerAria)
+                Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = i18n.mcp.removeServerAria)
             }
         }
 
@@ -236,7 +236,7 @@ private fun EditServerSheetContent(
                     modifier = Modifier.height(64.dp).fillMaxWidth(),
                     value = transport.url.orEmpty(),
                     onValueChange = { newUrl -> onChange(specification.copy(transport = transport.copy(url = newUrl))) },
-                    label = { Text(strings.mcp.sseUrlLabel) },
+                    label = { Text(i18n.mcp.sseUrlLabel) },
                     singleLine = true,
                 )
 
@@ -255,7 +255,7 @@ private fun EditServerSheetContent(
                         val reconnectionTime = filtered.toLongOrNull()?.takeIf { it >= 0 }?.seconds
                         onChange(specification.copy(transport = transport.copy(reconnectionTime = reconnectionTime)))
                     },
-                    label = { Text(strings.mcp.reconnectionTimeLabel) },
+                    label = { Text(i18n.mcp.reconnectionTimeLabel) },
                     singleLine = true,
                 )
             }
@@ -270,7 +270,7 @@ private fun EditServerSheetContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = strings.mcp.runAsProcessLabel,
+                text = i18n.mcp.runAsProcessLabel,
             )
             Switch(
                 checked = hasProcess, onCheckedChange = { enabled ->
@@ -302,7 +302,7 @@ private fun EditServerSheetContent(
                     val parts = newValue.parseCommandString()
                     onChange(specification.copy(process = process.copy(command = parts)))
                 },
-                label = { Text(strings.mcp.commandLabel) },
+                label = { Text(i18n.mcp.commandLabel) },
                 singleLine = true,
             )
 
@@ -318,7 +318,7 @@ private fun EditServerSheetContent(
                     val environment = newValue.parseEnvironmentString().ifEmpty { null }
                     onChange(specification.copy(process = process.copy(environment = environment)))
                 },
-                label = { Text(strings.mcp.environmentLabel) },
+                label = { Text(i18n.mcp.environmentLabel) },
                 singleLine = true,
             )
         }
@@ -358,13 +358,13 @@ private fun AddServerSheetContent(
                 modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { name = it },
-                label = { Text(strings.mcp.nameLabel) },
+                label = { Text(i18n.mcp.nameLabel) },
                 singleLine = true,
                 isError = name.isBlank() || existingNames.contains(name),
             )
 
             GenericSelector(
-                label = strings.mcp.transportLabel,
+                label = i18n.mcp.transportLabel,
                 selectedItem = transportType,
                 onSelectItem = { transportType = it },
                 options = McpTransportType.entries,
@@ -407,7 +407,7 @@ private fun AddServerSheetContent(
                 },
                 enabled = isValid(),
             ) {
-                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = strings.mcp.addServerAria)
+                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = i18n.mcp.addServerAria)
             }
         }
 
@@ -416,7 +416,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = sseUrl,
                 onValueChange = { sseUrl = it },
-                label = { Text(strings.mcp.sseUrlLabel) },
+                label = { Text(i18n.mcp.sseUrlLabel) },
                 singleLine = true,
             )
 
@@ -424,7 +424,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = sseReconnectionTimeText,
                 onValueChange = { sseReconnectionTimeText = it.filter { ch -> ch.isDigit() } },
-                label = { Text(strings.mcp.reconnectionTimeLabel) },
+                label = { Text(i18n.mcp.reconnectionTimeLabel) },
                 singleLine = true,
             )
         }
@@ -435,7 +435,7 @@ private fun AddServerSheetContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = strings.mcp.runAsProcessLabel,
+                text = i18n.mcp.runAsProcessLabel,
             )
             Switch(checked = addProcess, onCheckedChange = { addProcess = it })
         }
@@ -445,7 +445,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = commandText,
                 onValueChange = { commandText = it },
-                label = { Text(strings.mcp.commandLabel) },
+                label = { Text(i18n.mcp.commandLabel) },
                 singleLine = true,
             )
 
@@ -453,7 +453,7 @@ private fun AddServerSheetContent(
                 modifier = Modifier.height(64.dp).fillMaxWidth(),
                 value = environmentText,
                 onValueChange = { environmentText = it },
-                label = { Text(strings.mcp.environmentLabel) },
+                label = { Text(i18n.mcp.environmentLabel) },
                 singleLine = true,
             )
         }

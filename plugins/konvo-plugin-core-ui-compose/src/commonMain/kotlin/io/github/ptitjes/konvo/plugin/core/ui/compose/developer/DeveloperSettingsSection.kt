@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.developer
 
 import io.github.ptitjes.konvo.plugin.core.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
@@ -12,7 +13,7 @@ fun PluginSpecificationBuilder.developerSettings() {
             SettingsSection(
                 titleKey = "developer",
                 icon = Res.drawable.ic_mobile_code,
-                title = { strings.developer.settingsTitle },
+                title = { i18n.developer.settingsTitle },
                 panel = { DeveloperSettingsPanel() },
             )
         }

@@ -7,8 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.tooling.preview.*
 import androidx.compose.ui.unit.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.theme.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 @Composable
 fun NewMessagesDivider() {
@@ -18,7 +18,7 @@ fun NewMessagesDivider() {
             color = MaterialTheme.colorScheme.error,
         )
         Text(
-            text = strings.conversations.newMessagesLabel,
+            text = i18n.conversations.newMessagesLabel,
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.labelSmall,
             modifier = Modifier

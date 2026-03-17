@@ -4,7 +4,6 @@ import androidx.compose.runtime.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.images.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.theme.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.kodein.di.*
 import org.kodein.di.compose.*
 
@@ -15,10 +14,8 @@ class App(private val di: DI) {
             CoilImageLoader()
 
             ProvideI18nStrings {
-                ProvideStrings(rememberStrings()) {
-                    KonvoTheme {
-                        MainScreen()
-                    }
+                KonvoTheme {
+                    MainScreen()
                 }
             }
         }

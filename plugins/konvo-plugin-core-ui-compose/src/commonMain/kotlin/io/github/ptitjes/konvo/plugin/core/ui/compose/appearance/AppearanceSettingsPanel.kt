@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.SettingsPanelScope
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 

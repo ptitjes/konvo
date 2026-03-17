@@ -7,8 +7,8 @@ import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.models.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 /**
@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.*
  */
 @Composable
 fun ModelSelector(
-    label: String? = strings.models.modelLabel,
+    label: String? = i18n.models.modelLabel,
     selectedModel: ModelCard,
     onModelSelected: (ModelCard) -> Unit,
     models: List<ModelCard>,

@@ -14,12 +14,13 @@ import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.inmemory.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.utils.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
 import kotlin.time.*
@@ -37,7 +38,7 @@ fun ConversationListScreen(
         viewModel = viewModel,
         expanded = navigator.navigationPaneState.targetValue.isExpanded,
         onExpandedToggle = { coroutineScope.launch { navigator.navigationPaneState.toggle() } },
-        onSettingsClick = { coroutineScope.launch { navigator.openSettings() }},
+        onSettingsClick = { coroutineScope.launch { navigator.openSettings() } },
         selectedConversationId = navigator.selectedConversationId,
         onCreateConversation = { navigator.navigateToNewConversation() },
         onSelectConversation = { navigator.navigateToConversation(it) },
@@ -125,7 +126,7 @@ fun ConversationListScreen(
                                 animationSpec = tween(durationMillis = 100),
                             ),
                         ) {
-                            Text(text = strings.conversations.listTitle)
+                            Text(text = i18n.conversations.listTitle)
                         }
                     }
                 },
@@ -144,7 +145,7 @@ fun ConversationListScreen(
             ) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_add),
-                    contentDescription = strings.conversations.newConversationAria,
+                    contentDescription = i18n.conversations.newConversationAria,
                 )
             }
         }
@@ -212,7 +213,7 @@ fun ConversationListScreen(
                             }) {
                                 Icon(
                                     painter = painterResource(Res.drawable.ic_settings),
-                                    contentDescription = strings.settings.listTitle,
+                                    contentDescription = i18n.settings.listTitle,
                                 )
                             }
 

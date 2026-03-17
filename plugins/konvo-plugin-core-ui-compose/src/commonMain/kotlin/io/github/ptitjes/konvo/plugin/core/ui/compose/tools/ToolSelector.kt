@@ -6,8 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.tools.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 /**
  * A selector for tools.
@@ -26,12 +26,12 @@ fun ToolSelector(
     modifier: Modifier = Modifier,
 ) {
     OutlineBox(
-        label = strings.tools.panelLabel,
+        label = i18n.tools.panelLabel,
         modifier = modifier,
     ) {
         if (tools.isEmpty()) {
             Text(
-                text = strings.tools.emptyMessage,
+                text = i18n.tools.emptyMessage,
                 modifier = Modifier.padding(vertical = 8.dp),
             )
         } else {
