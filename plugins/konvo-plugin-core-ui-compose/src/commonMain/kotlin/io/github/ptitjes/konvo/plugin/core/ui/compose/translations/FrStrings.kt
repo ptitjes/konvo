@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.developer.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
@@ -133,6 +134,13 @@ internal val FrStrings = Strings(
         baseColorSchemeOptionLight = "Clair",
         baseColorSchemeOptionSystem = "Adapté au système",
     ),
+    developer = DeveloperStrings(
+        openTelemetryTitle = "OpenTelemetry (gRPC)",
+        openTelemetryDescription = "Exporter les traces vers un collecteur OpenTelemetry via gRPC.",
+        openTelemetryEnabledLabel = "Activer l'export OpenTelemetry",
+        openTelemetryEndpointLabel = "Point de terminaison",
+        openTelemetryVerboseLabel = "Export verbeux",
+    ),
     settings = SettingsStrings(
         listTitle = "Paramètres",
         selectSectionAria = "Sélectionner une section des paramètres",
@@ -142,11 +150,6 @@ internal val FrStrings = Strings(
             "models" to "Fournisseurs de modèles",
             "developer" to "Développeur",
         ),
-        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
-        developerOpenTelemetryDescription = "Exporter les traces vers un collecteur OpenTelemetry via gRPC.",
-        developerOpenTelemetryEnabledLabel = "Activer l'export OpenTelemetry",
-        developerOpenTelemetryEndpointLabel = "Point de terminaison",
-        developerOpenTelemetryVerboseLabel = "Export verbeux",
     ),
     formats = FormatStrings(
         now = "maintenant",

@@ -6,16 +6,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 @Composable
 fun DeveloperSettingsPanel() {
     var settings by rememberMutableSettings(DeveloperSettingsKey)
 
     SettingsBox(
-        title = strings.settings.developerOpenTelemetryTitle,
-        description = strings.settings.developerOpenTelemetryDescription,
+        title = i18n.developer.openTelemetryTitle,
+        description = i18n.developer.openTelemetryDescription,
         bottomContent = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -26,8 +26,8 @@ fun DeveloperSettingsPanel() {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        modifier = Modifier.Companion.weight(1f),
-                        text = strings.settings.developerOpenTelemetryEnabledLabel,
+                        modifier = Modifier.weight(1f),
+                        text = i18n.developer.openTelemetryEnabledLabel,
                     )
                     Switch(
                         checked = settings.openTelemetry.enabled,
@@ -45,8 +45,8 @@ fun DeveloperSettingsPanel() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
-                            modifier = Modifier.Companion.weight(1f),
-                            text = strings.settings.developerOpenTelemetryVerboseLabel,
+                            modifier = Modifier.weight(1f),
+                            text = i18n.developer.openTelemetryVerboseLabel,
                         )
                         Switch(
                             checked = settings.openTelemetry.verbose,
@@ -66,7 +66,7 @@ fun DeveloperSettingsPanel() {
                                 openTelemetry = settings.openTelemetry.copy(endpoint = endpoint)
                             )
                         },
-                        label = { Text(strings.settings.developerOpenTelemetryEndpointLabel) },
+                        label = { Text(i18n.developer.openTelemetryEndpointLabel) },
                         singleLine = true,
                     )
                 }

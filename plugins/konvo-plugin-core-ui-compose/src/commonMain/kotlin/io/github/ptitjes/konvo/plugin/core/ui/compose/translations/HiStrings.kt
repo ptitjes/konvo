@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.developer.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
@@ -133,6 +134,13 @@ internal val HiStrings = Strings(
         baseColorSchemeOptionLight = "लाइट",
         baseColorSchemeOptionSystem = "सिस्टम के अनुसार",
     ),
+    developer = DeveloperStrings(
+        openTelemetryTitle = "OpenTelemetry (gRPC)",
+        openTelemetryDescription = "gRPC का उपयोग करके OpenTelemetry कलेक्टर को ट्रेस निर्यात करें।",
+        openTelemetryEnabledLabel = "OpenTelemetry निर्यात सक्षम करें",
+        openTelemetryEndpointLabel = "एंडपॉइंट",
+        openTelemetryVerboseLabel = "विस्तृत निर्यात",
+    ),
     settings = SettingsStrings(
         listTitle = "सेटिंग्स",
         selectSectionAria = "सेटिंग्स अनुभाग चुनें",
@@ -142,11 +150,6 @@ internal val HiStrings = Strings(
             "models" to "मॉडल प्रदाता",
             "developer" to "डेवलपर",
         ),
-        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
-        developerOpenTelemetryDescription = "gRPC का उपयोग करके OpenTelemetry कलेक्टर को ट्रेस निर्यात करें।",
-        developerOpenTelemetryEnabledLabel = "OpenTelemetry निर्यात सक्षम करें",
-        developerOpenTelemetryEndpointLabel = "एंडपॉइंट",
-        developerOpenTelemetryVerboseLabel = "विस्तृत निर्यात",
     ),
     formats = FormatStrings(
         now = "अभी",

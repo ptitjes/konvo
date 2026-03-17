@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.developer.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
@@ -133,6 +134,13 @@ internal val ArStrings = Strings(
         baseColorSchemeOptionLight = "فاتح",
         baseColorSchemeOptionSystem = "متوافق مع النظام",
     ),
+    developer = DeveloperStrings(
+        openTelemetryTitle = "OpenTelemetry (gRPC)",
+        openTelemetryDescription = "تصدير الآثار إلى مجمّع OpenTelemetry باستخدام gRPC.",
+        openTelemetryEnabledLabel = "تمكين تصدير OpenTelemetry",
+        openTelemetryEndpointLabel = "نقطة النهاية",
+        openTelemetryVerboseLabel = "تصدير مفصل",
+    ),
     settings = SettingsStrings(
         listTitle = "الإعدادات",
         selectSectionAria = "اختيار قسم الإعدادات",
@@ -142,11 +150,6 @@ internal val ArStrings = Strings(
             "models" to "مزوّدو النماذج",
             "developer" to "المطور",
         ),
-        developerOpenTelemetryTitle = "OpenTelemetry (gRPC)",
-        developerOpenTelemetryDescription = "تصدير الآثار إلى مجمّع OpenTelemetry باستخدام gRPC.",
-        developerOpenTelemetryEnabledLabel = "تمكين تصدير OpenTelemetry",
-        developerOpenTelemetryEndpointLabel = "نقطة النهاية",
-        developerOpenTelemetryVerboseLabel = "تصدير مفصل",
     ),
     formats = FormatStrings(
         now = "الآن",

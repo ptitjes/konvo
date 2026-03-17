@@ -23,7 +23,7 @@ object CoreUiComposePlugin : Plugin {
         extensionPoint(SettingsSections)
 
         appearanceSettings()
-        developerSettingsSection()
+        developerSettings()
         mcpSettingsSection()
         modelsSettingsSection()
     }

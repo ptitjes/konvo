@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.developer.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
@@ -19,6 +20,7 @@ internal data class Strings(
     val tools: ToolStrings,
     val conversations: ConversationStrings,
     val appearance: AppearanceStrings,
+    val developer: DeveloperStrings,
     val settings: SettingsStrings,
     val formats: FormatStrings,
 )

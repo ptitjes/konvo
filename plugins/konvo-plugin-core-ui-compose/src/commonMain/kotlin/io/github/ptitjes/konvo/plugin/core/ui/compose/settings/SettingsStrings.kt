@@ -7,11 +7,4 @@ internal data class SettingsStrings(
 
     // Section titles
     val sectionTitles: Map<String, String>,
-
-    // Developer settings
-    val developerOpenTelemetryTitle: String,
-    val developerOpenTelemetryDescription: String,
-    val developerOpenTelemetryEnabledLabel: String,
-    val developerOpenTelemetryEndpointLabel: String,
-    val developerOpenTelemetryVerboseLabel: String,
 )
