@@ -16,6 +16,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(versionCatalog.findLibrary("syrupRuntime").get())
+            implementation(project(":libraries:konvo-lib-plugins-runtime"))
         }
     }
 }

@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.plugins
+package io.github.ptitjes.konvo.lib.plugins.host
 
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.syrup.host.*

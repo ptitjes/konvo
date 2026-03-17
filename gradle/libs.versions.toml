@@ -40,7 +40,7 @@ androidxNavigation3 = "1.1.0-alpha02"
 
 composeHotReload = "1.0.0"
 
-lyricist = "1.7.0"
+lyricist = "1.8.0"
 humanReadable = "1.12.0"
 
 markdownRenderer = "0.39.1"
@@ -81,6 +81,8 @@ slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 syrupRuntime = { module = "io.github.ptitjes:syrup-runtime", version.ref = "syrup" }
 syrupHost = { module = "io.github.ptitjes:syrup-host", version.ref = "syrup" }
 
+lyricist = { module = "cafe.adriel.lyricist:lyricist", version.ref = "lyricist" }
+
 koog = { module = "ai.koog:koog-agents", version.ref = "koog" }
 koogPromptMarkdown = { module = "ai.koog:prompt-markdown", version.ref = "koog" }
 mcp = { module = "io.modelcontextprotocol:kotlin-sdk", version.ref = "mcp" }
@@ -109,7 +111,6 @@ androidxNavigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigatio
 
 kodeinCompose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
 
-lyricist = { module = "cafe.adriel.lyricist:lyricist", version.ref = "lyricist" }
 humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "humanReadable" }
 
 markdownRenderer = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }

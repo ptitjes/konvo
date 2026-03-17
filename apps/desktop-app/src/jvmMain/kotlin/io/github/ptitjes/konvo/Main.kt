@@ -1,7 +1,7 @@
 package io.github.ptitjes.konvo
 
 import io.github.oshai.kotlinlogging.*
-import io.github.ptitjes.konvo.plugin.core.plugins.*
+import io.github.ptitjes.konvo.lib.plugins.host.*
 import java.awt.*
 
 private val logger = KotlinLogging.logger { }

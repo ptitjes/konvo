@@ -15,6 +15,8 @@ plugins {
 includeBuild("build-logic")
 
 // Core libraries
+include(":libraries:konvo-lib-plugins-runtime")
+include(":libraries:konvo-lib-plugins-host")
 
 // Plugins
 include(":plugins:konvo-plugin-core")

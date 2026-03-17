@@ -12,7 +12,6 @@ kotlin {
             api(libs.xemanticJsonSchema)
             api(libs.syrupHost)
 
-            implementation(libs.kotlinLogging)
             implementation(libs.mcp)
             implementation(libs.bundles.ktorClient)
             implementation(libs.ktorClientCio)
@@ -22,11 +21,6 @@ kotlin {
             implementation(project.dependencies.enforcedPlatform(libs.opentelemetry.bom))
             implementation(libs.opentelemetry.exporter.logging)
             implementation(libs.opentelemetry.exporter.otlp)
-        }
-
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-            implementation(libs.kotlinxCoroutinesTest)
         }
     }
 }

@@ -12,8 +12,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(libs.slf4jSimple)
-            implementation(libs.kotlinLogging)
-            implementation(libs.syrupHost)
+            implementation(project(":libraries:konvo-lib-plugins-host"))
 
             implementation(project(":plugins:konvo-plugin-core"))
             implementation(project(":plugins:konvo-plugin-core-ui-compose"))
