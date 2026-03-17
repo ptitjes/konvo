@@ -16,10 +16,10 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import coil3.compose.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.jetbrains.compose.resources.*
 
 /**
@@ -114,7 +114,7 @@ private fun DefaultTopEndContent(character: CharacterCard) {
         ) {
             Icon(
                 painter = painterResource(Res.drawable.ic_book),
-                contentDescription = strings.roleplay.hasCharacterBookAria,
+                contentDescription = i18n.roleplay.hasCharacterBookAria,
                 tint = Color.White,
                 modifier = Modifier.size(12.dp),
             )

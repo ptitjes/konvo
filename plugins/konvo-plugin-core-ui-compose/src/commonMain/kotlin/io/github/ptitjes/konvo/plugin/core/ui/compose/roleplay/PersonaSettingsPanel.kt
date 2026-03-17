@@ -7,9 +7,9 @@ import androidx.compose.ui.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.utils.*
 import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
@@ -45,20 +45,20 @@ fun PersonaSettingsPanel() {
     var pendingDeletion by remember { mutableStateOf<Persona?>(null) }
 
     SettingsBox(
-        title = strings.roleplay.personasTitle,
-        description = strings.roleplay.personasDescription,
+        title = i18n.roleplay.personasTitle,
+        description = i18n.roleplay.personasDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { openSheet = PersonaSheetState.Adding }) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_add),
-                    contentDescription = strings.roleplay.addPersonaAria,
+                    contentDescription = i18n.roleplay.addPersonaAria,
                 )
             }
         },
         bottomContent = {
             if (settings.personas.isEmpty()) {
                 Text(
-                    text = strings.roleplay.noPersonasConfigured,
+                    text = i18n.roleplay.noPersonasConfigured,
                     style = MaterialTheme.typography.bodyMedium,
                 )
             } else {
@@ -80,9 +80,9 @@ fun PersonaSettingsPanel() {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(text = persona.name, style = MaterialTheme.typography.titleMedium)
                                     val subtitle = buildList {
-                                        add(strings.roleplay.nicknamePrefix(persona.nickname))
+                                        add(i18n.roleplay.nicknamePrefix(persona.nickname))
                                         if (persona.defaultLorebookId != null) {
-                                            add(strings.roleplay.withLorebook)
+                                            add(i18n.roleplay.withLorebook)
                                         }
                                     }.joinToString(" • ")
                                     Text(text = subtitle, style = MaterialTheme.typography.bodySmall)
@@ -91,14 +91,14 @@ fun PersonaSettingsPanel() {
                                 IconButton(onClick = { openSheet = PersonaSheetState.Editing(persona.name) }) {
                                     Icon(
                                         painter = painterResource(Res.drawable.ic_edit),
-                                        contentDescription = strings.roleplay.editPersonaAria,
+                                        contentDescription = i18n.roleplay.editPersonaAria,
                                     )
                                 }
 
                                 IconButton(onClick = { pendingDeletion = persona }) {
                                     Icon(
                                         painter = painterResource(Res.drawable.ic_delete),
-                                        contentDescription = strings.roleplay.deletePersonaAria,
+                                        contentDescription = i18n.roleplay.deletePersonaAria,
                                     )
                                 }
                             }
@@ -112,8 +112,8 @@ fun PersonaSettingsPanel() {
     pendingDeletion?.let { p ->
         AlertDialog(
             onDismissRequest = { pendingDeletion = null },
-            title = { Text(strings.roleplay.deletePersonaDialogTitle) },
-            text = { Text(strings.roleplay.deletePersonaDialogText(p.name)) },
+            title = { Text(i18n.roleplay.deletePersonaDialogTitle) },
+            text = { Text(i18n.roleplay.deletePersonaDialogText(p.name)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -124,13 +124,13 @@ fun PersonaSettingsPanel() {
                         }
                         pendingDeletion = null
                     },
-                ) { Text(strings.roleplay.deleteConfirm) }
+                ) { Text(i18n.roleplay.deleteConfirm) }
             },
             dismissButton = {
                 TextButton(
                     onClick = { pendingDeletion = null },
                 ) {
-                    Text(strings.roleplay.cancel)
+                    Text(i18n.roleplay.cancel)
                 }
             },
         )
@@ -222,7 +222,7 @@ private fun PersonaEditor(
                 modifier = Modifier.height(64.dp).weight(1f),
                 value = name,
                 onValueChange = { name = it },
-                label = { Text(strings.roleplay.nameLabel) },
+                label = { Text(i18n.roleplay.nameLabel) },
                 isError = name.isBlank() || existingNames.contains(name),
                 singleLine = true,
             )
@@ -234,7 +234,7 @@ private fun PersonaEditor(
                 ) {
                     Icon(
                         painter = painterResource(Res.drawable.ic_delete),
-                        contentDescription = strings.roleplay.removePersonaAria,
+                        contentDescription = i18n.roleplay.removePersonaAria,
                     )
                 }
             }
@@ -244,14 +244,14 @@ private fun PersonaEditor(
             modifier = Modifier.height(64.dp).fillMaxWidth(),
             value = nickname,
             onValueChange = { nickname = it },
-            label = { Text(strings.roleplay.nicknameLabel) },
+            label = { Text(i18n.roleplay.nicknameLabel) },
             isError = nickname.isBlank(),
             singleLine = true,
             visualTransformation = VisualTransformation.None,
         )
 
         LorebookSelector(
-            label = strings.roleplay.defaultLorebookLabel,
+            label = i18n.roleplay.defaultLorebookLabel,
             selectedLorebook = selectedLorebook,
             onLorebookSelected = { selectedLorebook = it },
             lorebooks = lorebooks,
@@ -266,7 +266,7 @@ private fun PersonaEditor(
                 onClick = { onSubmit(name.trim(), nickname.trim(), selectedLorebook) },
                 enabled = valid()
             ) {
-                Text(if (editing) strings.roleplay.saveAction else strings.roleplay.addAction)
+                Text(if (editing) i18n.roleplay.saveAction else i18n.roleplay.addAction)
             }
         }
     }

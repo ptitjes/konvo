@@ -1,9 +1,13 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay
 
+import io.github.ptitjes.konvo.plugin.core.i18n.*
+
+val I18nStrings.roleplay: RoleplayStrings get() = byType()
+
 /**
  * Translated strings for the roleplay package (personas, characters, lorebooks, and settings UI).
  */
-internal data class RoleplayStrings(
+data class RoleplayStrings(
     // Generic/common
     val deleteConfirm: String,
     val cancel: String,

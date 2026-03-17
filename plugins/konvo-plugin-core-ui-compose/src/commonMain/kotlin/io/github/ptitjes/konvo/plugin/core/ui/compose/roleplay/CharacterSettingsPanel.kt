@@ -8,11 +8,11 @@ import androidx.compose.ui.unit.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.providers.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.vinceglb.filekit.*
 import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.dialogs.compose.*
@@ -40,8 +40,8 @@ fun SettingsPanelScope.CharacterSettingsPanel() {
     }
 
     SettingsBox(
-        title = strings.roleplay.characterTagsFilterTitle,
-        description = strings.roleplay.characterTagsFilterDescription,
+        title = i18n.roleplay.characterTagsFilterTitle,
+        description = i18n.roleplay.characterTagsFilterDescription,
         bottomContent = {
             OutlinedTextField(
                 label = {},
@@ -55,7 +55,7 @@ fun SettingsPanelScope.CharacterSettingsPanel() {
                     settings = settings.copy(filteredTags = parsed)
                 },
                 singleLine = true,
-                placeholder = { Text(strings.roleplay.characterTagsPlaceholder) },
+                placeholder = { Text(i18n.roleplay.characterTagsPlaceholder) },
             )
         }
     )
@@ -107,28 +107,28 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
     }
 
     SettingsBox(
-        title = strings.roleplay.importedCharactersTitle,
-        description = strings.roleplay.importedCharactersDescription,
+        title = i18n.roleplay.importedCharactersTitle,
+        description = i18n.roleplay.importedCharactersDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_file_download),
-                    contentDescription = strings.roleplay.importCharactersAria
+                    contentDescription = i18n.roleplay.importCharactersAria
                 )
             }
         },
         bottomContent = {
             when {
-                loadError != null -> Text(text = strings.roleplay.failedToLoadCharacters(loadError!!))
+                loadError != null -> Text(text = i18n.roleplay.failedToLoadCharacters(loadError!!))
                 characters == null -> FullSizeProgressIndicator()
-                characters!!.isEmpty() -> Text(text = strings.roleplay.noCharactersAvailable)
+                characters!!.isEmpty() -> Text(text = i18n.roleplay.noCharactersAvailable)
                 else -> CharacterGrid(
                     characters = characters!!,
                     bottomEndContent = { character ->
                         FilledTonalIconButton(onClick = { pendingDelete = character }) {
                             Icon(
                                 painter = painterResource(Res.drawable.ic_delete),
-                                contentDescription = strings.roleplay.deleteCharacterAria,
+                                contentDescription = i18n.roleplay.deleteCharacterAria,
                                 tint = MaterialTheme.colorScheme.onSurface,
                             )
                         }
@@ -141,8 +141,8 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
     pendingDelete?.let { toDelete ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text(strings.roleplay.deleteCharacterDialogTitle) },
-            text = { Text(strings.roleplay.deleteCharacterDialogText(toDelete.name)) },
+            title = { Text(i18n.roleplay.deleteCharacterDialogTitle) },
+            text = { Text(i18n.roleplay.deleteCharacterDialogText(toDelete.name)) },
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
@@ -154,9 +154,9 @@ private fun SettingsPanelScope.ImportedCharactersSettingsBox() {
                                 showSnackbar("Failed to delete character:\n${exception.message ?: "Unknown error"}")
                             }
                     }
-                }) { Text(strings.roleplay.deleteConfirm) }
+                }) { Text(i18n.roleplay.deleteConfirm) }
             },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(strings.roleplay.cancel) } },
+            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(i18n.roleplay.cancel) } },
         )
     }
 }

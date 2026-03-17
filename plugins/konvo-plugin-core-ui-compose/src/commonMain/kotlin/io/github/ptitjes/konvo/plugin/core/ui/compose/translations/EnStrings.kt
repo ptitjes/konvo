@@ -1,17 +1,14 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 
-import cafe.adriel.lyricist.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.tools.*
 
-@LyricistStrings(languageTag = "en-US", default = true)
 internal val EnStrings = Strings(
     navigation = NavigationStrings(
         navigationOpenAria = "Open navigation",
@@ -89,66 +86,6 @@ internal val EnStrings = Strings(
     tools = ToolStrings(
         panelLabel = "Tools",
         emptyMessage = "No tools available",
-    ),
-    roleplay = RoleplayStrings(
-        deleteConfirm = "Delete",
-        cancel = "Cancel",
-        personaLabel = "Persona",
-        personasTitle = "Personas",
-        personasDescription = "Add, remove, and edit personas.",
-        addPersonaAria = "Add persona",
-        noPersonasConfigured = "No personas configured.",
-        nicknamePrefix = { nickname -> "Nickname: $nickname" },
-        withLorebook = "With lorebook",
-        editPersonaAria = "Edit persona",
-        deletePersonaAria = "Delete persona",
-        deletePersonaDialogTitle = "Delete persona?",
-        deletePersonaDialogText = { name -> "Are you sure you want to delete \"$name\"? This action cannot be undone." },
-        nameLabel = "Name",
-        nicknameLabel = "Nickname",
-        defaultLorebookLabel = "Default Lorebook",
-        saveAction = "Save",
-        addAction = "Add",
-        removePersonaAria = "Remove persona",
-        lorebookLabel = "Lorebook",
-        lorebookNone = "None",
-        lorebookUnnamed = "Unnamed lorebook",
-        importedLorebooksTitle = "Imported lorebooks",
-        importedLorebooksDescription = "Import, list and delete lorebooks.",
-        importLorebookAria = "Import lorebook",
-        failedToLoadLorebooks = { msg -> "Failed to load lorebooks: $msg" },
-        noLorebooksAvailable = "No lorebooks available.",
-        deleteLorebookDialogTitle = "Delete lorebook?",
-        deleteLorebookDialogText = { name -> "Are you sure you want to delete \"$name\"? This cannot be undone." },
-        deleteLorebookAria = "Delete lorebook",
-        characterTagsFilterTitle = "Character tags filter",
-        characterTagsFilterDescription = "Tags listed here will be excluded when showing characters. Separate tags with commas.",
-        characterTagsPlaceholder = "e.g. nsfw, beta, wip",
-        importedCharactersTitle = "Imported characters",
-        importedCharactersDescription = "Import, list and delete characters.",
-        importCharactersAria = "Import characters",
-        failedToLoadCharacters = { msg -> "Failed to load characters: $msg" },
-        noCharactersAvailable = "No characters available.",
-        deleteCharacterDialogTitle = "Delete character?",
-        deleteCharacterDialogText = { name -> "Are you sure you want to delete \"$name\"? This cannot be undone." },
-        deleteCharacterAria = "Delete character",
-        hasCharacterBookAria = "Has character book",
-        defaultPersonaTitle = "Default persona",
-        defaultPersonaDescription = "Used as your persona in new roleplay conversations.",
-        noPersonaDefined = "No persona defined yet",
-        defaultPreferredModelTitle = "Default preferred model",
-        defaultPreferredModelDescription = "Model used by default for new roleplay conversations.",
-        noAvailableModels = "No available models",
-        defaultSystemPromptTitle = "Default system prompt",
-        defaultSystemPromptDescription = "Used when the character card doesn't define its own system prompt.",
-        defaultLorebookSettingsTitle = "Default Lorebook settings",
-        defaultLorebookSettingsDescription = "Used when the character card doesn't define its own lorebook configuration.",
-        scanDepthLabel = "Scan depth",
-        tokenBudgetLabel = "Token budget",
-        recursiveScanningLabel = "Recursive scanning",
-        greetingLabel = "Greeting",
-        randomGreeting = "Random Greeting",
-        greetingOptionLabel = { index, preview -> "Greeting ${index + 1}: $preview" },
     ),
     conversations = ConversationStrings(
         untitledConversationTitle = "Untitled conversation",

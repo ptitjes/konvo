@@ -4,8 +4,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 /**
  * A selector for character greetings.
@@ -23,9 +23,9 @@ fun CharacterGreetingSelector(
     modifier: Modifier = Modifier,
     personaName: String,
 ) {
-    val greetingLabel = strings.roleplay.greetingLabel
-    val randomGreeting = strings.roleplay.randomGreeting
-    val greetingOptionLabel = strings.roleplay.greetingOptionLabel
+    val greetingLabel = i18n.roleplay.greetingLabel
+    val randomGreeting = i18n.roleplay.randomGreeting
+    val greetingOptionLabel = i18n.roleplay.greetingOptionLabel
 
     GenericSelector(
         label = greetingLabel,

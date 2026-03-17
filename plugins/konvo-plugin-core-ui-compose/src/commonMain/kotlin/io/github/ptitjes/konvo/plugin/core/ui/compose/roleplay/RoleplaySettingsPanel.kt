@@ -7,10 +7,10 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import org.kodein.di.compose.*
 
 @Composable
@@ -23,14 +23,14 @@ fun RoleplaySettingsPanel() {
 
     // Default user persona
     SettingsBox(
-        title = strings.roleplay.defaultPersonaTitle,
-        description = strings.roleplay.defaultPersonaDescription,
+        title = i18n.roleplay.defaultPersonaTitle,
+        description = i18n.roleplay.defaultPersonaDescription,
         bottomContent = {
             val personaSettings by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
             if (personaSettings.isEmpty()) {
                 OutlineBox(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = strings.roleplay.noPersonaDefined,
+                        text = i18n.roleplay.noPersonaDefined,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(8.dp),
                     )
@@ -54,13 +54,13 @@ fun RoleplaySettingsPanel() {
 
     // Default preferred model selector
     SettingsBox(
-        title = strings.roleplay.defaultPreferredModelTitle,
-        description = strings.roleplay.defaultPreferredModelDescription,
+        title = i18n.roleplay.defaultPreferredModelTitle,
+        description = i18n.roleplay.defaultPreferredModelDescription,
         bottomContent = {
             if (models.isEmpty()) {
                 OutlineBox(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = strings.roleplay.noAvailableModels,
+                        text = i18n.roleplay.noAvailableModels,
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(8.dp),
                     )
@@ -87,8 +87,8 @@ fun RoleplaySettingsPanel() {
 
     // Default system prompt
     SettingsBox(
-        title = strings.roleplay.defaultSystemPromptTitle,
-        description = strings.roleplay.defaultSystemPromptDescription,
+        title = i18n.roleplay.defaultSystemPromptTitle,
+        description = i18n.roleplay.defaultSystemPromptDescription,
         bottomContent = {
             OutlinedTextField(
                 label = {},
@@ -103,8 +103,8 @@ fun RoleplaySettingsPanel() {
 
     // Default lorebook settings
     SettingsBox(
-        title = strings.roleplay.defaultLorebookSettingsTitle,
-        description = strings.roleplay.defaultLorebookSettingsDescription,
+        title = i18n.roleplay.defaultLorebookSettingsTitle,
+        description = i18n.roleplay.defaultLorebookSettingsDescription,
         bottomContent = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 // Numeric fields for scan depth and token budget
@@ -119,7 +119,7 @@ fun RoleplaySettingsPanel() {
                         onValueChange = { value ->
                             settings = settings.copy(defaultScanDepth = value)
                         },
-                        label = strings.roleplay.scanDepthLabel,
+                        label = i18n.roleplay.scanDepthLabel,
                     )
 
                     OutlinedIntegerField(
@@ -128,7 +128,7 @@ fun RoleplaySettingsPanel() {
                         onValueChange = { value ->
                             settings = settings.copy(defaultTokenBudget = value)
                         },
-                        label = strings.roleplay.tokenBudgetLabel,
+                        label = i18n.roleplay.tokenBudgetLabel,
                     )
                 }
 
@@ -139,7 +139,7 @@ fun RoleplaySettingsPanel() {
                 ) {
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = strings.roleplay.recursiveScanningLabel,
+                        text = i18n.roleplay.recursiveScanningLabel,
                     )
                     Switch(
                         checked = settings.defaultRecursiveScanning,

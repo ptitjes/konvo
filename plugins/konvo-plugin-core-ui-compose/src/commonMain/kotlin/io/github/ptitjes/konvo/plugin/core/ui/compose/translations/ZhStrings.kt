@@ -1,17 +1,14 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 
-import cafe.adriel.lyricist.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.tools.*
 
-@LyricistStrings(languageTag = "zh-CN")
 internal val ZhStrings = Strings(
     navigation = NavigationStrings(
         navigationOpenAria = "打开导航",
@@ -89,66 +86,6 @@ internal val ZhStrings = Strings(
     tools = ToolStrings(
         panelLabel = "工具",
         emptyMessage = "没有可用的工具",
-    ),
-    roleplay = RoleplayStrings(
-        deleteConfirm = "删除",
-        cancel = "取消",
-        personaLabel = "人设",
-        personasTitle = "人设",
-        personasDescription = "添加、删除并编辑人设。",
-        addPersonaAria = "添加人设",
-        noPersonasConfigured = "尚未配置人设。",
-        nicknamePrefix = { nickname -> "昵称：$nickname" },
-        withLorebook = "带有设定集",
-        editPersonaAria = "编辑人设",
-        deletePersonaAria = "删除人设",
-        deletePersonaDialogTitle = "删除人设？",
-        deletePersonaDialogText = { name -> "确定要删除\"$name\"吗？该操作无法撤销。" },
-        nameLabel = "名称",
-        nicknameLabel = "昵称",
-        defaultLorebookLabel = "默认设定集",
-        saveAction = "保存",
-        addAction = "添加",
-        removePersonaAria = "移除人设",
-        lorebookLabel = "设定集",
-        lorebookNone = "无",
-        lorebookUnnamed = "未命名设定集",
-        importedLorebooksTitle = "已导入设定集",
-        importedLorebooksDescription = "导入、列出并删除设定集。",
-        importLorebookAria = "导入设定集",
-        failedToLoadLorebooks = { msg -> "加载设定集失败：$msg" },
-        noLorebooksAvailable = "没有可用的设定集。",
-        deleteLorebookDialogTitle = "删除设定集？",
-        deleteLorebookDialogText = { name -> "确定要删除\"$name\"吗？该操作无法撤销。" },
-        deleteLorebookAria = "删除设定集",
-        characterTagsFilterTitle = "角色标签过滤",
-        characterTagsFilterDescription = "列在此处的标签在显示角色时将被排除。使用逗号分隔多个标签。",
-        characterTagsPlaceholder = "例如：nsfw, beta, wip",
-        importedCharactersTitle = "已导入角色",
-        importedCharactersDescription = "导入、列出并删除角色。",
-        importCharactersAria = "导入角色",
-        failedToLoadCharacters = { msg -> "加载角色失败：$msg" },
-        noCharactersAvailable = "没有可用的角色。",
-        deleteCharacterDialogTitle = "删除角色？",
-        deleteCharacterDialogText = { name -> "确定要删除\"$name\"吗？该操作无法撤销。" },
-        deleteCharacterAria = "删除角色",
-        hasCharacterBookAria = "包含角色设定",
-        defaultPersonaTitle = "默认人设",
-        defaultPersonaDescription = "在新建角色扮演会话中用作你的人设。",
-        noPersonaDefined = "尚未定义人设",
-        defaultPreferredModelTitle = "默认首选模型",
-        defaultPreferredModelDescription = "在新的角色扮演会话中默认使用的模型。",
-        noAvailableModels = "没有可用的模型",
-        defaultSystemPromptTitle = "默认系统提示",
-        defaultSystemPromptDescription = "当角色卡未定义系统提示时使用。",
-        defaultLorebookSettingsTitle = "默认设定集设置",
-        defaultLorebookSettingsDescription = "当角色卡未定义设定集配置时使用。",
-        scanDepthLabel = "扫描深度",
-        tokenBudgetLabel = "Token 预算",
-        recursiveScanningLabel = "递归扫描",
-        greetingLabel = "问候语",
-        randomGreeting = "随机问候语",
-        greetingOptionLabel = { index, preview -> "问候语${index + 1}：$preview" },
     ),
     conversations = ConversationStrings(
         untitledConversationTitle = "未命名会话",

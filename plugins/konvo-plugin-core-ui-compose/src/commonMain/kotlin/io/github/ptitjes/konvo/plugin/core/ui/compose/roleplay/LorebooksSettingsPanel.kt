@@ -9,11 +9,11 @@ import androidx.compose.ui.unit.*
 import io.github.oshai.kotlinlogging.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.providers.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.vinceglb.filekit.*
 import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.dialogs.compose.*
@@ -65,21 +65,21 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
     }
 
     SettingsBox(
-        title = strings.roleplay.importedLorebooksTitle,
-        description = strings.roleplay.importedLorebooksDescription,
+        title = i18n.roleplay.importedLorebooksTitle,
+        description = i18n.roleplay.importedLorebooksDescription,
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_file_download),
-                    contentDescription = strings.roleplay.importLorebookAria
+                    contentDescription = i18n.roleplay.importLorebookAria
                 )
             }
         },
         bottomContent = {
             when {
-                loadError != null -> Text(text = strings.roleplay.failedToLoadLorebooks(loadError!!))
+                loadError != null -> Text(text = i18n.roleplay.failedToLoadLorebooks(loadError!!))
                 lorebooks == null -> FullSizeProgressIndicator()
-                lorebooks!!.isEmpty() -> Text(text = strings.roleplay.noLorebooksAvailable)
+                lorebooks!!.isEmpty() -> Text(text = i18n.roleplay.noLorebooksAvailable)
                 else -> Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -96,7 +96,7 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    val title = lorebook.name ?: lorebook.id ?: strings.roleplay.lorebookUnnamed
+                                    val title = lorebook.name ?: lorebook.id ?: i18n.roleplay.lorebookUnnamed
                                     Text(text = title, style = MaterialTheme.typography.titleMedium)
                                     val description = lorebook.description
                                     if (!description.isNullOrBlank()) {
@@ -111,7 +111,7 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
                                 IconButton(onClick = { pendingDelete = lorebook }) {
                                     Icon(
                                         painter = painterResource(Res.drawable.ic_delete),
-                                        contentDescription = strings.roleplay.deleteLorebookAria
+                                        contentDescription = i18n.roleplay.deleteLorebookAria
                                     )
                                 }
                             }
@@ -126,8 +126,8 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
     pendingDelete?.let { toDelete ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text(strings.roleplay.deleteLorebookDialogTitle) },
-            text = { Text(strings.roleplay.deleteLorebookDialogText(toDelete.name ?: toDelete.id ?: "")) },
+            title = { Text(i18n.roleplay.deleteLorebookDialogTitle) },
+            text = { Text(i18n.roleplay.deleteLorebookDialogText(toDelete.name ?: toDelete.id ?: "")) },
             confirmButton = {
                 TextButton(onClick = {
                     scope.launch {
@@ -139,9 +139,9 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
                                 showSnackbar("Failed to delete lorebook:\n${exception.message ?: "Unknown error"}")
                             }
                     }
-                }) { Text(strings.roleplay.deleteConfirm) }
+                }) { Text(i18n.roleplay.deleteConfirm) }
             },
-            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(strings.roleplay.cancel) } },
+            dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(i18n.roleplay.cancel) } },
         )
     }
 }

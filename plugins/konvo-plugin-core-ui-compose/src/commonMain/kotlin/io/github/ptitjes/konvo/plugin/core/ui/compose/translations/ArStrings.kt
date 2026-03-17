@@ -1,17 +1,14 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.translations
 
-import cafe.adriel.lyricist.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.tools.*
 
-@LyricistStrings(languageTag = "ar-SA")
 internal val ArStrings = Strings(
     navigation = NavigationStrings(
         navigationOpenAria = "فتح التنقل",
@@ -89,66 +86,6 @@ internal val ArStrings = Strings(
     tools = ToolStrings(
         panelLabel = "الأدوات",
         emptyMessage = "لا توجد أدوات متاحة",
-    ),
-    roleplay = RoleplayStrings(
-        deleteConfirm = "حذف",
-        cancel = "إلغاء",
-        personaLabel = "الشخصية",
-        personasTitle = "الشخصيات",
-        personasDescription = "إضافة وإزالة وتحرير الشخصيات.",
-        addPersonaAria = "إضافة شخصية",
-        noPersonasConfigured = "لا توجد شخصيات مُكوَّنة.",
-        nicknamePrefix = { nickname -> "الكنية: $nickname" },
-        withLorebook = "مع كتاب الخلفية",
-        editPersonaAria = "تحرير الشخصية",
-        deletePersonaAria = "حذف الشخصية",
-        deletePersonaDialogTitle = "حذف الشخصية؟",
-        deletePersonaDialogText = { name -> "هل أنت متأكد من حذف \"$name\"؟ لا يمكن التراجع عن ذلك." },
-        nameLabel = "الاسم",
-        nicknameLabel = "الكنية",
-        defaultLorebookLabel = "كتاب الخلفية الافتراضي",
-        saveAction = "حفظ",
-        addAction = "إضافة",
-        removePersonaAria = "إزالة الشخصية",
-        lorebookLabel = "كتاب الخلفية",
-        lorebookNone = "لا شيء",
-        lorebookUnnamed = "كتاب خلفية بلا اسم",
-        importedLorebooksTitle = "كتب الخلفية المستوردة",
-        importedLorebooksDescription = "استيراد وسرد وحذف كتب الخلفية.",
-        importLorebookAria = "استيراد كتاب خلفية",
-        failedToLoadLorebooks = { msg -> "فشل تحميل كتب الخلفية: $msg" },
-        noLorebooksAvailable = "لا توجد كتب خلفية متاحة.",
-        deleteLorebookDialogTitle = "حذف كتاب الخلفية؟",
-        deleteLorebookDialogText = { name -> "هل أنت متأكد من حذف \"$name\"؟ لا يمكن التراجع عن ذلك." },
-        deleteLorebookAria = "حذف كتاب الخلفية",
-        characterTagsFilterTitle = "تصفية وسوم الشخصيات",
-        characterTagsFilterDescription = "سيتم استبعاد الوسوم المُدرجة هنا عند عرض الشخصيات. افصل الوسوم بفواصل.",
-        characterTagsPlaceholder = "مثال: nsfw, beta, wip",
-        importedCharactersTitle = "الشخصيات المستوردة",
-        importedCharactersDescription = "استيراد وسرد وحذف الشخصيات.",
-        importCharactersAria = "استيراد شخصيات",
-        failedToLoadCharacters = { msg -> "فشل تحميل الشخصيات: $msg" },
-        noCharactersAvailable = "لا توجد شخصيات متاحة.",
-        deleteCharacterDialogTitle = "حذف الشخصية؟",
-        deleteCharacterDialogText = { name -> "هل أنت متأكد من حذف \"$name\"؟ لا يمكن التراجع عن ذلك." },
-        deleteCharacterAria = "حذف الشخصية",
-        hasCharacterBookAria = "يحتوي على كتاب شخصية",
-        defaultPersonaTitle = "الشخصية الافتراضية",
-        defaultPersonaDescription = "تُستخدم كشخصيتك في محادثات تمثيل الأدوار الجديدة.",
-        noPersonaDefined = "لا توجد شخصية معرَّفة بعد",
-        defaultPreferredModelTitle = "النموذج المفضل الافتراضي",
-        defaultPreferredModelDescription = "النموذج المستخدم افتراضيًا في محادثات تمثيل الأدوار الجديدة.",
-        noAvailableModels = "لا توجد نماذج متاحة",
-        defaultSystemPromptTitle = "المحفِّز النظامي الافتراضي",
-        defaultSystemPromptDescription = "يُستخدم عندما لا تُعرِّف بطاقة الشخصية محفِّزها النظامي الخاص.",
-        defaultLorebookSettingsTitle = "إعدادات كتاب الخلفية الافتراضية",
-        defaultLorebookSettingsDescription = "تُستخدم عندما لا تُعرِّف بطاقة الشخصية إعدادات كتاب الخلفية الخاصة بها.",
-        scanDepthLabel = "عمق المسح",
-        tokenBudgetLabel = "ميزانية الرموز",
-        recursiveScanningLabel = "مسح تكراري",
-        greetingLabel = "تحية",
-        randomGreeting = "تحية عشوائية",
-        greetingOptionLabel = { index, preview -> "تحية ${index + 1}: $preview" },
     ),
     conversations = ConversationStrings(
         untitledConversationTitle = "محادثة بدون عنوان",

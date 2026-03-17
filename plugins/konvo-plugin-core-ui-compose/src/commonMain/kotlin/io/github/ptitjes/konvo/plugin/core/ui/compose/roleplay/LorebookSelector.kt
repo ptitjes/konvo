@@ -6,8 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 
 /**
  * A selector for lorebooks.
@@ -23,14 +23,14 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
  */
 @Composable
 fun LorebookSelector(
-    label: String? = strings.roleplay.lorebookLabel,
+    label: String? = i18n.roleplay.lorebookLabel,
     selectedLorebook: Lorebook?,
     onLorebookSelected: (Lorebook?) -> Unit,
     lorebooks: List<Lorebook>,
     modifier: Modifier = Modifier,
 ) {
-    val none = strings.roleplay.lorebookNone
-    val unnamed = strings.roleplay.lorebookUnnamed
+    val none = i18n.roleplay.lorebookNone
+    val unnamed = i18n.roleplay.lorebookUnnamed
 
     GenericSelector(
         modifier = modifier,
