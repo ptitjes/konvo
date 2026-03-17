@@ -8,6 +8,7 @@ val I18nStrings.developer: DeveloperStrings get() = byType()
  * Translated strings for the developer package.
  */
 data class DeveloperStrings(
+    val settingsTitle: String,
     val openTelemetryTitle: String,
     val openTelemetryDescription: String,
     val openTelemetryEnabledLabel: String,

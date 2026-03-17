@@ -28,6 +28,7 @@ internal val ArStrings = Strings(
         }
     ),
     models = ModelStrings(
+        settingsTitle = "مزوّدو النماذج",
         configuredProvidersTitle = "المزوّدون المُكوَّنون",
         configuredProvidersDescription = "إضافة وإزالة وتحرير مزوّدي النماذج.",
         addProviderAria = "إضافة مزوّد",
@@ -61,6 +62,7 @@ internal val ArStrings = Strings(
         testFailedMessage = { msg -> "فشل اختبار المزوّد: $msg" },
     ),
     mcp = McpStrings(
+        settingsTitle = "خوادم MCP",
         configuredServersTitle = "خوادم MCP المُكوَّنة",
         configuredServersDescription = "إضافة وإزالة وتحرير خوادم MCP.",
         addServerAria = "إضافة خادم",
@@ -128,6 +130,7 @@ internal val ArStrings = Strings(
         failureAria = "فشل",
     ),
     appearance = AppearanceStrings(
+        settingsTitle = "المظهر",
         baseColorSchemeTitle = "نظام الألوان الأساسي",
         baseColorSchemeDescription = "نظام الألوان المستخدم للتطبيق.",
         baseColorSchemeOptionDark = "داكن",
@@ -135,6 +138,7 @@ internal val ArStrings = Strings(
         baseColorSchemeOptionSystem = "متوافق مع النظام",
     ),
     developer = DeveloperStrings(
+        settingsTitle = "المطور",
         openTelemetryTitle = "OpenTelemetry (gRPC)",
         openTelemetryDescription = "تصدير الآثار إلى مجمّع OpenTelemetry باستخدام gRPC.",
         openTelemetryEnabledLabel = "تمكين تصدير OpenTelemetry",
@@ -144,12 +148,6 @@ internal val ArStrings = Strings(
     settings = SettingsStrings(
         listTitle = "الإعدادات",
         selectSectionAria = "اختيار قسم الإعدادات",
-        sectionTitles = mapOf(
-            "appearance" to "المظهر",
-            "mcp" to "خوادم MCP",
-            "models" to "مزوّدو النماذج",
-            "developer" to "المطور",
-        ),
     ),
     formats = FormatStrings(
         now = "الآن",

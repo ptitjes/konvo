@@ -28,6 +28,7 @@ internal val FrStrings = Strings(
         }
     ),
     models = ModelStrings(
+        settingsTitle = "Fournisseurs de modèles",
         configuredProvidersTitle = "Fournisseurs configurés",
         configuredProvidersDescription = "Ajouter, supprimer et modifier des fournisseurs de modèles.",
         addProviderAria = "Ajouter un fournisseur",
@@ -61,6 +62,7 @@ internal val FrStrings = Strings(
         testFailedMessage = { msg -> "Échec du test du fournisseur : $msg" },
     ),
     mcp = McpStrings(
+        settingsTitle = "Serveurs MCP",
         configuredServersTitle = "Serveurs MCP configurés",
         configuredServersDescription = "Ajouter, supprimer et modifier des serveurs MCP.",
         addServerAria = "Ajouter un serveur",
@@ -128,6 +130,7 @@ internal val FrStrings = Strings(
         failureAria = "Échec",
     ),
     appearance = AppearanceStrings(
+        settingsTitle = "Apparence",
         baseColorSchemeTitle = "Schéma de couleurs de base",
         baseColorSchemeDescription = "Le schéma de couleurs utilisé pour l'application.",
         baseColorSchemeOptionDark = "Sombre",
@@ -135,6 +138,7 @@ internal val FrStrings = Strings(
         baseColorSchemeOptionSystem = "Adapté au système",
     ),
     developer = DeveloperStrings(
+        settingsTitle = "Développeur",
         openTelemetryTitle = "OpenTelemetry (gRPC)",
         openTelemetryDescription = "Exporter les traces vers un collecteur OpenTelemetry via gRPC.",
         openTelemetryEnabledLabel = "Activer l'export OpenTelemetry",
@@ -144,12 +148,6 @@ internal val FrStrings = Strings(
     settings = SettingsStrings(
         listTitle = "Paramètres",
         selectSectionAria = "Sélectionner une section des paramètres",
-        sectionTitles = mapOf(
-            "appearance" to "Apparence",
-            "mcp" to "Serveurs MCP",
-            "models" to "Fournisseurs de modèles",
-            "developer" to "Développeur",
-        ),
     ),
     formats = FormatStrings(
         now = "maintenant",

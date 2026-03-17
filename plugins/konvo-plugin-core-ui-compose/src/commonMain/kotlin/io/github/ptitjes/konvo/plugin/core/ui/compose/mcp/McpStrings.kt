@@ -4,6 +4,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.mcp
  * Translated strings for the MCP package (servers selector and settings UI).
  */
 internal data class McpStrings(
+    val settingsTitle: String,
     val configuredServersTitle: String,
     val configuredServersDescription: String,
     val addServerAria: String,

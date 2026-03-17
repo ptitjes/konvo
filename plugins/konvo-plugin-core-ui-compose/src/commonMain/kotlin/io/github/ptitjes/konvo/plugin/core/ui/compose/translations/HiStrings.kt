@@ -28,6 +28,7 @@ internal val HiStrings = Strings(
         }
     ),
     models = ModelStrings(
+        settingsTitle = "मॉडल प्रदाता",
         configuredProvidersTitle = "कॉन्फ़िगर किए गए प्रदाता",
         configuredProvidersDescription = "मॉडल प्रदाताओं को जोड़ें, हटाएँ और संपादित करें।",
         addProviderAria = "प्रदाता जोड़ें",
@@ -61,6 +62,7 @@ internal val HiStrings = Strings(
         testFailedMessage = { msg -> "प्रदाता का परीक्षण विफल: $msg" },
     ),
     mcp = McpStrings(
+        settingsTitle = "MCP सर्वर",
         configuredServersTitle = "कॉन्फ़िगर किए गए MCP सर्वर",
         configuredServersDescription = "MCP सर्वरों को जोड़ें, हटाएँ और संपादित करें।",
         addServerAria = "सर्वर जोड़ें",
@@ -128,6 +130,7 @@ internal val HiStrings = Strings(
         failureAria = "विफलता",
     ),
     appearance = AppearanceStrings(
+        settingsTitle = "रूप-रंग",
         baseColorSchemeTitle = "मूल रंग योजना",
         baseColorSchemeDescription = "एप्लिकेशन में उपयोग की जाने वाली रंग योजना।",
         baseColorSchemeOptionDark = "डार्क",
@@ -135,6 +138,7 @@ internal val HiStrings = Strings(
         baseColorSchemeOptionSystem = "सिस्टम के अनुसार",
     ),
     developer = DeveloperStrings(
+        settingsTitle = "डेवलपर",
         openTelemetryTitle = "OpenTelemetry (gRPC)",
         openTelemetryDescription = "gRPC का उपयोग करके OpenTelemetry कलेक्टर को ट्रेस निर्यात करें।",
         openTelemetryEnabledLabel = "OpenTelemetry निर्यात सक्षम करें",
@@ -144,12 +148,6 @@ internal val HiStrings = Strings(
     settings = SettingsStrings(
         listTitle = "सेटिंग्स",
         selectSectionAria = "सेटिंग्स अनुभाग चुनें",
-        sectionTitles = mapOf(
-            "appearance" to "रूप-रंग",
-            "mcp" to "MCP सर्वर",
-            "models" to "मॉडल प्रदाता",
-            "developer" to "डेवलपर",
-        ),
     ),
     formats = FormatStrings(
         now = "अभी",

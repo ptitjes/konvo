@@ -11,7 +11,7 @@ fun PluginSpecificationBuilder.mcpSettingsSection() {
             SettingsSection(
                 titleKey = "mcp",
                 icon = Res.drawable.ic_extension,
-                title = { strings.settings.sectionTitles.getValue("mcp") },
+                title = { strings.mcp.settingsTitle },
                 panel = { McpSettingsPanel() },
             )
         }

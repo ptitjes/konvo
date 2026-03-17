@@ -12,7 +12,7 @@ fun PluginSpecificationBuilder.appearanceSettings() {
             SettingsSection(
                 titleKey = "appearance",
                 icon = Res.drawable.ic_palette,
-                title = { strings.settings.sectionTitles.getValue("appearance") },
+                title = { strings.appearance.settingsTitle },
                 panel = { AppearanceSettingsPanel() },
             )
         }

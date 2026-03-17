@@ -11,7 +11,7 @@ fun PluginSpecificationBuilder.modelsSettingsSection() {
             SettingsSection(
                 titleKey = "models",
                 icon = Res.drawable.ic_memory,
-                title = { strings.settings.sectionTitles.getValue("models") },
+                title = { strings.models.settingsTitle },
                 panel = { ModelProviderSettingsPanel() },
             )
         }

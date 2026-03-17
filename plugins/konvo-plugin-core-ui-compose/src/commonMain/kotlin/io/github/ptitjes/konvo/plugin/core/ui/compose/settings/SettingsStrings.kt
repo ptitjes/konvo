@@ -4,7 +4,4 @@ internal data class SettingsStrings(
     // Left list panel
     val listTitle: String,
     val selectSectionAria: String,
-
-    // Section titles
-    val sectionTitles: Map<String, String>,
 )

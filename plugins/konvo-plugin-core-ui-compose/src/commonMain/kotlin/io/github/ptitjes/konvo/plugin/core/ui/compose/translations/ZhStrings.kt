@@ -28,6 +28,7 @@ internal val ZhStrings = Strings(
         }
     ),
     models = ModelStrings(
+        settingsTitle = "模型提供商",
         configuredProvidersTitle = "已配置的提供商",
         configuredProvidersDescription = "添加、删除并编辑模型提供商。",
         addProviderAria = "添加提供商",
@@ -61,6 +62,7 @@ internal val ZhStrings = Strings(
         testFailedMessage = { msg -> "测试提供商失败：$msg" },
     ),
     mcp = McpStrings(
+        settingsTitle = "MCP 服务器",
         configuredServersTitle = "已配置的 MCP 服务器",
         configuredServersDescription = "添加、删除并编辑 MCP 服务器。",
         addServerAria = "添加服务器",
@@ -128,6 +130,7 @@ internal val ZhStrings = Strings(
         failureAria = "失败",
     ),
     appearance = AppearanceStrings(
+        settingsTitle = "外观",
         baseColorSchemeTitle = "基础配色方案",
         baseColorSchemeDescription = "应用使用的配色方案。",
         baseColorSchemeOptionDark = "深色",
@@ -135,6 +138,7 @@ internal val ZhStrings = Strings(
         baseColorSchemeOptionSystem = "跟随系统",
     ),
     developer = DeveloperStrings(
+        settingsTitle = "开发者",
         openTelemetryTitle = "OpenTelemetry (gRPC)",
         openTelemetryDescription = "使用 gRPC 将追踪导出到 OpenTelemetry 收集器。",
         openTelemetryEnabledLabel = "启用 OpenTelemetry 导出",
@@ -144,12 +148,6 @@ internal val ZhStrings = Strings(
     settings = SettingsStrings(
         listTitle = "设置",
         selectSectionAria = "选择设置部分",
-        sectionTitles = mapOf(
-            "appearance" to "外观",
-            "mcp" to "MCP 服务器",
-            "models" to "模型提供商",
-            "developer" to "开发者",
-        ),
     ),
     formats = FormatStrings(
         now = "现在",

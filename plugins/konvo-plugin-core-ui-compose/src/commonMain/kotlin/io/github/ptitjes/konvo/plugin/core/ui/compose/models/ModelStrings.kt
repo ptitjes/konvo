@@ -4,6 +4,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.models
  * Translated strings for the models package (model selector and provider settings UI).
  */
 internal data class ModelStrings(
+    val settingsTitle: String,
     val configuredProvidersTitle: String,
     val configuredProvidersDescription: String,
     val addProviderAria: String,

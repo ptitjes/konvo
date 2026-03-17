@@ -28,6 +28,7 @@ internal val EnStrings = Strings(
         }
     ),
     models = ModelStrings(
+        settingsTitle = "Model providers",
         configuredProvidersTitle = "Configured providers",
         configuredProvidersDescription = "Add, remove, and edit model providers.",
         addProviderAria = "Add provider",
@@ -61,6 +62,7 @@ internal val EnStrings = Strings(
         testFailedMessage = { msg -> "Failed to test provider: $msg" },
     ),
     mcp = McpStrings(
+        settingsTitle = "MCP servers",
         configuredServersTitle = "Configured MCP servers",
         configuredServersDescription = "Add, remove, and edit MCP servers.",
         addServerAria = "Add server",
@@ -128,6 +130,7 @@ internal val EnStrings = Strings(
         failureAria = "Failure",
     ),
     appearance = AppearanceStrings(
+        settingsTitle = "Appearance",
         baseColorSchemeTitle = "Base color scheme",
         baseColorSchemeDescription = "The color scheme used for the application.",
         baseColorSchemeOptionDark = "Dark",
@@ -135,6 +138,7 @@ internal val EnStrings = Strings(
         baseColorSchemeOptionSystem = "Adapt to system",
     ),
     developer = DeveloperStrings(
+        settingsTitle = "Developer",
         openTelemetryTitle = "OpenTelemetry (gRPC)",
         openTelemetryDescription = "Export traces to an OpenTelemetry collector using gRPC.",
         openTelemetryEnabledLabel = "Enable OpenTelemetry export",
@@ -144,12 +148,6 @@ internal val EnStrings = Strings(
     settings = SettingsStrings(
         listTitle = "Settings",
         selectSectionAria = "Select settings section",
-        sectionTitles = mapOf(
-            "appearance" to "Appearance",
-            "mcp" to "MCP servers",
-            "models" to "Model providers",
-            "developer" to "Developer",
-        ),
     ),
     formats = FormatStrings(
         now = "now",

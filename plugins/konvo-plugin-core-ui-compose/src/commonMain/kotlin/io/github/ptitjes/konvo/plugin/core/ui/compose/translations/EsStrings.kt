@@ -28,6 +28,7 @@ internal val EsStrings = Strings(
         }
     ),
     models = ModelStrings(
+        settingsTitle = "Proveedores de modelos",
         configuredProvidersTitle = "Proveedores configurados",
         configuredProvidersDescription = "Añadir, eliminar y editar proveedores de modelos.",
         addProviderAria = "Añadir proveedor",
@@ -61,6 +62,7 @@ internal val EsStrings = Strings(
         testFailedMessage = { msg -> "Error al probar el proveedor: $msg" },
     ),
     mcp = McpStrings(
+        settingsTitle = "Servidores MCP",
         configuredServersTitle = "Servidores MCP configurados",
         configuredServersDescription = "Añadir, eliminar y editar servidores MCP.",
         addServerAria = "Añadir servidor",
@@ -128,6 +130,7 @@ internal val EsStrings = Strings(
         failureAria = "Fallo",
     ),
     appearance = AppearanceStrings(
+        settingsTitle = "Apariencia",
         baseColorSchemeTitle = "Esquema de colores base",
         baseColorSchemeDescription = "El esquema de colores utilizado por la aplicación.",
         baseColorSchemeOptionDark = "Oscuro",
@@ -135,6 +138,7 @@ internal val EsStrings = Strings(
         baseColorSchemeOptionSystem = "Adaptar al sistema",
     ),
     developer = DeveloperStrings(
+        settingsTitle = "Desarrollador",
         openTelemetryTitle = "OpenTelemetry (gRPC)",
         openTelemetryDescription = "Exportar trazas a un recolector de OpenTelemetry mediante gRPC.",
         openTelemetryEnabledLabel = "Activar exportación de OpenTelemetry",
@@ -144,12 +148,6 @@ internal val EsStrings = Strings(
     settings = SettingsStrings(
         listTitle = "Ajustes",
         selectSectionAria = "Seleccionar sección de ajustes",
-        sectionTitles = mapOf(
-            "appearance" to "Apariencia",
-            "mcp" to "Servidores MCP",
-            "models" to "Proveedores de modelos",
-            "developer" to "Desarrollador",
-        ),
     ),
     formats = FormatStrings(
         now = "ahora",

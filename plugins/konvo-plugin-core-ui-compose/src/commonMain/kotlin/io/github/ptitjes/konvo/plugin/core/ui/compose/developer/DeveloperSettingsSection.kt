@@ -12,7 +12,7 @@ fun PluginSpecificationBuilder.developerSettings() {
             SettingsSection(
                 titleKey = "developer",
                 icon = Res.drawable.ic_mobile_code,
-                title = { strings.settings.sectionTitles.getValue("developer") },
+                title = { strings.developer.settingsTitle },
                 panel = { DeveloperSettingsPanel() },
             )
         }
