@@ -16,7 +16,7 @@ kotlinLogging = "7.0.7"
 slf4j = "2.0.17"
 
 # Plugin System
-syrup = "0.1.0-SNAPSHOT"
+syrup = "0.1.0"
 ksp = "2.3.6"
 sweetSpi = "0.1.3"
 kodein = "7.31.0"
@@ -46,9 +46,6 @@ fileKit = "0.12.0"
 coil = "3.3.0"
 reorderable = "3.0.0"
 placeholder = "1.0.12"
-
-# Discord Frontend
-kord = "feat-components-v2-didier-SNAPSHOT"
 
 # For tools
 shadow = "9.0.0-beta13"
@@ -120,9 +117,6 @@ coil = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
 coilKtor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coil" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 placeholder = { module = "com.eygraber:compose-placeholder-material3", version.ref = "placeholder" }
-
-# Discord Frontend
-kordCore = { module = "dev.kord:kord-core", version.ref = "kord" }
 
 # For tools
 kotlinxCli = { module = "org.jetbrains.kotlinx:kotlinx-cli", version.ref = "kotlinxCli" }

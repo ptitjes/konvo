@@ -3,8 +3,6 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         google()
-        mavenLocal()
-        maven("https://repo.kord.dev/snapshots/")
     }
 }
 
