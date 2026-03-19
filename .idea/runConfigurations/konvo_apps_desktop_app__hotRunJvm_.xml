@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="konvo:apps:desktop-app [hotRun]" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="konvo:apps:desktop-app [hotRunJvm]" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$/apps/desktop-app" />
@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value=":apps:desktop-app:hotRun" />
+          <option value=":apps:desktop-app:hotRunJvm" />
           <option value="--auto" />
         </list>
       </option>
