@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose
 import dev.whyoleg.sweetspi.*
 import io.github.ptitjes.konvo.plugin.core.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.developer.*
@@ -27,6 +28,37 @@ object CoreUiComposePlugin : Plugin {
 
         extensionPoint(SettingsSections)
 
+        extensionPoint(AgentConfigurationPanes)
+
+        AgentConfigurationPanes {
+            contribution {
+                AgentConfigurationPane(
+                    label = { "Question Answer" },
+                    presenterFactory = { new(::QuestionAnswerConfigurationPresenter) },
+                    panel = { state, modifier ->
+                        QuestionAnswerConfigurationPanel(
+                            state = state,
+                            modifier = modifier,
+                            onGoToSettingsClick = { },
+                        )
+                    }
+                )
+            }
+            contribution {
+                AgentConfigurationPane(
+                    label = { "Roleplay" },
+                    presenterFactory = { new(::RoleplayConfigurationPresenter) },
+                    panel = { state, modifier ->
+                        RoleplayConfigurationPanel(
+                            state = state,
+                            modifier = modifier,
+                            onGoToSettingsClick = { },
+                        )
+                    }
+                )
+            }
+        }
+
         appearanceSettings()
         developerSettings()
         mcpSettingsSection()
@@ -45,7 +77,6 @@ object CoreUiComposePlugin : Plugin {
         bindProviderOf(::SettingsListViewModel)
         bindProviderOf(::SettingsViewModel)
         bindProviderOf(::ConversationListViewModel)
-        bindProviderOf(::NewConversationViewModel)
         bindProviderOf(::MainScreenViewModel)
         bindFactory { conversationId: String -> new(::ConversationViewModel, conversationId) }
 

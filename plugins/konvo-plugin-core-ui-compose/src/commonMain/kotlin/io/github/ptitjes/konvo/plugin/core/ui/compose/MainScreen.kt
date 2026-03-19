@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.navigation3.runtime.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
@@ -29,16 +30,16 @@ fun MainScreen(
         extraPaneState = navigator.extraPaneState,
         entryProvider = entryProvider {
 
-            entry<Destination.Conversation.List>(metadata = CenterStageScene.Companion.navigation()) {
+            entry<Destination.Conversation.List>(metadata = CenterStageScene.navigation()) {
                 ConversationListScreen(navigator = navigator)
             }
 
-            entry<Destination.Conversation.New>(metadata = CenterStageScene.Companion.content()) {
-                NewConversationScreen(navigator = navigator)
+            entry<Destination.Conversation.New>(metadata = CenterStageScene.content()) {
+                AgentConfigurationScreen(navigator = navigator)
             }
 
             entry<Destination.Conversation.Selected>(
-                metadata = CenterStageScene.Companion.content(
+                metadata = CenterStageScene.content(
                     defaultExtraContent = {
                         val containerColor = MaterialTheme.colorScheme.surfaceContainerLow
                         val contentColor = MaterialTheme.colorScheme.onSurface
