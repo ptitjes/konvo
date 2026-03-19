@@ -21,12 +21,7 @@ internal val ArStrings = Strings(
         detailsCloseAria = "إغلاق التفاصيل",
     ),
     agents = AgentStrings(
-        agentTypeDisplayName = {
-            when (it) {
-                AgentType.QuestionAnswer -> "سؤال وجواب"
-                AgentType.Roleplay -> "تمثيل أدوار"
-            }
-        }
+        questionAnswerDisplayName = "سؤال وجواب"
     ),
     models = ModelStrings(
         settingsTitle = "مزوّدو النماذج",

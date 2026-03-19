@@ -7,7 +7,7 @@ import io.github.ptitjes.syrup.specification.*
 internal val I18nStrings.agents: AgentStrings get() = byType()
 
 data class AgentStrings(
-    val agentTypeDisplayName: (AgentType) -> String,
+    val questionAnswerDisplayName: String,
 )
 
 fun PluginSpecificationBuilder.agentStrings() {

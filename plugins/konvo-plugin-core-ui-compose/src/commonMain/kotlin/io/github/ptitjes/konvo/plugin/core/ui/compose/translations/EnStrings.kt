@@ -21,12 +21,7 @@ internal val EnStrings = Strings(
         detailsCloseAria = "Close details"
     ),
     agents = AgentStrings(
-        agentTypeDisplayName = {
-            when (it) {
-                AgentType.QuestionAnswer -> "Question & Answer"
-                AgentType.Roleplay -> "Role-play"
-            }
-        }
+        questionAnswerDisplayName = "Question & Answer"
     ),
     models = ModelStrings(
         settingsTitle = "Model providers",

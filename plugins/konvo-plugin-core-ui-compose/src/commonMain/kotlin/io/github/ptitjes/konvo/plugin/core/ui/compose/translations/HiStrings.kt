@@ -21,12 +21,7 @@ internal val HiStrings = Strings(
         detailsCloseAria = "विवरण बंद करें",
     ),
     agents = AgentStrings(
-        agentTypeDisplayName = {
-            when (it) {
-                AgentType.QuestionAnswer -> "प्रश्न और उत्तर"
-                AgentType.Roleplay -> "भूमिका निभाना"
-            }
-        }
+        questionAnswerDisplayName = "प्रश्न और उत्तर"
     ),
     models = ModelStrings(
         settingsTitle = "मॉडल प्रदाता",

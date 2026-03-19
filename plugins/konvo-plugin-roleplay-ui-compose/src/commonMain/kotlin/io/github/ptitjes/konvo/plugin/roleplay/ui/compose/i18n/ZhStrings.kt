@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.roleplay.ui.compose.i18n
 import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 
 internal val ZhStrings = RoleplayStrings(
+    agentDisplayName = "角色扮演",
     deleteConfirm = "删除",
     cancel = "取消",
     roleplaySettingsTitle = "角色扮演",

@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.roleplay.ui.compose.i18n
 import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 
 internal val HiStrings = RoleplayStrings(
+    agentDisplayName = "भूमिका निभाना",
     deleteConfirm = "हटाएँ",
     cancel = "रद्द करें",
     roleplaySettingsTitle = "भूमिका निभाना",

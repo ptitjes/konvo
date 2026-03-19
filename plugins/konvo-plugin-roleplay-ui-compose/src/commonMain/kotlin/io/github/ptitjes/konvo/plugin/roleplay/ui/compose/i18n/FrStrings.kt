@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.roleplay.ui.compose.i18n
 import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 
 internal val FrStrings = RoleplayStrings(
+    agentDisplayName = "Jeux de rôle",
     deleteConfirm = "Supprimer",
     cancel = "Annuler",
     roleplaySettingsTitle = "Jeux de rôle",

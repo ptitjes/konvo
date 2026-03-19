@@ -21,12 +21,7 @@ internal val ZhStrings = Strings(
         detailsCloseAria = "关闭详情",
     ),
     agents = AgentStrings(
-        agentTypeDisplayName = {
-            when (it) {
-                AgentType.QuestionAnswer -> "问答"
-                AgentType.Roleplay -> "角色扮演"
-            }
-        }
+        questionAnswerDisplayName = "问答"
     ),
     models = ModelStrings(
         settingsTitle = "模型提供商",

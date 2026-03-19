@@ -7,9 +7,11 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.developer.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
@@ -33,7 +35,7 @@ object CoreUiComposePlugin : Plugin {
         AgentConfigurationPanes {
             contribution {
                 AgentConfigurationPane(
-                    label = { "Question Answer" },
+                    label = { i18n.agents.questionAnswerDisplayName },
                     presenterFactory = { new(::QuestionAnswerConfigurationPresenter) },
                     panel = { state, modifier ->
                         QuestionAnswerConfigurationPanel(
@@ -46,7 +48,7 @@ object CoreUiComposePlugin : Plugin {
             }
             contribution {
                 AgentConfigurationPane(
-                    label = { "Roleplay" },
+                    label = { i18n.roleplay.agentDisplayName },
                     presenterFactory = { new(::RoleplayConfigurationPresenter) },
                     panel = { state, modifier ->
                         RoleplayConfigurationPanel(

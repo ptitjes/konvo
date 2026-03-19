@@ -8,6 +8,9 @@ val I18nStrings.roleplay: RoleplayStrings get() = byType()
  * Translated strings for the roleplay package (personas, characters, lorebooks, and settings UI).
  */
 data class RoleplayStrings(
+    // Agent
+    val agentDisplayName: String,
+
     // Generic/common
     val deleteConfirm: String,
     val cancel: String,
