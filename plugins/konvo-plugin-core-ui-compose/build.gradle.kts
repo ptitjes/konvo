@@ -15,6 +15,8 @@ kotlin {
 
             api(libs.kodeinCompose)
 
+            api(libs.circuit)
+
             implementation(libs.humanReadable)
 
             implementation(libs.markdownRenderer)

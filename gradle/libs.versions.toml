@@ -39,6 +39,8 @@ androidxNavigation3 = "1.1.0-alpha02"
 
 composeHotReload = "1.0.0"
 
+circuit = "0.33.1"
+
 humanReadable = "1.12.0"
 
 markdownRenderer = "0.39.1"
@@ -103,6 +105,8 @@ androidxLifecycleViewmodelNavigation3 = { module = "org.jetbrains.androidx.lifec
 androidxNavigation3Ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "androidxNavigation3" }
 
 kodeinCompose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
+
+circuit = { module = "com.slack.circuit:circuit-foundation", version.ref = "circuit" }
 
 humanReadable = { module = "nl.jacobras:Human-Readable", version.ref = "humanReadable" }
 
