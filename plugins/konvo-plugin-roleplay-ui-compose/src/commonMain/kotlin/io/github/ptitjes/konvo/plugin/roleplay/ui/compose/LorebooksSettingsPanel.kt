@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -70,7 +70,7 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
         trailingContent = {
             FilledTonalIconButton(onClick = { importLauncher.launch() }) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_file_download),
+                    painter = painterResource(CoreResources.icons.download),
                     contentDescription = i18n.roleplay.importLorebookAria
                 )
             }
@@ -110,7 +110,7 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
                                 }
                                 IconButton(onClick = { pendingDelete = lorebook }) {
                                     Icon(
-                                        painter = painterResource(Res.drawable.ic_delete),
+                                        painter = painterResource(CoreResources.icons.delete),
                                         contentDescription = i18n.roleplay.deleteLorebookAria
                                     )
                                 }

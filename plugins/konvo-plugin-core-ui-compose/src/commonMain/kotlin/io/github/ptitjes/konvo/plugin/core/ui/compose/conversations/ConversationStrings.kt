@@ -32,12 +32,6 @@ internal data class ConversationStrings(
     val createAria: String,
     val qaNoModels: String,
     val qaNoToolModels: String,
-    val rpNoAvailableCharacters: String,
-    val rpNoAvailablePersonas: String,
-    val rpNoAvailableLorebooks: String,
-    val rpNoAvailableModel: String,
-    val personaSettingsAria: String,
-    val additionalLorebookLabel: String,
     val newConversationIconAria: String,
 
     // User input

@@ -1,10 +1,11 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 
 data object RoleplayConfigurationView : Screen {
     sealed interface State : AgentConfigurationState<RoleplayAgentConfiguration> {

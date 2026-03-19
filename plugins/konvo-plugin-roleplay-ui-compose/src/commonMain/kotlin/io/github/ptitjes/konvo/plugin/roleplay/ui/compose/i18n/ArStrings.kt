@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.plugin.roleplay.ui.compose.i18n
 
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.ui.compose.*
 
 internal val ArStrings = RoleplayStrings(
     agentDisplayName = "تمثيل أدوار",
@@ -66,4 +66,10 @@ internal val ArStrings = RoleplayStrings(
     greetingLabel = "تحية",
     randomGreeting = "تحية عشوائية",
     greetingOptionLabel = { index, preview -> "تحية ${index + 1}: $preview" },
+    rpNoAvailableCharacters = "لا توجد شخصيات متاحة",
+    rpNoAvailablePersonas = "لا توجد شخصيات متاحة",
+    rpNoAvailableLorebooks = "لا توجد كتب خلفية متاحة",
+    rpNoAvailableModel = "لا توجد نماذج متاحة",
+    personaSettingsAria = "إعدادات الشخصية",
+    additionalLorebookLabel = "كتاب خلفية إضافي",
 )

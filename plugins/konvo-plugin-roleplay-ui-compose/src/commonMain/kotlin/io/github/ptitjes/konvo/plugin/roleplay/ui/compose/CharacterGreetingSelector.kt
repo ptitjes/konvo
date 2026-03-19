@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.*

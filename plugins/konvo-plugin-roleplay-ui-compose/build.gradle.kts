@@ -11,6 +11,12 @@ kotlin {
             implementation(project(":plugins:konvo-plugin-core"))
             implementation(project(":plugins:konvo-plugin-core-ui-compose"))
             implementation(project(":plugins:konvo-plugin-roleplay"))
+
+            // Maybe we should either api-provide this from the core plugin?
+            // Or maybe hide those behind APIs in the core plugin?
+            implementation(libs.bundles.fileKit)
+            implementation(libs.coil)
+            implementation(libs.coilKtor)
         }
     }
 }

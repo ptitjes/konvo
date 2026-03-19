@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.plugin.roleplay.ui.compose.i18n
 
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.ui.compose.*
 
 internal val ZhStrings = RoleplayStrings(
     agentDisplayName = "角色扮演",
@@ -66,4 +66,10 @@ internal val ZhStrings = RoleplayStrings(
     greetingLabel = "问候语",
     randomGreeting = "随机问候语",
     greetingOptionLabel = { index, preview -> "问候语${index + 1}：$preview" },
+    rpNoAvailableCharacters = "没有可用的角色",
+    rpNoAvailablePersonas = "没有可用的人设",
+    rpNoAvailableLorebooks = "没有可用的设定集",
+    rpNoAvailableModel = "没有可用的模型",
+    personaSettingsAria = "人设设置",
+    additionalLorebookLabel = "附加设定集",
 )

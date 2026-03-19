@@ -11,7 +11,6 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.mcp.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.prompts.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.text.*
@@ -39,19 +38,6 @@ object CoreUiComposePlugin : Plugin {
                     presenterFactory = { new(::QuestionAnswerConfigurationPresenter) },
                     panel = { state, modifier ->
                         QuestionAnswerConfigurationPanel(
-                            state = state,
-                            modifier = modifier,
-                            onGoToSettingsClick = { },
-                        )
-                    }
-                )
-            }
-            contribution {
-                AgentConfigurationPane(
-                    label = { i18n.roleplay.agentDisplayName },
-                    presenterFactory = { new(::RoleplayConfigurationPresenter) },
-                    panel = { state, modifier ->
-                        RoleplayConfigurationPanel(
                             state = state,
                             modifier = modifier,
                             onGoToSettingsClick = { },

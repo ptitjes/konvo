@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import androidx.compose.runtime.*
 import com.slack.circuit.retained.*

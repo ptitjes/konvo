@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -50,7 +50,7 @@ fun PersonaSettingsPanel() {
         trailingContent = {
             FilledTonalIconButton(onClick = { openSheet = PersonaSheetState.Adding }) {
                 Icon(
-                    painter = painterResource(Res.drawable.ic_add),
+                    painter = painterResource(CoreResources.icons.add),
                     contentDescription = i18n.roleplay.addPersonaAria,
                 )
             }
@@ -90,14 +90,14 @@ fun PersonaSettingsPanel() {
 
                                 IconButton(onClick = { openSheet = PersonaSheetState.Editing(persona.name) }) {
                                     Icon(
-                                        painter = painterResource(Res.drawable.ic_edit),
+                                        painter = painterResource(CoreResources.icons.edit),
                                         contentDescription = i18n.roleplay.editPersonaAria,
                                     )
                                 }
 
                                 IconButton(onClick = { pendingDeletion = persona }) {
                                     Icon(
-                                        painter = painterResource(Res.drawable.ic_delete),
+                                        painter = painterResource(CoreResources.icons.delete),
                                         contentDescription = i18n.roleplay.deletePersonaAria,
                                     )
                                 }
@@ -233,7 +233,7 @@ private fun PersonaEditor(
                     onClick = onRemove,
                 ) {
                     Icon(
-                        painter = painterResource(Res.drawable.ic_delete),
+                        painter = painterResource(CoreResources.icons.delete),
                         contentDescription = i18n.roleplay.removePersonaAria,
                     )
                 }

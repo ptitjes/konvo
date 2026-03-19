@@ -1,6 +1,6 @@
 package io.github.ptitjes.konvo.plugin.roleplay.ui.compose.i18n
 
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.ui.compose.*
 
 internal val HiStrings = RoleplayStrings(
     agentDisplayName = "भूमिका निभाना",
@@ -66,4 +66,10 @@ internal val HiStrings = RoleplayStrings(
     greetingLabel = "अभिवादन",
     randomGreeting = "यादृच्छिक अभिवादन",
     greetingOptionLabel = { index, preview -> "अभिवादन ${index + 1}: $preview" },
+    rpNoAvailableCharacters = "कोई चरित्र उपलब्ध नहीं",
+    rpNoAvailablePersonas = "कोई व्यक्तित्व उपलब्ध नहीं",
+    rpNoAvailableLorebooks = "कोई लोरबुक उपलब्ध नहीं",
+    rpNoAvailableModel = "कोई मॉडल उपलब्ध नहीं",
+    personaSettingsAria = "व्यक्तित्व सेटिंग्स",
+    additionalLorebookLabel = "अतिरिक्त लोरबुक",
 )

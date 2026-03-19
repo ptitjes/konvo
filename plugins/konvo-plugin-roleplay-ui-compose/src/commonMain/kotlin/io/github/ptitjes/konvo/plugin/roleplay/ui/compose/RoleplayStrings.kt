@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import io.github.ptitjes.konvo.plugin.core.i18n.*
 
@@ -86,4 +86,12 @@ data class RoleplayStrings(
     val greetingLabel: String,
     val randomGreeting: String,
     val greetingOptionLabel: (Int, String) -> String,
+
+    // Roleplay configuration panel
+    val rpNoAvailableCharacters: String,
+    val rpNoAvailablePersonas: String,
+    val rpNoAvailableLorebooks: String,
+    val rpNoAvailableModel: String,
+    val personaSettingsAria: String,
+    val additionalLorebookLabel: String,
 )

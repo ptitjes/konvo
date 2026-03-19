@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration
+package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -6,11 +6,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import org.jetbrains.compose.resources.*
@@ -27,7 +25,7 @@ internal fun RoleplayConfigurationPanel(
         is RoleplayConfigurationView.State.Available -> Column(modifier = modifier) {
             if (roleplay.availableCharacters.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = i18n.conversations.rpNoAvailableCharacters,
+                    unavailabilityText = i18n.roleplay.rpNoAvailableCharacters,
                     onGoToSettings = { onGoToSettingsClick("characters") },
                 )
             } else {
@@ -56,7 +54,7 @@ internal fun RoleplayConfigurationPanel(
 
             if (roleplay.availablePersonas.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = i18n.conversations.rpNoAvailablePersonas,
+                    unavailabilityText = i18n.roleplay.rpNoAvailablePersonas,
                     onGoToSettings = { onGoToSettingsClick("personas") },
                 )
             } else {
@@ -84,10 +82,11 @@ internal fun RoleplayConfigurationPanel(
                         onClick = { showLorebookSheet = true },
                     ) {
                         Icon(
-                            painter = painterResource(Res.drawable.ic_settings),
-                            contentDescription = i18n.conversations.personaSettingsAria
+                            painter = painterResource(CoreResources.icons.settings),
+                            contentDescription = i18n.roleplay.personaSettingsAria
                         )
                     }
+
                     if (showLorebookSheet) {
                         ModalBottomSheet(
                             onDismissRequest = { showLorebookSheet = false },
@@ -97,13 +96,13 @@ internal fun RoleplayConfigurationPanel(
                             ) {
                                 if (roleplay.availableLorebooks.isEmpty()) {
                                     Text(
-                                        text = i18n.conversations.rpNoAvailableLorebooks,
+                                        text = i18n.roleplay.rpNoAvailableLorebooks,
                                         style = MaterialTheme.typography.titleMedium,
                                         modifier = Modifier.padding(16.dp),
                                     )
                                 } else {
                                     LorebookSelector(
-                                        label = i18n.conversations.additionalLorebookLabel,
+                                        label = i18n.roleplay.additionalLorebookLabel,
                                         selectedLorebook = roleplay.selectedLorebook,
                                         onLorebookSelected = {
                                             roleplay.eventSink(RoleplayConfigurationView.Event.SelectLorebook(it))
@@ -120,7 +119,7 @@ internal fun RoleplayConfigurationPanel(
 
             if (roleplay.availableModels.isEmpty()) {
                 UnavailabilityPlaceholder(
-                    unavailabilityText = i18n.conversations.rpNoAvailableModel,
+                    unavailabilityText = i18n.roleplay.rpNoAvailableModel,
                     onGoToSettings = { onGoToSettingsClick("models") },
                 )
             } else {
