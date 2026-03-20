@@ -2,18 +2,19 @@
 
 package io.github.ptitjes.konvo.plugin.core.conversations.storage.files
 
+import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
-import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.plugin.core.platform.*
-import kotlinx.coroutines.flow.first
+import io.github.ptitjes.syrup.specification.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 import kotlinx.io.files.Path
-import kotlin.collections.all
-import kotlin.collections.map
+import org.kodein.di.*
 import kotlin.io.path.createTempDirectory
+import kotlin.reflect.*
 import kotlin.test.*
 import kotlin.time.*
 
@@ -30,8 +31,6 @@ class FileConversationRepositoryPartialFilesTests {
             createdAt = now,
             updatedAt = now,
             participants = listOf(Participant.User("u1"), Participant.Agent("a1")),
-            lastMessagePreview = null,
-            messageCount = 0,
         )
 
     private fun userMessage(id: String, content: String, ts: Instant = Clock.System.now()): Action<*> =
@@ -39,7 +38,7 @@ class FileConversationRepositoryPartialFilesTests {
             id = id,
             timestamp = ts,
             sender = Participant.User("u1"),
-            payload = Messaging.Message(
+            payload = Message(
                 content = listOf(Part.Text(content)),
             )
         )
@@ -49,7 +48,30 @@ class FileConversationRepositoryPartialFilesTests {
         // Arrange: repository in temp dir
         val tmp = createTempDirectory("konvo-file-repo-")
         val root = Path(tmp.toString())
-        val repo = FileConversationRepository(root)
+
+        val storagePaths = object : StoragePaths {
+            override val configDirectory: Path = Path(root, "config")
+            override val dataDirectory: Path = Path(root, "data")
+            override val cacheDirectory: Path = Path(root, "cache")
+        }
+
+        val context = object : MockPluginContext() {
+            override fun <T : Any> contributions(extensionPoint: ExtensionPoint.Plural<T>): LazyDelegate<Set<T>> =
+                object : LazyDelegate<Set<T>> {
+                    override fun provideDelegate(receiver: Any?, prop: KProperty<Any?>): Lazy<Set<T>> =
+                        lazy { emptySet() }
+                }
+        }
+
+        val actionRegistry = DefaultActionRegistry(context)
+        val interactionProtocolRegistry = DefaultInteractionProtocolRegistry(context)
+
+        val repo = FileConversationRepository(
+            storagePaths = storagePaths,
+            actionRegistry = actionRegistry,
+            interactionProtocolRegistry = interactionProtocolRegistry,
+            pluginContext = context,
+        )
 
         // Create conversation and append two valid events
         val conversation = newConversation()
@@ -84,7 +106,7 @@ class FileConversationRepositoryPartialFilesTests {
         // Assert
         assertEquals(2, transcript.entries.size)
         val actions = transcript.actions
-        assertTrue(actions.all { it.payload is Messaging.Message })
+        assertTrue(actions.all { it.payload is Message })
         assertEquals(listOf("e1", "e2"), actions.map { it.id })
     }
 }

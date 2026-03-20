@@ -4,6 +4,8 @@ import dev.whyoleg.sweetspi.*
 import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.agents.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.*
+import io.github.ptitjes.konvo.plugin.core.conversations.model.*
+import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.plugin.core.i18n.*
@@ -17,6 +19,8 @@ import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.tools.*
 import io.github.ptitjes.syrup.*
 import io.github.ptitjes.syrup.specification.*
+import kotlinx.serialization.*
+import kotlinx.serialization.modules.*
 import org.kodein.di.*
 import kotlin.coroutines.*
 
@@ -40,6 +44,52 @@ object CorePlugin : Plugin {
         exposedType<ToolManager>()
         exposedType<McpServerSpecificationsManager>()
 
+        extensionPoint(Actions)
+
+        Actions {
+            payload<ConversationControl.TitleChange>()
+            payload<ConversationControl.InviteAgent>()
+
+            payload<Presence.Joining>()
+            payload<Presence.Leaving>()
+            payload<Presence.ViewNotification>()
+
+            payload<AgentCapabilities.Messaging>()
+
+            payload<AgentProcessing.Start>()
+            payload<AgentProcessing.Cancellation>()
+            payload<AgentProcessing.Failure>()
+            payload<AgentProcessing.Completion>()
+
+            payload<Messaging.Message>()
+
+            payload<ToolUsage.Vetting>()
+            payload<ToolUsage.Approval>()
+            payload<ToolUsage.Notification>()
+        }
+
+        extensionPoint(InteractionProtocols)
+
+        InteractionProtocols {
+            contribution { Presence.Agent }
+            contribution { AgentProcessing.TurnBased }
+            contribution { ToolUsage.VettingProtocol }
+        }
+
+        extensionPoint(ConversationSerializers)
+
+        ConversationSerializers {
+            contribution {
+                SerializersModule {
+                    polymorphic(
+                        baseClass = AgentConfiguration::class,
+                        actualClass = QuestionAnswerAgentConfiguration::class,
+                        serializer(),
+                    )
+                }
+            }
+        }
+
         exposedType<CharacterManager>()
         exposedType<FileSystemCharacterProvider>()
         exposedType<LorebookManager>()
@@ -50,6 +100,9 @@ object CorePlugin : Plugin {
         import(platformModule)
 
         bindSingletonOf(::I18nManager)
+
+        bindSingleton<ActionRegistry> { new(::DefaultActionRegistry) }
+        bindSingleton<InteractionProtocolRegistry> { new(::DefaultInteractionProtocolRegistry) }
 
         bindSet<PromptProvider>()
         bindSet<ToolProvider>()
@@ -104,7 +157,7 @@ object CorePlugin : Plugin {
         bindSingleton { new(::AgentFactory) }
 
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
-        bindSingleton<ConversationRepository> { FileConversationRepository(instance<StoragePaths>()) }
+        bindSingleton<ConversationRepository> { new(::FileConversationRepository) }
 
         bindSingleton { new(::ConversationManager) }
     }

@@ -7,7 +7,7 @@ import kotlinx.serialization.*
 sealed interface AgentCapabilities : Action.Payload {
 
     @Serializable
-    @SerialName("agent-capabilities-messaging")
+    @SerialName("AgentCapabilities#Messaging")
     data class Messaging(
         val supportedMediaTypes: List<String> = emptyList(),
     ) : AgentCapabilities, Action.Agent

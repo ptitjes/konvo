@@ -1,14 +1,16 @@
 package io.github.ptitjes.konvo.plugin.core.conversations.storage.files
 
 import io.github.oshai.kotlinlogging.*
+import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
-import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
 import io.github.ptitjes.konvo.plugin.core.platform.*
+import io.github.ptitjes.syrup.*
 import kotlinx.coroutines.flow.*
 import kotlinx.io.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.*
 
 /**
  * File-backed implementation of ConversationRepository using Kotlinx IO and Kotlinx Serialization.
@@ -19,35 +21,34 @@ import kotlinx.serialization.json.*
  * - conversations/<id>/events.ndjson (one ActionDto per line)
  */
 class FileConversationRepository internal constructor(
-    private val rootPath: Path,
-    private val fileSystem: FileSystem = defaultFileSystem,
+    storagePaths: StoragePaths,
+    actionRegistry: ActionRegistry,
+    private val interactionProtocolRegistry: InteractionProtocolRegistry,
+    pluginContext: PluginContext,
 ) : ConversationRepository {
+
+    private val rootPath = Path(storagePaths.dataDirectory, FilesLayout.CONVERSATIONS_DIR)
+    private val fileSystem: FileSystem = defaultFileSystem
+
+    private val extraSerializersModules by pluginContext.contributions(ConversationSerializers)
+
+    private val serializersModules by lazy {
+        SerializersModule {
+            include(actionRegistry.serializersModule)
+            extraSerializersModules.forEach { include(it) }
+        }
+    }
 
     private companion object {
         private val logger = KotlinLogging.logger {}
     }
 
-    constructor(
-        storagePaths: StoragePaths,
-    ) : this(rootPath = Path(storagePaths.dataDirectory, FilesLayout.CONVERSATIONS_DIR))
-
     private val json = Json {
         ignoreUnknownKeys = true
-        serializersModule = CoreActions
-    }
-
-    init {
-        // Register known interaction protocols for deserialization
-        InteractionProtocols.register(AgentProcessing.TurnBased)
-        InteractionProtocols.register(ToolUsage.VettingProtocol)
-        InteractionProtocols.register(
-            InteractionProtocol(
-                id = "$PLUGIN_ID/Agent#Presence",
-                awaitsInput = true,
-                hidesParent = false,
-                reactsTo = setOf(Messaging.Message::class),
-            )
-        )
+        serializersModule = SerializersModule {
+//            include(CoreActions)
+            include(serializersModules)
+        }
     }
 
     // Internal ticker to drive flows on local mutations
@@ -191,10 +192,12 @@ class FileConversationRepository internal constructor(
         val metaFile = metaPath(conversationId)
         if (!fileSystem.exists(metaFile)) throw NoSuchElementException("Unknown conversation: $conversationId")
 
+        val context = SerializationContext(interactionProtocolRegistry)
+
         // Serialize entry to DTO
         val dto: ConversationEntryDto = when (entry) {
             is Action<*> -> DtoMappers.toDto(entry)
-            is InteractionBoundary.Start -> DtoMappers.toDto(entry)
+            is InteractionBoundary.Start -> DtoMappers.toDto(entry, context)
             is InteractionBoundary.End -> DtoMappers.toDto(entry)
         }
 
@@ -284,12 +287,11 @@ class FileConversationRepository internal constructor(
         val path = eventsPath(conversationId)
         return if (!fileSystem.exists(path)) emptyList()
         else buildList {
-            val context = DeserializationContext()
+            val context = DeserializationContext(interactionProtocolRegistry)
             fileSystem.source(path).buffered().use { source ->
                 for (line in source.readLines().filter { it.isNotBlank() }) {
                     runCatching {
-                        val dto = json.decodeFromString<ConversationEntryDto>(line)
-                        when (dto) {
+                        when (val dto = json.decodeFromString<ConversationEntryDto>(line)) {
                             is ActionDto -> DtoMappers.fromDto(dto, context)
                             is InteractionBoundaryDto.Start -> DtoMappers.fromDto(dto, context)
                             is InteractionBoundaryDto.End -> DtoMappers.fromDto(dto, context)

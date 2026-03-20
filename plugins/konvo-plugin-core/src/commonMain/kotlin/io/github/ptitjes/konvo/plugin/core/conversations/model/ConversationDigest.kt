@@ -18,5 +18,5 @@ data class ConversationDigest(
     val lastMessagePreview: String? = null,
     val messageCount: Int = 0,
     val unreadMessageCount: Int = 0,
-    val agentConfiguration: AgentConfiguration = NoAgentConfiguration,
+    val agentConfiguration: AgentConfiguration? = null,
 )

@@ -3,6 +3,7 @@
 package io.github.ptitjes.konvo.plugin.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.plugin.core.agents.*
+import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import kotlinx.serialization.*
 import kotlin.time.*
@@ -18,7 +19,7 @@ internal data class ConversationDto(
     val lastMessagePreview: String? = null,
     val messageCount: Int = 0,
     val unreadMessageCount: Int = 0,
-    val agent: AgentConfigurationDto = AgentConfigurationDto.None,
+    val agentConfiguration: @Contextual AgentConfiguration?,
     val schemaVersion: Int = 4, // Schema 4: Added InteractionBoundary serialization support
 )
 
@@ -97,19 +98,24 @@ internal sealed class AgentConfigurationDto {
     ) : AgentConfigurationDto()
 }
 
-internal object InteractionProtocols {
-    private val knownProtocols = mutableMapOf<String, InteractionProtocol>()
-
-    fun register(protocol: InteractionProtocol) {
-        knownProtocols[protocol.id] = protocol
+internal class SerializationContext(
+    private val interactionProtocolRegistry: InteractionProtocolRegistry,
+) {
+    fun getProtocolId(protocol: InteractionProtocol): String {
+        println(interactionProtocolRegistry.idByProtocol)
+        return interactionProtocolRegistry.idByProtocol.getValue(protocol)
     }
-
-    fun get(id: String): InteractionProtocol? = knownProtocols[id]
 }
 
-internal class DeserializationContext {
+internal class DeserializationContext(
+    private val interactionProtocolRegistry: InteractionProtocolRegistry,
+) {
     private val interactions = mutableMapOf<String, Interaction>()
     private val actions = mutableMapOf<String, Action<*>>()
+
+    fun getProtocol(id: String): InteractionProtocol {
+        return interactionProtocolRegistry.protocolsById.getValue(id)
+    }
 
     fun getOrCreateInteraction(
         id: String,
@@ -141,21 +147,7 @@ internal object DtoMappers {
         lastMessagePreview = conv.lastMessagePreview,
         messageCount = conv.messageCount,
         unreadMessageCount = conv.unreadMessageCount,
-        agent = when (val agentConfiguration = conv.agentConfiguration) {
-            is NoAgentConfiguration -> AgentConfigurationDto.None
-            is QuestionAnswerAgentConfiguration -> AgentConfigurationDto.QuestionAnswer(
-                mcpServerNames = agentConfiguration.mcpServerNames,
-                modelName = agentConfiguration.modelName,
-            )
-
-            is RoleplayAgentConfiguration -> AgentConfigurationDto.Roleplay(
-                characterId = agentConfiguration.characterId,
-                characterGreetingIndex = agentConfiguration.characterGreetingIndex,
-                personaName = agentConfiguration.personaName,
-                modelName = agentConfiguration.modelName,
-                lorebookId = agentConfiguration.lorebookId,
-            )
-        },
+        agentConfiguration = conv.agentConfiguration,
     )
 
     fun fromDto(dto: ConversationDto): ConversationDigest = ConversationDigest(
@@ -167,21 +159,7 @@ internal object DtoMappers {
         lastMessagePreview = dto.lastMessagePreview,
         messageCount = dto.messageCount,
         unreadMessageCount = dto.unreadMessageCount,
-        agentConfiguration = when (val agentConfigurationDto = dto.agent) {
-            is AgentConfigurationDto.None -> NoAgentConfiguration
-            is AgentConfigurationDto.QuestionAnswer -> QuestionAnswerAgentConfiguration(
-                mcpServerNames = agentConfigurationDto.mcpServerNames,
-                modelName = agentConfigurationDto.modelName,
-            )
-
-            is AgentConfigurationDto.Roleplay -> RoleplayAgentConfiguration(
-                characterId = agentConfigurationDto.characterId,
-                characterGreetingIndex = agentConfigurationDto.characterGreetingIndex,
-                personaName = agentConfigurationDto.personaName,
-                modelName = agentConfigurationDto.modelName,
-                lorebookId = agentConfigurationDto.lorebookId,
-            )
-        },
+        agentConfiguration = dto.agentConfiguration,
     )
 
     fun toDto(p: Participant): ParticipantDto = when (p) {
@@ -224,11 +202,12 @@ internal object DtoMappers {
         payload = a.payload,
     )
 
-    fun toDto(boundary: InteractionBoundary.Start): InteractionBoundaryDto.Start = InteractionBoundaryDto.Start(
+    fun toDto(boundary: InteractionBoundary.Start, context: SerializationContext): InteractionBoundaryDto.Start =
+        InteractionBoundaryDto.Start(
         timestamp = boundary.timestamp,
         sender = toDto(boundary.sender),
         interactionId = boundary.interaction.id,
-        protocolId = boundary.interaction.protocol.id,
+            protocolId = context.getProtocolId(boundary.interaction.protocol),
         parentInteractionId = boundary.interaction.parent?.id,
         triggerActionId = boundary.interaction.trigger?.id,
     )
@@ -240,8 +219,7 @@ internal object DtoMappers {
     )
 
     fun fromDto(dto: InteractionBoundaryDto.Start, context: DeserializationContext): InteractionBoundary.Start {
-        val protocol = InteractionProtocols.get(dto.protocolId)
-            ?: throw IllegalStateException("Unknown protocol: ${dto.protocolId}")
+        val protocol = context.getProtocol(dto.protocolId)
         val parent = dto.parentInteractionId?.let { context.getInteraction(it) }
         val trigger = dto.triggerActionId?.let { context.getAction(it) }
         val interaction = context.getOrCreateInteraction(dto.interactionId, protocol, parent, trigger)

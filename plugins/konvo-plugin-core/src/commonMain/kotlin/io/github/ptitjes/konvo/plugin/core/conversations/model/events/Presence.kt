@@ -18,14 +18,23 @@ UserPresence
 @Serializable
 sealed interface Presence : Action.Payload {
     @Serializable
-    @SerialName("presence-joining")
+    @SerialName("Presence#Joining")
     data object Joining : Presence, Action.Agent, Action.User
 
     @Serializable
-    @SerialName("presence-leaving")
+    @SerialName("Presence#Leaving")
     data object Leaving : Presence, Action.Agent, Action.User
 
     @Serializable
-    @SerialName("presence-view-notification")
+    @SerialName("Presence#View")
     data class ViewNotification(val upToTimestamp: Instant) : Presence, Action.User
+
+    companion object {
+        val Agent = InteractionProtocol(
+            id = "Presence#Agent",
+            awaitsInput = true,
+            hidesParent = false,
+            reactsTo = setOf(Messaging.Message::class),
+        )
+    }
 }

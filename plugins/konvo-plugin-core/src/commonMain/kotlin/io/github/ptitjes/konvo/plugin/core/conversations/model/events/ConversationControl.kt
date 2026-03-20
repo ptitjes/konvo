@@ -7,13 +7,13 @@ import kotlinx.serialization.*
 @Serializable
 sealed interface ConversationControl : Action.Payload {
     @Serializable
-    @SerialName("conversation-control-title-change")
+    @SerialName("ConversationControl#TitleChange")
     data class TitleChange(
         val title: String,
     ) : ConversationControl, Action.Agent, Action.User
 
     @Serializable
-    @SerialName("conversation-control-invite-agent")
+    @SerialName("ConversationControl#InviteAgent")
     data class InviteAgent(
         val participantId: String,
         // TODO replace this with an AgentId, when configuration protocols are up

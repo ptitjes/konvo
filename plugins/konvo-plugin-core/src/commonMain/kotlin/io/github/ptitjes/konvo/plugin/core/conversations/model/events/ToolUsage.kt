@@ -8,19 +8,19 @@ import kotlinx.serialization.json.*
 sealed interface ToolUsage : Action.Payload {
 
     @Serializable
-    @SerialName("tool-usage-vetting")
+    @SerialName("ToolUsage#Vetting")
     data class Vetting(
         val calls: List<Call>,
     ) : ToolUsage, Action.Agent
 
     @Serializable
-    @SerialName("tool-usage-approval")
+    @SerialName("ToolUsage#Approval")
     data class Approval(
         val approvals: List<Pair<Call, Boolean>>,
     ) : ToolUsage, Action.User
 
     @Serializable
-    @SerialName("tool-usage-notification")
+    @SerialName("ToolUsage#Notification")
     data class Notification(
         val call: Call,
         val result: CallResult,
@@ -54,10 +54,8 @@ sealed interface ToolUsage : Action.Payload {
     }
 
     companion object {
-        private const val PREFIX = "$PLUGIN_ID/ToolUsage"
-
         val VettingProtocol = InteractionProtocol(
-            id = "$PREFIX#Vetting",
+            id = "ToolUsage#Vetting",
             awaitsInput = true,
             hidesParent = false,
             reactsTo = setOf(Approval::class),

@@ -8,7 +8,7 @@ import kotlin.reflect.*
 sealed interface Messaging : Action.Payload {
 
     @Serializable
-    @SerialName("message")
+    @SerialName("Messaging#Message")
     data class Message(
         val content: List<Part>,
     ) : Messaging, Action.Agent, Action.User
