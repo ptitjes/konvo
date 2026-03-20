@@ -2,10 +2,10 @@ package io.github.ptitjes.konvo.plugin.roleplay.ui.compose
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.plugin.roleplay.*
 
 /**
  * A selector for character greetings.

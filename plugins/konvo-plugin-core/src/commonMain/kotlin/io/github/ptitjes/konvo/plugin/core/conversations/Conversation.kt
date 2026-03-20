@@ -27,7 +27,7 @@ class Conversation internal constructor(
     coroutineContext: CoroutineContext,
     val id: String,
     private val repository: ConversationRepository,
-    private val agentFactory: AgentFactory,
+    private val agentFactory: AgentManager,
     private val timeProvider: TimeProvider = SystemTimeProvider,
     private val idGenerator: IdGenerator = UuidIdGenerator,
 ) : AutoCloseable {
@@ -92,7 +92,7 @@ class Conversation internal constructor(
         val agentParticipant = Participant.Agent(id = invite.payload.participantId)
         val agentConfiguration = invite.payload.agentConfiguration
         val device = AgentDevice(agentParticipant)
-        val agent = agentFactory.createAgent(agentConfiguration)
+        val agent = agentFactory.getAgent(agentConfiguration::class)
         val agentSession = agent.restoreSession(state.transcript, invite, device)
         agentSessions += agentParticipant to agentSession
     }

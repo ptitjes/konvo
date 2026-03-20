@@ -1,6 +1,5 @@
 package io.github.ptitjes.konvo.plugin.core.conversations.storage
 
-import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.Messaging.*
 import io.github.ptitjes.konvo.plugin.core.util.*
@@ -43,9 +42,6 @@ abstract class ConversationRepositoryContractTests {
             createdAt = timestamp,
             updatedAt = timestamp,
             participants = listOf(Participant.User("u1"), Participant.Agent("a1")),
-            lastMessagePreview = null,
-            messageCount = 0,
-            agentConfiguration = NoAgentConfiguration,
         )
     }
 

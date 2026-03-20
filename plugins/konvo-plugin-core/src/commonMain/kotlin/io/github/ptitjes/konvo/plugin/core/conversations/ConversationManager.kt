@@ -14,7 +14,7 @@ import kotlin.uuid.*
 class ConversationManager(
     coroutineContext: CoroutineContext,
     private val conversationRepository: ConversationRepository,
-    private val agentFactory: AgentFactory,
+    private val agentFactory: AgentManager,
 ) {
     private companion object {
         private val logger = KotlinLogging.logger {}

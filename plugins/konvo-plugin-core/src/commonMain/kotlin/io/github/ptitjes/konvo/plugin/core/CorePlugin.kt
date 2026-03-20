@@ -90,6 +90,12 @@ object CorePlugin : Plugin {
             }
         }
 
+        extensionPoint(Agents)
+
+        Agents {
+            contribution { new(::QuestionAnswerAgent) }
+        }
+
         exposedType<CharacterManager>()
         exposedType<FileSystemCharacterProvider>()
         exposedType<LorebookManager>()
@@ -149,12 +155,7 @@ object CorePlugin : Plugin {
 
         bindSet<InteractiveAgent<*>>()
 
-        inBindSet<InteractiveAgent<*>> {
-            addSingleton { new(::QuestionAnswerAgent) }
-            addSingleton { new(::RoleplayAgent) }
-        }
-
-        bindSingleton { new(::AgentFactory) }
+        bindSingleton { new(::AgentManager) }
 
 //    bindSingletonOf<ConversationRepository>(::InMemoryConversationRepository)
         bindSingleton<ConversationRepository> { new(::FileConversationRepository) }

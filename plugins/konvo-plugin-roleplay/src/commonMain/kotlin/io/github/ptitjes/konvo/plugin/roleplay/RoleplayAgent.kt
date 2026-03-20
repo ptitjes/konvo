@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.agents
+package io.github.ptitjes.konvo.plugin.roleplay
 
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.dsl.extension.*
@@ -7,10 +7,10 @@ import ai.koog.prompt.executor.llms.*
 import ai.koog.prompt.message.*
 import ai.koog.prompt.tokenizer.*
 import io.github.oshai.kotlinlogging.*
+import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.agents.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
-import io.github.ptitjes.konvo.plugin.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
@@ -26,31 +26,7 @@ class RoleplayAgent(
     configurationClass = RoleplayAgentConfiguration::class,
     initialPrompt = { Prompt.Empty.copy(id = "roleplay") },
 ) {
-    companion object {
-        val agentId = "urn:$PLUGIN_ID/${RoleplayAgent::class.simpleName}"
-
-        val presence = InteractionProtocol(
-            id = "$agentId#Presence",
-            awaitsInput = false,
-            hidesParent = false,
-            reactsTo = setOf(Messaging.Message::class)
-        )
-
-        val processing = InteractionProtocol(
-            id = "$agentId#Processing",
-            awaitsInput = false,
-            hidesParent = false,
-            reactsTo = setOf(AgentProcessing.Cancellation::class)
-        )
-
-        val protocols = setOf(presence, processing)
-
-        init {
-            protocols.forEach { InteractionProtocols.register(it) }
-        }
-    }
-
-    override val initialInteraction by interaction<ConversationControl.InviteAgent, Unit>(presence) {
+    override val initialInteraction by interaction<ConversationControl.InviteAgent, Unit>(Presence.Agent) {
         onEnter {
             act(Presence.Joining)
 
@@ -88,7 +64,7 @@ class RoleplayAgent(
         }
     }
 
-    val processing by interaction<Messaging.Message, Unit>(RoleplayAgent.processing) {
+    val processing by interaction<Messaging.Message, Unit>(AgentProcessing.TurnBased) {
         onEnter {
             act(AgentProcessing.Start)
         }

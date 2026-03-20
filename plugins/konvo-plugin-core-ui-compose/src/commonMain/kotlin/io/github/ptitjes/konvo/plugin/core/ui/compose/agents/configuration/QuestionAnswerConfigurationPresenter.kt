@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration
 
 import androidx.compose.runtime.*
+import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.models.*
@@ -20,8 +21,8 @@ class QuestionAnswerConfigurationPresenter(
         return if (availableModels == null || availableMcpServers == null) {
             QuestionAnswerConfigurationView.State.Loading
         } else {
-            var selectedModel by remember { mutableStateOf(availableModels.firstOrNull()) }
-            var selectedMcpServers by remember { mutableStateOf(emptySet<String>()) }
+            var selectedModel by rememberRetained { mutableStateOf(availableModels.firstOrNull()) }
+            var selectedMcpServers by rememberRetained { mutableStateOf(emptySet<String>()) }
 
             val selectableModels = if (selectedMcpServers.isNotEmpty()) {
                 availableModels.filter { it.supportsTools }

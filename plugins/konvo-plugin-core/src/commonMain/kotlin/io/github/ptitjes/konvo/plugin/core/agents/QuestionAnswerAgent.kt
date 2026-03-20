@@ -10,7 +10,6 @@ import ai.koog.prompt.message.*
 import io.github.ptitjes.konvo.plugin.core.agents.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
-import io.github.ptitjes.konvo.plugin.core.conversations.storage.files.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
@@ -50,37 +49,6 @@ class QuestionAnswerAgent(
     },
     mcpSessionFactory = mcpSessionFactory,
 ) {
-    companion object {
-        val agentId = "urn:$PLUGIN_ID/${QuestionAnswerAgent::class.simpleName}"
-
-        val presence = InteractionProtocol(
-            id = "$agentId#Presence",
-            awaitsInput = false,
-            hidesParent = false,
-            reactsTo = setOf(Messaging.Message::class)
-        )
-
-        val processing = InteractionProtocol(
-            id = "$agentId#Processing",
-            awaitsInput = false,
-            hidesParent = false,
-            reactsTo = setOf(AgentProcessing.Cancellation::class)
-        )
-
-        val vetting = InteractionProtocol(
-            id = "$agentId#Vetting",
-            awaitsInput = true,
-            hidesParent = true,
-            reactsTo = setOf(ToolUsage.Vetting::class)
-        )
-
-        val protocols = setOf(presence, processing, vetting)
-
-        init {
-            protocols.forEach { InteractionProtocols.register(it) }
-        }
-    }
-
     // builders for state and memory
     // state can be scoped to an interaction (available in child interactions)
     // memory can be scoped to an interaction, a conversation, or a profile
@@ -97,7 +65,7 @@ class QuestionAnswerAgent(
     // Then in graphs and functions, you have nodes and routines
     // that take `State<...>`s as parameters.
 
-    override val initialInteraction by interaction<ConversationControl.InviteAgent, Unit>(QuestionAnswerAgent.presence) {
+    override val initialInteraction by interaction<ConversationControl.InviteAgent, Unit>(Presence.Agent) {
         onEnter {
             act(Presence.Joining)
             act(AgentCapabilities.Messaging())
@@ -115,7 +83,7 @@ class QuestionAnswerAgent(
         }
     }
 
-    val processing by interaction<Messaging.Message, Unit>(QuestionAnswerAgent.processing) {
+    val processing by interaction<Messaging.Message, Unit>(AgentProcessing.TurnBased) {
         onEnter {
             act(AgentProcessing.Start)
         }
@@ -201,7 +169,7 @@ class QuestionAnswerAgent(
     }
 
     val vetting by interaction<ToolUsage.Vetting, Map<ToolUsage.Call, Boolean?>>(
-        protocol = QuestionAnswerAgent.vetting,
+        protocol = ToolUsage.VettingProtocol,
         initialState = { emptyMap() },
     ) {
         onEnter { vetting ->

@@ -17,7 +17,7 @@ import ai.koog.prompt.message.ContentPart as KoogContentPart
 import ai.koog.prompt.message.Message as KoogMessage
 import ai.koog.prompt.message.Message.Tool.Call as KoogCall
 
-internal fun String.toKoogAssistantMessage(): KoogMessage.Assistant {
+fun String.toKoogAssistantMessage(): KoogMessage.Assistant {
     return KoogMessage.Assistant(
         content = this,
         metaInfo = ResponseMetaInfo(timestamp = Clock.System.now()),

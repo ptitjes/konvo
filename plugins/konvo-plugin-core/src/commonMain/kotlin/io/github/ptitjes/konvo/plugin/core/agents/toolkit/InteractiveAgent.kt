@@ -14,8 +14,8 @@ import kotlin.coroutines.*
 import kotlin.reflect.*
 import ai.koog.prompt.message.Message as KoogMessage
 
-abstract class InteractiveAgent<C : Any>(
-    val configurationClass: KClass<C>,
+abstract class InteractiveAgent<C : AgentConfiguration>(
+    override val configurationClass: KClass<C>,
     private val initialPrompt: () -> Prompt,
     private val mcpSessionFactory: ((coroutineContext: CoroutineContext) -> McpHostSession)? = null,
 ) : Agent {
@@ -263,7 +263,7 @@ private val AgentConfigurationStateKey: AgentStateKey<AgentConfiguration> =
 
 @Suppress("UNCHECKED_CAST")
 context(_: AgentContext)
-val <C : Any> InteractiveAgent<C>.configuration: C
+val <C : AgentConfiguration> InteractiveAgent<C>.configuration: C
     get() =
         loadState<AgentConfiguration>(AgentConfigurationStateKey) as? C
             ?: throw IllegalStateException("Agent configuration not found in state")
