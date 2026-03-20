@@ -22,6 +22,7 @@ import kotlin.coroutines.*
 
 @ServiceProvider
 object CorePlugin : Plugin {
+    override val id: PluginId = PluginConfig.Id
 
     override fun PluginSpecificationBuilder.specification() {
         extensionPoint(I18nStringsProviders)

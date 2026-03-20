@@ -21,6 +21,7 @@ import org.kodein.di.*
 
 @ServiceProvider
 object CoreUiComposePlugin : Plugin {
+    override val id: PluginId = PluginConfig.Id
 
     override val dependencies: Set<Plugin> = setOf(CorePlugin)
 

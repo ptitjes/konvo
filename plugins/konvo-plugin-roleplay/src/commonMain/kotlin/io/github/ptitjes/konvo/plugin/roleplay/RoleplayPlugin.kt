@@ -6,5 +6,7 @@ import io.github.ptitjes.syrup.*
 
 @ServiceProvider
 object RoleplayPlugin : Plugin {
+    override val id: PluginId = PluginConfig.Id
+
     override val dependencies: Set<Plugin> = setOf(CorePlugin)
 }
