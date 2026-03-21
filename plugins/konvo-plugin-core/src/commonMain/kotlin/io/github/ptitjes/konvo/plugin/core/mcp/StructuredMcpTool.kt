@@ -2,9 +2,10 @@ package io.github.ptitjes.konvo.plugin.core.mcp
 
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.core.tools.Tool
+import ai.koog.serialization.*
+import ai.koog.serialization.kotlinx.*
 import io.modelcontextprotocol.kotlin.sdk.client.*
 import io.modelcontextprotocol.kotlin.sdk.types.*
-import kotlinx.serialization.builtins.*
 import kotlinx.serialization.json.*
 
 /**
@@ -16,13 +17,15 @@ import kotlinx.serialization.json.*
  * 2. Calling the MCP tool through the MCP client
  * 3. Converting MCP tool results back to agent framework tool results
  */
-public class StructuredMcpTool(
+class StructuredMcpTool(
     private val mcpClient: Client,
     descriptor: ToolDescriptor,
-) : Tool<JsonObject, CallToolResult?>(
-    argsSerializer = JsonObject.serializer(),
-    resultSerializer = CallToolResult.serializer().nullable,
-    descriptor = descriptor
+    metadata: Map<String, String>,
+) : Tool<JSONObject, CallToolResult?>(
+    argsType = typeToken<JSONObject>(),
+    resultType = typeToken<CallToolResult?>(),
+    descriptor = descriptor,
+    metadata = metadata,
 ) {
 
     /**
@@ -34,18 +37,18 @@ public class StructuredMcpTool(
      * @param args The arguments for the MCP tool call.
      * @return The result of the MCP tool call.
      */
-    override suspend fun execute(args: JsonObject): CallToolResult {
+    override suspend fun execute(args: JSONObject): CallToolResult {
         return mcpClient.callTool(
             name = descriptor.name,
-            arguments = args
+            arguments = args.toKotlinxJsonObject()
         )
     }
 
     /**
      * Postprocess result string representation for LLMs a bit, removing unnecessary meta fields.
      */
-    override fun encodeResultToString(result: CallToolResult?): String {
+    override fun encodeResultToString(result: CallToolResult?, serializer: JSONSerializer): String {
         val jsonContent = result?.structuredContent ?: JsonNull
-        return json.encodeToString(jsonContent)
+        return serializer.encodeJSONElementToString(jsonContent.toKoogJSONElement())
     }
 }

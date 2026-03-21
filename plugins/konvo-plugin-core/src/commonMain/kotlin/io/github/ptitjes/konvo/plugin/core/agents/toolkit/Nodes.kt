@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.agents.toolkit
 import ai.koog.agents.core.dsl.builder.*
 import ai.koog.agents.core.environment.*
 import ai.koog.prompt.message.*
+import ai.koog.serialization.kotlinx.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 
@@ -63,7 +64,7 @@ fun AIAgentSubgraphBuilderBase<*, *>.nodeExecuteVettedToolCalls(
         ReceivedToolResult(
             id = toolCallId,
             tool = toolName,
-            toolArgs = toolArgs,
+            toolArgs = toolArgs.toKoogJSONObject(),
             toolDescription = null,
             content = "Tool call with name '$toolName' was rejected by user",
             resultKind = ToolResultKind.Failure(null),

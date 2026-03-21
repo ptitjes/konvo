@@ -89,7 +89,7 @@ class QuestionAnswerAgent(
         }
         onExecute { input ->
             val model = modelProviderManager.named(configuration.modelName)
-            val promptExecutor = SingleLLMPromptExecutor(model.getLLMClient())
+            val promptExecutor = MultiLLMPromptExecutor(model.getLLMClient())
             val developerSettings = settingsRepository.getSettings(DeveloperSettingsKey).first()
 
             withMcpSession { mcpSession ->

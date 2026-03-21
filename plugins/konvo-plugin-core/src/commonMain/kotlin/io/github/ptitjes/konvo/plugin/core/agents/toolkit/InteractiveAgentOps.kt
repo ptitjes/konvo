@@ -9,6 +9,7 @@ import ai.koog.agents.core.tools.*
 import ai.koog.agents.features.eventHandler.feature.*
 import ai.koog.prompt.executor.model.*
 import ai.koog.prompt.llm.*
+import ai.koog.serialization.kotlinx.*
 import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 import io.github.ptitjes.konvo.plugin.core.tools.*
@@ -60,7 +61,7 @@ inline fun <reified I, reified O> InteractionScope<*>.buildAgent(
     maxAgentIterations: Int,
     strategy: AIAgentGraphStrategy<I, O>,
     tools: List<ToolCard>,
-): GraphAIAgent<I, O> = AIAgent<I, O>(
+): AIAgent<I, O> = AIAgent<I, O>(
     promptExecutor = promptExecutor,
     agentConfig = AIAgentConfig(
         prompt = context.prompt,
@@ -118,22 +119,22 @@ internal fun EventHandlerConfig.toolUsageNotifications(scope: InteractionScope<*
                 call = ToolUsage.Call(
                     id = eventContext.toolCallId ?: Uuid.random().toString(),
                     tool = eventContext.toolName,
-                    arguments = eventContext.toolArgs,
+                    arguments = eventContext.toolArgs.toKotlinxJsonObject(),
                 ),
                 result = ToolUsage.CallResult.ExecutionFailure(eventContext.message),
             ),
         )
     }
     onToolCallCompleted { eventContext ->
-        val result = eventContext.toolResult
-        val structuredContent = (result as? JsonObject)?.get("structuredContent")
+        val result = eventContext.toolResult?.toKotlinxJsonElement()
+        val structuredContent = result?.jsonObject?.get("structuredContent")
 
         scope.act(
             ToolUsage.Notification(
                 call = ToolUsage.Call(
                     id = eventContext.toolCallId ?: Uuid.random().toString(),
                     tool = eventContext.toolName,
-                    arguments = eventContext.toolArgs,
+                    arguments = eventContext.toolArgs.toKotlinxJsonObject(),
                 ),
                 result = ToolUsage.CallResult.Success(structuredContent ?: result),
             ),
@@ -145,7 +146,7 @@ internal fun EventHandlerConfig.toolUsageNotifications(scope: InteractionScope<*
                 call = ToolUsage.Call(
                     id = eventContext.toolCallId ?: Uuid.random().toString(),
                     tool = eventContext.toolName,
-                    arguments = eventContext.toolArgs,
+                    arguments = eventContext.toolArgs.toKotlinxJsonObject(),
                 ),
                 result = ToolUsage.CallResult.ExecutionFailure(eventContext.message),
             ),

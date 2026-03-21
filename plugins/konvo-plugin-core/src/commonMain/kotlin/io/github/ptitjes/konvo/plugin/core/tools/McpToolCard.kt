@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.plugin.core.tools
 
+import ai.koog.agents.core.annotation.*
 import ai.koog.agents.core.tools.*
 import ai.koog.agents.mcp.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
@@ -23,12 +24,13 @@ internal class McpToolCard(
     override val requiresVetting: Boolean
         get() = doesToolRequirePermission(clientName, sdkTool.name, permissions)
 
+    @OptIn(InternalAgentsApi::class)
     override fun toTool(): Tool<*, *> {
         val outputSchema = sdkTool.outputSchema
         val descriptor = DefaultMcpToolDescriptorParser.parse(sdkTool)
 
-        return if (outputSchema != null) StructuredMcpTool(client, descriptor)
-        else McpTool(client, descriptor)
+        return if (outputSchema != null) StructuredMcpTool(client, descriptor, metadata = emptyMap())
+        else McpTool(client, descriptor, metadata = emptyMap())
     }
 
     private fun doesToolRequirePermission(

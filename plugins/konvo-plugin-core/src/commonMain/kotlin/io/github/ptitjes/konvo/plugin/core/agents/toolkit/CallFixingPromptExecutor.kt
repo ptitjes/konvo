@@ -13,7 +13,7 @@ import kotlinx.serialization.json.*
 /**
  * This is a dirty hack to account for small models having difficulties producing properly formatted tool calls.
  */
-class CallFixingPromptExecutor(private val delegate: PromptExecutor) : PromptExecutor {
+class CallFixingPromptExecutor(private val delegate: PromptExecutor) : PromptExecutor() {
     override suspend fun execute(prompt: Prompt, model: LLModel, tools: List<ToolDescriptor>): List<Message.Response> =
         delegate.execute(prompt, model, tools).maybeFixToolCalls()
 

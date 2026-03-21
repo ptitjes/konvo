@@ -86,14 +86,12 @@ private class CustomMistralAILLMClient(
         return selectedModels.mapNotNull { model ->
             val hardcodedModel = modelsById[model.id]
 
-            val queriedModel = LLModel(
+            LLModel(
                 provider = llmProvider(),
                 id = model.id,
                 capabilities = model.capabilities.toKoogCapabilities(),
                 contextLength = model.maxContextLength.toLong(),
             )
-            if (hardcodedModel != null) println("> Kept: $hardcodedModel")
-            else println("> Ignored: $queriedModel")
 
             hardcodedModel
         }

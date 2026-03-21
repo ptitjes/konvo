@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.plugin.core.agents.toolkit
 
+import ai.koog.agents.core.agent.config.*
 import ai.koog.agents.core.agent.context.*
 import ai.koog.agents.core.agent.entity.*
 import ai.koog.agents.core.feature.*
@@ -12,7 +13,7 @@ import io.github.ptitjes.konvo.plugin.core.tools.*
 class InteractionFeature(
     val controller: InteractionScope<*>,
     val tools: List<ToolCard>,
-) : InteractionScope<Any?> by (controller as InteractionScope<Any?>) {
+) : InteractionScope<Any> by controller.asUnsafeScopeOfAny() {
 
     class Config : FeatureConfig() {
         var agentController: () -> InteractionScope<*> = { error("Not initialized") }
@@ -26,7 +27,7 @@ class InteractionFeature(
 
         override val key: AIAgentStorageKey<InteractionFeature> = AIAgentStorageKey("agents-features-interaction")
 
-        override fun createInitialConfig(): Config = Config()
+        override fun createInitialConfig(agentConfig: AIAgentConfig): Config = Config()
 
         override fun install(config: Config, pipeline: AIAgentGraphPipeline): InteractionFeature {
             val feature = InteractionFeature(
@@ -64,6 +65,9 @@ class InteractionFeature(
         }
     }
 }
+
+@Suppress("UNCHECKED_CAST")
+private fun InteractionScope<*>.asUnsafeScopeOfAny(): InteractionScope<Any> = this as InteractionScope<Any>
 
 /**
  * Extension function to access the interaction feature from an agent context.
