@@ -1,6 +1,7 @@
 package io.github.ptitjes.konvo.mcp.web
 
 import com.fleeksoft.ksoup.*
+import com.xemantic.ai.tool.schema.generator.*
 import com.xemantic.ai.tool.schema.meta.*
 import io.github.ptitjes.konvo.mcp.web.utils.*
 import io.ktor.client.*
@@ -8,6 +9,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.*
+import kotlinx.serialization.json.*
 
 class DuckDuckGoEngine(
     private val client: HttpClient,
@@ -122,7 +124,12 @@ class DuckDuckGoEngine(
     @Serializable
     data class SearchResponse(
         val results: List<SearchResult>,
-    )
+    ) {
+        companion object {
+            fun schemaString() =
+                Json.encodeToString(jsonSchemaOf<List<SearchResult>>())
+        }
+    }
 
     @Serializable
     data class SearchResult(

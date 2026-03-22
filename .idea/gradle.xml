@@ -23,6 +23,7 @@
             <option value="$PROJECT_DIR$/apps/desktop-app" />
             <option value="$PROJECT_DIR$/build-logic" />
             <option value="$PROJECT_DIR$/libraries" />
+            <option value="$PROJECT_DIR$/libraries/konvo-lib-model-litertlm" />
             <option value="$PROJECT_DIR$/libraries/konvo-lib-plugins-host" />
             <option value="$PROJECT_DIR$/libraries/konvo-lib-plugins-runtime" />
             <option value="$PROJECT_DIR$/mcp" />

@@ -1,9 +1,6 @@
 package io.github.ptitjes.konvo.mcp.web
 
-import com.xemantic.ai.tool.schema.generator.*
-import io.github.ptitjes.konvo.mcp.web.utils.HtmlToMarkdown
-import io.github.ptitjes.konvo.mcp.web.utils.addJsonTool
-import io.github.ptitjes.konvo.mcp.web.utils.addStringTool
+import io.github.ptitjes.konvo.mcp.web.utils.*
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
@@ -28,7 +25,7 @@ fun Server.addKonvoWebTools() {
             Search the web for web pages that match the given query.
             Use this function if you need to find or search for a Web page.
             The search results are returned in JSON format with the following schema:
-            ${Json.encodeToString(jsonSchemaOf<List<DuckDuckGoEngine.SearchResult>>())}
+            ${DuckDuckGoEngine.SearchResponse.schemaString()}
             A search result only contains a snippet of the page and is not accurate to answer the user.
             You can actually use the `url` property of a returned search result as input to the `web_fetch` tool
             and retrieve the actual content of the page.
