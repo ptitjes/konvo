@@ -55,6 +55,9 @@ kotlinxCli = "0.3.6"
 ksoup = "0.2.3"
 flexmark = "0.64.8"
 
+# Desktop App
+nucleus = "1.6.1"
+
 [libraries]
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -155,3 +158,6 @@ composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "com
 
 # For tools
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+
+# Desktop App
+nucleus = { id = "io.github.kdroidfilter.nucleus", version.ref = "nucleus" }
