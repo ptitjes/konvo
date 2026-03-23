@@ -1,12 +1,12 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.theme
 
+import androidx.compose.foundation.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.font.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.AppearanceSettingsKey
-import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.BaseColorScheme
-import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.appearance.BaseColorScheme.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import org.jetbrains.compose.resources.*
 
@@ -20,7 +20,7 @@ fun KonvoTheme(
     val isDarkTheme = when (colorScheme) {
         Dark -> true
         Light -> false
-        System -> isInDarkTheme()
+        System -> isSystemInDarkTheme()
     }
 
     CompositionLocalProvider(

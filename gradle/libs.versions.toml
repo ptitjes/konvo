@@ -59,6 +59,9 @@ flexmark = "0.64.8"
 nucleus = "1.6.1"
 
 [libraries]
+nucleusDarkModeDetector = { module = "io.github.kdroidfilter:nucleus.darkmode-detector", version.ref = "nucleus" }
+nucleusDecoratedWindowJni = { module = "io.github.kdroidfilter:nucleus.decorated-window-jni", version.ref = "nucleus" }
+nucleusDecoratedWindowMaterial3 = { module = "io.github.kdroidfilter:nucleus.decorated-window-material3", version.ref = "nucleus" }
 kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }

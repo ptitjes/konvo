@@ -32,6 +32,10 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinxCoroutinesSwing)
+
+            implementation(libs.nucleusDarkModeDetector)
+            implementation(libs.nucleusDecoratedWindowJni)
+            implementation(libs.nucleusDecoratedWindowMaterial3)
         }
     }
 }
