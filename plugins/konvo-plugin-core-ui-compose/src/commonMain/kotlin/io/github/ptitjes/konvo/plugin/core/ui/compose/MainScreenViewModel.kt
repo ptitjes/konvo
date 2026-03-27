@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import androidx.navigation3.runtime.*
+import com.slack.circuit.runtime.screen.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.syrup.*
@@ -79,20 +80,6 @@ sealed interface Destination : NavKey {
             override fun toString(): String = "conversations/$id"
         }
     }
-
-    // TODO move settings into their own NavDisplay/Backstack (inside a dialog)
-    @Serializable
-    sealed interface Setting : Destination {
-        @Serializable
-        data object List : Setting {
-            override fun toString(): String = "settings"
-        }
-
-        @Serializable
-        data class Section(val key: String) : Setting {
-            override fun toString(): String = "settings/$key"
-        }
-    }
 }
 
 class Navigator(
@@ -127,7 +114,7 @@ class Navigator(
 }
 
 @Serializable
-sealed interface SettingsDestination : NavKey {
+sealed interface SettingsDestination : NavKey, Screen {
     @Serializable
     data object List : SettingsDestination {
         override fun toString(): String = "settings"

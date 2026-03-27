@@ -50,7 +50,7 @@ class FileSystemSettingsRepository private constructor(
         return newFlow.asStateFlow() as StateFlow<T>
     }
 
-    override suspend fun <T> updateSettings(key: SettingsKey<T>, value: T) {
+    override fun <T> updateSettings(key: SettingsKey<T>, value: T) {
         writeToDisk(key, value)
 
         val previousFlow = settingsFlows.fetchAndUpdate { previous ->

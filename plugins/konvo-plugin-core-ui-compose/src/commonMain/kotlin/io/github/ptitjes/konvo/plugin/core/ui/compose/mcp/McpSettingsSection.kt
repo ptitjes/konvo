@@ -6,6 +6,7 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
+import org.kodein.di.*
 
 fun PluginSpecificationBuilder.mcpSettingsSection() {
     SettingsSections {
@@ -14,7 +15,8 @@ fun PluginSpecificationBuilder.mcpSettingsSection() {
                 titleKey = "mcp",
                 icon = Res.drawable.ic_extension,
                 title = { i18n.mcp.settingsTitle },
-                panel = { McpSettingsPanel() },
+                presenterFactory = { new(::McpSettingsPresenter) },
+                panel = { state -> McpSettingsPanel(state) },
             )
         }
     }

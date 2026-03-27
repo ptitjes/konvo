@@ -8,9 +8,13 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.plugin.core.models.providers.*
+import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
@@ -22,38 +26,71 @@ import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
 import sh.calvin.reorderable.*
 
+internal class ModelProviderSettingsPresenter(
+    private val settingsRepository: SettingsRepository,
+) : Presenter<ModelProviderSettingsView.State> {
+    @Composable
+    override fun present(): ModelProviderSettingsView.State {
+        var settings by settingsRepository.mutableSettingsOf(ModelProviderSettingsKey)
+
+        return ModelProviderSettingsView.State(settings) { event ->
+            when (event) {
+                is ModelProviderSettingsView.Event.UpdateSettings -> {
+                    settings = event.settings
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPanelScope.ModelProviderSettingsPanel() {
-    var settings by rememberMutableSettings(ModelProviderSettingsKey)
+fun SettingsPanelScope.ModelProviderSettingsPanel(state: ModelProviderSettingsView.State) {
+    val settings = state.settings
     val modelManager by rememberInstance<SettingsBasedModelManager>()
 
     val providerStatuses by modelManager.providerStatuses.collectAsState()
 
     fun addProvider(newProvider: NamedModelProvider) {
-        settings = settings.copy(providers = settings.providers + newProvider)
+        state.eventSink(
+            ModelProviderSettingsView.Event.UpdateSettings(
+                settings.copy(providers = settings.providers + newProvider)
+            )
+        )
     }
 
     fun updateProvider(index: Int, transform: (previous: NamedModelProvider) -> NamedModelProvider) {
-        settings = settings.copy(
-            providers = settings.providers.mapIndexed { i, provider ->
-                if (i == index) transform(provider) else provider
-            }
+        state.eventSink(
+            ModelProviderSettingsView.Event.UpdateSettings(
+                settings.copy(
+                    providers = settings.providers.mapIndexed { i, provider ->
+                        if (i == index) transform(provider) else provider
+                    }
+                )
+            )
         )
     }
 
     fun removeProvider(index: Int) {
-        settings = settings.copy(providers = settings.providers.filterIndexed { i, _ -> i != index })
+        state.eventSink(
+            ModelProviderSettingsView.Event.UpdateSettings(
+                settings.copy(providers = settings.providers.filterIndexed { i, _ -> i != index })
+            )
+        )
     }
 
     fun moveProvider(fromIndex: Int, toIndex: Int) {
         if (fromIndex == toIndex) return
-        settings = settings.copy(
-            providers = settings.providers.mutate {
-                val provider = removeAt(fromIndex)
-                val targetIndex = toIndex.coerceIn(0, size)
-                add(targetIndex, provider)
-            }
+        state.eventSink(
+            ModelProviderSettingsView.Event.UpdateSettings(
+                settings.copy(
+                    providers = settings.providers.mutate {
+                        val provider = removeAt(fromIndex)
+                        val targetIndex = toIndex.coerceIn(0, size)
+                        add(targetIndex, provider)
+                    }
+                )
+            )
         )
     }
 
@@ -769,5 +806,16 @@ private fun AddSaveButton(
             icon = { Icon(painter = painterResource(Res.drawable.ic_save), contentDescription = i18n.models.saveAction) },
             label = { Text(i18n.models.saveAction) },
         )
+    }
+}
+
+data object ModelProviderSettingsView : Screen {
+    data class State(
+        val settings: ModelProviderSettings,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: ModelProviderSettings) : Event
     }
 }

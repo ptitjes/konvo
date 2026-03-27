@@ -6,6 +6,7 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
+import org.kodein.di.*
 
 fun PluginSpecificationBuilder.appearanceSettings() {
     SettingsSections {
@@ -14,7 +15,8 @@ fun PluginSpecificationBuilder.appearanceSettings() {
                 titleKey = "appearance",
                 icon = Res.drawable.ic_palette,
                 title = { i18n.appearance.settingsTitle },
-                panel = { AppearanceSettingsPanel() },
+                presenterFactory = { new(::AppearanceSettingsPresenter) },
+                panel = { state -> AppearanceSettingsPanel(state) },
             )
         }
     }

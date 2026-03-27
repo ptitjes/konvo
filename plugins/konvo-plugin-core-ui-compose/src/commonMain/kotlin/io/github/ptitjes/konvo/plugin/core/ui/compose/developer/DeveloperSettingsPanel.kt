@@ -5,13 +5,34 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 
+internal class DeveloperSettingsPresenter(
+    private val settingsRepository: SettingsRepository,
+) : Presenter<DeveloperSettingsView.State> {
+    @Composable
+    override fun present(): DeveloperSettingsView.State {
+        var settings by settingsRepository.mutableSettingsOf(DeveloperSettingsKey)
+
+        return DeveloperSettingsView.State(settings) { event ->
+            when (event) {
+                is DeveloperSettingsView.Event.UpdateSettings -> {
+                    settings = event.settings
+                }
+            }
+        }
+    }
+}
+
 @Composable
-fun DeveloperSettingsPanel() {
-    var settings by rememberMutableSettings(DeveloperSettingsKey)
+fun SettingsPanelScope.DeveloperSettingsPanel(state: DeveloperSettingsView.State) {
+    val settings = state.settings
 
     SettingsBox(
         title = i18n.developer.openTelemetryTitle,
@@ -32,8 +53,12 @@ fun DeveloperSettingsPanel() {
                     Switch(
                         checked = settings.openTelemetry.enabled,
                         onCheckedChange = { enabled ->
-                            settings = settings.copy(
-                                openTelemetry = settings.openTelemetry.copy(enabled = enabled)
+                            state.eventSink(
+                                DeveloperSettingsView.Event.UpdateSettings(
+                                    settings.copy(
+                                        openTelemetry = settings.openTelemetry.copy(enabled = enabled)
+                                    )
+                                )
                             )
                         }
                     )
@@ -51,8 +76,12 @@ fun DeveloperSettingsPanel() {
                         Switch(
                             checked = settings.openTelemetry.verbose,
                             onCheckedChange = { verbose ->
-                                settings = settings.copy(
-                                    openTelemetry = settings.openTelemetry.copy(verbose = verbose)
+                                state.eventSink(
+                                    DeveloperSettingsView.Event.UpdateSettings(
+                                        settings.copy(
+                                            openTelemetry = settings.openTelemetry.copy(verbose = verbose)
+                                        )
+                                    )
                                 )
                             }
                         )
@@ -62,8 +91,12 @@ fun DeveloperSettingsPanel() {
                         modifier = Modifier.fillMaxWidth(),
                         value = settings.openTelemetry.endpoint,
                         onValueChange = { endpoint ->
-                            settings = settings.copy(
-                                openTelemetry = settings.openTelemetry.copy(endpoint = endpoint)
+                            state.eventSink(
+                                DeveloperSettingsView.Event.UpdateSettings(
+                                    settings.copy(
+                                        openTelemetry = settings.openTelemetry.copy(endpoint = endpoint)
+                                    )
+                                )
                             )
                         },
                         label = { Text(i18n.developer.openTelemetryEndpointLabel) },
@@ -73,4 +106,15 @@ fun DeveloperSettingsPanel() {
             }
         }
     )
+}
+
+data object DeveloperSettingsView : Screen {
+    data class State(
+        val settings: DeveloperSettings,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: DeveloperSettings) : Event
+    }
 }

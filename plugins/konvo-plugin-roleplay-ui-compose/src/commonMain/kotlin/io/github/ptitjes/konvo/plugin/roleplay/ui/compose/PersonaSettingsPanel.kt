@@ -6,41 +6,60 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.utils.*
 import org.jetbrains.compose.resources.*
-import org.kodein.di.compose.*
+
+internal class PersonaSettingsPresenter(
+    private val settingsRepository: SettingsRepository,
+    private val lorebookManager: LorebookManager,
+) : Presenter<PersonaSettingsView.State> {
+    @Composable
+    override fun present(): PersonaSettingsView.State {
+        var settings by settingsRepository.mutableSettingsOf(PersonaSettingsKey)
+        val lorebooks by lorebookManager.lorebooks.collectAsState(initial = emptyList())
+
+        return PersonaSettingsView.State(
+            personas = settings.personas,
+            lorebooks = lorebooks,
+        ) { event ->
+            when (event) {
+                is PersonaSettingsView.Event.AddPersona -> {
+                    settings = settings.copy(personas = settings.personas + event.persona)
+                }
+
+                is PersonaSettingsView.Event.UpdatePersona -> {
+                    settings = settings.copy(
+                        personas = settings.personas.mutate {
+                            val index = indexOfFirst { it.name == event.name }
+                            if (index >= 0) {
+                                set(index, event.newPersona)
+                            }
+                        }
+                    )
+                }
+
+                is PersonaSettingsView.Event.RemovePersona -> {
+                    settings = settings.copy(
+                        personas = settings.personas.filterNot { it.name == event.name }
+                    )
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PersonaSettingsPanel() {
-    var settings by rememberMutableSettings(PersonaSettingsKey)
-
-    val lorebookManager by rememberInstance<LorebookManager>()
-    val lorebooks by lorebookManager.lorebooks.collectAsState(initial = emptyList())
-
-    fun addPersona(persona: Persona) {
-        settings = settings.copy(personas = settings.personas + persona)
-    }
-
-    fun updatePersona(oldName: String, transform: (Persona) -> Persona) {
-        settings = settings.copy(
-            personas = settings.personas.mutate {
-                val index = indexOfFirst { it.name == oldName }
-                if (index >= 0) {
-                    set(index, transform(get(index)))
-                }
-            }
-        )
-    }
-
-    fun removePersona(name: String) {
-        settings = settings.copy(personas = settings.personas.filterNot { it.name == name })
-    }
-
+internal fun PersonaSettingsPanel(state: PersonaSettingsView.State) {
     var openSheet by remember { mutableStateOf<PersonaSheetState>(PersonaSheetState.Closed) }
     var pendingDeletion by remember { mutableStateOf<Persona?>(null) }
 
@@ -56,7 +75,7 @@ fun PersonaSettingsPanel() {
             }
         },
         bottomContent = {
-            if (settings.personas.isEmpty()) {
+            if (state.personas.isEmpty()) {
                 Text(
                     text = i18n.roleplay.noPersonasConfigured,
                     style = MaterialTheme.typography.bodyMedium,
@@ -66,7 +85,7 @@ fun PersonaSettingsPanel() {
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    settings.personas.sortedBy { it.name.lowercase() }.forEach { persona ->
+                    state.personas.sortedBy { it.name.lowercase() }.forEach { persona ->
                         Surface(
                             tonalElevation = 2.dp,
                             shape = MaterialTheme.shapes.small,
@@ -117,7 +136,7 @@ fun PersonaSettingsPanel() {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        removePersona(p.name)
+                        state.eventSink(PersonaSettingsView.Event.RemovePersona(p.name))
                         val sheet = openSheet
                         if (sheet is PersonaSheetState.Editing && sheet.name == p.name) {
                             openSheet = PersonaSheetState.Closed
@@ -144,14 +163,16 @@ fun PersonaSettingsPanel() {
             when (val sheet = openSheet) {
                 is PersonaSheetState.Adding -> {
                     PersonaEditor(
-                        existingNames = settings.personas.map { it.name }.toSet(),
-                        lorebooks = lorebooks,
+                        existingNames = state.personas.map { it.name }.toSet(),
+                        lorebooks = state.lorebooks,
                         onSubmit = { name, nickname, lorebook ->
-                            addPersona(
-                                Persona(
-                                    name = name,
-                                    nickname = nickname,
-                                    defaultLorebookId = lorebook?.id,
+                            state.eventSink(
+                                PersonaSettingsView.Event.AddPersona(
+                                    Persona(
+                                        name = name,
+                                        nickname = nickname,
+                                        defaultLorebookId = lorebook?.id,
+                                    )
                                 )
                             )
                             openSheet = PersonaSheetState.Closed
@@ -160,24 +181,27 @@ fun PersonaSettingsPanel() {
                 }
 
                 is PersonaSheetState.Editing -> {
-                    val current = settings.personas.firstOrNull { it.name == sheet.name }
+                    val current = state.personas.firstOrNull { it.name == sheet.name }
                     if (current != null) {
                         PersonaEditor(
                             initialName = current.name,
                             initialNickname = current.nickname,
-                            initialLorebook = lorebooks.firstOrNull { it.id == current.defaultLorebookId },
-                            existingNames = (settings.personas.map { it.name }.toSet() - current.name),
-                            lorebooks = lorebooks,
+                            initialLorebook = state.lorebooks.firstOrNull { it.id == current.defaultLorebookId },
+                            existingNames = (state.personas.map { it.name }.toSet() - current.name),
+                            lorebooks = state.lorebooks,
                             editing = true,
                             onRemove = { pendingDeletion = current },
                             onSubmit = { newName, newNickname, lorebook ->
-                                updatePersona(sheet.name) { _ ->
-                                    current.copy(
-                                        name = newName,
-                                        nickname = newNickname,
-                                        defaultLorebookId = lorebook?.id,
+                                state.eventSink(
+                                    PersonaSettingsView.Event.UpdatePersona(
+                                        name = sheet.name,
+                                        newPersona = current.copy(
+                                            name = newName,
+                                            nickname = newNickname,
+                                            defaultLorebookId = lorebook?.id,
+                                        )
                                     )
-                                }
+                                )
                                 openSheet = PersonaSheetState.Editing(newName)
                             },
                         )
@@ -189,6 +213,20 @@ fun PersonaSettingsPanel() {
                 is PersonaSheetState.Closed -> {}
             }
         }
+    }
+}
+
+data object PersonaSettingsView : Screen {
+    data class State(
+        val personas: List<Persona>,
+        val lorebooks: List<Lorebook>,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class AddPersona(val persona: Persona) : Event
+        data class UpdatePersona(val name: String, val newPersona: Persona) : Event
+        data class RemovePersona(val name: String) : Event
     }
 }
 

@@ -6,7 +6,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import io.github.oshai.kotlinlogging.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.providers.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
@@ -18,51 +20,62 @@ import io.github.vinceglb.filekit.*
 import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.dialogs.compose.*
 import kotlinx.coroutines.*
+import kotlinx.io.files.*
 import org.jetbrains.compose.resources.*
-import org.kodein.di.compose.*
 
-private val logger = KotlinLogging.logger {}
+internal class LorebooksSettingsPresenter(
+    private val provider: FileSystemLorebookProvider,
+) : Presenter<LorebooksSettingsView.State> {
+    @Composable
+    override fun present(): LorebooksSettingsView.State {
+        var lorebooks by remember { mutableStateOf<List<Lorebook>?>(null) }
+        var loadError by remember { mutableStateOf<String?>(null) }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SettingsPanelScope.LorebooksSettingsPanel() {
-    val provider by rememberInstance<FileSystemLorebookProvider>()
-    val scope = rememberCoroutineScope()
+        val scope = rememberCoroutineScope()
 
-    var lorebooks by remember { mutableStateOf<List<Lorebook>?>(null) }
-    var loadError by remember { mutableStateOf<String?>(null) }
-    var pendingDelete by remember { mutableStateOf<Lorebook?>(null) }
-
-    fun reload() {
-        loadError = null
-        scope.launch {
+        suspend fun reload() {
+            loadError = null
             runCatching { provider.query() }
                 .onSuccess { list -> lorebooks = list.sortedBy { it.name ?: it.id ?: "" } }
-                .onFailure { ex ->
-                    loadError = ex.message
-                    lorebooks = emptyList()
+                .onFailure { ex -> loadError = ex.message ?: "Unknown error" }
+        }
+
+        LaunchedEffect(Unit) { reload() }
+
+        return when {
+            loadError != null -> LorebooksSettingsView.State.Error(loadError!!)
+            lorebooks == null -> LorebooksSettingsView.State.Loading
+            else -> LorebooksSettingsView.State.Loaded(lorebooks!!) { event ->
+                when (event) {
+                    is LorebooksSettingsView.Event.Add -> scope.launch {
+                        provider.add(event.path)
+                        reload()
+                    }
+
+                    is LorebooksSettingsView.Event.Delete -> scope.launch {
+                        provider.delete(event.lorebook)
+                        reload()
+                    }
                 }
+            }
         }
     }
+}
 
-    LaunchedEffect(Unit) { reload() }
-
+@Composable
+fun LorebooksSettingsPanel(state: LorebooksSettingsView.State) {
     val importLauncher = rememberFilePickerLauncher(
         mode = FileKitMode.Multiple(),
         type = FileKitType.File(extensions = listOf("json")),
     ) { files ->
         if (files.isNullOrEmpty()) return@rememberFilePickerLauncher
-        scope.launch {
-            files.forEach { file ->
-                runCatching { provider.add(file.toKotlinxIoPath()) }
-                    .onSuccess { reload() }
-                    .onFailure { exception ->
-                        logger.error(exception) { "Failed to import lorebook" }
-                        showSnackbar("Failed to import lorebook:\n${exception.message ?: "Unknown error"}")
-                    }
-            }
+        if (state !is LorebooksSettingsView.State.Loaded) return@rememberFilePickerLauncher
+        files.forEach { file ->
+            state.eventSink(LorebooksSettingsView.Event.Add(file.toKotlinxIoPath()))
         }
     }
+
+    var pendingDelete by remember { mutableStateOf<Lorebook?>(null) }
 
     SettingsBox(
         title = i18n.roleplay.importedLorebooksTitle,
@@ -76,15 +89,15 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
             }
         },
         bottomContent = {
-            when {
-                loadError != null -> Text(text = i18n.roleplay.failedToLoadLorebooks(loadError!!))
-                lorebooks == null -> FullSizeProgressIndicator()
-                lorebooks!!.isEmpty() -> Text(text = i18n.roleplay.noLorebooksAvailable)
-                else -> Column(
+            when (state) {
+                is LorebooksSettingsView.State.Error -> Text(text = i18n.roleplay.failedToLoadLorebooks(state.error))
+                is LorebooksSettingsView.State.Loading -> FullSizeProgressIndicator()
+                is LorebooksSettingsView.State.Loaded if (state.lorebooks.isEmpty()) -> Text(text = i18n.roleplay.noLorebooksAvailable)
+                is LorebooksSettingsView.State.Loaded -> Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    lorebooks!!.forEach { lorebook ->
+                    state.lorebooks.forEach { lorebook ->
                         Surface(
                             tonalElevation = 2.dp,
                             shape = MaterialTheme.shapes.small,
@@ -124,24 +137,36 @@ fun SettingsPanelScope.LorebooksSettingsPanel() {
 
     // Confirm deletion dialog
     pendingDelete?.let { toDelete ->
+        if (state !is LorebooksSettingsView.State.Loaded) return@let
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
             title = { Text(i18n.roleplay.deleteLorebookDialogTitle) },
             text = { Text(i18n.roleplay.deleteLorebookDialogText(toDelete.name ?: toDelete.id ?: "")) },
             confirmButton = {
-                TextButton(onClick = {
-                    scope.launch {
+                TextButton(
+                    onClick = {
+                        state.eventSink(LorebooksSettingsView.Event.Delete(toDelete))
                         pendingDelete = null
-                        runCatching { provider.delete(toDelete) }
-                            .onSuccess { reload() }
-                            .onFailure { exception ->
-                                logger.error(exception) { "Failed to delete lorebook" }
-                                showSnackbar("Failed to delete lorebook:\n${exception.message ?: "Unknown error"}")
-                            }
-                    }
-                }) { Text(i18n.roleplay.deleteConfirm) }
+                    },
+                ) { Text(i18n.roleplay.deleteConfirm) }
             },
             dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(i18n.roleplay.cancel) } },
         )
+    }
+}
+
+data object LorebooksSettingsView : Screen {
+    sealed interface State : SettingsSectionState {
+        data object Loading : State
+        data class Error(val error: String) : State
+        data class Loaded(
+            val lorebooks: List<Lorebook>,
+            val eventSink: (Event) -> Unit,
+        ) : State
+    }
+
+    sealed interface Event : CircuitUiEvent {
+        data class Add(val path: Path) : Event
+        data class Delete(val lorebook: Lorebook) : Event
     }
 }

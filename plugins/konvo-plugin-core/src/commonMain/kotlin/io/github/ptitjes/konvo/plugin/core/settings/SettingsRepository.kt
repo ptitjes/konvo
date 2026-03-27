@@ -5,7 +5,7 @@ import kotlinx.serialization.*
 
 interface SettingsRepository {
     fun <T> getSettings(key: SettingsKey<T>): StateFlow<T>
-    suspend fun <T> updateSettings(key: SettingsKey<T>, value: T)
+    fun <T> updateSettings(key: SettingsKey<T>, value: T)
 }
 
 class SettingsKey<T>(

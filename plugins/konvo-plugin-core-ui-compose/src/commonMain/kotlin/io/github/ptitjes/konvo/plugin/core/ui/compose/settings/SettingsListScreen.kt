@@ -24,7 +24,7 @@ fun SettingsListScreen(
 
     val paneType = LocalListDetailPaneType.current
     LaunchedEffect(paneType) {
-        if (paneType == ListDetailPaneType.TwoPane && navigator.backStack.last() == Destination.Setting.List) {
+        if (paneType == ListDetailPaneType.TwoPane && navigator.backStack.last() == SettingsDestination.List) {
             navigator.navigateToSettingSection(sections.first().titleKey)
         }
     }
@@ -41,9 +41,9 @@ fun SettingsListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsListScreen(
-    sections: List<SettingsSection>,
-    selectedSection: SettingsSection?,
-    onSelectSection: (SettingsSection) -> Unit,
+    sections: List<SettingsSection<*>>,
+    selectedSection: SettingsSection<*>?,
+    onSelectSection: (SettingsSection<*>) -> Unit,
     modifier: Modifier = Modifier.Companion,
 ) {
     val containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -95,7 +95,7 @@ fun SettingsListScreen(
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Spacer(modifier = Modifier.Companion.width(depthPadding))
+                        Spacer(modifier = Modifier.width(depthPadding))
                         Icon(
                             modifier = Modifier.size(20.dp),
                             painter = painterResource(section.icon),
@@ -112,8 +112,8 @@ fun SettingsListScreen(
     }
 }
 
-fun <R : Comparable<R>> List<SettingsSection>.recursivelySortedBy(selector: (SettingsSection) -> R?): List<SettingsSection> {
-    fun List<SettingsSection>.recursivelySorted(): List<SettingsSection> {
+fun <R : Comparable<R>> List<SettingsSection<*>>.recursivelySortedBy(selector: (SettingsSection<*>) -> R?): List<SettingsSection<*>> {
+    fun List<SettingsSection<*>>.recursivelySorted(): List<SettingsSection<*>> {
         return sortedBy { selector(it) }
             .map { section -> section.copy(children = section.children.recursivelySorted()) }
     }
@@ -121,8 +121,8 @@ fun <R : Comparable<R>> List<SettingsSection>.recursivelySortedBy(selector: (Set
     return recursivelySorted()
 }
 
-fun List<SettingsSection>.flatten(): List<FlattenSettingsSection> {
-    fun List<SettingsSection>.flatten(depth: Int): List<FlattenSettingsSection> {
+fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
+    fun List<SettingsSection<*>>.flatten(depth: Int): List<FlattenSettingsSection> {
         return flatMap { section ->
             listOf(FlattenSettingsSection(section, depth)) + section.children.flatten(depth + 1)
         }
@@ -132,6 +132,6 @@ fun List<SettingsSection>.flatten(): List<FlattenSettingsSection> {
 }
 
 data class FlattenSettingsSection(
-    val section: SettingsSection,
+    val section: SettingsSection<*>,
     val depth: Int,
 )

@@ -10,7 +10,7 @@ class SettingsListViewModel(
 
     private val settingsSections by pluginContext.contributions(SettingsSections)
     private val _sections = MutableStateFlow(settingsSections.toList())
-    val sections: StateFlow<List<SettingsSection>> = _sections.asStateFlow()
+    val sections: StateFlow<List<SettingsSection<*>>> = _sections.asStateFlow()
 
     init {
         println("Initializing SettingsListViewModel")
@@ -25,8 +25,8 @@ class SettingsListViewModel(
     }
 }
 
-fun List<SettingsSection>.findSectionByTitleKey(titleKey: String): SettingsSection? {
-    fun List<SettingsSection>.findSectionByTitleKey(): SettingsSection? {
+fun List<SettingsSection<*>>.findSectionByTitleKey(titleKey: String): SettingsSection<*>? {
+    fun List<SettingsSection<*>>.findSectionByTitleKey(): SettingsSection<*>? {
         forEach { section ->
             if (section.titleKey == titleKey) return section
             section.children.findSectionByTitleKey()?.let { return it }

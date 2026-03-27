@@ -23,17 +23,31 @@ fun SettingsScreen(
         val sections by viewModel.sections.collectAsState()
         val section = remember { sections.findSectionByTitleKey(titleKey)!! }
 
-        SettingsScreen(
-            section = section,
-            onBackClick = { navigator.navigateBack() },
-        )
+        SettingsScreen(section, navigator)
     }
+}
+
+@Composable
+private fun <S : SettingsSectionState> SettingsScreen(
+    section: SettingsSection<S>,
+    navigator: SettingsNavigator,
+) {
+    val presenter = remember { section.presenterFactory() }
+
+    val state = presenter.present()
+
+    SettingsScreen(
+        section = section,
+        state = state,
+        onBackClick = { navigator.navigateBack() },
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
-    section: SettingsSection,
+private fun <S : SettingsSectionState> SettingsScreen(
+    section: SettingsSection<S>,
+    state: S,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -96,7 +110,7 @@ fun SettingsScreen(
                         }
                     }
 
-                    section.panel(scope)
+                    section.panel(scope, state)
                 }
             }
         }

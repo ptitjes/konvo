@@ -5,28 +5,55 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
-import org.kodein.di.compose.*
+
+internal class RoleplaySettingsPresenter(
+    private val settingsRepository: SettingsRepository,
+    private val modelManager: ModelManager,
+) : Presenter<RoleplaySettingsView.State> {
+    @Composable
+    override fun present(): RoleplaySettingsView.State {
+        var settings by settingsRepository.mutableSettingsOf(RoleplaySettingsKey)
+        val models by modelManager.models.collectAsState(initial = emptyList())
+
+        val personaSettings by settingsRepository.getSettings(PersonaSettingsKey).collectAsState()
+        val personas = personaSettings.personas
+
+        return RoleplaySettingsView.State(
+            settings = settings,
+            models = models,
+            personas = personas,
+        ) { event ->
+            when (event) {
+                is RoleplaySettingsView.Event.UpdateSettings -> {
+                    settings = event.settings
+                }
+            }
+        }
+    }
+}
 
 @Composable
-fun RoleplaySettingsPanel() {
-    var settings by rememberMutableSettings(RoleplaySettingsKey)
-
-    // We need models to offer a selector for the default preferred model
-    val modelManager by rememberInstance<ModelManager>()
-    val models by modelManager.models.collectAsState(initial = emptyList())
+fun RoleplaySettingsPanel(state: RoleplaySettingsView.State) {
+    val settings = state.settings
+    val models = state.models
+    val personaSettings = state.personas
 
     // Default user persona
     SettingsBox(
         title = i18n.roleplay.defaultPersonaTitle,
         description = i18n.roleplay.defaultPersonaDescription,
         bottomContent = {
-            val personaSettings by rememberSetting(PersonaSettingsKey, emptyList()) { it.personas }
             if (personaSettings.isEmpty()) {
                 OutlineBox(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -44,7 +71,11 @@ fun RoleplaySettingsPanel() {
                     label = null,
                     selectedPersona = selectedPersona,
                     onPersonaSelected = { persona ->
-                        settings = settings.copy(defaultPersonaName = persona.name)
+                        state.eventSink(
+                            RoleplaySettingsView.Event.UpdateSettings(
+                                settings.copy(defaultPersonaName = persona.name)
+                            )
+                        )
                     },
                     personas = personaSettings,
                 )
@@ -77,7 +108,11 @@ fun RoleplaySettingsPanel() {
                     label = null,
                     selectedModel = selectedModel,
                     onModelSelected = { model ->
-                        settings = settings.copy(defaultPreferredModelName = model.name)
+                        state.eventSink(
+                            RoleplaySettingsView.Event.UpdateSettings(
+                                settings.copy(defaultPreferredModelName = model.name)
+                            )
+                        )
                     },
                     models = models,
                 )
@@ -95,7 +130,11 @@ fun RoleplaySettingsPanel() {
                 modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
                 value = settings.defaultSystemPrompt,
                 onValueChange = { newValue ->
-                    settings = settings.copy(defaultSystemPrompt = newValue)
+                    state.eventSink(
+                        RoleplaySettingsView.Event.UpdateSettings(
+                            settings.copy(defaultSystemPrompt = newValue)
+                        )
+                    )
                 },
             )
         }
@@ -117,7 +156,11 @@ fun RoleplaySettingsPanel() {
                         modifier = Modifier.weight(1f),
                         value = settings.defaultScanDepth,
                         onValueChange = { value ->
-                            settings = settings.copy(defaultScanDepth = value)
+                            state.eventSink(
+                                RoleplaySettingsView.Event.UpdateSettings(
+                                    settings.copy(defaultScanDepth = value)
+                                )
+                            )
                         },
                         label = i18n.roleplay.scanDepthLabel,
                     )
@@ -126,7 +169,11 @@ fun RoleplaySettingsPanel() {
                         modifier = Modifier.weight(1f),
                         value = settings.defaultTokenBudget,
                         onValueChange = { value ->
-                            settings = settings.copy(defaultTokenBudget = value)
+                            state.eventSink(
+                                RoleplaySettingsView.Event.UpdateSettings(
+                                    settings.copy(defaultTokenBudget = value)
+                                )
+                            )
                         },
                         label = i18n.roleplay.tokenBudgetLabel,
                     )
@@ -144,11 +191,28 @@ fun RoleplaySettingsPanel() {
                     Switch(
                         checked = settings.defaultRecursiveScanning,
                         onCheckedChange = { checked ->
-                            settings = settings.copy(defaultRecursiveScanning = checked)
+                            state.eventSink(
+                                RoleplaySettingsView.Event.UpdateSettings(
+                                    settings.copy(defaultRecursiveScanning = checked)
+                                )
+                            )
                         },
                     )
                 }
             }
         }
     )
+}
+
+data object RoleplaySettingsView : Screen {
+    data class State(
+        val settings: RoleplaySettings,
+        val models: List<ModelCard>,
+        val personas: List<Persona>,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: RoleplaySettings) : Event
+    }
 }

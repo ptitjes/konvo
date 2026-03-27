@@ -5,36 +5,74 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.mcp.*
+import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import org.jetbrains.compose.resources.*
 import kotlin.time.Duration.Companion.seconds
 
+internal class McpSettingsPresenter(
+    private val settingsRepository: SettingsRepository,
+) : Presenter<McpSettingsView.State> {
+    @Composable
+    override fun present(): McpSettingsView.State {
+        var settings by settingsRepository.mutableSettingsOf(McpSettingsKey)
+
+        return McpSettingsView.State(settings) { event ->
+            when (event) {
+                is McpSettingsView.Event.UpdateSettings -> {
+                    settings = event.settings
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun McpSettingsPanel() {
-    var settings by rememberMutableSettings(McpSettingsKey)
+fun SettingsPanelScope.McpSettingsPanel(state: McpSettingsView.State) {
+    val settings = state.settings
 
     fun addServer(newName: String, newSpec: ServerSpecification) {
-        settings = settings.copy(servers = settings.servers + (newName to newSpec))
+        state.eventSink(
+            McpSettingsView.Event.UpdateSettings(
+                settings.copy(servers = settings.servers + (newName to newSpec))
+            )
+        )
     }
 
     fun updateServer(name: String, transform: (ServerSpecification) -> ServerSpecification) {
         val currentSpecification = settings.servers[name] ?: return
-        settings = settings.copy(servers = settings.servers + (name to transform(currentSpecification)))
+        state.eventSink(
+            McpSettingsView.Event.UpdateSettings(
+                settings.copy(servers = settings.servers + (name to transform(currentSpecification)))
+            )
+        )
     }
 
     fun renameServer(oldName: String, newName: String) {
         if (newName.isBlank() || oldName == newName) return
         val specification = settings.servers[oldName] ?: return
-        settings = settings.copy(servers = settings.servers - oldName + (newName to specification))
+        state.eventSink(
+            McpSettingsView.Event.UpdateSettings(
+                settings.copy(servers = settings.servers - oldName + (newName to specification))
+            )
+        )
     }
 
     fun removeServer(name: String) {
-        settings = settings.copy(servers = settings.servers - name)
+        state.eventSink(
+            McpSettingsView.Event.UpdateSettings(
+                settings.copy(servers = settings.servers - name)
+            )
+        )
     }
 
     var sheetState by remember { mutableStateOf<McpServersSheetState>(McpServersSheetState.Closed) }
@@ -496,4 +534,15 @@ private sealed interface McpServersSheetState {
 private fun TransportSpecification.toType(): McpTransportType = when (this) {
     TransportSpecification.Stdio -> McpTransportType.Stdio
     is TransportSpecification.Sse -> McpTransportType.Sse
+}
+
+data object McpSettingsView : Screen {
+    data class State(
+        val settings: McpSettings,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: McpSettings) : Event
+    }
 }

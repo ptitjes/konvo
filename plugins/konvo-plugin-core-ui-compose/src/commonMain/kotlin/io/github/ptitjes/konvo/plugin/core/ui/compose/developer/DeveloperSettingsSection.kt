@@ -6,6 +6,7 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
+import org.kodein.di.*
 
 fun PluginSpecificationBuilder.developerSettings() {
     SettingsSections {
@@ -14,7 +15,8 @@ fun PluginSpecificationBuilder.developerSettings() {
                 titleKey = "developer",
                 icon = Res.drawable.ic_mobile_code,
                 title = { i18n.developer.settingsTitle },
-                panel = { DeveloperSettingsPanel() },
+                presenterFactory = { new(::DeveloperSettingsPresenter) },
+                panel = { state -> DeveloperSettingsPanel(state) },
             )
         }
     }

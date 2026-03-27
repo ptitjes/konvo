@@ -50,11 +50,11 @@ private fun SettingsWindowContent(
             },
             entryProvider = entryProvider {
 
-                entry<SettingsDestination.List>(metadata = ListDetailScene.Companion.list()) {
+                entry<SettingsDestination.List>(metadata = ListDetailScene.list()) {
                     SettingsListScreen(navigator = navigator)
                 }
 
-                entry<SettingsDestination.Section>(metadata = ListDetailScene.Companion.detail()) {
+                entry<SettingsDestination.Section>(metadata = ListDetailScene.detail()) {
                     SettingsScreen(titleKey = it.key, navigator = navigator)
                 }
             }
