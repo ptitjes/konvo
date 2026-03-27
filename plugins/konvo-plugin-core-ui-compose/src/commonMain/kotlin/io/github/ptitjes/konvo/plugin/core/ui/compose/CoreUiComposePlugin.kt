@@ -63,8 +63,8 @@ object CoreUiComposePlugin : Plugin {
     }
 
     override fun DI.Builder.implementation() {
-        bindProviderOf(::SettingsListViewModel)
-        bindProviderOf(::SettingsViewModel)
+        bindSingletonOf(::SettingsSectionManager)
+
         bindProviderOf(::ConversationListViewModel)
         bindProviderOf(::MainScreenViewModel)
         bindFactory { conversationId: String -> new(::ConversationViewModel, conversationId) }

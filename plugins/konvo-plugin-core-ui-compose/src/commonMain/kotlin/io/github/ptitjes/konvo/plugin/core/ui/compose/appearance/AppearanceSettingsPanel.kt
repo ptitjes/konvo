@@ -5,12 +5,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
+
+internal object AppearanceSettingsView {
+    data class State(
+        val scheme: BaseColorScheme,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateScheme(val scheme: BaseColorScheme) : Event
+    }
+}
 
 internal class AppearanceSettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -30,7 +40,7 @@ internal class AppearanceSettingsPresenter(
 }
 
 @Composable
-fun SettingsPanelScope.AppearanceSettingsPanel(state: AppearanceSettingsView.State) {
+internal fun AppearanceSettingsPanel(state: AppearanceSettingsView.State) {
     SettingsBox(
         title = i18n.appearance.baseColorSchemeTitle,
         description = i18n.appearance.baseColorSchemeDescription,
@@ -54,15 +64,4 @@ fun SettingsPanelScope.AppearanceSettingsPanel(state: AppearanceSettingsView.Sta
             )
         }
     )
-}
-
-data object AppearanceSettingsView : Screen {
-    data class State(
-        val scheme: BaseColorScheme,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface Event : CircuitUiEvent {
-        data class UpdateScheme(val scheme: BaseColorScheme) : Event
-    }
 }

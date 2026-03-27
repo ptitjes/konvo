@@ -7,11 +7,21 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
+
+internal data object DeveloperSettingsView {
+    data class State(
+        val settings: DeveloperSettings,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: DeveloperSettings) : Event
+    }
+}
 
 internal class DeveloperSettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -31,7 +41,7 @@ internal class DeveloperSettingsPresenter(
 }
 
 @Composable
-fun SettingsPanelScope.DeveloperSettingsPanel(state: DeveloperSettingsView.State) {
+internal fun DeveloperSettingsPanel(state: DeveloperSettingsView.State) {
     val settings = state.settings
 
     SettingsBox(
@@ -106,15 +116,4 @@ fun SettingsPanelScope.DeveloperSettingsPanel(state: DeveloperSettingsView.State
             }
         }
     )
-}
-
-data object DeveloperSettingsView : Screen {
-    data class State(
-        val settings: DeveloperSettings,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface Event : CircuitUiEvent {
-        data class UpdateSettings(val settings: DeveloperSettings) : Event
-    }
 }

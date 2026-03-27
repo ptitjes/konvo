@@ -7,7 +7,6 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.providers.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
@@ -22,6 +21,26 @@ import io.github.vinceglb.filekit.dialogs.compose.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.jetbrains.compose.resources.*
+
+internal data object CharacterSettingsView {
+    data class State(
+        val settings: CharacterSettings,
+        val charactersState: CharactersState,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface CharactersState {
+        data object Loading : CharactersState
+        data class Error(val error: String) : CharactersState
+        data class Loaded(val characters: List<CharacterCard>) : CharactersState
+    }
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: CharacterSettings) : Event
+        data class AddCharacter(val path: Path) : Event
+        data class DeleteCharacter(val character: CharacterCard) : Event
+    }
+}
 
 internal class CharacterSettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -78,7 +97,7 @@ internal class CharacterSettingsPresenter(
  * Settings panel for character-related preferences.
  */
 @Composable
-fun SettingsPanelScope.CharacterSettingsPanel(state: CharacterSettingsView.State) {
+internal fun CharacterSettingsPanel(state: CharacterSettingsView.State) {
     val settings = state.settings
 
     var filteredTagsText by remember(settings.filteredTags) {
@@ -121,29 +140,9 @@ fun SettingsPanelScope.CharacterSettingsPanel(state: CharacterSettingsView.State
     ImportedCharactersSettingsBox(state)
 }
 
-data object CharacterSettingsView : Screen {
-    data class State(
-        val settings: CharacterSettings,
-        val charactersState: CharactersState,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface CharactersState {
-        data object Loading : CharactersState
-        data class Error(val error: String) : CharactersState
-        data class Loaded(val characters: List<CharacterCard>) : CharactersState
-    }
-
-    sealed interface Event : CircuitUiEvent {
-        data class UpdateSettings(val settings: CharacterSettings) : Event
-        data class AddCharacter(val path: Path) : Event
-        data class DeleteCharacter(val character: CharacterCard) : Event
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SettingsPanelScope.ImportedCharactersSettingsBox(state: CharacterSettingsView.State) {
+private fun ImportedCharactersSettingsBox(state: CharacterSettingsView.State) {
     val charactersState = state.charactersState
 
     val importLauncher = rememberFilePickerLauncher(

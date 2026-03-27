@@ -9,42 +9,80 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
+import kotlinx.serialization.*
 import org.jetbrains.compose.resources.*
 
-@Composable
-fun SettingsListScreen(
-    navigator: SettingsNavigator,
-    viewModel: SettingsListViewModel = viewModel(),
-) {
-    val sections by viewModel.sections.collectAsState()
+@Serializable
+data object SettingsListScreen : SettingsScreen {
+    override fun toString(): String = "settings"
 
-    val paneType = LocalListDetailPaneType.current
-    LaunchedEffect(paneType) {
-        if (paneType == ListDetailPaneType.TwoPane && navigator.backStack.last() == SettingsDestination.List) {
-            navigator.navigateToSettingSection(sections.first().titleKey)
-        }
+    internal sealed interface State : CircuitUiState {
+        data object Loading : State
+        data class Loaded(
+            val sections: List<FlattenSettingsSection>,
+            val selectedSection: SettingsSection<*>? = null,
+            val eventSink: (Event) -> Unit,
+        ) : State
     }
 
-    val selectedSection = navigator.selectedSettingSectionKey?.let { key -> sections.findSectionByTitleKey(key) }
+    internal sealed interface Event : CircuitUiEvent {
+        data class NavigateTo(val key: String) : Event
+    }
+}
 
-    SettingsListScreen(
-        sections = sections,
-        selectedSection = selectedSection,
-        onSelectSection = { navigator.navigateToSettingSection(it.titleKey) }
-    )
+internal data class FlattenSettingsSection(
+    val section: SettingsSection<*>,
+    val depth: Int,
+)
+
+internal class SettingsListPresenter(
+    private val navigator: SettingsNavigator,
+    private val sectionManager: SettingsSectionManager,
+) : Presenter<SettingsListScreen.State> {
+    @Composable
+    override fun present(): SettingsListScreen.State {
+        val sections = remember { sectionManager.sections.toList() }
+        val flattenedSections = remember(sections) {
+            sections.recursivelySortedBy { it.titleKey }.flatten()
+        }
+
+        return SettingsListScreen.State.Loaded(flattenedSections) { event ->
+            when (event) {
+                is SettingsListScreen.Event.NavigateTo -> {
+                    navigator.navigateToSettingSection(event.key)
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsListScreen(
-    sections: List<SettingsSection<*>>,
+internal fun SettingsListScreen(
+    state: SettingsListScreen.State,
+    modifier: Modifier = Modifier,
+) {
+    when (state) {
+        is SettingsListScreen.State.Loading -> FullSizeProgressIndicator(modifier)
+        is SettingsListScreen.State.Loaded -> SettingsListScreen(
+            modifier = modifier,
+            flattenedSections = state.sections,
+            selectedSection = state.selectedSection,
+            onSelectSection = { state.eventSink(SettingsListScreen.Event.NavigateTo(it.titleKey)) }
+        )
+    }
+}
+
+@Composable
+private fun SettingsListScreen(
+    modifier: Modifier = Modifier,
+    flattenedSections: List<FlattenSettingsSection>,
     selectedSection: SettingsSection<*>?,
     onSelectSection: (SettingsSection<*>) -> Unit,
-    modifier: Modifier = Modifier.Companion,
 ) {
     val containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     val contentColor = MaterialTheme.colorScheme.onSurface
@@ -55,6 +93,7 @@ fun SettingsListScreen(
         contentColor = contentColor,
         topBar = {
             // Reserved for the settings search bar
+            @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = containerColor,
@@ -64,10 +103,6 @@ fun SettingsListScreen(
             )
         },
     ) { paddingValues ->
-        val flattenedSections = remember(sections) {
-            sections.recursivelySortedBy { it.titleKey }.flatten()
-        }
-
         LazyColumn(
             modifier = Modifier.padding(paddingValues).fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
@@ -102,9 +137,7 @@ fun SettingsListScreen(
                             contentDescription = title,
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = title,
-                        )
+                        Text(text = title)
                     }
                 }
             }
@@ -112,7 +145,7 @@ fun SettingsListScreen(
     }
 }
 
-fun <R : Comparable<R>> List<SettingsSection<*>>.recursivelySortedBy(selector: (SettingsSection<*>) -> R?): List<SettingsSection<*>> {
+private fun <R : Comparable<R>> List<SettingsSection<*>>.recursivelySortedBy(selector: (SettingsSection<*>) -> R?): List<SettingsSection<*>> {
     fun List<SettingsSection<*>>.recursivelySorted(): List<SettingsSection<*>> {
         return sortedBy { selector(it) }
             .map { section -> section.copy(children = section.children.recursivelySorted()) }
@@ -121,7 +154,7 @@ fun <R : Comparable<R>> List<SettingsSection<*>>.recursivelySortedBy(selector: (
     return recursivelySorted()
 }
 
-fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
+private fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
     fun List<SettingsSection<*>>.flatten(depth: Int): List<FlattenSettingsSection> {
         return flatMap { section ->
             listOf(FlattenSettingsSection(section, depth)) + section.children.flatten(depth + 1)
@@ -130,8 +163,3 @@ fun List<SettingsSection<*>>.flatten(): List<FlattenSettingsSection> {
 
     return flatten(0)
 }
-
-data class FlattenSettingsSection(
-    val section: SettingsSection<*>,
-    val depth: Int,
-)

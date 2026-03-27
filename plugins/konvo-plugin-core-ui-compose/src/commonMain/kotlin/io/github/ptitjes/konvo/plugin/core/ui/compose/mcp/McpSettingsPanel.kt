@@ -7,7 +7,6 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
@@ -17,6 +16,17 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import org.jetbrains.compose.resources.*
 import kotlin.time.Duration.Companion.seconds
+
+internal data object McpSettingsView {
+    data class State(
+        val settings: McpSettings,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: McpSettings) : Event
+    }
+}
 
 internal class McpSettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -37,7 +47,7 @@ internal class McpSettingsPresenter(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPanelScope.McpSettingsPanel(state: McpSettingsView.State) {
+internal fun McpSettingsPanel(state: McpSettingsView.State) {
     val settings = state.settings
 
     fun addServer(newName: String, newSpec: ServerSpecification) {
@@ -534,15 +544,4 @@ private sealed interface McpServersSheetState {
 private fun TransportSpecification.toType(): McpTransportType = when (this) {
     TransportSpecification.Stdio -> McpTransportType.Stdio
     is TransportSpecification.Sse -> McpTransportType.Sse
-}
-
-data object McpSettingsView : Screen {
-    data class State(
-        val settings: McpSettings,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface Event : CircuitUiEvent {
-        data class UpdateSettings(val settings: McpSettings) : Event
-    }
 }

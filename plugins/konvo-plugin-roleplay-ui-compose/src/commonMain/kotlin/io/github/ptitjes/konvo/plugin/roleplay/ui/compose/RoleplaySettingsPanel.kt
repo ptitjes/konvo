@@ -7,7 +7,6 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
@@ -16,6 +15,19 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
+
+internal data object RoleplaySettingsView {
+    data class State(
+        val settings: RoleplaySettings,
+        val models: List<ModelCard>,
+        val personas: List<Persona>,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: RoleplaySettings) : Event
+    }
+}
 
 internal class RoleplaySettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -44,7 +56,7 @@ internal class RoleplaySettingsPresenter(
 }
 
 @Composable
-fun RoleplaySettingsPanel(state: RoleplaySettingsView.State) {
+internal fun RoleplaySettingsPanel(state: RoleplaySettingsView.State) {
     val settings = state.settings
     val models = state.models
     val personaSettings = state.personas
@@ -202,17 +214,4 @@ fun RoleplaySettingsPanel(state: RoleplaySettingsView.State) {
             }
         }
     )
-}
-
-data object RoleplaySettingsView : Screen {
-    data class State(
-        val settings: RoleplaySettings,
-        val models: List<ModelCard>,
-        val personas: List<Persona>,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface Event : CircuitUiEvent {
-        data class UpdateSettings(val settings: RoleplaySettings) : Event
-    }
 }

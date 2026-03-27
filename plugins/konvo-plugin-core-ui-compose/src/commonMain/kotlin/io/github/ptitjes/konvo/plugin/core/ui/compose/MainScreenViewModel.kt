@@ -3,17 +3,15 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose
 import androidx.compose.runtime.*
 import androidx.lifecycle.*
 import androidx.navigation3.runtime.*
-import com.slack.circuit.runtime.screen.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
-import io.github.ptitjes.syrup.*
 import kotlinx.serialization.*
 
 /**
  * ViewModel managing the current high-level application navigation state.
  */
-class MainScreenViewModel(
-    pluginContext: PluginContext,
+internal class MainScreenViewModel(
+    private val settingsSectionManager: SettingsSectionManager,
 ) : ViewModel() {
 
     private val _backStack = NavBackStack<Destination>(
@@ -25,9 +23,7 @@ class MainScreenViewModel(
     val navigationPaneState = PaneState.Companion()
     val extraPaneState = PaneState.Companion()
 
-    private val settingsSections by pluginContext.contributions(SettingsSections)
-    private val firstSettingsSection = settingsSections.toList()
-        .recursivelySortedBy { it.titleKey }.first()
+    private val firstSettingsSection get() = settingsSectionManager.firstSection
 
     val navigator = Navigator(
         backStack = _backStack,
@@ -36,16 +32,16 @@ class MainScreenViewModel(
         onNavigateToSettings = {
             _settingsBackStack.addAll(
                 listOf(
-                    SettingsDestination.List,
-                    SettingsDestination.Section(it ?: firstSettingsSection.titleKey)
+                    SettingsListScreen,
+                    SettingsSectionScreen(it ?: firstSettingsSection.titleKey)
                 )
             )
         },
     )
 
-    private val _settingsBackStack = NavBackStack<SettingsDestination>()
+    private val _settingsBackStack = NavBackStack<SettingsScreen>()
 
-    val settingsBackStack: List<SettingsDestination> by derivedStateOf { _settingsBackStack.toList() }
+    val settingsBackStack: List<SettingsScreen> by derivedStateOf { _settingsBackStack.toList() }
 
     val settingsNavigator = SettingsNavigator(
         backStack = _settingsBackStack,
@@ -111,42 +107,6 @@ class Navigator(
     fun openSettingsSection(titleKey: String) {
         onNavigateToSettings(titleKey)
     }
-}
-
-@Serializable
-sealed interface SettingsDestination : NavKey, Screen {
-    @Serializable
-    data object List : SettingsDestination {
-        override fun toString(): String = "settings"
-    }
-
-    @Serializable
-    data class Section(val key: String) : SettingsDestination {
-        override fun toString(): String = "settings/$key"
-    }
-}
-
-class SettingsNavigator(
-    val backStack: NavBackStack<SettingsDestination>,
-) {
-    val isLastSettingsSection: Boolean
-        get() =
-            backStack.size == 2
-
-    fun closeSettings() {
-        backStack.clear()
-    }
-
-    fun navigateBack() {
-        backStack.removeLastOrNull()
-    }
-
-    fun navigateToSettingSection(titleKey: String) {
-        backStack.add(SettingsDestination.Section(titleKey))
-    }
-
-    val selectedSettingSectionKey: String?
-        get() = (backStack.lastOrNull() as? SettingsDestination.Section)?.key
 }
 
 private fun <T : NavKey> NavBackStack<T>.navigate(

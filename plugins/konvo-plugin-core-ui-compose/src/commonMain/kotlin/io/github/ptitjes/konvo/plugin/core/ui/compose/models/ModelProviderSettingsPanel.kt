@@ -10,7 +10,6 @@ import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.models.ModelProviderConfiguration.*
 import io.github.ptitjes.konvo.plugin.core.models.providers.*
@@ -25,6 +24,17 @@ import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
 import org.kodein.di.compose.*
 import sh.calvin.reorderable.*
+
+internal data object ModelProviderSettingsView {
+    data class State(
+        val settings: ModelProviderSettings,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class UpdateSettings(val settings: ModelProviderSettings) : Event
+    }
+}
 
 internal class ModelProviderSettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -45,7 +55,7 @@ internal class ModelProviderSettingsPresenter(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPanelScope.ModelProviderSettingsPanel(state: ModelProviderSettingsView.State) {
+internal fun ModelProviderSettingsPanel(state: ModelProviderSettingsView.State) {
     val settings = state.settings
     val modelManager by rememberInstance<SettingsBasedModelManager>()
 
@@ -774,7 +784,12 @@ private fun DeleteButton(
 ) {
     OutlinedActionButton(
         onClick = onClick,
-        icon = { Icon(painter = painterResource(Res.drawable.ic_delete), contentDescription = i18n.models.deleteProviderAria) },
+        icon = {
+            Icon(
+                painter = painterResource(Res.drawable.ic_delete),
+                contentDescription = i18n.models.deleteProviderAria
+            )
+        },
         label = { Text(i18n.models.deleteAction) },
     )
 }
@@ -803,19 +818,13 @@ private fun AddSaveButton(
         AddSaveActionType.Save -> FilledActionButton(
             onClick = onClick,
             enabled = enabled,
-            icon = { Icon(painter = painterResource(Res.drawable.ic_save), contentDescription = i18n.models.saveAction) },
+            icon = {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_save),
+                    contentDescription = i18n.models.saveAction
+                )
+            },
             label = { Text(i18n.models.saveAction) },
         )
-    }
-}
-
-data object ModelProviderSettingsView : Screen {
-    data class State(
-        val settings: ModelProviderSettings,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface Event : CircuitUiEvent {
-        data class UpdateSettings(val settings: ModelProviderSettings) : Event
     }
 }

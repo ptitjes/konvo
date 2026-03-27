@@ -12,7 +12,7 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
 
 @Composable
-fun MainScreen(
+internal fun MainScreen(
     viewModel: MainScreenViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {

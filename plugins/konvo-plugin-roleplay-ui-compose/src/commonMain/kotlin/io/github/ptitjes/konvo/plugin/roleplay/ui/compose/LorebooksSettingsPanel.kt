@@ -8,7 +8,6 @@ import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.providers.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
@@ -22,6 +21,22 @@ import io.github.vinceglb.filekit.dialogs.compose.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.jetbrains.compose.resources.*
+
+internal data object LorebooksSettingsView {
+    sealed interface State : SettingsSectionState {
+        data object Loading : State
+        data class Error(val error: String) : State
+        data class Loaded(
+            val lorebooks: List<Lorebook>,
+            val eventSink: (Event) -> Unit,
+        ) : State
+    }
+
+    sealed interface Event : CircuitUiEvent {
+        data class Add(val path: Path) : Event
+        data class Delete(val lorebook: Lorebook) : Event
+    }
+}
 
 internal class LorebooksSettingsPresenter(
     private val provider: FileSystemLorebookProvider,
@@ -63,7 +78,7 @@ internal class LorebooksSettingsPresenter(
 }
 
 @Composable
-fun LorebooksSettingsPanel(state: LorebooksSettingsView.State) {
+internal fun LorebooksSettingsPanel(state: LorebooksSettingsView.State) {
     val importLauncher = rememberFilePickerLauncher(
         mode = FileKitMode.Multiple(),
         type = FileKitType.File(extensions = listOf("json")),
@@ -152,21 +167,5 @@ fun LorebooksSettingsPanel(state: LorebooksSettingsView.State) {
             },
             dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(i18n.roleplay.cancel) } },
         )
-    }
-}
-
-data object LorebooksSettingsView : Screen {
-    sealed interface State : SettingsSectionState {
-        data object Loading : State
-        data class Error(val error: String) : State
-        data class Loaded(
-            val lorebooks: List<Lorebook>,
-            val eventSink: (Event) -> Unit,
-        ) : State
-    }
-
-    sealed interface Event : CircuitUiEvent {
-        data class Add(val path: Path) : Event
-        data class Delete(val lorebook: Lorebook) : Event
     }
 }

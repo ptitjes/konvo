@@ -7,9 +7,12 @@ import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import androidx.navigation3.runtime.*
+import com.slack.circuit.foundation.*
+import com.slack.circuit.runtime.ui.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
+import org.kodein.di.*
+import org.kodein.di.compose.*
 
 @Composable
 fun SettingsWindow(navigator: SettingsNavigator) {
@@ -31,33 +34,72 @@ fun SettingsWindow(navigator: SettingsNavigator) {
     }
 }
 
+private fun <S : SettingsSectionState> uiForSection(section: SettingsSection<S>): Ui<S> {
+    return ui { state, modifier -> section.panel(state) }
+}
+
 @Composable
 private fun SettingsWindowContent(
     navigator: SettingsNavigator,
 ) {
-    CompositionLocalProvider(
-        LocalListDetailPaneType provides ListDetailPaneType.TwoPane,
-    ) {
-        SettingsScreenScaffold(
-            modifier = Modifier.fillMaxSize(),
-            backStack = navigator.backStack,
-            onBack = {
-                if (navigator.isLastSettingsSection) {
-                    navigator.closeSettings()
-                } else {
-                    navigator.navigateBack()
-                }
-            },
-            entryProvider = entryProvider {
+    val sectionManager by rememberInstance<SettingsSectionManager>()
+    val di = localDI()
 
-                entry<SettingsDestination.List>(metadata = ListDetailScene.list()) {
-                    SettingsListScreen(navigator = navigator)
-                }
+    val circuit = remember {
+        Circuit.Builder()
+            .addPresenterFactory { screen, _, _ ->
+                when (screen) {
+                    is SettingsListScreen -> di.direct.newInstance {
+                        new(::SettingsListPresenter, navigator)
+                    }
 
-                entry<SettingsDestination.Section>(metadata = ListDetailScene.detail()) {
-                    SettingsScreen(titleKey = it.key, navigator = navigator)
+                    is SettingsSectionScreen -> di.direct.newInstance {
+                        new(::SettingsSectionPresenter, a1 = screen, a2 = navigator)
+                    }
+
+                    is SettingsSectionView -> sectionManager.sectionForKey(screen.key).presenterFactory()
+
+                    else -> null
                 }
             }
-        )
+            .addUiFactory { screen, _ ->
+                when (screen) {
+                    is SettingsListScreen -> ui(::SettingsListScreen)
+                    is SettingsSectionScreen -> ui(::SettingsSectionScreen)
+                    is SettingsSectionView -> uiForSection(sectionManager.sectionForKey(screen.key))
+                    else -> null
+                }
+            }
+            .build()
+    }
+
+    CircuitCompositionLocals(
+        circuit = circuit,
+    ) {
+        CompositionLocalProvider(
+            LocalListDetailPaneType provides ListDetailPaneType.TwoPane,
+        ) {
+            SettingsScreenScaffold(
+                modifier = Modifier.fillMaxSize(),
+                backStack = navigator.backStack,
+                onBack = {
+                    if (navigator.isLastSettingsSection) {
+                        navigator.closeSettings()
+                    } else {
+                        navigator.navigateBack()
+                    }
+                },
+                entryProvider = entryProvider {
+
+                    entry<SettingsListScreen>(metadata = ListDetailScene.list()) {
+                        CircuitContent(screen = it)
+                    }
+
+                    entry<SettingsSectionScreen>(metadata = ListDetailScene.detail()) {
+                        CircuitContent(screen = it)
+                    }
+                }
+            )
+        }
     }
 }

@@ -12,7 +12,7 @@ internal data class SettingsStrings(
     val selectSectionAria: String,
 )
 
-fun PluginSpecificationBuilder.settingsStrings() {
+internal fun PluginSpecificationBuilder.settingsStrings() {
     i18nStrings<SettingsStrings>("ar-SA") { ArStrings.settings }
     i18nStrings<SettingsStrings>("en-US") { EnStrings.settings }
     i18nStrings<SettingsStrings>("es-ES") { EsStrings.settings }

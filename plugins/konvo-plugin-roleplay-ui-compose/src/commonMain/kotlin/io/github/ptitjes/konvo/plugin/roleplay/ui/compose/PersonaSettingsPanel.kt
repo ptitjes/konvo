@@ -8,7 +8,6 @@ import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
@@ -17,6 +16,20 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.utils.*
 import org.jetbrains.compose.resources.*
+
+internal data object PersonaSettingsView {
+    data class State(
+        val personas: List<Persona>,
+        val lorebooks: List<Lorebook>,
+        val eventSink: (Event) -> Unit,
+    ) : SettingsSectionState
+
+    sealed interface Event : CircuitUiEvent {
+        data class AddPersona(val persona: Persona) : Event
+        data class UpdatePersona(val name: String, val newPersona: Persona) : Event
+        data class RemovePersona(val name: String) : Event
+    }
+}
 
 internal class PersonaSettingsPresenter(
     private val settingsRepository: SettingsRepository,
@@ -213,20 +226,6 @@ internal fun PersonaSettingsPanel(state: PersonaSettingsView.State) {
                 is PersonaSheetState.Closed -> {}
             }
         }
-    }
-}
-
-data object PersonaSettingsView : Screen {
-    data class State(
-        val personas: List<Persona>,
-        val lorebooks: List<Lorebook>,
-        val eventSink: (Event) -> Unit,
-    ) : SettingsSectionState
-
-    sealed interface Event : CircuitUiEvent {
-        data class AddPersona(val persona: Persona) : Event
-        data class UpdatePersona(val name: String, val newPersona: Persona) : Event
-        data class RemovePersona(val name: String) : Event
     }
 }
 
