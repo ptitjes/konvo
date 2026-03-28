@@ -4,12 +4,12 @@ import io.github.ptitjes.konvo.plugin.core.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.translations.*
 import io.github.ptitjes.syrup.specification.*
 
-internal val I18nStrings.models: ModelStrings get() = byType()
+val I18nStrings.models: ModelStrings get() = byType()
 
 /**
  * Translated strings for the models package (model selector and provider settings UI).
  */
-internal data class ModelStrings(
+data class ModelStrings(
     val settingsTitle: String,
     val configuredProvidersTitle: String,
     val configuredProvidersDescription: String,
@@ -37,6 +37,7 @@ internal data class ModelStrings(
     val nameUniqueError: String,
     val addProviderConfirmAria: String,
     val modelLabel: String,
+    val noAvailableModelsText: String,
     // New labels for bottom sheet actions and feedback
     val testAction: String,
     val addAction: String,

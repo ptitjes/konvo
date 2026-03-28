@@ -55,7 +55,6 @@ internal val ZhStrings = RoleplayStrings(
     noPersonaDefined = "尚未定义人设",
     defaultPreferredModelTitle = "默认首选模型",
     defaultPreferredModelDescription = "在新的角色扮演会话中默认使用的模型。",
-    noAvailableModels = "没有可用的模型",
     defaultSystemPromptTitle = "默认系统提示",
     defaultSystemPromptDescription = "当角色卡未定义系统提示时使用。",
     defaultLorebookSettingsTitle = "默认设定集设置",
@@ -69,7 +68,6 @@ internal val ZhStrings = RoleplayStrings(
     rpNoAvailableCharacters = "没有可用的角色",
     rpNoAvailablePersonas = "没有可用的人设",
     rpNoAvailableLorebooks = "没有可用的设定集",
-    rpNoAvailableModel = "没有可用的模型",
     personaSettingsAria = "人设设置",
     additionalLorebookLabel = "附加设定集",
 )

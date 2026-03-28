@@ -13,7 +13,7 @@ internal fun PluginSpecificationBuilder.roleplaySettingsSections() {
                 titleKey = "roleplay",
                 icon = Res.drawable.ic_theater_comedy,
                 title = { i18n.roleplay.roleplaySettingsTitle },
-                presenterFactory = { new(::RoleplaySettingsPresenter) },
+                presenterFactory = { new(::RoleplaySettingsPresenter, it) },
                 panel = { state -> RoleplaySettingsPanel(state) },
                 children = listOf(
                     SettingsSection(

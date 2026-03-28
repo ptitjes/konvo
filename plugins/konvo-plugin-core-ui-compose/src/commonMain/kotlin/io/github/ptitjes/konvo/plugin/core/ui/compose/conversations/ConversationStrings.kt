@@ -30,8 +30,6 @@ internal data class ConversationStrings(
     // New conversation screen
     val newConversationTitle: String,
     val createAria: String,
-    val qaNoModels: String,
-    val qaNoToolModels: String,
     val newConversationIconAria: String,
 
     // User input

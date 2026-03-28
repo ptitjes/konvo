@@ -21,16 +21,14 @@ fun OutlineBox(
                 shape = RoundedCornerShape(4.dp)
             )
         ) {
-            Box(
-                modifier = Modifier.padding(16.dp, 8.dp),
-            ) {
+            Box {
                 content()
             }
         }
 
         if (label != null) {
             Row(
-                modifier = Modifier.offset(x = 12.dp, y = (-2).dp)
+                modifier = Modifier.offset(x = 12.dp, y = (0).dp)
                     .background(MaterialTheme.colorScheme.background)
                     .padding(horizontal = 4.dp),
             ) {

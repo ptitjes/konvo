@@ -26,10 +26,12 @@ internal data object RoleplaySettingsView {
 
     sealed interface Event : CircuitUiEvent {
         data class UpdateSettings(val settings: RoleplaySettings) : Event
+        data class GoToSettings(val key: String) : Event
     }
 }
 
 internal class RoleplaySettingsPresenter(
+    private val navigator: SettingsNavigator,
     private val settingsRepository: SettingsRepository,
     private val modelManager: ModelManager,
 ) : Presenter<RoleplaySettingsView.State> {
@@ -47,9 +49,8 @@ internal class RoleplaySettingsPresenter(
             personas = personas,
         ) { event ->
             when (event) {
-                is RoleplaySettingsView.Event.UpdateSettings -> {
-                    settings = event.settings
-                }
+                is RoleplaySettingsView.Event.UpdateSettings -> settings = event.settings
+                is RoleplaySettingsView.Event.GoToSettings -> navigator.navigateToSettingSection(event.key)
             }
         }
     }
@@ -68,11 +69,12 @@ internal fun RoleplaySettingsPanel(state: RoleplaySettingsView.State) {
         bottomContent = {
             if (personaSettings.isEmpty()) {
                 OutlineBox(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = i18n.roleplay.noPersonaDefined,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp),
-                    )
+                    UnavailabilityPlaceholder(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        unavailabilityText = i18n.roleplay.noPersonaDefined,
+                    ) {
+                        state.eventSink(RoleplaySettingsView.Event.GoToSettings("personas"))
+                    }
                 }
             } else {
                 val selectedPersona = remember(settings.defaultPersonaName, personaSettings) {
@@ -100,35 +102,28 @@ internal fun RoleplaySettingsPanel(state: RoleplaySettingsView.State) {
         title = i18n.roleplay.defaultPreferredModelTitle,
         description = i18n.roleplay.defaultPreferredModelDescription,
         bottomContent = {
-            if (models.isEmpty()) {
-                OutlineBox(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = i18n.roleplay.noAvailableModels,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(8.dp),
-                    )
-                }
-            } else {
-                val selectedModel = remember(settings.defaultPreferredModelName, models) {
-                    settings.defaultPreferredModelName?.let { name ->
-                        models.firstOrNull { it.name == name }
-                    } ?: models.first()
-                }
-
-                ModelSelector(
-                    modifier = Modifier.fillMaxWidth(),
-                    label = null,
-                    selectedModel = selectedModel,
-                    onModelSelected = { model ->
-                        state.eventSink(
-                            RoleplaySettingsView.Event.UpdateSettings(
-                                settings.copy(defaultPreferredModelName = model.name)
-                            )
-                        )
-                    },
-                    models = models,
-                )
+            val selectedModel = remember(settings.defaultPreferredModelName, models) {
+                settings.defaultPreferredModelName?.let { name ->
+                    models.firstOrNull { it.name == name }
+                } ?: models.firstOrNull()
             }
+
+            ModelSelector(
+                modifier = Modifier.fillMaxWidth(),
+                label = null,
+                selectedModel = selectedModel,
+                onModelSelected = { model ->
+                    state.eventSink(
+                        RoleplaySettingsView.Event.UpdateSettings(
+                            settings.copy(defaultPreferredModelName = model.name)
+                        )
+                    )
+                },
+                models = models,
+                onOpenModelSettings = {
+                    state.eventSink(RoleplaySettingsView.Event.GoToSettings("models"))
+                },
+            )
         }
     )
 

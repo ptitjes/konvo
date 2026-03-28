@@ -32,12 +32,11 @@ object RoleplayUiComposePlugin : Plugin {
             contribution {
                 AgentConfigurationPane(
                     label = { i18n.roleplay.agentDisplayName },
-                    presenterFactory = { new(::RoleplayConfigurationPresenter) },
+                    presenterFactory = { new(::RoleplayConfigurationPresenter, it) },
                     panel = { state, modifier ->
                         RoleplayConfigurationPanel(
                             state = state,
                             modifier = modifier,
-                            onGoToSettingsClick = { },
                         )
                     }
                 )

@@ -55,7 +55,6 @@ internal val EsStrings = RoleplayStrings(
     noPersonaDefined = "Aún no se ha definido ningún avatar",
     defaultPreferredModelTitle = "Modelo preferido por defecto",
     defaultPreferredModelDescription = "Modelo usado por defecto para nuevas conversaciones de rol.",
-    noAvailableModels = "No hay modelos disponibles",
     defaultSystemPromptTitle = "Prompt del sistema por defecto",
     defaultSystemPromptDescription = "Se usa cuando la ficha del personaje no define su propio prompt del sistema.",
     defaultLorebookSettingsTitle = "Ajustes del libro de lore por defecto",
@@ -69,7 +68,6 @@ internal val EsStrings = RoleplayStrings(
     rpNoAvailableCharacters = "No hay personajes disponibles",
     rpNoAvailablePersonas = "No hay avatares disponibles",
     rpNoAvailableLorebooks = "No hay libros de lore disponibles",
-    rpNoAvailableModel = "No hay modelos disponibles",
     personaSettingsAria = "Ajustes del avatar",
     additionalLorebookLabel = "Libro de lore adicional",
 )

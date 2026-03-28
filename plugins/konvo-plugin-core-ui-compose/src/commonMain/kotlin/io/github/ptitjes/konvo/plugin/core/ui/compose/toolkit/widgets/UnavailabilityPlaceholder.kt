@@ -14,10 +14,11 @@ import org.jetbrains.compose.resources.*
 @Composable
 fun UnavailabilityPlaceholder(
     unavailabilityText: String,
+    modifier: Modifier = Modifier,
     onGoToSettings: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = Modifier.height(56.dp),
+        modifier = modifier.height(56.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

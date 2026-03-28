@@ -22,53 +22,68 @@ import org.jetbrains.compose.resources.*
 @Composable
 fun ModelSelector(
     label: String? = i18n.models.modelLabel,
-    selectedModel: ModelCard,
+    noAvailableModelsText: String = i18n.models.noAvailableModelsText,
+    selectedModel: ModelCard?,
     onModelSelected: (ModelCard) -> Unit,
+    onOpenModelSettings: () -> Unit,
     models: List<ModelCard>,
     modifier: Modifier = Modifier,
 ) {
-    GenericSelector(
-        modifier = modifier,
-        label = label,
-        selectedItem = selectedModel,
-        onSelectItem = onModelSelected,
-        options = models,
-        itemLabeler = { it.name },
-        itemOption = { item ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+    if (models.isEmpty()) {
+        OutlineBox(label = i18n.models.modelLabel) {
+            UnavailabilityPlaceholder(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                unavailabilityText = noAvailableModelsText,
             ) {
-                item.provider.name?.let { providerName ->
-                    val providerIcon = ModelProviderIcons.iconFor(item.provider)
+                onOpenModelSettings()
+            }
+        }
+    } else {
+        require(selectedModel != null) { "Selected model must be non-null" }
 
-                    FilterChip(
-                        label = {
-                            Text(
-                                text = providerName,
-                                style = MaterialTheme.typography.bodySmall,
-                            )
-                        },
-                        leadingIcon = providerIcon?.let {
-                            {
-                                Icon(
-                                    painter = painterResource(it),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp),
+        GenericSelector(
+            modifier = modifier,
+            label = label,
+            selectedItem = selectedModel,
+            onSelectItem = { onModelSelected(it) },
+            options = models,
+            itemLabeler = { it.name },
+            itemOption = { item ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    item.provider.name?.let { providerName ->
+                        val providerIcon = ModelProviderIcons.iconFor(item.provider)
+
+                        FilterChip(
+                            label = {
+                                Text(
+                                    text = providerName,
+                                    style = MaterialTheme.typography.bodySmall,
                                 )
-                            }
-                        },
-                        onClick = {},
-                        selected = false,
-                        enabled = false,
-                        modifier = Modifier.padding(end = 8.dp),
+                            },
+                            leadingIcon = providerIcon?.let {
+                                {
+                                    Icon(
+                                        painter = painterResource(it),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                }
+                            },
+                            onClick = {},
+                            selected = false,
+                            enabled = false,
+                            modifier = Modifier.padding(end = 8.dp),
+                        )
+                    }
+                    Text(
+                        text = item.name,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-                Text(
-                    text = item.name,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        },
-    )
+            },
+        )
+    }
 }

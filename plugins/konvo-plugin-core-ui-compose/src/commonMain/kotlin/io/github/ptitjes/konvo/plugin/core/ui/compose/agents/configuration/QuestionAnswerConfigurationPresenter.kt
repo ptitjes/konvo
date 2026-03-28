@@ -5,8 +5,10 @@ import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.models.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 
 class QuestionAnswerConfigurationPresenter(
+    private val navigator: Navigator,
     private val modelManager: ModelManager,
     private val mcpServerSpecificationsManager: McpServerSpecificationsManager,
 ) : Presenter<QuestionAnswerConfigurationView.State> {
@@ -48,6 +50,9 @@ class QuestionAnswerConfigurationPresenter(
                             if (selectedMcpServers.isEmpty() || alreadySupportsTools) availableModels.firstOrNull()
                             else null
                     }
+
+                    is QuestionAnswerConfigurationView.Event.GoToSettings ->
+                        navigator.openSettingsSection(event.key)
                 }
             }
         }

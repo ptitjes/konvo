@@ -55,7 +55,6 @@ internal val EnStrings = RoleplayStrings(
     noPersonaDefined = "No persona defined yet",
     defaultPreferredModelTitle = "Default preferred model",
     defaultPreferredModelDescription = "Model used by default for new roleplay conversations.",
-    noAvailableModels = "No available models",
     defaultSystemPromptTitle = "Default system prompt",
     defaultSystemPromptDescription = "Used when the character card doesn't define its own system prompt.",
     defaultLorebookSettingsTitle = "Default Lorebook settings",
@@ -69,7 +68,6 @@ internal val EnStrings = RoleplayStrings(
     rpNoAvailableCharacters = "No available characters",
     rpNoAvailablePersonas = "No available personas",
     rpNoAvailableLorebooks = "No available lorebooks",
-    rpNoAvailableModel = "No available models",
     personaSettingsAria = "Persona Settings",
     additionalLorebookLabel = "Additional Lorebook",
 )

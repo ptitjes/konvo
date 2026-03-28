@@ -57,7 +57,8 @@ private fun SettingsWindowContent(
                         new(::SettingsSectionPresenter, a1 = screen, a2 = navigator)
                     }
 
-                    is SettingsSectionView -> sectionManager.sectionForKey(screen.key).presenterFactory()
+                    is SettingsSectionView -> sectionManager.sectionForKey(screen.key)
+                        .presenterFactory(navigator)
 
                     else -> null
                 }

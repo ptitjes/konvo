@@ -55,7 +55,6 @@ internal val FrStrings = RoleplayStrings(
     noPersonaDefined = "Aucun personnage défini pour l'instant",
     defaultPreferredModelTitle = "Modèle préféré par défaut",
     defaultPreferredModelDescription = "Modèle utilisé par défaut pour les nouvelles conversations de jeu de rôle.",
-    noAvailableModels = "Aucun modèle disponible",
     defaultSystemPromptTitle = "Invite système par défaut",
     defaultSystemPromptDescription = "Utilisée lorsque la fiche de personnage ne définit pas sa propre invite système.",
     defaultLorebookSettingsTitle = "Paramètres de Lorebook par défaut",
@@ -69,7 +68,6 @@ internal val FrStrings = RoleplayStrings(
     rpNoAvailableCharacters = "Aucun personnage disponible",
     rpNoAvailablePersonas = "Aucun personnage disponible",
     rpNoAvailableLorebooks = "Aucun lorebook disponible",
-    rpNoAvailableModel = "Aucun modèle disponible",
     personaSettingsAria = "Paramètres du personnage",
     additionalLorebookLabel = "Lorebook supplémentaire",
 )

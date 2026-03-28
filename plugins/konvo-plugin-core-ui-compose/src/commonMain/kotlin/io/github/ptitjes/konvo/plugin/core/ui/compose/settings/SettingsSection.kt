@@ -14,7 +14,7 @@ data class SettingsSection<S : SettingsSectionState>(
     val titleKey: String,
     val icon: DrawableResource,
     val title: @Composable () -> String,
-    val presenterFactory: () -> Presenter<S>,
+    val presenterFactory: (navigator: SettingsNavigator) -> Presenter<S>,
     val panel: @Composable (S) -> Unit,
     val scrollable: Boolean = true,
     val children: List<SettingsSection<*>> = emptyList(),

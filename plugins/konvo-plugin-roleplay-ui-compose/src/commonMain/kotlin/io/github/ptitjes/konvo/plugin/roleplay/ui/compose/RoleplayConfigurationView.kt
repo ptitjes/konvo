@@ -55,5 +55,6 @@ data object RoleplayConfigurationView : Screen {
         data class SelectGreetingIndex(val index: Int?) : Event
         data class SelectPersona(val persona: Persona) : Event
         data class SelectLorebook(val lorebook: Lorebook?) : Event
+        data class GoToSettings(val key: String) : Event
     }
 }

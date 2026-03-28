@@ -6,8 +6,10 @@ import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 
 class RoleplayConfigurationPresenter(
+    private val navigator: Navigator,
     private val modelManager: ModelManager,
     private val characterManager: CharacterManager,
     private val lorebookManager: LorebookManager,
@@ -68,6 +70,7 @@ class RoleplayConfigurationPresenter(
                     is RoleplayConfigurationView.Event.SelectLorebook -> selectedLorebook = event.lorebook
                     is RoleplayConfigurationView.Event.SelectModel -> selectedModel = event.model
                     is RoleplayConfigurationView.Event.SelectPersona -> selectedPersona = event.persona
+                    is RoleplayConfigurationView.Event.GoToSettings -> navigator.openSettingsSection(event.key)
                 }
             }
         }

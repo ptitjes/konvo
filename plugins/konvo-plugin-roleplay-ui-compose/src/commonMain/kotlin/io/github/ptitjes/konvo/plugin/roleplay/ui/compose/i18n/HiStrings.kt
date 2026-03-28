@@ -55,7 +55,6 @@ internal val HiStrings = RoleplayStrings(
     noPersonaDefined = "अभी तक कोई व्यक्तित्व परिभाषित नहीं",
     defaultPreferredModelTitle = "डिफ़ॉल्ट पसंदीदा मॉडल",
     defaultPreferredModelDescription = "नई भूमिका निभाने वाली बातचीत के लिए डिफ़ॉल्ट रूप से उपयोग किया जाने वाला मॉडल।",
-    noAvailableModels = "कोई मॉडल उपलब्ध नहीं",
     defaultSystemPromptTitle = "डिफ़ॉल्ट सिस्टम प्रॉम्प्ट",
     defaultSystemPromptDescription = "जब चरित्र कार्ड अपना सिस्टम प्रॉम्प्ट परिभाषित नहीं करता तब उपयोग किया जाता है।",
     defaultLorebookSettingsTitle = "डिफ़ॉल्ट लोरबुक सेटिंग्स",
@@ -69,7 +68,6 @@ internal val HiStrings = RoleplayStrings(
     rpNoAvailableCharacters = "कोई चरित्र उपलब्ध नहीं",
     rpNoAvailablePersonas = "कोई व्यक्तित्व उपलब्ध नहीं",
     rpNoAvailableLorebooks = "कोई लोरबुक उपलब्ध नहीं",
-    rpNoAvailableModel = "कोई मॉडल उपलब्ध नहीं",
     personaSettingsAria = "व्यक्तित्व सेटिंग्स",
     additionalLorebookLabel = "अतिरिक्त लोरबुक",
 )

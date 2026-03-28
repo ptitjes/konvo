@@ -46,7 +46,7 @@ class AgentConfigurationPresenter(
             perClassPane.getValue(selectedClass) as AgentConfigurationPane<C, S>
         }
 
-        val presenter = remember(selectedPane) { selectedPane.presenterFactory() }
+        val presenter = remember(selectedPane) { selectedPane.presenterFactory(navigator) }
         val configurationState = presenter.present()
 
         val scope = rememberCoroutineScope()

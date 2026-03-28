@@ -21,20 +21,23 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 fun McpServerSelector(
     selectedServers: Set<String>,
     onServersSelected: (Set<String>) -> Unit,
+    onGoToSettingsClick: () -> Unit,
     servers: Set<String>,
     modifier: Modifier = Modifier,
 ) {
     OutlineBox(
         label = i18n.mcp.selectorLabel,
-        modifier = modifier,
+        modifier = modifier.heightIn(min = 64.dp),
     ) {
         if (servers.isEmpty()) {
-            Text(
-                text = i18n.mcp.selectorEmpty,
-                modifier = Modifier.padding(vertical = 8.dp),
+            UnavailabilityPlaceholder(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                unavailabilityText = i18n.mcp.selectorEmpty,
+                onGoToSettings = onGoToSettingsClick,
             )
         } else {
             FlowRow(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {

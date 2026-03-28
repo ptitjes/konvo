@@ -36,12 +36,11 @@ object CoreUiComposePlugin : Plugin {
             contribution {
                 AgentConfigurationPane(
                     label = { i18n.agents.questionAnswerDisplayName },
-                    presenterFactory = { new(::QuestionAnswerConfigurationPresenter) },
+                    presenterFactory = { new(::QuestionAnswerConfigurationPresenter, it) },
                     panel = { state, modifier ->
                         QuestionAnswerConfigurationPanel(
                             state = state,
                             modifier = modifier,
-                            onGoToSettingsClick = { },
                         )
                     }
                 )

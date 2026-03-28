@@ -36,5 +36,6 @@ data object QuestionAnswerConfigurationView : Screen {
     sealed interface Event : CircuitUiEvent {
         data class SelectModel(val model: ModelCard) : Event
         data class SelectMcpServerNames(val mcpServerNames: Set<String>) : Event
+        data class GoToSettings(val key: String) : Event
     }
 }

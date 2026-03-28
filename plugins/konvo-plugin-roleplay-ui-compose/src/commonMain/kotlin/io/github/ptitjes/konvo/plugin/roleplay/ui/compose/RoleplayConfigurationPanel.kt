@@ -17,7 +17,6 @@ import org.jetbrains.compose.resources.*
 @Composable
 internal fun RoleplayConfigurationPanel(
     state: RoleplayConfigurationView.State,
-    onGoToSettingsClick: (titleKey: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (val roleplay = state) {
@@ -26,7 +25,9 @@ internal fun RoleplayConfigurationPanel(
             if (roleplay.availableCharacters.isEmpty()) {
                 UnavailabilityPlaceholder(
                     unavailabilityText = i18n.roleplay.rpNoAvailableCharacters,
-                    onGoToSettings = { onGoToSettingsClick("characters") },
+                    onGoToSettings = {
+                        state.eventSink(RoleplayConfigurationView.Event.GoToSettings("characters"))
+                    },
                 )
             } else {
                 val selectedCharacter = roleplay.selectedCharacter ?: roleplay.availableCharacters.first()
@@ -53,10 +54,18 @@ internal fun RoleplayConfigurationPanel(
             }
 
             if (roleplay.availablePersonas.isEmpty()) {
-                UnavailabilityPlaceholder(
-                    unavailabilityText = i18n.roleplay.rpNoAvailablePersonas,
-                    onGoToSettings = { onGoToSettingsClick("personas") },
-                )
+                OutlineBox(
+                    modifier = Modifier.fillMaxWidth().height(64.dp),
+                    label = i18n.roleplay.personaLabel,
+                ) {
+                    UnavailabilityPlaceholder(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        unavailabilityText = i18n.roleplay.noPersonaDefined,
+                        onGoToSettings = {
+                            state.eventSink(RoleplayConfigurationView.Event.GoToSettings("personas"))
+                        },
+                    )
+                }
             } else {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -117,20 +126,16 @@ internal fun RoleplayConfigurationPanel(
                 }
             }
 
-            if (roleplay.availableModels.isEmpty()) {
-                UnavailabilityPlaceholder(
-                    unavailabilityText = i18n.roleplay.rpNoAvailableModel,
-                    onGoToSettings = { onGoToSettingsClick("models") },
-                )
-            } else {
-                ModelSelector(
-                    selectedModel = roleplay.selectedModel ?: roleplay.availableModels.first(),
-                    onModelSelected = {
-                        roleplay.eventSink(RoleplayConfigurationView.Event.SelectModel(it))
-                    },
-                    models = roleplay.availableModels
-                )
-            }
+            ModelSelector(
+                selectedModel = roleplay.selectedModel ?: roleplay.availableModels.firstOrNull(),
+                onModelSelected = {
+                    roleplay.eventSink(RoleplayConfigurationView.Event.SelectModel(it))
+                },
+                models = roleplay.availableModels,
+                onOpenModelSettings = {
+                    state.eventSink(RoleplayConfigurationView.Event.GoToSettings("models"))
+                },
+            )
         }
     }
 }

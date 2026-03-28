@@ -73,7 +73,6 @@ data class RoleplayStrings(
     val noPersonaDefined: String,
     val defaultPreferredModelTitle: String,
     val defaultPreferredModelDescription: String,
-    val noAvailableModels: String,
     val defaultSystemPromptTitle: String,
     val defaultSystemPromptDescription: String,
     val defaultLorebookSettingsTitle: String,
@@ -91,7 +90,6 @@ data class RoleplayStrings(
     val rpNoAvailableCharacters: String,
     val rpNoAvailablePersonas: String,
     val rpNoAvailableLorebooks: String,
-    val rpNoAvailableModel: String,
     val personaSettingsAria: String,
     val additionalLorebookLabel: String,
 )

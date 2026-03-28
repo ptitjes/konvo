@@ -55,7 +55,6 @@ internal val ArStrings = RoleplayStrings(
     noPersonaDefined = "لا توجد شخصية معرَّفة بعد",
     defaultPreferredModelTitle = "النموذج المفضل الافتراضي",
     defaultPreferredModelDescription = "النموذج المستخدم افتراضيًا في محادثات تمثيل الأدوار الجديدة.",
-    noAvailableModels = "لا توجد نماذج متاحة",
     defaultSystemPromptTitle = "المحفِّز النظامي الافتراضي",
     defaultSystemPromptDescription = "يُستخدم عندما لا تُعرِّف بطاقة الشخصية محفِّزها النظامي الخاص.",
     defaultLorebookSettingsTitle = "إعدادات كتاب الخلفية الافتراضية",
@@ -69,7 +68,6 @@ internal val ArStrings = RoleplayStrings(
     rpNoAvailableCharacters = "لا توجد شخصيات متاحة",
     rpNoAvailablePersonas = "لا توجد شخصيات متاحة",
     rpNoAvailableLorebooks = "لا توجد كتب خلفية متاحة",
-    rpNoAvailableModel = "لا توجد نماذج متاحة",
     personaSettingsAria = "إعدادات الشخصية",
     additionalLorebookLabel = "كتاب خلفية إضافي",
 )
