@@ -52,6 +52,7 @@ internal class SettingsListPresenter(
 
         val selectedSection = remember(navigator.selectedSectionKey) {
             navigator.selectedSectionKey?.let { sectionManager.sectionForKey(it) }
+                ?: sectionManager.firstSection
         }
 
         return SettingsListScreen.State.Loaded(

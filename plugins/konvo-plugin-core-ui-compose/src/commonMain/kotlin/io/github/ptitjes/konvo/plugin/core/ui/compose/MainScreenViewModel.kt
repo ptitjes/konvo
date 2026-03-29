@@ -14,9 +14,7 @@ import kotlinx.serialization.*
 /**
  * ViewModel managing the current high-level application navigation state.
  */
-internal class MainScreenViewModel(
-    private val settingsSectionManager: SettingsSectionManager,
-) : ViewModel() {
+internal class MainScreenViewModel : ViewModel() {
 
     private val navStack = SaveableNavStack(Destination.Conversation.List).apply {
         push(Destination.Conversation.New)
@@ -31,17 +29,7 @@ internal class MainScreenViewModel(
             initialValue = null,
         )
 
-    private val firstSettingsSection get() = settingsSectionManager.firstSection
-
-    val conversationNavigator = ConversationNavigator(
-        navigator = navigator,
-        onNavigateToSettings = {
-            Snapshot.withMutableSnapshot {
-                navStack.push(SettingsListScreen)
-                navStack.push(SettingsSectionScreen(it ?: firstSettingsSection.titleKey))
-            }
-        },
-    )
+    val conversationNavigator = ConversationNavigator(navigator = navigator)
 
     val settingsBackStack = navigator.backStack<SettingsScreen>()
 
@@ -85,10 +73,7 @@ sealed interface Destination : NavScreen {
     }
 }
 
-class ConversationNavigator(
-    internal val navigator: Navigator,
-    val onNavigateToSettings: (String?) -> Unit,
-) {
+class ConversationNavigator(internal val navigator: Navigator) {
     internal val isLastConversationScreen: Boolean
         get() {
             val conversationScreens = navigator.peekBackStack().filterIsInstance<Destination.Conversation>()
@@ -124,5 +109,12 @@ class ConversationNavigator(
 
     fun openSettingsSection(titleKey: String) {
         onNavigateToSettings(titleKey)
+    }
+
+    private fun onNavigateToSettings(key: String?) {
+        Snapshot.withMutableSnapshot {
+            navigator.goTo(SettingsListScreen)
+            navigator.goTo(SettingsSectionScreen(key))
+        }
     }
 }

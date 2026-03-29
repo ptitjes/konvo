@@ -15,8 +15,8 @@ import kotlinx.serialization.*
 import org.jetbrains.compose.resources.*
 
 @Serializable
-data class SettingsSectionScreen(val key: String) : SettingsScreen {
-    override fun toString(): String = "settings/$key"
+data class SettingsSectionScreen(val key: String?) : SettingsScreen {
+    override fun toString(): String = "settings/${key ?: "<first>"}"
 
     internal data class State(
         val key: String,
@@ -38,10 +38,13 @@ internal class SettingsSectionPresenter(
 ) : Presenter<SettingsSectionScreen.State> {
     @Composable
     override fun present(): SettingsSectionScreen.State {
-        val section = remember(screen.key) { sectionManager.sectionForKey(screen.key) }
+        val section = remember(screen.key) {
+            screen.key?.let { sectionManager.sectionForKey(it) }
+                ?: sectionManager.firstSection
+        }
 
         return SettingsSectionScreen.State(
-            key = screen.key,
+            key = section.titleKey,
             icon = section.icon,
             title = section.title(),
             scrollable = section.scrollable,
