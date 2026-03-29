@@ -1,26 +1,31 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.settings
 
-import androidx.navigation3.runtime.*
+import com.slack.circuit.runtime.*
 
 class SettingsNavigator(
-    val backStack: NavBackStack<SettingsScreen>,
+    internal val navigator: Navigator,
 ) {
-    val isLastSettingsSection: Boolean
-        get() =
-            backStack.size == 2
+    internal val isLastSection: Boolean
+        get() {
+            val settingsScreens = navigator.peekBackStack().filterIsInstance<SettingsSectionScreen>()
+            return settingsScreens.size == 1
+        }
 
-    fun closeSettings() {
-        backStack.clear()
+    internal fun closeSettings() {
+        navigator.popUntil { it !is SettingsScreen }
     }
 
-    fun navigateBack() {
-        backStack.removeLastOrNull()
+    fun goBack() {
+        navigator.pop()
     }
 
-    fun navigateToSettingSection(titleKey: String) {
-        backStack.add(SettingsSectionScreen(titleKey))
+    fun goToSection(key: String) {
+        navigator.goTo(SettingsSectionScreen(key))
     }
 
-    val selectedSettingSectionKey: String?
-        get() = (backStack.lastOrNull() as? SettingsSectionScreen)?.key
+    val selectedSectionKey: String?
+        get() {
+            val sectionScreen = navigator.peek() as? SettingsSectionScreen
+            return sectionScreen?.key
+        }
 }

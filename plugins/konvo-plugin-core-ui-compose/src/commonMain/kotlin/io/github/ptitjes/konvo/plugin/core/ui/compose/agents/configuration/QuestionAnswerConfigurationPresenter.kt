@@ -8,7 +8,7 @@ import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 
 class QuestionAnswerConfigurationPresenter(
-    private val navigator: Navigator,
+    private val navigator: ConversationNavigator,
     private val modelManager: ModelManager,
     private val mcpServerSpecificationsManager: McpServerSpecificationsManager,
 ) : Presenter<QuestionAnswerConfigurationView.State> {

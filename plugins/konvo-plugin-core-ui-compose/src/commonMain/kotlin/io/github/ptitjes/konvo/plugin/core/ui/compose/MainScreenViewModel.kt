@@ -1,10 +1,16 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.*
 import androidx.lifecycle.*
 import androidx.navigation3.runtime.*
+import com.slack.circuit.foundation.*
+import com.slack.circuit.foundation.navstack.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
 
 /**
@@ -14,37 +20,40 @@ internal class MainScreenViewModel(
     private val settingsSectionManager: SettingsSectionManager,
 ) : ViewModel() {
 
-    private val _backStack = NavBackStack<Destination>(
-        Destination.Conversation.List,
-        Destination.Conversation.New,
-    )
-    val backStack: List<Destination> by derivedStateOf { _backStack.toList() }
+    private val navStack = SaveableNavStack(Destination.Conversation.List).apply {
+        push(Destination.Conversation.New)
+    }
 
-    val navigationPaneState = PaneState.Companion()
-    val extraPaneState = PaneState.Companion()
+    private val navigator = Navigator(navStack) { }
+
+    val conversationBackStack = navigator.backStack<Destination>()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Lazily,
+            initialValue = null,
+        )
+
+    private val navigationPaneState = PaneState.Companion()
+    private val extraPaneState = PaneState.Companion()
 
     private val firstSettingsSection get() = settingsSectionManager.firstSection
 
-    val navigator = Navigator(
-        backStack = _backStack,
+    val conversationNavigator = ConversationNavigator(
+        navigator = navigator,
         navigationPaneState = navigationPaneState,
         extraPaneState = extraPaneState,
         onNavigateToSettings = {
-            _settingsBackStack.addAll(
-                listOf(
-                    SettingsListScreen,
-                    SettingsSectionScreen(it ?: firstSettingsSection.titleKey)
-                )
-            )
+            Snapshot.withMutableSnapshot {
+                navStack.push(SettingsListScreen)
+                navStack.push(SettingsSectionScreen(it ?: firstSettingsSection.titleKey))
+            }
         },
     )
 
-    private val _settingsBackStack = NavBackStack<SettingsScreen>()
-
-    val settingsBackStack: List<SettingsScreen> by derivedStateOf { _settingsBackStack.toList() }
+    val settingsBackStack = navigator.backStack<SettingsScreen>()
 
     val settingsNavigator = SettingsNavigator(
-        backStack = _settingsBackStack,
+        navigator = navigator,
     )
 
     init {
@@ -57,8 +66,13 @@ internal class MainScreenViewModel(
     }
 }
 
+inline fun <reified T : Any> Navigator.backStack(): Flow<List<T>> = snapshotFlow {
+    val settingsStack = peekNavStack()!!
+    (settingsStack.backwardItems.reversed() + settingsStack.active).filterIsInstance<T>()
+}
+
 @Serializable
-sealed interface Destination : NavKey {
+sealed interface Destination : NavKey, Screen {
     @Serializable
     sealed interface Conversation : Destination {
         @Serializable
@@ -78,26 +92,39 @@ sealed interface Destination : NavKey {
     }
 }
 
-class Navigator(
-    val backStack: NavBackStack<Destination>,
+class ConversationNavigator(
+    private val navigator: Navigator,
     val navigationPaneState: PaneState,
     val extraPaneState: PaneState,
     val onNavigateToSettings: (String?) -> Unit,
 ) {
-    fun navigateBack() {
-        backStack.removeLastOrNull()
+    internal val isLastConversationScreen: Boolean
+        get() {
+            val conversationScreens = navigator.peekBackStack().filterIsInstance<Destination.Conversation>()
+            return conversationScreens.size == 2
+        }
+
+    fun goBack() {
+        if (!isLastConversationScreen) {
+            navigator.pop()
+        }
     }
 
     val selectedConversationId: String?
-        get() = (backStack.lastOrNull() as? Destination.Conversation.Selected)?.id
+        get() {
+            val conversation = navigator.peekBackStack()
+                .firstOrNull { it is Destination.Conversation.Selected }
+                    as Destination.Conversation.Selected?
+            return conversation?.id
+        }
 
-    fun navigateToConversation(conversationId: String) {
+    fun goToConversation(conversationId: String) {
         if (selectedConversationId == conversationId) return
-        backStack.navigate(Destination.Conversation.Selected(conversationId))
+        navigator.goTo(Destination.Conversation.Selected(conversationId))
     }
 
-    fun navigateToNewConversation() {
-        backStack.navigate(Destination.Conversation.New)
+    fun goToNewConversation() {
+        navigator.goTo(Destination.Conversation.New)
     }
 
     fun openSettings() {
@@ -107,20 +134,4 @@ class Navigator(
     fun openSettingsSection(titleKey: String) {
         onNavigateToSettings(titleKey)
     }
-}
-
-private fun <T : NavKey> NavBackStack<T>.navigate(
-    destination: T,
-    clear: Boolean = false,
-    popUpTo: T? = null,
-    inclusive: Boolean = false,
-) {
-    if (clear) clear()
-    if (popUpTo != null) {
-        val index = indexOfLast { it == popUpTo }
-        if (index >= 0) {
-            dropLast(size - index + if (inclusive) 0 else 1)
-        }
-    }
-    add(destination)
 }

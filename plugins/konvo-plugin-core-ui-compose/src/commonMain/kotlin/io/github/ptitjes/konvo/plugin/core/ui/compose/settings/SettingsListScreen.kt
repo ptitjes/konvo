@@ -50,10 +50,17 @@ internal class SettingsListPresenter(
             sections.recursivelySortedBy { it.titleKey }.flatten()
         }
 
-        return SettingsListScreen.State.Loaded(flattenedSections) { event ->
+        val selectedSection = remember(navigator.selectedSectionKey) {
+            navigator.selectedSectionKey?.let { sectionManager.sectionForKey(it) }
+        }
+
+        return SettingsListScreen.State.Loaded(
+            sections = flattenedSections,
+            selectedSection = selectedSection,
+        ) { event ->
             when (event) {
                 is SettingsListScreen.Event.NavigateTo -> {
-                    navigator.navigateToSettingSection(event.key)
+                    navigator.goToSection(event.key)
                 }
             }
         }

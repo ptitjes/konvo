@@ -16,6 +16,8 @@ import org.jetbrains.compose.resources.*
 
 @Serializable
 data class SettingsSectionScreen(val key: String) : SettingsScreen {
+    override fun toString(): String = "settings/$key"
+
     internal data class State(
         val key: String,
         val icon: DrawableResource,
@@ -46,7 +48,7 @@ internal class SettingsSectionPresenter(
         ) { event ->
             when (event) {
                 SettingsSectionScreen.Event.NavigateBack -> {
-                    navigator.navigateBack()
+                    navigator.goBack()
                 }
             }
         }

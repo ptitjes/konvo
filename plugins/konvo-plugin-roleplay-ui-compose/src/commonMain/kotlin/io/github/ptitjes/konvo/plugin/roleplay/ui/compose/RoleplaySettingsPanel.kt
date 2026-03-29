@@ -50,7 +50,7 @@ internal class RoleplaySettingsPresenter(
         ) { event ->
             when (event) {
                 is RoleplaySettingsView.Event.UpdateSettings -> settings = event.settings
-                is RoleplaySettingsView.Event.GoToSettings -> navigator.navigateToSettingSection(event.key)
+                is RoleplaySettingsView.Event.GoToSettings -> navigator.goToSection(event.key)
             }
         }
     }

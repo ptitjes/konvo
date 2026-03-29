@@ -1,5 +1,8 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose
 
+import com.slack.circuit.foundation.*
+import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.ui.*
 import dev.whyoleg.sweetspi.*
 import io.github.ptitjes.konvo.plugin.core.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
@@ -62,7 +65,17 @@ object CoreUiComposePlugin : Plugin {
     }
 
     override fun DI.Builder.implementation() {
-        bindSingletonOf(::SettingsSectionManager)
+        bindSet<Presenter.Factory>()
+        bindSet<Ui.Factory>()
+
+        import(settingsModule)
+
+        bindSingleton<Circuit> {
+            buildCircuit(
+                presenterFactories = instance(),
+                uiFactories = instance(),
+            )
+        }
 
         bindProviderOf(::ConversationListViewModel)
         bindProviderOf(::MainScreenViewModel)
@@ -70,4 +83,15 @@ object CoreUiComposePlugin : Plugin {
 
         bind { singleton { App(di) } }
     }
+}
+
+private fun buildCircuit(
+    presenterFactories: Set<Presenter.Factory>,
+    uiFactories: Set<Ui.Factory>,
+): Circuit {
+    println("Building circuit")
+    return Circuit.Builder()
+        .addPresenterFactories(presenterFactories.also { println("Presenter factories: ${it.size}") })
+        .addUiFactories(uiFactories).also { println("UI factories: ${uiFactories.size}") }
+        .build()
 }

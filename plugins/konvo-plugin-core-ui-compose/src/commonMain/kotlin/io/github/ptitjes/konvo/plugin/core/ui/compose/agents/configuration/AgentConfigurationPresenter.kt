@@ -11,7 +11,7 @@ import kotlinx.coroutines.*
 import kotlin.reflect.*
 
 class AgentConfigurationPresenter(
-    private val navigator: Navigator,
+    private val navigator: ConversationNavigator,
     private val pluginContext: PluginContext,
     private val conversationManager: ConversationManager,
 ) : Presenter<AgentConfigurationView.State> {
@@ -73,7 +73,7 @@ class AgentConfigurationPresenter(
 
                     scope.launch {
                         val conversation = conversationManager.newConversation(configuration)
-                        navigator.navigateToConversation(conversation.id)
+                        navigator.goToConversation(conversation.id)
                     }
                 }
             }

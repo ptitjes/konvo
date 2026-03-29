@@ -28,7 +28,7 @@ import kotlin.time.*
 @Composable
 fun ConversationListScreen(
     viewModel: ConversationListViewModel = viewModel(),
-    navigator: Navigator,
+    navigator: ConversationNavigator,
     modifier: Modifier = Modifier,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -40,11 +40,11 @@ fun ConversationListScreen(
         onExpandedToggle = { coroutineScope.launch { navigator.navigationPaneState.toggle() } },
         onSettingsClick = { coroutineScope.launch { navigator.openSettings() } },
         selectedConversationId = navigator.selectedConversationId,
-        onCreateConversation = { navigator.navigateToNewConversation() },
-        onSelectConversation = { navigator.navigateToConversation(it) },
+        onCreateConversation = { navigator.goToNewConversation() },
+        onSelectConversation = { navigator.goToConversation(it) },
         onDeleteConversation = {
             if (navigator.selectedConversationId == it) {
-                navigator.navigateToNewConversation()
+                navigator.goToNewConversation()
             }
         }
     )

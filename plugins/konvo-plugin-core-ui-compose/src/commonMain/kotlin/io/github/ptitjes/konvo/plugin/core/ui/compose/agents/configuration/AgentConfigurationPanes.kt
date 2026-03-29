@@ -14,13 +14,13 @@ object AgentConfigurationPanes : ExtensionPoint.Plural<AgentConfigurationPane<*,
 data class AgentConfigurationPane<C : AgentConfiguration, S : AgentConfigurationState<C>>(
     val agentConfigurationClass: KClass<out C>,
     val label: @Composable () -> String,
-    val presenterFactory: (navigator: Navigator) -> Presenter<out S>,
+    val presenterFactory: (navigator: ConversationNavigator) -> Presenter<out S>,
     val panel: @Composable (S, Modifier) -> Unit,
 ) {
     companion object {
         inline operator fun <reified C : AgentConfiguration, S : AgentConfigurationState<C>> invoke(
             noinline label: @Composable () -> String,
-            noinline presenterFactory: (navigator: Navigator) -> Presenter<out S>,
+            noinline presenterFactory: (navigator: ConversationNavigator) -> Presenter<out S>,
             noinline panel: @Composable (S, Modifier) -> Unit,
         ): AgentConfigurationPane<C, S> {
             return AgentConfigurationPane(

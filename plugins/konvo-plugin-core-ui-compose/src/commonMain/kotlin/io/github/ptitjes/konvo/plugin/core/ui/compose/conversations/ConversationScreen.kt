@@ -25,7 +25,7 @@ import org.jetbrains.compose.resources.*
 fun ConversationScreen(
     conversationId: String,
     viewModel: ConversationViewModel = viewModel(key = conversationId),
-    navigator: Navigator,
+    navigator: ConversationNavigator,
     modifier: Modifier = Modifier,
 ) {
     CompositionLocalProvider(LocalViewRegistry provides viewModel.componentRegistry) {

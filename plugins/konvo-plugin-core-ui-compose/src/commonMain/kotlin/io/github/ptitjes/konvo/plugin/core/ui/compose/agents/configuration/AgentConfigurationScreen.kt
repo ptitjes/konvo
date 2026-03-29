@@ -18,7 +18,7 @@ import org.kodein.di.compose.*
 
 @Composable
 fun AgentConfigurationScreen(
-    navigator: Navigator,
+    navigator: ConversationNavigator,
     modifier: Modifier = Modifier.Companion,
 ) {
     val di = localDI()
@@ -28,7 +28,7 @@ fun AgentConfigurationScreen(
     }
 }
 
-private fun buildCircuit(di: DI, navigator: Navigator): Circuit {
+private fun buildCircuit(di: DI, navigator: ConversationNavigator): Circuit {
     val agentConfigurationPresenter by di.newInstance {
         new(::AgentConfigurationPresenter, navigator)
     }

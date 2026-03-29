@@ -9,7 +9,7 @@ import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 
 class RoleplayConfigurationPresenter(
-    private val navigator: Navigator,
+    private val navigator: ConversationNavigator,
     private val modelManager: ModelManager,
     private val characterManager: CharacterManager,
     private val lorebookManager: LorebookManager,
