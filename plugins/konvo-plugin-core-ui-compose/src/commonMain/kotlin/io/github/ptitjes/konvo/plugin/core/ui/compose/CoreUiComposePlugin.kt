@@ -69,6 +69,7 @@ object CoreUiComposePlugin : Plugin {
         bindSet<Ui.Factory>()
 
         import(settingsModule)
+        import(conversationsModule)
 
         bindSingleton<Circuit> {
             buildCircuit(
@@ -77,7 +78,6 @@ object CoreUiComposePlugin : Plugin {
             )
         }
 
-        bindProviderOf(::ConversationListViewModel)
         bindProviderOf(::MainScreenViewModel)
         bindFactory { conversationId: String -> new(::ConversationViewModel, conversationId) }
 

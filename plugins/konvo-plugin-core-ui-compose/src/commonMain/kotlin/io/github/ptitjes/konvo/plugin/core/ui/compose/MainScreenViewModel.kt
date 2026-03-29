@@ -3,12 +3,11 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.*
 import androidx.lifecycle.*
-import androidx.navigation3.runtime.*
 import com.slack.circuit.foundation.*
 import com.slack.circuit.foundation.navstack.*
 import com.slack.circuit.runtime.*
-import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
 
@@ -66,7 +65,7 @@ inline fun <reified T : Any> Navigator.backStack(): Flow<List<T>> = snapshotFlow
 }
 
 @Serializable
-sealed interface Destination : NavKey, Screen {
+sealed interface Destination : NavScreen {
     @Serializable
     sealed interface Conversation : Destination {
         @Serializable
@@ -87,7 +86,7 @@ sealed interface Destination : NavKey, Screen {
 }
 
 class ConversationNavigator(
-    private val navigator: Navigator,
+    internal val navigator: Navigator,
     val onNavigateToSettings: (String?) -> Unit,
 ) {
     internal val isLastConversationScreen: Boolean

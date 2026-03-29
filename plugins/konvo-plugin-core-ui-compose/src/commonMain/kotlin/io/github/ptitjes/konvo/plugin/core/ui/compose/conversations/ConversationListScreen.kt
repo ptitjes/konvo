@@ -9,70 +9,159 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.tooling.preview.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
-import io.github.ptitjes.konvo.plugin.core.conversations.storage.inmemory.*
+import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.utils.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.viewmodels.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
+import kotlinx.serialization.*
 import org.jetbrains.compose.resources.*
-import kotlin.time.*
 
-@Composable
-fun ConversationListScreen(
-    viewModel: ConversationListViewModel = viewModel(),
-    navigator: ConversationNavigator,
-    modifier: Modifier = Modifier,
-) {
-    val coroutineScope = rememberCoroutineScope()
+@Serializable
+data object ConversationListScreen : NavScreen {
+    override fun toString(): String = "conversations"
 
-    ConversationListScreen(
-        modifier = modifier,
-        viewModel = viewModel,
-        onSettingsClick = { coroutineScope.launch { navigator.openSettings() } },
-        selectedConversationId = navigator.selectedConversationId,
-        onCreateConversation = { navigator.goToNewConversation() },
-        onSelectConversation = { navigator.goToConversation(it) },
-        onDeleteConversation = {
-            if (navigator.selectedConversationId == it) {
-                navigator.goToNewConversation()
+    internal sealed interface State : CircuitUiState {
+        data object Loading : State
+        data class Error(val error: String) : State
+        data class Loaded(
+            val conversations: List<ConversationDigest>,
+            val selectedConversationId: String?,
+            val eventSink: (Event) -> Unit,
+        ) : State
+    }
+
+    internal sealed interface Event {
+        data object OpenNewConversation : Event
+        data class SelectConversation(val id: String) : Event
+        data class DeleteConversation(val id: String) : Event
+        data object GoToSettings : Event
+    }
+}
+
+internal class ConversationListPresenter(
+    private val navigator: ConversationNavigator,
+    private val repository: ConversationRepository,
+) : Presenter<ConversationListScreen.State> {
+    @Composable
+    override fun present(): ConversationListScreen.State {
+        var error by remember { mutableStateOf<String?>(null) }
+        val conversations by repository.getDigests(sort = Sort.UpdatedDesc)
+            .catch { e -> error = e.message ?: "Failed to load conversations" }
+            .collectAsState(null)
+        var selectedConversationId by remember { mutableStateOf(navigator.selectedConversationId) }
+
+        LaunchedEffect(Unit) {
+            snapshotFlow { navigator.selectedConversationId }
+                .collect { selectedConversationId = it }
+        }
+
+        return state(
+            error = error,
+            conversations = conversations,
+            selectedConversationId = selectedConversationId,
+        )
+    }
+
+    @Composable
+    private fun state(
+        error: String?,
+        conversations: List<ConversationDigest>?,
+        selectedConversationId: String?,
+    ): ConversationListScreen.State {
+        // TODO make the repository use its own scope
+        val coroutineScope = rememberCoroutineScope()
+
+        return when {
+            error != null -> ConversationListScreen.State.Error(error)
+            conversations == null -> ConversationListScreen.State.Loading
+            else -> ConversationListScreen.State.Loaded(
+                conversations = conversations,
+                selectedConversationId = selectedConversationId,
+            ) { event ->
+                when (event) {
+                    is ConversationListScreen.Event.OpenNewConversation -> {
+                        navigator.goToNewConversation()
+                    }
+
+                    is ConversationListScreen.Event.SelectConversation -> {
+                        navigator.goToConversation(event.id)
+                    }
+
+                    is ConversationListScreen.Event.DeleteConversation -> {
+                        coroutineScope.launch { repository.delete(event.id) }
+                        if (navigator.selectedConversationId == event.id) {
+                            navigator.goToNewConversation()
+                        }
+                    }
+
+                    is ConversationListScreen.Event.GoToSettings -> {
+                        navigator.openSettings()
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+internal fun ConversationList(
+    state: ConversationListScreen.State,
+    modifier: Modifier = Modifier,
+) {
+    ConversationListScreen(
+        modifier = modifier,
+        isLoading = state is ConversationListScreen.State.Loading,
+        error = (state as? ConversationListScreen.State.Error)?.error,
+        conversations = (state as? ConversationListScreen.State.Loaded)?.conversations ?: emptyList(),
+        selectedConversationId = (state as? ConversationListScreen.State.Loaded)?.selectedConversationId,
+        onCreateConversation = {
+            state.ensureLoaded().eventSink(ConversationListScreen.Event.OpenNewConversation)
+        },
+        onSelectConversation = {
+            state.ensureLoaded().eventSink(ConversationListScreen.Event.SelectConversation(it))
+        },
+        onDeleteConversation = {
+            state.ensureLoaded().eventSink(ConversationListScreen.Event.DeleteConversation(it))
+        },
+        onSettingsClick = {
+            state.ensureLoaded().eventSink(ConversationListScreen.Event.GoToSettings)
+        },
     )
 }
 
-/**
- * Conversation list panel.
- */
-@OptIn(ExperimentalMaterial3Api::class)
+private fun ConversationListScreen.State.ensureLoaded(): ConversationListScreen.State.Loaded {
+    return (this as ConversationListScreen.State.Loaded)
+}
+
 @Composable
-fun ConversationListScreen(
-    onSettingsClick: () -> Unit,
+private fun ConversationListScreen(
+    isLoading: Boolean,
+    error: String?,
+    modifier: Modifier,
+    conversations: List<ConversationDigest>,
     selectedConversationId: String?,
     onCreateConversation: () -> Unit,
-    onSelectConversation: (id: String) -> Unit,
-    onDeleteConversation: (id: String) -> Unit,
-    viewModel: ConversationListViewModel = viewModel(),
-    modifier: Modifier = Modifier,
+    onSelectConversation: (String) -> Unit,
+    onDeleteConversation: (String) -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     val stageControl = LocalCenterStageControl.current
     val expanded = stageControl.navigationExpanded
 
-    val conversations by viewModel.conversations.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
-
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(error) {
         if (error != null) {
-            snackbarHostState.showSnackbar(message = error!!)
+            snackbarHostState.showSnackbar(message = error)
         }
     }
 
@@ -93,6 +182,7 @@ fun ConversationListScreen(
         containerColor = containerColor,
         contentColor = contentColor,
         topBar = {
+            @OptIn(ExperimentalMaterial3Api::class)
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = containerColor,
@@ -184,7 +274,6 @@ fun ConversationListScreen(
                                         if (expanded) stageControl.toggleNavigation()
                                     },
                                     onDelete = {
-                                        viewModel.delete(conversation)
                                         onDeleteConversation(conversation.id)
                                     },
                                 )
@@ -222,46 +311,46 @@ fun ConversationListScreen(
     }
 }
 
-@Preview
-@Composable
-private fun ConversationListPanelPreview() {
-    val repo = remember { InMemoryConversationRepository() }
-
-    // Seed preview data
-    LaunchedEffect(Unit) {
-        repo.create(
-            ConversationDigest(
-                id = "1",
-                title = "First",
-                createdAt = Instant.fromEpochMilliseconds(0),
-                updatedAt = Instant.fromEpochMilliseconds(0),
-                participants = emptyList(),
-                lastMessagePreview = "Hello world",
-                messageCount = 1,
-            )
-        )
-        repo.create(
-            ConversationDigest(
-                id = "2",
-                title = "Second",
-                createdAt = Instant.fromEpochMilliseconds(0),
-                updatedAt = Instant.fromEpochMilliseconds(0),
-                participants = emptyList(),
-                lastMessagePreview = "Another message",
-                messageCount = 3,
-            )
-        )
-    }
-
-    val vm = remember { ConversationListViewModel(repo) }
-
-    ConversationListScreen(
-        viewModel = vm,
-        modifier = Modifier.fillMaxSize(),
-        onSettingsClick = {},
-        selectedConversationId = null,
-        onCreateConversation = {},
-        onSelectConversation = {},
-        onDeleteConversation = {},
-    )
-}
+//@Preview
+//@Composable
+//private fun ConversationListPanelPreview() {
+//    val repo = remember { InMemoryConversationRepository() }
+//
+//    // Seed preview data
+//    LaunchedEffect(Unit) {
+//        repo.create(
+//            ConversationDigest(
+//                id = "1",
+//                title = "First",
+//                createdAt = Instant.fromEpochMilliseconds(0),
+//                updatedAt = Instant.fromEpochMilliseconds(0),
+//                participants = emptyList(),
+//                lastMessagePreview = "Hello world",
+//                messageCount = 1,
+//            )
+//        )
+//        repo.create(
+//            ConversationDigest(
+//                id = "2",
+//                title = "Second",
+//                createdAt = Instant.fromEpochMilliseconds(0),
+//                updatedAt = Instant.fromEpochMilliseconds(0),
+//                participants = emptyList(),
+//                lastMessagePreview = "Another message",
+//                messageCount = 3,
+//            )
+//        )
+//    }
+//
+//    val vm = remember { ConversationListViewModel(repo) }
+//
+//    ConversationListScreen(
+//        viewModel = vm,
+//        modifier = Modifier.fillMaxSize(),
+//        onSettingsClick = {},
+//        selectedConversationId = null,
+//        onCreateConversation = {},
+//        onSelectConversation = {},
+//        onDeleteConversation = {},
+//    )
+//}

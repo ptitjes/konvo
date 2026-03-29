@@ -10,6 +10,7 @@ import androidx.compose.ui.*
 import androidx.lifecycle.viewmodel.navigation3.*
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.*
+import com.slack.circuit.foundation.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
@@ -50,7 +51,7 @@ internal fun ConversationsScreen(
             entryProvider = entryProvider {
 
                 entry<Destination.Conversation.List>(metadata = CenterStageScene.navigation()) {
-                    ConversationListScreen(navigator = conversationNavigator)
+                    CircuitContent(screen = ConversationListScreen, navigator = conversationNavigator.navigator)
                 }
 
                 entry<Destination.Conversation.New>(metadata = CenterStageScene.content()) {
