@@ -97,7 +97,7 @@ fun ConversationScreen(
                         }
                     },
                     navigationIcon = {
-                        LocalCenterStageControl.current.NavigationButton {
+                        LocalCenterStageControl.current.ContentNavigationButton {
                             Icon(
                                 modifier = Modifier.padding(start = 16.dp, end = 8.dp),
                                 painter = painterResource(Res.drawable.ic_chat),
@@ -106,7 +106,7 @@ fun ConversationScreen(
                         }
                     },
                     actions = {
-                        LocalCenterStageControl.current.ExtraPaneButton()
+                        LocalCenterStageControl.current.ContentExtraButton()
                     }
                 )
             },

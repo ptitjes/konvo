@@ -7,27 +7,98 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.*
 import org.jetbrains.compose.resources.*
 
-data class CenterStageControl(
-    val navigationButtonRole: CenterStageButtonRole = CenterStageButtonRole.None,
-    val onNavigationClick: () -> Unit = {},
-    val extraButtonRole: CenterStageButtonRole = CenterStageButtonRole.None,
-    val onExtraClick: () -> Unit = {},
-)
+interface CenterStageControl {
+    val navigationState: CenterStagePaneState
+    fun onNavigationExpand(update: (Boolean) -> Boolean)
+    val extraState: CenterStagePaneState
+    fun onExtraExpand(update: (Boolean) -> Boolean)
+}
 
-enum class CenterStageButtonRole {
-    None,
-    Back,
-    MenuOpen,
-    MenuClose,
+enum class CenterStagePaneState {
+    Hidden,
+    Collapsed,
+    Expanded,
+}
+
+val CenterStageControl.navigationExpanded: Boolean get() = navigationState == CenterStagePaneState.Expanded
+val CenterStageControl.extraExpanded: Boolean get() = extraState == CenterStagePaneState.Expanded
+
+fun CenterStageControl.toggleNavigation() = onNavigationExpand { !it }
+fun CenterStageControl.toggleExtra() = onExtraExpand { !it }
+
+@Composable
+fun CenterStageControl.NavigationButton() {
+    CenterStagePaneButton(
+        buttonRole = when (navigationState) {
+            CenterStagePaneState.Hidden -> CenterStageButtonRole.None
+            CenterStagePaneState.Collapsed -> CenterStageButtonRole.PaneOpen
+            CenterStagePaneState.Expanded -> CenterStageButtonRole.PaneClose
+        },
+        onButtonClick = this::toggleNavigation,
+        paneOpenIcon = { Res.drawable.ic_left_panel_open },
+        paneOpenDescription = { i18n.navigation.navigationOpenAria },
+        paneCloseIcon = { Res.drawable.ic_left_panel_close },
+        paneCloseDescription = { i18n.navigation.navigationCloseAria },
+        fallback = {},
+    )
 }
 
 @Composable
-fun CenterStageControl.NavigationButton(
-    fallback: @Composable () -> Unit,
+fun CenterStageControl.ContentNavigationButton(
+    fallback: @Composable () -> Unit = {},
 ) {
-    if (this.navigationButtonRole != CenterStageButtonRole.None) {
-        IconButton(onClick = onNavigationClick) {
-            when (this.navigationButtonRole) {
+    CenterStagePaneButton(
+        buttonRole = when (navigationState) {
+            CenterStagePaneState.Hidden -> CenterStageButtonRole.PaneOpen
+            else -> CenterStageButtonRole.None
+        },
+        onButtonClick = this::toggleNavigation,
+        paneOpenIcon = { Res.drawable.ic_left_panel_open },
+        paneOpenDescription = { i18n.navigation.navigationOpenAria },
+        paneCloseIcon = { Res.drawable.ic_left_panel_close },
+        paneCloseDescription = { i18n.navigation.navigationCloseAria },
+        fallback = fallback,
+    )
+}
+
+@Composable
+fun CenterStageControl.ContentExtraButton(
+    fallback: @Composable (() -> Unit) = {},
+) {
+    CenterStagePaneButton(
+        buttonRole = when (extraState) {
+            CenterStagePaneState.Hidden -> CenterStageButtonRole.PaneOpen
+            else -> CenterStageButtonRole.None
+        },
+        onButtonClick = this::toggleExtra,
+        paneOpenIcon = { Res.drawable.ic_right_panel_open },
+        paneOpenDescription = { i18n.navigation.detailsOpenAria },
+        paneCloseIcon = { Res.drawable.ic_right_panel_close },
+        paneCloseDescription = { i18n.navigation.detailsCloseAria },
+        fallback = fallback,
+    )
+}
+
+private enum class CenterStageButtonRole {
+    None,
+    Back,
+    PaneOpen,
+    PaneClose,
+}
+
+@Composable
+private fun CenterStagePaneButton(
+    buttonRole: CenterStageButtonRole,
+    onButtonClick: () -> Unit,
+    paneOpenIcon: () -> DrawableResource,
+    paneOpenDescription: @Composable () -> String,
+    paneCloseIcon: () -> DrawableResource,
+    paneCloseDescription: @Composable () -> String,
+    fallback: @Composable (() -> Unit),
+) {
+    if (buttonRole != CenterStageButtonRole.None) {
+        IconButton(onClick = onButtonClick) {
+            when (buttonRole) {
                 CenterStageButtonRole.Back -> {
                     Icon(
                         painter = painterResource(Res.drawable.ic_arrow_back),
@@ -35,52 +106,22 @@ fun CenterStageControl.NavigationButton(
                     )
                 }
 
-                CenterStageButtonRole.MenuOpen -> {
+                CenterStageButtonRole.PaneOpen -> {
                     Icon(
-                        painterResource(Res.drawable.ic_left_panel_open),
-                        contentDescription = i18n.navigation.navigationOpenAria
+                        painterResource(paneOpenIcon()),
+                        contentDescription = paneOpenDescription()
                     )
                 }
 
-                CenterStageButtonRole.MenuClose -> {
+                CenterStageButtonRole.PaneClose -> {
                     Icon(
-                        painterResource(Res.drawable.ic_left_panel_close),
-                        contentDescription = i18n.navigation.navigationCloseAria
+                        painterResource(paneCloseIcon()),
+                        contentDescription = paneCloseDescription()
                     )
                 }
             }
         }
     } else {
         fallback()
-    }
-}
-
-@Composable
-fun CenterStageControl.ExtraPaneButton() {
-    if (this.extraButtonRole != CenterStageButtonRole.None) {
-        IconButton(onClick = onExtraClick) {
-            when (this.extraButtonRole) {
-                CenterStageButtonRole.Back -> {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_arrow_back),
-                        contentDescription = i18n.navigation.backAria
-                    )
-                }
-
-                CenterStageButtonRole.MenuOpen -> {
-                    Icon(
-                        painterResource(Res.drawable.ic_right_panel_open),
-                        contentDescription = i18n.navigation.detailsOpenAria
-                    )
-                }
-
-                CenterStageButtonRole.MenuClose -> {
-                    Icon(
-                        painterResource(Res.drawable.ic_right_panel_close),
-                        contentDescription = i18n.navigation.detailsCloseAria
-                    )
-                }
-            }
-        }
     }
 }

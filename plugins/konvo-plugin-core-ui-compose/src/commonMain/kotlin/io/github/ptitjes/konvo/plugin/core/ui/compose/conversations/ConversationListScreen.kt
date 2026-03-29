@@ -36,8 +36,6 @@ fun ConversationListScreen(
     ConversationListScreen(
         modifier = modifier,
         viewModel = viewModel,
-        expanded = navigator.navigationPaneState.targetValue.isExpanded,
-        onExpandedToggle = { coroutineScope.launch { navigator.navigationPaneState.toggle() } },
         onSettingsClick = { coroutineScope.launch { navigator.openSettings() } },
         selectedConversationId = navigator.selectedConversationId,
         onCreateConversation = { navigator.goToNewConversation() },
@@ -56,8 +54,6 @@ fun ConversationListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationListScreen(
-    expanded: Boolean,
-    onExpandedToggle: () -> Unit,
     onSettingsClick: () -> Unit,
     selectedConversationId: String?,
     onCreateConversation: () -> Unit,
@@ -66,6 +62,9 @@ fun ConversationListScreen(
     viewModel: ConversationListViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
+    val stageControl = LocalCenterStageControl.current
+    val expanded = stageControl.navigationExpanded
+
     val conversations by viewModel.conversations.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -82,7 +81,9 @@ fun ConversationListScreen(
 
     val clickableModifier = if (!expanded) {
         val interactionSource = remember { MutableInteractionSource() }
-        Modifier.clickable(interactionSource = interactionSource, indication = null) { onExpandedToggle() }
+        Modifier.clickable(interactionSource = interactionSource, indication = null) {
+            stageControl.toggleNavigation()
+        }
     } else Modifier
 
     val transition = updateTransition(expanded)
@@ -97,17 +98,7 @@ fun ConversationListScreen(
                     containerColor = containerColor,
                     titleContentColor = contentColor,
                 ),
-                navigationIcon = {
-                    IconButton(onClick = { onExpandedToggle() }) {
-                        Icon(
-                            painterResource(
-                                if (expanded) Res.drawable.ic_left_panel_close
-                                else Res.drawable.ic_left_panel_open
-                            ),
-                            contentDescription = "Menu",
-                        )
-                    }
-                },
+                navigationIcon = { stageControl.NavigationButton() },
                 title = {
                     Box {
                         transition.AnimatedVisibility(
@@ -140,7 +131,7 @@ fun ConversationListScreen(
                 modifier = Modifier.offset(x = offset),
                 onClick = {
                     onCreateConversation()
-                    if (expanded) onExpandedToggle()
+                    if (expanded) stageControl.toggleNavigation()
                 },
             ) {
                 Icon(
@@ -190,7 +181,7 @@ fun ConversationListScreen(
                                     selected = conversation.id == selectedConversationId,
                                     onClick = {
                                         onSelectConversation(conversation.id)
-                                        if (expanded) onExpandedToggle()
+                                        if (expanded) stageControl.toggleNavigation()
                                     },
                                     onDelete = {
                                         viewModel.delete(conversation)
@@ -267,9 +258,7 @@ private fun ConversationListPanelPreview() {
     ConversationListScreen(
         viewModel = vm,
         modifier = Modifier.fillMaxSize(),
-        expanded = true,
         onSettingsClick = {},
-        onExpandedToggle = {},
         selectedConversationId = null,
         onCreateConversation = {},
         onSelectConversation = {},

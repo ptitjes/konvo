@@ -64,37 +64,45 @@ class CenterStageScene<T : Any>(
 
         val coroutineScope = rememberCoroutineScope()
 
-        val contentNavigationControl = CenterStageControl(
-            navigationButtonRole =
-                if (navigationEntry != null && navigationPaneProperties.hiddenWhenCollapsed) {
-                    if (navigationPaneState.targetValue.isExpanded) CenterStageButtonRole.MenuClose
-                    else CenterStageButtonRole.MenuOpen
-                } else CenterStageButtonRole.None,
-            onNavigationClick = { coroutineScope.launch { navigationPaneState.toggle() } },
-            extraButtonRole =
-                if ((extraEntry != null || defaultExtraContent != null) && extraPaneProperties.hiddenWhenCollapsed) {
-                    if (extraPaneState.targetValue.isExpanded) CenterStageButtonRole.MenuClose
-                    else CenterStageButtonRole.MenuOpen
-                } else CenterStageButtonRole.None,
-            onExtraClick = { coroutineScope.launch { extraPaneState.toggle() } },
-        )
-
-        CenterStageScaffold(
-            navigationPaneState = navigationPaneState,
-            navigationPaneProperties = navigationPaneProperties,
-            navigationPaneContent = navigationEntry?.let { entry -> { entry.Content() } },
-            extraPaneState = extraPaneState,
-            extraPaneProperties = extraPaneProperties,
-            extraPaneContent = extraEntry?.let { entry -> { entry.Content() } }
-                ?: defaultExtraContent?.let { extraContent -> @Composable { extraContent() } },
-            content = {
-                CompositionLocalProvider(
-                    LocalCenterStageControl provides contentNavigationControl
-                ) {
-                    contentEntry.Content()
+        val contentNavigationControl = object : CenterStageControl {
+            override val navigationState: CenterStagePaneState
+                get() = when {
+                    navigationPaneState.targetValue.isExpanded -> CenterStagePaneState.Expanded
+                    navigationPaneProperties.hiddenWhenCollapsed -> CenterStagePaneState.Hidden
+                    else -> CenterStagePaneState.Collapsed
                 }
-            },
-        )
+
+            override fun onNavigationExpand(update: (Boolean) -> Boolean) {
+                coroutineScope.launch { navigationPaneState.toggle() }
+            }
+
+            override val extraState: CenterStagePaneState
+                get() = when {
+                    extraEntry == null && defaultExtraContent == null -> CenterStagePaneState.Hidden
+                    extraPaneState.targetValue.isExpanded -> CenterStagePaneState.Expanded
+                    extraPaneProperties.hiddenWhenCollapsed -> CenterStagePaneState.Hidden
+                    else -> CenterStagePaneState.Collapsed
+                }
+
+            override fun onExtraExpand(update: (Boolean) -> Boolean) {
+                coroutineScope.launch { extraPaneState.toggle() }
+            }
+        }
+
+        CompositionLocalProvider(
+            LocalCenterStageControl provides contentNavigationControl
+        ) {
+            CenterStageScaffold(
+                navigationPaneState = navigationPaneState,
+                navigationPaneProperties = navigationPaneProperties,
+                navigationPaneContent = navigationEntry?.let { entry -> { entry.Content() } },
+                extraPaneState = extraPaneState,
+                extraPaneProperties = extraPaneProperties,
+                extraPaneContent = extraEntry?.let { entry -> { entry.Content() } }
+                    ?: defaultExtraContent?.let { extraContent -> @Composable { extraContent() } },
+                content = contentEntry::Content,
+            )
+        }
     }
 
     companion object {
@@ -132,14 +140,14 @@ class CenterStageSceneStrategy<T : Any>(
 
         val lastEntry = entries.lastOrNull() ?: return null
         val isCenterStageEntry =
-            lastEntry.metadata.containsKey(CenterStageScene.Companion.NAVIGATION_PANE_KEY) ||
-                    lastEntry.metadata.containsKey(CenterStageScene.Companion.CONTENT_KEY) ||
-                    lastEntry.metadata.containsKey(CenterStageScene.Companion.EXTRA_PANE_KEY)
+            lastEntry.metadata.containsKey(CenterStageScene.NAVIGATION_PANE_KEY) ||
+                    lastEntry.metadata.containsKey(CenterStageScene.CONTENT_KEY) ||
+                    lastEntry.metadata.containsKey(CenterStageScene.EXTRA_PANE_KEY)
         if (!isCenterStageEntry) return null
 
-        val navigationEntry = entries.findLast { CenterStageScene.Companion.NAVIGATION_PANE_KEY in it.metadata }
-        val contentEntry = entries.findLast { CenterStageScene.Companion.CONTENT_KEY in it.metadata } ?: return null
-        val extraEntry = entries.findLast { CenterStageScene.Companion.EXTRA_PANE_KEY in it.metadata }
+        val navigationEntry = entries.findLast { CenterStageScene.NAVIGATION_PANE_KEY in it.metadata }
+        val contentEntry = entries.findLast { CenterStageScene.CONTENT_KEY in it.metadata } ?: return null
+        val extraEntry = entries.findLast { CenterStageScene.EXTRA_PANE_KEY in it.metadata }
 
         return CenterStageScene(
             key = contentEntry.contentKey to (navigationEntry?.contentKey to extraEntry?.contentKey),

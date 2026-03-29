@@ -9,7 +9,6 @@ import com.slack.circuit.foundation.navstack.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
 import kotlinx.coroutines.flow.*
 import kotlinx.serialization.*
 
@@ -33,15 +32,10 @@ internal class MainScreenViewModel(
             initialValue = null,
         )
 
-    private val navigationPaneState = PaneState.Companion()
-    private val extraPaneState = PaneState.Companion()
-
     private val firstSettingsSection get() = settingsSectionManager.firstSection
 
     val conversationNavigator = ConversationNavigator(
         navigator = navigator,
-        navigationPaneState = navigationPaneState,
-        extraPaneState = extraPaneState,
         onNavigateToSettings = {
             Snapshot.withMutableSnapshot {
                 navStack.push(SettingsListScreen)
@@ -94,8 +88,6 @@ sealed interface Destination : NavKey, Screen {
 
 class ConversationNavigator(
     private val navigator: Navigator,
-    val navigationPaneState: PaneState,
-    val extraPaneState: PaneState,
     val onNavigateToSettings: (String?) -> Unit,
 ) {
     internal val isLastConversationScreen: Boolean

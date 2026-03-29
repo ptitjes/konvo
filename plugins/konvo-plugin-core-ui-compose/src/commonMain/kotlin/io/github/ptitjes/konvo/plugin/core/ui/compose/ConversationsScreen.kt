@@ -10,7 +10,6 @@ import androidx.compose.ui.*
 import androidx.lifecycle.viewmodel.navigation3.*
 import androidx.navigation3.runtime.*
 import androidx.navigation3.ui.*
-import androidx.window.core.layout.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
@@ -22,6 +21,9 @@ internal fun ConversationsScreen(
     viewModel: MainScreenViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
+    val navigationPaneState = rememberPaneState(PaneValue.Collapsed)
+    val extraPaneState = rememberPaneState(PaneValue.Collapsed)
+
     val conversationNavigator = viewModel.conversationNavigator
 
     val settingsBackStack by viewModel.settingsBackStack.collectAsState(initial = emptyList())
@@ -43,8 +45,8 @@ internal fun ConversationsScreen(
             modifier = modifier,
             backStack = backStack,
             onBack = { conversationNavigator.goBack() },
-            navigationPaneState = conversationNavigator.navigationPaneState,
-            extraPaneState = conversationNavigator.extraPaneState,
+            navigationPaneState = navigationPaneState,
+            extraPaneState = extraPaneState,
             entryProvider = entryProvider {
 
                 entry<Destination.Conversation.List>(metadata = CenterStageScene.navigation()) {
@@ -115,9 +117,4 @@ private fun <T : Any> MainScreenScaffold(
             )
         }
     }
-}
-
-private fun paneTypeFromAdaptiveInfo(windowSizeClass: WindowSizeClass): ListDetailPaneType {
-    val isExpandedWidth = windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_LARGE_LOWER_BOUND)
-    return if (isExpandedWidth) ListDetailPaneType.TwoPane else ListDetailPaneType.OnePane
 }

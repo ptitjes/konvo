@@ -71,7 +71,7 @@ data class PaneProperties(
 )
 
 @Composable
-internal fun CenterStageScaffoldLayout(
+private fun CenterStageScaffoldLayout(
     modifier: Modifier,
     navigationExpanded: Boolean,
     extraExpanded: Boolean,
