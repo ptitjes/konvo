@@ -5,83 +5,122 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import com.slack.circuit.foundation.*
-import io.github.ptitjes.konvo.plugin.core.models.*
+import com.slack.circuit.retained.*
+import com.slack.circuit.runtime.*
+import com.slack.circuit.runtime.presenter.*
+import io.github.ptitjes.konvo.plugin.core.agents.*
+import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
+import io.github.ptitjes.syrup.*
+import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
-import org.kodein.di.*
-import org.kodein.di.compose.*
+import kotlin.reflect.*
 
-@Composable
-fun AgentConfigurationScreen(
-    navigator: ConversationNavigator,
-    modifier: Modifier = Modifier.Companion,
-) {
-    val di = localDI()
-    val circuit = remember { buildCircuit(di, navigator) }
-    CircuitCompositionLocals(circuit) {
-        CircuitContent(AgentConfigurationView, modifier = modifier.fillMaxSize())
+data object AgentConfigurationScreen : NavScreen {
+    internal data class State(
+        val selectableAgentClasses: Set<KClass<out AgentConfiguration>>,
+        val agentLabels: @Composable (KClass<out AgentConfiguration>) -> String,
+        val selectedAgentClass: KClass<out AgentConfiguration>,
+        val configurationState: AgentConfigurationState<AgentConfiguration>,
+        val renderer: @Composable (AgentConfigurationState<AgentConfiguration>, Modifier) -> Unit,
+        val eventSink: (Event) -> Unit,
+    ) : CircuitUiState
+
+    internal sealed interface Event : CircuitUiEvent {
+        data class SelectConfigurationClass(val configurationClass: KClass<out AgentConfiguration>) : Event
+        data object CreateAgent : Event
     }
 }
 
-private fun buildCircuit(di: DI, navigator: ConversationNavigator): Circuit {
-    val agentConfigurationPresenter by di.newInstance {
-        new(::AgentConfigurationPresenter, navigator)
-    }
-
-    return Circuit.Builder()
-        .addPresenterFactory { screen, _, _ ->
-            when (screen) {
-                is AgentConfigurationView -> agentConfigurationPresenter
-                else -> null
-            }
-        }
-        .addUi<AgentConfigurationView, AgentConfigurationView.State> { state, modifier ->
-            NewConversationScreenLayout(
-                state = state,
-                onProviderSettingsClick = { navigator.openSettingsSection("models") },
-                onGoToSettingsClick = { navigator.openSettingsSection(it) },
-                modifier = modifier,
-            )
-        }
-        .build()
+interface AgentConfigurationState<out C : AgentConfiguration> : CircuitUiState {
+    val isValidConfiguration: Boolean
+    fun buildConfiguration(): C
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun NewConversationScreenLayout(
-    state: AgentConfigurationView.State,
-    onProviderSettingsClick: () -> Unit,
-    onGoToSettingsClick: (titleKey: String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val configurationState = state.configurationState
-    val isValidConfiguration = configurationState.isValidConfiguration
+internal class AgentConfigurationPresenter(
+    private val navigator: ConversationNavigator,
+    private val pluginContext: PluginContext,
+    private val conversationManager: ConversationManager,
+) : Presenter<AgentConfigurationScreen.State> {
+    @Composable
+    override fun present(): AgentConfigurationScreen.State {
+        val configurationPanes by pluginContext.contributions(AgentConfigurationPanes)
 
-    val snackBarHostState = remember { SnackbarHostState() }
+        val perClassPane = remember(configurationPanes) {
+            configurationPanes.associateBy { it.agentConfigurationClass }
+        }
+        val configurationClasses = perClassPane.keys
 
-    val modelManager by rememberInstance<ModelManager>()
+        var selectedClass by rememberRetained { mutableStateOf(configurationClasses.first()) }
 
-    LaunchedEffect(Unit) {
-        modelManager.providersInError.collect { providers ->
-            if (providers != null) {
-                val providerNames = providers.joinToString(", ")
-                val result = snackBarHostState.showSnackbar(
-                    message = "Failed to load models from $providerNames",
-                    actionLabel = "Settings",
-                    withDismissAction = true,
-                    duration = SnackbarDuration.Indefinite,
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    onProviderSettingsClick()
+        return state(
+            configurationClasses = configurationClasses,
+            perClassPane = perClassPane,
+            selectedClass = selectedClass,
+            updateSelectedClass = { selectedClass = it }
+        )
+    }
+
+    @Composable
+    private fun <C : AgentConfiguration, S : AgentConfigurationState<C>> state(
+        configurationClasses: Set<KClass<out AgentConfiguration>>,
+        perClassPane: Map<KClass<out AgentConfiguration>, AgentConfigurationPane<*, *>>,
+        selectedClass: KClass<C>,
+        updateSelectedClass: (KClass<out AgentConfiguration>) -> Unit,
+    ): AgentConfigurationScreen.State {
+        val selectedPane = remember(selectedClass, perClassPane) {
+            @Suppress("UNCHECKED_CAST")
+            perClassPane.getValue(selectedClass) as AgentConfigurationPane<C, S>
+        }
+
+        val presenter = remember(selectedPane) { selectedPane.presenterFactory(navigator) }
+        val configurationState = presenter.present()
+
+        val scope = rememberCoroutineScope()
+
+        return AgentConfigurationScreen.State(
+            selectableAgentClasses = configurationClasses,
+            agentLabels = { perClassPane.getValue(it).label() },
+            selectedAgentClass = selectedClass,
+            configurationState = configurationState,
+            renderer = { state, modifier ->
+                // TODO generify AgentConfigurationView.State?
+                @Suppress("UNCHECKED_CAST")
+                selectedPane.panel(state as S, modifier)
+            },
+        ) { event ->
+            when (event) {
+                is AgentConfigurationScreen.Event.SelectConfigurationClass -> {
+                    updateSelectedClass(event.configurationClass)
+                }
+
+                is AgentConfigurationScreen.Event.CreateAgent -> {
+                    check(configurationState.isValidConfiguration)
+                    val configuration = configurationState.buildConfiguration()
+
+                    scope.launch {
+                        val conversation = conversationManager.newConversation(configuration)
+                        navigator.goToConversation(conversation.id)
+                    }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun AgentConfigurationScreen(
+    state: AgentConfigurationScreen.State,
+    modifier: Modifier = Modifier,
+) {
+    val configurationState = state.configurationState
+    val isValidConfiguration = configurationState.isValidConfiguration
 
     Scaffold(
         modifier = modifier,
@@ -105,7 +144,7 @@ private fun NewConversationScreenLayout(
                 actions = {
                     IconButton(
                         onClick = {
-                            state.eventSink(AgentConfigurationView.Event.CreateAgent)
+                            state.eventSink(AgentConfigurationScreen.Event.CreateAgent)
                         },
                         enabled = isValidConfiguration,
                     ) {
@@ -117,7 +156,6 @@ private fun NewConversationScreenLayout(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -132,10 +170,24 @@ private fun NewConversationScreenLayout(
                     .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                AgentConfigurationPanel(
-                    state = state,
-                    onGoToSettingsClick = onGoToSettingsClick,
-                )
+                Column {
+                    AgentConfigurationClassSelector(
+                        selectedConfigurationClass = state.selectedAgentClass,
+                        onSelectConfigurationClass = {
+                            state.eventSink(
+                                AgentConfigurationScreen.Event.SelectConfigurationClass(
+                                    it
+                                )
+                            )
+                        },
+                        agentConfigurationClasses = state.selectableAgentClasses,
+                        agentLabels = { state.agentLabels(it) },
+                    )
+
+                    key(state.selectedAgentClass) {
+                        state.renderer(state.configurationState, Modifier.weight(1f))
+                    }
+                }
             }
         }
     }

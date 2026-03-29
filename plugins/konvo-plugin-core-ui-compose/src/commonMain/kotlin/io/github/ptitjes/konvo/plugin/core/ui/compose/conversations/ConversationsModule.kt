@@ -5,6 +5,7 @@ import com.slack.circuit.runtime.presenter.*
 import com.slack.circuit.runtime.screen.Screen
 import com.slack.circuit.runtime.ui.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import org.kodein.di.*
 
 val conversationsModule = DI.Module("conversations") {
@@ -27,6 +28,10 @@ private class ConversationsPresenterFactory(
                 new(::ConversationListPresenter, conversationNavigator)
             }
 
+            is AgentConfigurationScreen -> di.direct.newInstance {
+                new(::AgentConfigurationPresenter, conversationNavigator)
+            }
+
             else -> null
         }
     }
@@ -36,6 +41,7 @@ private class ConversationsUiFactory : Ui.Factory {
     override fun create(screen: Screen, context: CircuitContext): Ui<*>? {
         return when (screen) {
             is ConversationListScreen -> ui(::ConversationList)
+            is AgentConfigurationScreen -> ui(::AgentConfigurationScreen)
             else -> null
         }
     }

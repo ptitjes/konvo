@@ -55,7 +55,7 @@ internal fun ConversationsScreen(
                 }
 
                 entry<Destination.Conversation.New>(metadata = CenterStageScene.content()) {
-                    AgentConfigurationScreen(navigator = conversationNavigator)
+                    CircuitContent(screen = AgentConfigurationScreen, navigator = conversationNavigator.navigator)
                 }
 
                 entry<Destination.Conversation.Selected>(
