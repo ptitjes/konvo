@@ -79,7 +79,6 @@ object CoreUiComposePlugin : Plugin {
         }
 
         bindProviderOf(::MainScreenViewModel)
-        bindFactory { conversationId: String -> new(::ConversationViewModel, conversationId) }
 
         bind { singleton { App(di) } }
     }

@@ -73,7 +73,7 @@ internal fun ConversationsScreen(
                         }
                     )
                 ) {
-                    ConversationScreen(conversationId = it.id, navigator = conversationNavigator)
+                    CircuitContent(screen = ConversationScreen(it.id), navigator = conversationNavigator.navigator)
                 }
             }
         )

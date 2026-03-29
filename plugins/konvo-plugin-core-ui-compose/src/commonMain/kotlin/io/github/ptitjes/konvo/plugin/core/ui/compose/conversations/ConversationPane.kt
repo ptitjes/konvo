@@ -28,7 +28,7 @@ object ConversationPane {
 @Composable
 context(_: InteractionDevice.User)
 fun ConversationPane(
-    state: ConversationViewState.Loaded,
+    state: ConversationViewState,
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
     sharedTransitionScope: SharedTransitionScope,
@@ -103,7 +103,7 @@ private fun ConversationPreamble() {
 @Composable
 context(conversation: InteractionDevice.User)
 internal fun ConversationLog(
-    state: ConversationViewState.Loaded,
+    state: ConversationViewState,
     paddingValues: PaddingValues,
 ) {
     val lastViewedItemIndex = state.lastViewedItemIndex()
@@ -136,7 +136,7 @@ internal fun ConversationLog(
     }
 }
 
-private fun LazyListScope.conversationLogBottomItems(state: ConversationViewState.Loaded) {
+private fun LazyListScope.conversationLogBottomItems(state: ConversationViewState) {
     // ConversationFeedBottom slot
     item(ProcessingIndicatorKey, contentType = ProcessingIndicatorKey) {
         if (state.isProcessing) {
@@ -149,7 +149,7 @@ private fun LazyListScope.conversationLogBottomItems(state: ConversationViewStat
 
 @Composable
 context(conversation: InteractionDevice.User)
-private fun ConversationViewState.Loaded.lastViewedItemIndex(): Int {
+private fun ConversationViewState.lastViewedItemIndex(): Int {
     return remember(presence, items) {
         val lastViewTimestamp = presence[conversation.participant]?.lastViewTimestamp ?: Instant.DISTANT_PAST
         val lastViewedItemIndex = items.indexOfFirst { it.timestamp > lastViewTimestamp }
@@ -162,7 +162,7 @@ private fun ConversationViewState.Loaded.lastViewedItemIndex(): Int {
 context(conversation: InteractionDevice.User)
 private fun LastViewedTimestampUpdater(
     listState: LazyListState,
-    state: ConversationViewState.Loaded,
+    state: ConversationViewState,
 ) {
     val lastMessageTimestamp = remember(state.preview) {
         state.preview.lastMessageTimestamp ?: Instant.DISTANT_PAST

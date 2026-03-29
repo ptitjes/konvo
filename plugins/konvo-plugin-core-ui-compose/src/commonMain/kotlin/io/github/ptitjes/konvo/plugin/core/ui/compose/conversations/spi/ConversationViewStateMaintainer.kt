@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi
 
+import androidx.compose.runtime.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi.ConversationViewState.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi.ConversationViewStates.*
@@ -10,23 +11,23 @@ suspend fun ConversationViewStateMaintainer.handleTranscript(transcript: List<Ac
 }
 
 class ConversationViewStateMaintainer(
-    initialState: Loaded = Loaded(),
+    initialState: ConversationViewState = ConversationViewState(),
 ) {
-    var state = initialState
-        private set
+    private val _state = mutableStateOf(initialState)
+    var state by _state
 
     private typealias StateUpdaterFunction<S, P> = suspend (state: S, event: Action<P>) -> S
 
     private val registeredStateUpdater =
-        mutableMapOf<KClass<out Action.Payload>, MutableList<StateUpdaterFunction<Loaded, Action.Payload>>>()
+        mutableMapOf<KClass<out Action.Payload>, MutableList<StateUpdaterFunction<ConversationViewState, Action.Payload>>>()
 
     private fun <P : Action.Payload> addStateUpdater(
         klass: KClass<out P>,
-        handler: StateUpdaterFunction<Loaded, P>,
+        handler: StateUpdaterFunction<ConversationViewState, P>,
     ): () -> Unit {
         registeredStateUpdater[klass] = (registeredStateUpdater[klass] ?: mutableListOf()).also {
             @Suppress("UNCHECKED_CAST")
-            it += handler as StateUpdaterFunction<Loaded, Action.Payload>
+            it += handler as StateUpdaterFunction<ConversationViewState, Action.Payload>
         }
         return { registeredStateUpdater[klass]?.remove(handler) }
     }
@@ -91,9 +92,9 @@ class ConversationViewStateMaintainer(
     private class SequenceBuilderImpl<S>(
         private val stateMaintainer: ConversationViewStateMaintainer,
         private val slot: Slot.Sequence<S>,
-        initialRootState: Loaded,
+        initialRootState: ConversationViewState,
     ) : SequenceBuilder<S> {
-        var rootState: Loaded = initialRootState
+        var rootState: ConversationViewState = initialRootState
             private set
 
         override suspend fun <T : S> append(
@@ -117,7 +118,7 @@ class ConversationViewStateMaintainer(
             action: suspend DictionaryBuilder<K, S>.(Action<P>) -> Unit,
         ) {
             stateMaintainer.addStateUpdater(klass) { state, event ->
-                val scope = DictionaryBuilderImpl<K, S>(
+                val scope = DictionaryBuilderImpl(
                     stateMaintainer = stateMaintainer,
                     slot = slot,
                     initialRootState = state,
@@ -131,9 +132,9 @@ class ConversationViewStateMaintainer(
     private class DictionaryBuilderImpl<K, S>(
         private val stateMaintainer: ConversationViewStateMaintainer,
         private val slot: Slot.Dictionary<K, S>,
-        initialRootState: Loaded,
+        initialRootState: ConversationViewState,
     ) : DictionaryBuilder<K, S> {
-        var rootState: Loaded = initialRootState
+        var rootState: ConversationViewState = initialRootState
             private set
 
         override suspend fun <T : S> put(
@@ -158,7 +159,7 @@ class ConversationViewStateMaintainer(
             action: suspend RegisterBuilder<S>.(Action<P>) -> Unit,
         ) {
             stateMaintainer.addStateUpdater(klass) { state, event ->
-                val scope = RegisterBuilderImpl<S>(
+                val scope = RegisterBuilderImpl(
                     stateMaintainer = stateMaintainer,
                     slot = slot,
                     initialRootState = state,
@@ -172,9 +173,9 @@ class ConversationViewStateMaintainer(
     private class RegisterBuilderImpl<S>(
         private val stateMaintainer: ConversationViewStateMaintainer,
         private val slot: Slot.Register<S>,
-        initialRootState: Loaded,
+        initialRootState: ConversationViewState,
     ) : RegisterBuilder<S> {
-        var rootState: Loaded = initialRootState
+        var rootState: ConversationViewState = initialRootState
             private set
 
         override suspend fun set(

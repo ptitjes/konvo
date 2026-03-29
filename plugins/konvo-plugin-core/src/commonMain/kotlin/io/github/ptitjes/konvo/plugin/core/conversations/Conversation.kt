@@ -123,6 +123,8 @@ class Conversation internal constructor(
             }
     }
 
+    val state: StateFlow<ConversationState> get() = _state.asStateFlow()
+
     suspend fun awaitConversationLoaded(): ConversationState.Loaded {
         return _state.filterIsInstance<ConversationState.Loaded>().first()
     }

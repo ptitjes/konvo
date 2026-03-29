@@ -3,8 +3,9 @@ package io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi
 import androidx.compose.runtime.*
 import kotlin.reflect.*
 
-class ConversationView {
+sealed interface ConversationView {
 
+    // TODO make this the ConversationView interface
     fun interface View<in Scope, in State, in Control> {
         @Composable
         context(control: Control)

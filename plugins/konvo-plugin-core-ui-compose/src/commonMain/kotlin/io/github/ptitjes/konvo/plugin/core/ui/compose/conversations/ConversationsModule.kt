@@ -21,11 +21,15 @@ private class ConversationsPresenterFactory(
     private val di: DI,
 ) : Presenter.Factory {
     override fun create(screen: Screen, navigator: Navigator, context: CircuitContext): Presenter<*>? {
-        val conversationNavigator = ConversationNavigator(navigator)
+        val conversationNavigator by lazy { ConversationNavigator(navigator) }
 
         return when (screen) {
             is ConversationListScreen -> di.direct.newInstance {
                 new(::ConversationListPresenter, conversationNavigator)
+            }
+
+            is ConversationScreen -> di.direct.newInstance {
+                new(::ConversationPresenter, screen, conversationNavigator)
             }
 
             is AgentConfigurationScreen -> di.direct.newInstance {
@@ -41,6 +45,7 @@ private class ConversationsUiFactory : Ui.Factory {
     override fun create(screen: Screen, context: CircuitContext): Ui<*>? {
         return when (screen) {
             is ConversationListScreen -> ui(::ConversationList)
+            is ConversationScreen -> ui(::ConversationScreen)
             is AgentConfigurationScreen -> ui(::AgentConfigurationScreen)
             else -> null
         }
