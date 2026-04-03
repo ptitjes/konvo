@@ -33,7 +33,7 @@ opentelemetry = "1.51.0"
 
 compose = "1.11.0-alpha02"
 composeMaterial3 = "1.11.0-alpha02"
-composeMaterial3Adaptive = "1.3.0-alpha04"
+composeMaterial3Adaptive = "1.3.0-alpha06"
 androidxLifecycle = "2.10.0-alpha08"
 androidxNavigation3 = "1.1.0-alpha02"
 
