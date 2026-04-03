@@ -8,13 +8,6 @@ plugins {
 val versionCatalog = versionCatalogs.named("libs")
 
 kotlin {
-    sourceSets.all {
-        languageSettings.enableLanguageFeature("WhenGuards")
-        languageSettings.enableLanguageFeature("MultiDollarInterpolation")
-        languageSettings.optIn("kotlin.time.ExperimentalTime")
-        languageSettings.optIn("kotlin.uuid.ExperimentalUuidApi")
-    }
-
     sourceSets {
         commonMain.dependencies {
             implementation(versionCatalog.findLibrary("kotlinxCoroutines").get())
