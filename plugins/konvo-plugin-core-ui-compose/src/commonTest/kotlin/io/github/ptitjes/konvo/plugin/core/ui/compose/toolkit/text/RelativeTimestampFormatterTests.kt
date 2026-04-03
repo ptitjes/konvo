@@ -5,6 +5,7 @@ import kotlin.test.*
 import kotlin.time.*
 
 class RelativeTimestampFormatterTests {
+    @OptIn(ExperimentalTestApi::class)
     @Test
     fun `formatTimestampRelative returns minutes and hours for recent times`() = runComposeUiTest {
         setContent {
@@ -26,6 +27,7 @@ class RelativeTimestampFormatterTests {
         }
     }
 
+    @OptIn(ExperimentalTestApi::class)
     @Test
     fun `formatTimestampRelative returns ISO date for older times`() = runComposeUiTest {
         setContent {
