@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
@@ -43,8 +44,8 @@ internal class LorebooksSettingsPresenter(
 ) : Presenter<LorebooksSettingsView.State> {
     @Composable
     override fun present(): LorebooksSettingsView.State {
-        var lorebooks by remember { mutableStateOf<List<Lorebook>?>(null) }
-        var loadError by remember { mutableStateOf<String?>(null) }
+        var lorebooks by rememberRetained { mutableStateOf<List<Lorebook>?>(null) }
+        var loadError by rememberRetained { mutableStateOf<String?>(null) }
 
         val scope = rememberCoroutineScope()
 

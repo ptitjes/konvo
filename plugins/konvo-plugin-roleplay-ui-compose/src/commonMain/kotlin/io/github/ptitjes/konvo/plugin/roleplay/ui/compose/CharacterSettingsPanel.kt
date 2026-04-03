@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
+import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
@@ -50,8 +51,8 @@ internal class CharacterSettingsPresenter(
     override fun present(): CharacterSettingsView.State {
         var settings by settingsRepository.mutableSettingsOf(CharacterSettingsKey)
 
-        var characters by remember { mutableStateOf<List<CharacterCard>?>(null) }
-        var loadError by remember { mutableStateOf<String?>(null) }
+        var characters by rememberRetained { mutableStateOf<List<CharacterCard>?>(null) }
+        var loadError by rememberRetained { mutableStateOf<String?>(null) }
 
         val scope = rememberCoroutineScope()
 

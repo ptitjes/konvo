@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.*
 import androidx.compose.ui.unit.*
 import com.eygraber.compose.placeholder.*
 import com.eygraber.compose.placeholder.material3.*
+import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.conversations.*
@@ -56,15 +57,17 @@ class ConversationPresenter(
         val conversation = conversationManager.getConversation(conversationId)
         val state by conversation.state.collectAsState()
 
-        val stateUpdater = remember {
+        var transcriptLoaded by rememberRetained { mutableStateOf(false) }
+
+        val stateUpdater = rememberRetained {
             ConversationViewStateMaintainer().apply {
                 setupCoreViewStateProducers()
             }
         }
 
-        var transcriptReady by remember { mutableStateOf(false) }
+        LaunchedEffect(stateUpdater, transcriptLoaded) {
+            if (transcriptLoaded) return@LaunchedEffect
 
-        LaunchedEffect(Unit) {
             val state = conversation.awaitConversationLoaded()
             val transcriptHandled = Job()
 
@@ -90,11 +93,11 @@ class ConversationPresenter(
             )
 
             transcriptHandled.complete()
-            transcriptReady = true
+            transcriptLoaded = true
         }
 
         return when (state) {
-            is ConversationState.Loaded if (transcriptReady) -> ConversationScreen.State.Loaded(
+            is ConversationState.Loaded if (transcriptLoaded) -> ConversationScreen.State.Loaded(
                 id = conversationId,
                 conversation = stateUpdater.state,
                 device = conversation.newUserDevice(),
