@@ -22,7 +22,7 @@ fun ConversationListItem(
     onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val timestampFormatter = rememberRelativeTimestampFormatter()
+    val timestampFormatter = rememberRelativeTimestampFormatter(i18n.formats)
     var showConfirm by remember { mutableStateOf(false) }
 
     val openConversationAria = i18n.conversations.openConversationAria

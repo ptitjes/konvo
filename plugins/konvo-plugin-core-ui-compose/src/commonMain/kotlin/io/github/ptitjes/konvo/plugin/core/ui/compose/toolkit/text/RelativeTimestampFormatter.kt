@@ -13,8 +13,9 @@ import kotlin.time.Instant
 internal val I18nStrings.formats: FormatStrings get() = byType()
 
 @Composable
-internal fun rememberRelativeTimestampFormatter(): RelativeTimestampFormatter {
-    val formats = i18n.formats
+internal fun rememberRelativeTimestampFormatter(
+    formats: FormatStrings = i18n.formats,
+): RelativeTimestampFormatter {
     return remember { RelativeTimestampFormatter(formats) }
 }
 
