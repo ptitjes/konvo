@@ -1,6 +1,7 @@
 package konvo.conventions
 
 import org.gradle.api.tasks.testing.logging.*
+import org.jetbrains.kotlin.gradle.dsl.*
 
 plugins {
     kotlin("multiplatform")
@@ -9,14 +10,13 @@ plugins {
 kotlin {
     jvmToolchain(21)
 
-    sourceSets.all {
-        languageSettings.enableLanguageFeature("WhenGuards")
-        languageSettings.enableLanguageFeature("MultiDollarInterpolation")
-        languageSettings.enableLanguageFeature("NestedTypeAliases")
-        languageSettings.enableLanguageFeature("ContextParameters")
-        languageSettings.optIn("kotlin.time.ExperimentalTime")
-        languageSettings.optIn("kotlin.uuid.ExperimentalUuidApi")
-        languageSettings.optIn("androidx.compose.ui.test.ExperimentalTestApi")
+    compilerOptions {
+        languageVersion = KotlinVersion.KOTLIN_2_3
+
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("kotlin.uuid.ExperimentalUuidApi")
+
+        freeCompilerArgs.add("-Xcontext-parameters")
     }
 
     sourceSets {
