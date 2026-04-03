@@ -1,8 +1,8 @@
 package io.github.ptitjes.konvo.plugin.core.roleplay.providers
 
-import com.ashampoo.kim.format.png.*
-import com.ashampoo.kim.format.png.chunk.*
-import com.ashampoo.kim.input.*
+import de.stefan_oltmann.kim.format.png.*
+import de.stefan_oltmann.kim.format.png.chunk.*
+import de.stefan_oltmann.kim.input.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.util.*
 import kotlinx.io.*
