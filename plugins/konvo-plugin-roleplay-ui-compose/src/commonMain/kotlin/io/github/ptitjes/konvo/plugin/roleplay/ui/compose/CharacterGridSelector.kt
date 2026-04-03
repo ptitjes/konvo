@@ -60,7 +60,7 @@ fun CharacterGridSelector(
  * optional click handling, and an optional top-end overlay per item (e.g., action buttons).
  */
 @Composable
-fun CharacterGrid(
+internal fun CharacterGrid(
     characters: List<CharacterCard>,
     selectedCharacterId: String? = null,
     onCharacterClicked: ((CharacterCard) -> Unit)? = null,
