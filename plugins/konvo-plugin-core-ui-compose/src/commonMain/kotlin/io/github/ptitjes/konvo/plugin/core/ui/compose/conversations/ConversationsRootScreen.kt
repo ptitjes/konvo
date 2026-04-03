@@ -76,7 +76,7 @@ internal fun ConversationRootScreen(
             CircuitNavDisplay(
                 navigator = navigator,
                 backStack = backStack,
-                sceneStrategy = sceneStrategy,
+                sceneStrategies = listOf(sceneStrategy),
                 sharedTransitionScope = this,
                 transitionSpec = defaultKonvoTransitionSpec(),
                 popTransitionSpec = defaultKonvoPopTransitionSpec(),
