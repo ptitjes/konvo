@@ -8,7 +8,7 @@ kotlinxSerialization = "1.10.0"
 kotlinxCoroutines = "1.10.2"
 kotlinxIo = "0.8.0"
 kotlinxBenchmark = "0.4.16"
-kotlinxKover = "0.9.4"
+kotlinxKover = "0.9.8"
 kotlinDokka = "2.1.0"
 ktor = "3.2.3"
 
