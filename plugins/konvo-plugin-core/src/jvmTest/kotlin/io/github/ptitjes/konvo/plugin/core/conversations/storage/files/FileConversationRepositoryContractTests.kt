@@ -1,11 +1,15 @@
 package io.github.ptitjes.konvo.plugin.core.conversations.storage.files
 
 import io.github.ptitjes.konvo.plugin.core.conversations.*
+import io.github.ptitjes.konvo.plugin.core.conversations.model.*
+import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
 import io.github.ptitjes.konvo.plugin.core.platform.*
 import io.github.ptitjes.konvo.plugin.core.util.*
+import io.github.ptitjes.syrup.*
 import io.github.ptitjes.syrup.specification.*
 import kotlinx.io.files.Path
+import kotlinx.serialization.modules.*
 import org.kodein.di.*
 import kotlin.io.path.createTempDirectory
 import kotlin.reflect.*
@@ -28,9 +32,25 @@ class FileConversationRepositoryContractTests : ConversationRepositoryContractTe
                     override fun provideDelegate(receiver: Any?, prop: KProperty<Any?>): Lazy<Set<T>> =
                         lazy { emptySet() }
                 }
+
+            override fun <T : Any> sourcedContributions(extensionPoint: ExtensionPoint.Plural<T>): LazyDelegate<Set<Sourced<T>>> =
+                object : LazyDelegate<Set<Sourced<T>>> {
+                    override fun provideDelegate(receiver: Any?, prop: KProperty<Any?>): Lazy<Set<Sourced<T>>> =
+                        lazy { emptySet() }
+                }
         }
 
-        val actionRegistry = DefaultActionRegistry(context)
+        val actionRegistry = object : ActionRegistry {
+            override val serializersModule: SerializersModule
+                get() = SerializersModule {
+                    polymorphic(
+                        baseClass = Action.Payload::class,
+                        actualClass = Messaging.Message::class,
+                        actualSerializer = Messaging.Message.serializer(),
+                    )
+                }
+        }
+
         val interactionProtocolRegistry = DefaultInteractionProtocolRegistry(context)
 
         return FileConversationRepository(
