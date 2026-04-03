@@ -71,7 +71,7 @@ class RoleplayAgent(
         onExecute { input ->
             val roleplaySettings = settingsRepository.getSettings(RoleplaySettingsKey).first()
             val model = modelProviderManager.named(configuration.modelName)
-            val promptExecutor = SingleLLMPromptExecutor(model.getLLMClient())
+            val promptExecutor = MultiLLMPromptExecutor(model.getLLMClient())
             val character = characterProviderManager.withId(configuration.characterId)
             val personaSettings = settingsRepository.getSettings(PersonaSettingsKey).first()
             val persona = personaSettings.personas.first { it.name == configuration.personaName }
