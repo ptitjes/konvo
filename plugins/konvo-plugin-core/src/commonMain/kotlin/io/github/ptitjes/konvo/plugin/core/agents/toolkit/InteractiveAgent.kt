@@ -21,7 +21,6 @@ abstract class InteractiveAgent<C : AgentConfiguration>(
 ) : Agent {
     protected abstract val initialInteraction: InteractionDriver<ConversationControl.InviteAgent, *>
 
-    @InteractiveAgentDsl
     fun <P : Action.Payload, S> interaction(
         protocol: InteractionProtocol,
         name: String? = null,
@@ -33,7 +32,6 @@ abstract class InteractiveAgent<C : AgentConfiguration>(
         builderAction = builderAction,
     )
 
-    @InteractiveAgentDsl
     fun <P : Action.Payload, S> interaction(
         protocol: InteractionProtocol,
         name: String? = null,

@@ -15,7 +15,6 @@ fun AIAgentSubgraphBuilderBase<*, *>.dumpMessageAction(): AIAgentNodeDelegate<Ac
         }
     }
 
-@AIAgentBuilderDslMarker
 fun AIAgentSubgraphBuilderBase<*, *>.requestLLM(
     name: String? = null,
 ) = node<Unit, List<Message.Response>>(name) {
@@ -43,7 +42,6 @@ data class VettedToolCall(
     val vetted: Boolean,
 )
 
-@AIAgentBuilderDslMarker
 fun AIAgentSubgraphBuilderBase<*, *>.nodeExecuteVettedToolCalls(
     name: String? = null,
     parallelTools: Boolean = false,

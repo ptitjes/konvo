@@ -136,7 +136,6 @@ class QuestionAnswerAgent(
         }
     }
 
-    @AIAgentBuilderDslMarker
     fun AIAgentSubgraphBuilderBase<*, *>.vetToolCalls(
         name: String? = null,
     ) = subgraph<List<Message.Tool.Call>, List<VettedToolCall>>(name) {
