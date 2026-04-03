@@ -20,7 +20,7 @@ fun <T : NavScreen> CircuitNavDisplay(
         rememberSaveableStateHolderNavEntryDecorator(),
         rememberRetainedStateHolderNavEntryDecorator(),
     ),
-    sceneStrategy: SceneStrategy<T> = SinglePaneSceneStrategy(),
+    sceneStrategies: List<SceneStrategy<T>> = listOf(SinglePaneSceneStrategy()),
     sharedTransitionScope: SharedTransitionScope? = null,
     sizeTransform: SizeTransform? = null,
     transitionSpec: AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform =
@@ -43,7 +43,7 @@ fun <T : NavScreen> CircuitNavDisplay(
             contentAlignment = contentAlignment,
             backStack = backStack,
             onBack = { navigator.pop() },
-            sceneStrategy = sceneStrategy,
+            sceneStrategies = sceneStrategies,
             sharedTransitionScope = sharedTransitionScope,
             sizeTransform = sizeTransform,
             entryDecorators = entryDecorators,
