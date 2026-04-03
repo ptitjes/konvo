@@ -29,7 +29,7 @@ private class SettingsPresenterFactory(
                 new(::SettingsListPresenter, settingsNavigator)
             }
 
-            is SettingsSectionScreen -> di.direct.newInstance {
+            is SettingsScreen -> di.direct.newInstance {
                 new(::SettingsSectionPresenter, a1 = screen, a2 = settingsNavigator)
             }
 
@@ -47,7 +47,7 @@ private class SettingsUiFactory(
     override fun create(screen: Screen, context: CircuitContext): Ui<*>? {
         return when (screen) {
             is SettingsListScreen -> ui(::SettingsListScreen)
-            is SettingsSectionScreen -> ui(::SettingsSectionScreen)
+            is SettingsScreen -> ui(::SettingsSectionScreen)
             is SettingsSectionView -> uiForSection(sectionManager.sectionForKey(screen.key))
             else -> null
         }

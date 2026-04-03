@@ -6,7 +6,7 @@ import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 
 class RoleplayConfigurationPresenter(
     private val navigator: ConversationNavigator,

@@ -1,29 +1,29 @@
 package io.github.ptitjes.konvo.plugin.core.ui.compose
 
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import com.slack.circuit.foundation.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.images.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.theme.*
+import com.slack.circuit.foundation.navstack.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import org.kodein.di.*
-import org.kodein.di.compose.*
 
 class App(private val di: DI) {
     @Composable
     operator fun invoke() {
-        val circuit by di.instance<Circuit>()
+        KonvoCompositionLocals(di) {
+            val navStack = rememberSaveableNavStack(NewConversationScreen)
 
-        // TODO do not expose this to the UI
-        withDI(di) {
-            CoilImageLoader()
-
-            ProvideI18nStrings {
-                KonvoTheme {
-                    CircuitCompositionLocals(circuit = circuit) {
-                        ConversationsScreen()
-                    }
-                }
+            val navigator = rememberCircuitNavigator(navStack) {
+                // TODO maybe close app?
             }
+
+            ConversationRootScreen(
+                modifier = Modifier.fillMaxSize(),
+                navigator = navigator,
+            )
+
+            SettingsWindow(navigator = navigator)
         }
     }
 }

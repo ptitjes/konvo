@@ -36,70 +36,80 @@ class CenterStageScene<T : Any>(
         val widthAtLeastLarge = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_LARGE_LOWER_BOUND)
         val widthAtLeastExpanded = windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_EXPANDED_LOWER_BOUND)
 
-        val navigationPaneProperties = navigationMetadata?.properties
-            ?: remember(windowSizeClass, containerDpSize) {
-                PaneProperties(
-                    modal = !widthAtLeastLarge,
-                    hiddenWhenCollapsed = !widthAtLeastExpanded,
-                    expandedWidth = when {
-                        widthAtLeastExpanded -> containerDpSize.width * 1000 / 2618
-                        else -> containerDpSize.width * .9f // TODO get default platform width
-                    },
-                )
-            }
+        val navigationPaneProperties = remember(navigationMetadata?.properties, windowSizeClass, containerDpSize) {
+            navigationMetadata?.properties ?: PaneProperties(
+                modal = !widthAtLeastLarge,
+                hiddenWhenCollapsed = !widthAtLeastExpanded,
+                expandedWidth = when {
+                    widthAtLeastExpanded -> containerDpSize.width * 1000 / 2618
+                    else -> containerDpSize.width * .9f // TODO get default platform width
+                },
+            )
+        }
 
-        val extraPaneProperties = extraMetadata?.properties
-            ?: remember(windowSizeClass, containerDpSize) {
-                PaneProperties(
-                    modal = !widthAtLeastLarge,
-                    hiddenWhenCollapsed = true,
-                    expandedWidth = when {
-                        widthAtLeastExpanded -> containerDpSize.width * 1000 / 2618
-                        else -> containerDpSize.width * .9f // TODO get default platform width
-                    },
-                )
-            }
+        val extraPaneProperties = remember(extraMetadata?.properties, windowSizeClass, containerDpSize) {
+            extraMetadata?.properties ?: PaneProperties(
+                modal = !widthAtLeastLarge,
+                hiddenWhenCollapsed = true,
+                expandedWidth = when {
+                    widthAtLeastExpanded -> containerDpSize.width * 1000 / 2618
+                    else -> containerDpSize.width * .9f // TODO get default platform width
+                },
+            )
+        }
 
+        val defaultNavigationContent = contentMetadata?.defaultNavigationContent
         val defaultExtraContent = contentMetadata?.defaultExtraContent
 
         val coroutineScope = rememberCoroutineScope()
 
-        val contentNavigationControl = object : CenterStageControl {
-            override val navigationState: CenterStagePaneState
-                get() = when {
-                    navigationPaneState.targetValue.isExpanded -> CenterStagePaneState.Expanded
-                    navigationPaneProperties.hiddenWhenCollapsed -> CenterStagePaneState.Hidden
-                    else -> CenterStagePaneState.Collapsed
+        val contentNavigationControl = remember(
+            navigationPaneState, extraPaneState, navigationPaneProperties, extraPaneProperties,
+            extraEntry, defaultExtraContent,
+        ) {
+            object : CenterStageControl {
+                override val navigationState: CenterStagePaneState
+                    get() = when {
+                        navigationPaneState.targetValue.isExpanded -> CenterStagePaneState.Expanded
+                        navigationPaneProperties.hiddenWhenCollapsed -> CenterStagePaneState.Hidden
+                        else -> CenterStagePaneState.Collapsed
+                    }
+
+                override fun onNavigationExpand(update: (Boolean) -> Boolean) {
+                    coroutineScope.launch { navigationPaneState.toggle() }
                 }
 
-            override fun onNavigationExpand(update: (Boolean) -> Boolean) {
-                coroutineScope.launch { navigationPaneState.toggle() }
-            }
+                override val extraState: CenterStagePaneState
+                    get() = when {
+                        extraEntry == null && defaultExtraContent == null -> CenterStagePaneState.Hidden
+                        extraPaneState.targetValue.isExpanded -> CenterStagePaneState.Expanded
+                        extraPaneProperties.hiddenWhenCollapsed -> CenterStagePaneState.Hidden
+                        else -> CenterStagePaneState.Collapsed
+                    }
 
-            override val extraState: CenterStagePaneState
-                get() = when {
-                    extraEntry == null && defaultExtraContent == null -> CenterStagePaneState.Hidden
-                    extraPaneState.targetValue.isExpanded -> CenterStagePaneState.Expanded
-                    extraPaneProperties.hiddenWhenCollapsed -> CenterStagePaneState.Hidden
-                    else -> CenterStagePaneState.Collapsed
+                override fun onExtraExpand(update: (Boolean) -> Boolean) {
+                    coroutineScope.launch { extraPaneState.toggle() }
                 }
-
-            override fun onExtraExpand(update: (Boolean) -> Boolean) {
-                coroutineScope.launch { extraPaneState.toggle() }
             }
         }
 
         CompositionLocalProvider(
             LocalCenterStageControl provides contentNavigationControl
         ) {
+            val navigationPaneContent =
+                (defaultNavigationContent?.let { navigationContent -> @Composable { navigationContent() } }
+                    ?: navigationEntry?.let { entry -> @Composable { entry.Content() } })
+
+            val extraPaneContent = (extraEntry?.let { entry -> @Composable { entry.Content() } }
+                ?: defaultExtraContent?.let { extraContent -> @Composable { extraContent() } })
+
             CenterStageScaffold(
                 navigationPaneState = navigationPaneState,
                 navigationPaneProperties = navigationPaneProperties,
-                navigationPaneContent = navigationEntry?.let { entry -> { entry.Content() } },
+                navigationPaneContent = navigationPaneContent,
                 extraPaneState = extraPaneState,
                 extraPaneProperties = extraPaneProperties,
-                extraPaneContent = extraEntry?.let { entry -> { entry.Content() } }
-                    ?: defaultExtraContent?.let { extraContent -> @Composable { extraContent() } },
+                extraPaneContent = extraPaneContent,
                 content = contentEntry::Content,
             )
         }
@@ -113,14 +123,18 @@ class CenterStageScene<T : Any>(
         fun navigation(properties: PaneProperties? = null): Map<String, Any> =
             mapOf(NAVIGATION_PANE_KEY to PaneMetadata(properties))
 
-        fun content(defaultExtraContent: (@Composable () -> Unit)? = null): Map<String, Any> =
-            mapOf(CONTENT_KEY to ContentMetadata(defaultExtraContent))
+        fun content(
+            defaultNavigationContent: (@Composable () -> Unit)? = null,
+            defaultExtraContent: (@Composable () -> Unit)? = null,
+        ): Map<String, Any> =
+            mapOf(CONTENT_KEY to ContentMetadata(defaultNavigationContent, defaultExtraContent))
 
         fun extra(properties: PaneProperties? = null): Map<String, Any> =
             mapOf(EXTRA_PANE_KEY to PaneMetadata(properties))
     }
 
     data class ContentMetadata(
+        val defaultNavigationContent: (@Composable () -> Unit)?,
         val defaultExtraContent: (@Composable () -> Unit)?,
     )
 

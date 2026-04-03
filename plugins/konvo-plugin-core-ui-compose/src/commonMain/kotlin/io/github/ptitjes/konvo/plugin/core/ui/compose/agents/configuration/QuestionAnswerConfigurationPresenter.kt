@@ -5,7 +5,7 @@ import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.models.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 
 class QuestionAnswerConfigurationPresenter(
     private val navigator: ConversationNavigator,

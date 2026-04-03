@@ -14,7 +14,6 @@ import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*

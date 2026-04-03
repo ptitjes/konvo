@@ -37,10 +37,10 @@ import kotlinx.coroutines.*
 internal fun CenterStageScaffold(
     navigationPaneState: PaneState = rememberPaneState(),
     navigationPaneProperties: PaneProperties = PaneProperties(),
-    navigationPaneContent: (@Composable (expanded: Boolean) -> Unit)? = null,
+    navigationPaneContent: (@Composable () -> Unit)? = null,
     extraPaneState: PaneState = rememberPaneState(),
     extraPaneProperties: PaneProperties = PaneProperties(),
-    extraPaneContent: (@Composable (expanded: Boolean) -> Unit)? = null,
+    extraPaneContent: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier.Companion,
     content: @Composable () -> Unit,
 ) {
@@ -77,10 +77,10 @@ private fun CenterStageScaffoldLayout(
     extraExpanded: Boolean,
     navigationProperties: PaneProperties = PaneProperties(),
     onDismissNavigation: () -> Unit = {},
-    navigationContent: (@Composable ((Boolean) -> Unit))? = null,
+    navigationContent: (@Composable (() -> Unit))? = null,
     extraProperties: PaneProperties = PaneProperties(),
     onDismissExtra: () -> Unit = {},
-    extraContent: (@Composable ((Boolean) -> Unit))? = null,
+    extraContent: (@Composable (() -> Unit))? = null,
     content: @Composable (() -> Unit),
 ) {
     val navigationRatio by animateFloatAsState(if (navigationExpanded) 1f else 0f)
@@ -94,12 +94,12 @@ private fun CenterStageScaffoldLayout(
             }
             if (navigationContent != null) {
                 Box(Modifier.layoutId("navigation")) {
-                    navigationContent(navigationExpanded)
+                    navigationContent()
                 }
             }
             if (extraContent != null) {
                 Box(Modifier.layoutId("extra")) {
-                    extraContent(extraExpanded)
+                    extraContent()
                 }
             }
             if ((navigationProperties.modal && navigationContent != null) ||

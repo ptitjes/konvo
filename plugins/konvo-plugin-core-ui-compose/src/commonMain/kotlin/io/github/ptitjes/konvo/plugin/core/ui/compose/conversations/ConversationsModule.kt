@@ -4,7 +4,6 @@ import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import com.slack.circuit.runtime.screen.Screen
 import com.slack.circuit.runtime.ui.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import org.kodein.di.*
 

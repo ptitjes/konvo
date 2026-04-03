@@ -78,8 +78,6 @@ object CoreUiComposePlugin : Plugin {
             )
         }
 
-        bindProviderOf(::MainScreenViewModel)
-
         bind { singleton { App(di) } }
     }
 }

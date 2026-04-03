@@ -11,15 +11,14 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import kotlinx.serialization.*
 import org.jetbrains.compose.resources.*
 
 @Serializable
-data object SettingsListScreen : SettingsScreen {
-    override fun toString(): String = "settings"
-
+internal data object SettingsListScreen : Screen {
     internal sealed interface State : CircuitUiState {
         data object Loading : State
         data class Loaded(

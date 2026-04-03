@@ -8,9 +8,9 @@ import androidx.compose.ui.unit.*
 import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
+import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.conversations.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
@@ -21,7 +21,7 @@ import kotlinx.coroutines.*
 import org.jetbrains.compose.resources.*
 import kotlin.reflect.*
 
-data object AgentConfigurationScreen : NavScreen {
+data object AgentConfigurationScreen : Screen {
     internal data class State(
         val selectableAgentClasses: Set<KClass<out AgentConfiguration>>,
         val agentLabels: @Composable (KClass<out AgentConfiguration>) -> String,

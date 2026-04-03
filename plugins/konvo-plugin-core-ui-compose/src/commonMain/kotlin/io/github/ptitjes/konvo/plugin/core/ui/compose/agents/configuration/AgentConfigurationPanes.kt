@@ -4,7 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.agents.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*
 import io.github.ptitjes.syrup.specification.*
 import org.kodein.type.*
 import kotlin.reflect.*

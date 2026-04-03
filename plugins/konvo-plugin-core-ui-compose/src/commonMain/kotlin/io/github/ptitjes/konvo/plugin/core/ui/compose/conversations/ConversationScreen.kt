@@ -17,7 +17,6 @@ import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.conversations.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
-import io.github.ptitjes.konvo.plugin.core.ui.compose.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.spi.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.views.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
@@ -31,10 +30,8 @@ import kotlinx.coroutines.flow.*
 import org.jetbrains.compose.resources.*
 import kotlin.time.*
 
-data class ConversationScreen(
-    val conversationId: String,
-) : NavScreen {
-    override fun toString(): String = "conversation/$conversationId"
+data class ConversationScreen(val id: String) : ConversationsScreen {
+    override fun toString(): String = "conversation/$id"
 
     sealed interface State : CircuitUiState {
         data object Loading : State
@@ -55,7 +52,7 @@ class ConversationPresenter(
 ) : Presenter<ConversationScreen.State> {
     @Composable
     override fun present(): ConversationScreen.State {
-        val conversationId = screen.conversationId
+        val conversationId = screen.id
         val conversation = conversationManager.getConversation(conversationId)
         val state by conversation.state.collectAsState()
 

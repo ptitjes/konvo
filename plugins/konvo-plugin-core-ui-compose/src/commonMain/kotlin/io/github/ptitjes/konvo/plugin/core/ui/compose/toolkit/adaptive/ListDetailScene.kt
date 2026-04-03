@@ -8,26 +8,31 @@ import androidx.window.core.layout.*
 class ListDetailScene<T : Any>(
     override val key: Any,
     override val previousEntries: List<NavEntry<T>>,
-    val listEntry: NavEntry<T>,
-    val detailEntry: NavEntry<T>?,
+    val listEntry: NavEntry<T>?,
+    val detailEntry: NavEntry<T>,
 ) : Scene<T> {
+
     override val entries: List<NavEntry<T>> = buildList {
-        add(listEntry)
-        detailEntry?.let { add(it) }
+        listEntry?.let { add(it) }
+        add(detailEntry)
     }
 
     override val content: @Composable (() -> Unit) = {
         CompositionLocalProvider(
             LocalListDetailPaneType provides ListDetailPaneType.TwoPane,
         ) {
+            val detailMetadata = detailEntry.metadata[DETAIL_KEY] as? DetailMetadata
+            val defaultListContent = detailMetadata?.defaultListContent
+
             ListDetailLayout(
                 paneType = ListDetailPaneType.TwoPane,
                 paneChoice = ListDetailPaneChoice.List,
-                listContent = {
-                    listEntry.Content()
-                },
+                listContent =
+                    defaultListContent?.let { content -> @Composable { content() } }
+                        ?: listEntry?.let { entry -> @Composable { entry.Content() } }
+                        ?: @Composable { },
                 detailContent = {
-                    detailEntry?.Content()
+                    detailEntry.Content()
                 }
             )
         }
@@ -38,7 +43,13 @@ class ListDetailScene<T : Any>(
         const val DETAIL_KEY = "ListDetailScene-Detail"
 
         fun list(): Map<String, Any> = mapOf(LIST_KEY to true)
-        fun detail(): Map<String, Any> = mapOf(DETAIL_KEY to true)
+        fun detail(
+            defaultListContent: (@Composable () -> Unit)? = null,
+        ): Map<String, Any> = mapOf(DETAIL_KEY to DetailMetadata(defaultListContent))
+
+        data class DetailMetadata(
+            val defaultListContent: (@Composable () -> Unit)?,
+        )
     }
 }
 
@@ -48,18 +59,19 @@ class ListDetailStrategy<T : Any>(private val windowSizeClass: WindowSizeClass) 
         if (!isExpandedWidth) return null
 
         val lastEntry = entries.lastOrNull() ?: return null
-        val isListDetailEntry = lastEntry.metadata.containsKey(ListDetailScene.Companion.LIST_KEY) || lastEntry.metadata.containsKey(
-            ListDetailScene.Companion.DETAIL_KEY
-        )
+        val isListDetailEntry =
+            lastEntry.metadata.containsKey(ListDetailScene.LIST_KEY) || lastEntry.metadata.containsKey(
+                ListDetailScene.DETAIL_KEY
+            )
         if (!isListDetailEntry) return null
 
-        val listEntry = entries.findLast { ListDetailScene.Companion.LIST_KEY in it.metadata } ?: return null
-        val detailEntry = entries.findLast { ListDetailScene.Companion.DETAIL_KEY in it.metadata }
+        val listEntry = entries.findLast { ListDetailScene.LIST_KEY in it.metadata }
+        val detailEntry = entries.findLast { ListDetailScene.DETAIL_KEY in it.metadata } ?: return null
 
         val previousEntries = entries.dropLast(1)
 
         return ListDetailScene(
-            key = listEntry.contentKey to detailEntry?.contentKey,
+            key = listEntry?.contentKey to detailEntry.contentKey,
             previousEntries = previousEntries,
             listEntry = listEntry,
             detailEntry = detailEntry,
