@@ -53,6 +53,7 @@ workflow(
         runsOn = RunnerType.Custom("ubuntu-24.04-arm"),
         extraSetup = {
             run(name = "Update dependencies", command = "sudo apt-get update")
+            run(name = "Install libEGL", command = "sudo apt install -y libegl1")
         },
         buildArguments = "build -Dsplit_targets",
         afterBuild = {
