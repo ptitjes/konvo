@@ -24,7 +24,9 @@ kotlin {
                 implementation(libs.kotlinxCli)
                 implementation(libs.mcp)
                 implementation(libs.ktorServerCio)
-                implementation(libs.xemanticJsonSchema)
+
+                implementation(libs.kotlinxSchemaAnnotations)
+                implementation(libs.kotlinxSchemaGeneratorJson)
 
                 implementation(libs.slf4jSimple)
                 implementation(libs.koogPromptMarkdown)

@@ -27,7 +27,7 @@ internal class McpToolCard(
     @OptIn(InternalAgentsApi::class)
     override fun toTool(): Tool<*, *> {
         val outputSchema = sdkTool.outputSchema
-        val descriptor = DefaultMcpToolDescriptorParser.parse(sdkTool)
+        val descriptor = CustomMcpToolDescriptorParser.parse(sdkTool)
 
         return if (outputSchema != null) StructuredMcpTool(client, descriptor, metadata = emptyMap())
         else McpTool(client, descriptor, metadata = emptyMap())

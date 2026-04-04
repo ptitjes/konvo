@@ -1,12 +1,11 @@
 package io.github.ptitjes.konvo.mcp.web
 
-import com.xemantic.ai.tool.schema.meta.*
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.schema.generator.json.*
 import kotlinx.serialization.*
-import kotlinx.serialization.json.*
 
 class Wikipedia(
     private val client: HttpClient,
@@ -15,13 +14,33 @@ class Wikipedia(
 ) {
     @Serializable
     data class SearchRequest(
-        @Description("The query to search for. It should only contain the search term and be relatively short.")
+        @SerialDescription("The query to search for. It should only contain the search term and be relatively short.")
         val query: String,
-        @Description("The maximum number of search results to query. Defaults to ${DEFAULT_LIMIT}.")
+        @SerialDescription("The maximum number of search results to query. Defaults to ${DEFAULT_LIMIT}.")
         val limit: Int? = null,
     )
 
-    suspend fun search(request: SearchRequest): JsonObject {
+    @Serializable
+    data class SearchResponse(
+        @SerialDescription("The list of search results.")
+        val pages: List<MatchingPage>,
+    )
+
+    @Serializable
+    data class MatchingPage(
+        @SerialDescription("The id of the page.")
+        val id: Int,
+        @SerialDescription("The key of the page.")
+        val key: String,
+        @SerialDescription("The title of the page.")
+        val title: String,
+        @SerialDescription("The excerpt of the page.")
+        val excerpt: String,
+        @SerialDescription("The description of the page.")
+        val description: String,
+    )
+
+    suspend fun search(request: SearchRequest): SearchResponse {
         return request("search/page") {
             append("q", request.query)
             append("limit", (request.limit ?: DEFAULT_LIMIT).toString())
@@ -30,109 +49,37 @@ class Wikipedia(
 
     @Serializable
     data class GetPageRequest(
-        @Description("The key of the page to fetch.")
+        @SerialDescription("The key of the page to fetch.")
         val key: String,
     )
 
-    suspend fun getPage(request: GetPageRequest): JsonObject {
+    @Serializable
+    data class GetPageResponse(
+        @SerialDescription("The id of the page.")
+        val id: Int,
+        @SerialDescription("The key of the page.")
+        val key: String,
+        @SerialDescription("The title of the page.")
+        val title: String,
+        @SerialDescription("The content of the page.")
+        val source: String,
+    )
+
+    suspend fun getPage(request: GetPageRequest): GetPageResponse {
         return request("page/${request.key}")
     }
 
-    private suspend fun request(path: String, parametersBuilder: ParametersBuilder.() -> Unit = {}): JsonObject {
+    private suspend inline fun <reified T> request(
+        path: String,
+        crossinline parametersBuilder: ParametersBuilder.() -> Unit = {},
+    ): T {
         val response = client.get("$baseUrl$pathPrefix$path") {
             url { parameters.parametersBuilder() }
         }
-        return Json.decodeFromString(response.bodyAsText())
+        return response.body()
     }
 
     companion object {
         const val DEFAULT_LIMIT = 5
-
-        val searchOutputSchema = Json.decodeFromString<JsonObject>(
-            $$"""
-            {
-              "$schema": "http://json-schema.org/draft-07/schema#",
-              "type": "object",
-              "properties": {
-                "pages": {
-                  "type": "array",
-                  "items": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "number"
-                        },
-                        "key": {
-                          "type": "string"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "excerpt": {
-                          "type": "string"
-                        },
-                        "matched_title": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "description": {
-                          "type": "string"
-                        },
-                        "thumbnail": {
-                          "anyOf": [
-                            {
-                              "type": "null"
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "mimetype": {
-                                  "type": "string"
-                                },
-                                "width": {
-                                  "type": "number"
-                                },
-                                "height": {
-                                  "type": "number"
-                                },
-                                "duration": {
-                                  "type": "null"
-                                },
-                                "url": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": [
-                                "mimetype",
-                                "url"
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "key",
-                        "title",
-                        "excerpt",
-                        "description"
-                      ]
-                    }
-                  ]
-                }
-              },
-              "required": [
-                "pages"
-              ]
-            }
-            """.trimIndent()
-        )
     }
 }

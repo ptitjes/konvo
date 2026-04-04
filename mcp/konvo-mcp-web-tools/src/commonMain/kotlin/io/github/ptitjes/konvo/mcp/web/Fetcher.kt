@@ -1,11 +1,11 @@
 package io.github.ptitjes.konvo.mcp.web
 
 import com.fleeksoft.ksoup.*
-import com.xemantic.ai.tool.schema.meta.*
-import io.github.ptitjes.konvo.mcp.web.utils.HtmlToMarkdown
+import io.github.ptitjes.konvo.mcp.web.utils.*
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
+import kotlinx.schema.generator.json.*
 import kotlinx.serialization.*
 
 class Fetcher(
@@ -14,7 +14,7 @@ class Fetcher(
 ) {
     @Serializable
     data class FetchRequest(
-        @Description("The url of the page to fetch.")
+        @SerialDescription("The url of the page to fetch.")
         val url: String,
     )
 

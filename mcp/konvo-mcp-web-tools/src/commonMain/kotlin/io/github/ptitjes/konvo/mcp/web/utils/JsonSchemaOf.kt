@@ -1,25 +1,24 @@
 package io.github.ptitjes.konvo.mcp.web.utils
 
-import com.xemantic.ai.tool.schema.*
-import com.xemantic.ai.tool.schema.generator.*
 import io.modelcontextprotocol.kotlin.sdk.types.*
+import kotlinx.schema.generator.json.serialization.*
+import kotlinx.schema.json.*
+import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
-inline fun <reified T> jsonToolInputOf(): ToolSchema = jsonSchemaOf<T>(inlineRefs = true).toToolInput()
-inline fun <reified T> jsonToolOutputOf(): ToolSchema = jsonSchemaOf<T>(inlineRefs = true).toToolOutput()
-
-fun JsonSchema.toToolInput(): ToolSchema {
-    val schemaObject = Json.encodeToJsonElement(this).jsonObject
-    return ToolSchema(
-        properties = schemaObject["properties"]?.jsonObject ?: JsonObject(emptyMap()),
-        required = schemaObject["required"]?.jsonArray?.map { it.jsonPrimitive.content },
-    )
+// TODO remove when kotlinx-schema-generator-json provides this convenience function
+inline fun <reified T> jsonSchemaOf(): JsonSchema {
+    val generator = SerializationClassJsonSchemaGenerator.Default
+    return generator.generateSchema(serializer<T>().descriptor)
 }
 
-fun JsonSchema.toToolOutput(): ToolSchema {
-    val schemaObject = Json.encodeToJsonElement(this).jsonObject
+inline fun <reified T> jsonToolSchemaOf(): ToolSchema = jsonSchemaOf<T>().toToolSchema()
+
+fun JsonSchema.toToolSchema(): ToolSchema {
+    val schemaObject = encodeToJsonObject()
     return ToolSchema(
-        properties = schemaObject["properties"]?.jsonObject ?: JsonObject(emptyMap()),
+        properties = schemaObject["properties"]?.jsonObject,
         required = schemaObject["required"]?.jsonArray?.map { it.jsonPrimitive.content },
+        defs = schemaObject[$$"$defs"]?.jsonObject,
     )
 }

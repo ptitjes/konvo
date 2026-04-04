@@ -18,6 +18,7 @@ kotlin {
         optIn.add("kotlin.uuid.ExperimentalUuidApi")
 
         freeCompilerArgs.add("-Xcontext-parameters")
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
     }
 
     val versionCatalog = versionCatalogs.named("libs")
