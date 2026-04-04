@@ -27,7 +27,7 @@ jobs:
     steps:
     - id: 'step-0'
       name: 'Checkout'
-      uses: 'actions/checkout@v4'
+      uses: 'actions/checkout@v6'
     - id: 'step-1'
       name: 'Install Java'
       uses: 'actions/setup-java@v5'
@@ -36,10 +36,10 @@ jobs:
         distribution: 'adopt'
     - id: 'step-2'
       name: 'Build'
-      uses: 'gradle/actions/setup-gradle@v4'
+      uses: 'gradle/actions/setup-gradle@v6'
     - id: 'step-3'
       name: 'Set up cache'
-      uses: 'actions/cache@v4'
+      uses: 'actions/cache@v5'
       with:
         path: '~/.gradle/caches'
         key: '${{ runner.os }}-gradle-${{ hashFiles(''**/*.gradle*'') }}'
@@ -49,7 +49,7 @@ jobs:
       run: './gradlew :apps:desktop-app:packageReleaseDeb :apps:desktop-app:packageReleaseRpm'
     - id: 'step-5'
       name: 'Upload artifacts'
-      uses: 'actions/upload-artifact@v4'
+      uses: 'actions/upload-artifact@v7'
       with:
         name: 'linux-x64-packages'
         path: |-
@@ -63,7 +63,7 @@ jobs:
     steps:
     - id: 'step-0'
       name: 'Checkout'
-      uses: 'actions/checkout@v4'
+      uses: 'actions/checkout@v6'
     - id: 'step-1'
       name: 'Install Java'
       uses: 'actions/setup-java@v5'
@@ -72,7 +72,7 @@ jobs:
         distribution: 'adopt'
     - id: 'step-2'
       name: 'Build'
-      uses: 'gradle/actions/setup-gradle@v4'
+      uses: 'gradle/actions/setup-gradle@v6'
     - id: 'step-3'
       name: 'Update dependencies'
       run: 'sudo apt-get update'
@@ -81,7 +81,7 @@ jobs:
       run: 'sudo apt install -y libegl1'
     - id: 'step-5'
       name: 'Set up cache'
-      uses: 'actions/cache@v4'
+      uses: 'actions/cache@v5'
       with:
         path: '~/.gradle/caches'
         key: '${{ runner.os }}-gradle-${{ hashFiles(''**/*.gradle*'') }}'
@@ -91,7 +91,7 @@ jobs:
       run: './gradlew :apps:desktop-app:packageReleaseDeb :apps:desktop-app:packageReleaseRpm'
     - id: 'step-7'
       name: 'Upload artifacts'
-      uses: 'actions/upload-artifact@v4'
+      uses: 'actions/upload-artifact@v7'
       with:
         name: 'linux-arm64-packages'
         path: |-
@@ -105,7 +105,7 @@ jobs:
     steps:
     - id: 'step-0'
       name: 'Checkout'
-      uses: 'actions/checkout@v4'
+      uses: 'actions/checkout@v6'
     - id: 'step-1'
       name: 'Install Java'
       uses: 'actions/setup-java@v5'
@@ -114,10 +114,10 @@ jobs:
         distribution: 'adopt'
     - id: 'step-2'
       name: 'Build'
-      uses: 'gradle/actions/setup-gradle@v4'
+      uses: 'gradle/actions/setup-gradle@v6'
     - id: 'step-3'
       name: 'Set up cache'
-      uses: 'actions/cache@v4'
+      uses: 'actions/cache@v5'
       with:
         path: '~/.gradle/caches'
         key: '${{ runner.os }}-gradle-${{ hashFiles(''**/*.gradle*'') }}'
@@ -127,7 +127,7 @@ jobs:
       run: './gradlew :apps:desktop-app:packageReleaseMsi'
     - id: 'step-5'
       name: 'Upload artifacts'
-      uses: 'actions/upload-artifact@v4'
+      uses: 'actions/upload-artifact@v7'
       with:
         name: 'windows-packages'
         path: 'apps/desktop-app/build/compose/binaries/main-release/msi'
@@ -139,7 +139,7 @@ jobs:
     steps:
     - id: 'step-0'
       name: 'Checkout'
-      uses: 'actions/checkout@v4'
+      uses: 'actions/checkout@v6'
     - id: 'step-1'
       name: 'Install Java'
       uses: 'actions/setup-java@v5'
@@ -148,10 +148,10 @@ jobs:
         distribution: 'adopt'
     - id: 'step-2'
       name: 'Build'
-      uses: 'gradle/actions/setup-gradle@v4'
+      uses: 'gradle/actions/setup-gradle@v6'
     - id: 'step-3'
       name: 'Set up cache'
-      uses: 'actions/cache@v4'
+      uses: 'actions/cache@v5'
       with:
         path: '~/.gradle/caches'
         key: '${{ runner.os }}-gradle-${{ hashFiles(''**/*.gradle*'') }}'
@@ -161,7 +161,7 @@ jobs:
       run: './gradlew :apps:desktop-app:packageReleaseDmg'
     - id: 'step-5'
       name: 'Upload artifacts'
-      uses: 'actions/upload-artifact@v4'
+      uses: 'actions/upload-artifact@v7'
       with:
         name: 'macos-packages'
         path: 'apps/desktop-app/build/compose/binaries/main-release/dmg'

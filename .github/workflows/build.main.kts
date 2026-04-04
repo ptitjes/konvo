@@ -1,13 +1,8 @@
 #!/usr/bin/env kotlin
 
 @file:Repository("https://repo.maven.apache.org/maven2/")
-@file:DependsOn("io.github.typesafegithub:github-workflows-kt:3.5.0")
+@file:DependsOn("io.github.typesafegithub:github-workflows-kt:3.7.0")
 @file:Repository("https://bindings.krzeminski.it")
-@file:DependsOn("actions:checkout:v4")
-@file:DependsOn("actions:setup-java:v5")
-@file:DependsOn("actions:cache:v4")
-@file:DependsOn("actions:upload-artifact:v4")
-@file:DependsOn("gradle:gradle-build-action:v3")
 @file:DependsOn("EnricoMi:publish-unit-test-result-action:v2")
 @file:DependsOn("EnricoMi:publish-unit-test-result-action__macos:v2")
 @file:DependsOn("EnricoMi:publish-unit-test-result-action__windows:v2")
@@ -21,7 +16,14 @@ import io.github.typesafegithub.workflows.dsl.expressions.*
 
 workflow(
     name = "Build",
-    on = listOf(Push(), PullRequest()),
+    on = listOf(
+        Push(
+            branches = listOf("develop", "main"),
+        ),
+        PullRequest(
+            branches = listOf("develop", "main"),
+        ),
+    ),
     sourceFile = __FILE__,
     permissions = mapOf(
         Permission.Checks to Mode.Write,
