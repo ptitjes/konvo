@@ -22,6 +22,7 @@ kotlin {
             dependencies {
                 implementation(libs.bundles.kotlinxEcosystem)
                 implementation(libs.kotlinxCli)
+                implementation(libs.kotlinLogging)
                 implementation(libs.mcp)
                 implementation(libs.ktorServerCio)
 
