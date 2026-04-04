@@ -102,7 +102,6 @@ internal class SerializationContext(
     private val interactionProtocolRegistry: InteractionProtocolRegistry,
 ) {
     fun getProtocolId(protocol: InteractionProtocol): String {
-        println(interactionProtocolRegistry.idByProtocol)
         return interactionProtocolRegistry.idByProtocol.getValue(protocol)
     }
 }
@@ -204,13 +203,13 @@ internal object DtoMappers {
 
     fun toDto(boundary: InteractionBoundary.Start, context: SerializationContext): InteractionBoundaryDto.Start =
         InteractionBoundaryDto.Start(
-        timestamp = boundary.timestamp,
-        sender = toDto(boundary.sender),
-        interactionId = boundary.interaction.id,
+            timestamp = boundary.timestamp,
+            sender = toDto(boundary.sender),
+            interactionId = boundary.interaction.id,
             protocolId = context.getProtocolId(boundary.interaction.protocol),
-        parentInteractionId = boundary.interaction.parent?.id,
-        triggerActionId = boundary.interaction.trigger?.id,
-    )
+            parentInteractionId = boundary.interaction.parent?.id,
+            triggerActionId = boundary.interaction.trigger?.id,
+        )
 
     fun toDto(boundary: InteractionBoundary.End): InteractionBoundaryDto.End = InteractionBoundaryDto.End(
         timestamp = boundary.timestamp,

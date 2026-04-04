@@ -74,9 +74,7 @@ internal class McpServerHandler(
                     client = httpClient,
                     urlString = transportSpecification.url,
                     reconnectionTime = transportSpecification.reconnectionTime,
-                ) {
-                    println(this.url)
-                }
+                )
             }
 
             client.connect(transport)
