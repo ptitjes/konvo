@@ -42,6 +42,10 @@ workflow(
         id = "package-arm64-linux",
         name = "Package on Linux arm64",
         runsOn = RunnerType.Custom("ubuntu-24.04-arm"),
+        extraSetup = {
+            run(name = "Update dependencies", command = "sudo apt-get update")
+            run(name = "Install libEGL", command = "sudo apt install -y libegl1")
+        },
         buildArguments = ":apps:desktop-app:packageReleaseDeb :apps:desktop-app:packageReleaseRpm",
         afterBuild = {
             uses(
