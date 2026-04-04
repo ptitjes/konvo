@@ -1,13 +1,9 @@
 #!/usr/bin/env kotlin
 
 @file:Repository("https://repo.maven.apache.org/maven2/")
-@file:DependsOn("io.github.typesafegithub:github-workflows-kt:3.5.0")
+@file:DependsOn("io.github.typesafegithub:github-workflows-kt:3.7.0")
 @file:Repository("https://bindings.krzeminski.it")
-@file:DependsOn("actions:checkout:v4")
-@file:DependsOn("actions:setup-java:v5")
-@file:DependsOn("actions:cache:v4")
-@file:DependsOn("actions:upload-artifact:v4")
-@file:DependsOn("gradle:gradle-build-action:v3")
+@file:DependsOn("actions:upload-artifact:v7")
 @file:Import("./shared.main.kts")
 
 import io.github.typesafegithub.workflows.actions.actions.*
