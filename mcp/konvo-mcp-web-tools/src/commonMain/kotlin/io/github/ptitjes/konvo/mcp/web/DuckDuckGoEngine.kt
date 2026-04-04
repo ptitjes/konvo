@@ -1,12 +1,12 @@
 package io.github.ptitjes.konvo.mcp.web
 
 import com.fleeksoft.ksoup.*
-import com.xemantic.ai.tool.schema.meta.*
 import io.github.ptitjes.konvo.mcp.web.utils.*
 import io.ktor.client.*
 import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.schema.generator.json.*
 import kotlinx.serialization.*
 
 class DuckDuckGoEngine(
@@ -15,13 +15,13 @@ class DuckDuckGoEngine(
 ) {
     @Serializable
     data class SearchRequest(
-        @Description("The query to search for. It should only contain the search term and be relatively short.")
+        @SerialDescription("The query to search for. It should only contain the search term and be relatively short.")
         val query: String,
-        @Description("The maximum number of search results to query.")
+        @SerialDescription("The maximum number of search results to query.")
         val maxResults: Int? = null,
-        @Description("The region to search in.")
+        @SerialDescription("The region to search in.")
         val region: Region = Region.AllRegions,
-        @Description("The time frame to search in.")
+        @SerialDescription("The time frame to search in.")
         val timeFrame: TimeFrame = TimeFrame.AnyTime,
     )
 
@@ -96,38 +96,42 @@ class DuckDuckGoEngine(
 
     @Suppress("unused")
     @Serializable
-    @Description("The time frame to search in.")
+    @SerialDescription("The time frame to search in.")
     enum class TimeFrame(val value: String) {
-        @Description("Any time frame.")
+        @SerialDescription("Any time frame.")
         @SerialName("any-time")
         AnyTime(""),
 
-        @Description("During the past day.")
+        @SerialDescription("During the past day.")
         @SerialName("past-day")
         PastDay("d"),
 
-        @Description("During the past week.")
+        @SerialDescription("During the past week.")
         @SerialName("past-week")
         PastWeek("w"),
 
-        @Description("During the past month.")
+        @SerialDescription("During the past month.")
         @SerialName("past-month")
         PastMonth("m"),
 
-        @Description("During the past year.")
+        @SerialDescription("During the past year.")
         @SerialName("past-year")
         PastYear("y"),
     }
 
     @Serializable
     data class SearchResponse(
+        @SerialDescription("The list of search results.")
         val results: List<SearchResult>,
     )
 
     @Serializable
     data class SearchResult(
+        @SerialDescription("The title of the search result.")
         val title: String,
+        @SerialDescription("The URL of the search result.")
         val url: String,
+        @SerialDescription("The snippet of the search result.")
         val snippet: String,
     )
 

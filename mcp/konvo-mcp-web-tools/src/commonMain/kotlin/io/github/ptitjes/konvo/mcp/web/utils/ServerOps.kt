@@ -13,7 +13,7 @@ inline fun <reified I> Server.addStringTool(
     addTool(
         name = name,
         description = description,
-        inputSchema = jsonToolInputOf<I>(),
+        inputSchema = jsonToolSchemaOf<I>(),
     ) { request ->
         val decodedRequest = Json.decodeFromJsonElement<I>(request.arguments ?: JsonNull)
         val result = handler(decodedRequest)
@@ -30,8 +30,8 @@ inline fun <reified I, reified O> Server.addJsonTool(
     addTool(
         name = name,
         description = description,
-        inputSchema = jsonToolInputOf<I>(),
-        outputSchema = jsonToolOutputOf<O>(),
+        inputSchema = jsonToolSchemaOf<I>(),
+        outputSchema = jsonToolSchemaOf<O>(),
     ) { request ->
         val arguments = request.arguments ?: JsonPrimitive(null)
         val decodedRequest = Json.decodeFromJsonElement<I>(arguments)
