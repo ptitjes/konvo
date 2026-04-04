@@ -86,9 +86,8 @@ private fun buildCircuit(
     presenterFactories: Set<Presenter.Factory>,
     uiFactories: Set<Ui.Factory>,
 ): Circuit {
-    println("Building circuit")
     return Circuit.Builder()
-        .addPresenterFactories(presenterFactories.also { println("Presenter factories: ${it.size}") })
-        .addUiFactories(uiFactories).also { println("UI factories: ${uiFactories.size}") }
+        .addPresenterFactories(presenterFactories)
+        .addUiFactories(uiFactories)
         .build()
 }
