@@ -65,7 +65,7 @@ class ConversationPresenter(
             }
         }
 
-        LaunchedEffect(stateUpdater, transcriptLoaded) {
+        LaunchedEffect(Unit) {
             if (transcriptLoaded) return@LaunchedEffect
 
             val state = conversation.awaitConversationLoaded()
