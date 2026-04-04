@@ -1,5 +1,6 @@
 package io.github.ptitjes.konvo.mcp.web
 
+import io.github.oshai.kotlinlogging.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.modelcontextprotocol.kotlin.sdk.server.*
@@ -15,6 +16,8 @@ import kotlinx.io.*
  * - "--sse -p <port>": Runs the MCP server using SSE.
  */
 fun main(args: Array<String>) {
+    KotlinLoggingConfiguration.logStartupMessage = false
+
     val parser = ArgParser(
         "konvo-tool-web",
         useDefaultHelpShortName = true,
