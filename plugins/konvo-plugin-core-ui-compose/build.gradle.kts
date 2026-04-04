@@ -36,6 +36,13 @@ kotlin {
     }
 }
 
+configurations.all {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("org.jetbrains.skiko:skiko:0.9.22.2"))
+            .using(module("org.jetbrains.skiko:skiko:0.144.4"))
+    }
+}
+
 compose {
     resources {
         packageOfResClass = "io.github.ptitjes.konvo.plugin.core.ui.compose.resources"
