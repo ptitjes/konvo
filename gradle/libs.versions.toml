@@ -52,7 +52,7 @@ placeholder = "1.0.12"
 # For tools
 shadow = "9.0.0-beta13"
 kotlinxCli = "0.3.6"
-ksoup = "0.2.3"
+ksoup = "0.2.6"
 flexmark = "0.64.8"
 
 [libraries]
