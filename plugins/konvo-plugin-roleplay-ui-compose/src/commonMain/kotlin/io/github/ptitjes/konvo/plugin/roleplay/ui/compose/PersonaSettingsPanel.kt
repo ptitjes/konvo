@@ -38,11 +38,11 @@ internal class PersonaSettingsPresenter(
     @Composable
     override fun present(): PersonaSettingsView.State {
         var settings by settingsRepository.mutableSettingsOf(PersonaSettingsKey)
-        val lorebooks by lorebookManager.lorebooks.collectAsState(initial = emptyList())
+        val lorebooks by lorebookManager.lorebooks.collectAsState(initial = emptySet())
 
         return PersonaSettingsView.State(
             personas = settings.personas,
-            lorebooks = lorebooks,
+            lorebooks = lorebooks.sortedBy { it.name },
         ) { event ->
             when (event) {
                 is PersonaSettingsView.Event.AddPersona -> {

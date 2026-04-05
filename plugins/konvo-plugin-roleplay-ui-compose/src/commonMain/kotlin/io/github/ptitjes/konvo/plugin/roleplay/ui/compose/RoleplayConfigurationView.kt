@@ -87,7 +87,7 @@ internal class RoleplayConfigurationPresenter(
     private fun state(
         models: List<ModelCard>?,
         characters: Set<CharacterCard>?,
-        lorebooks: List<Lorebook>?,
+        lorebooks: Set<Lorebook>?,
     ): RoleplayConfigurationView.State {
         return if (models == null || characters == null || lorebooks == null) {
             RoleplayConfigurationView.State.Loading
@@ -106,17 +106,18 @@ internal class RoleplayConfigurationPresenter(
             } ?: personaSettings.personas.firstOrNull()
 
             val sortedCharacters = remember(characters) { characters.sortedBy { it.name } }
+            val sortedLorebooks = remember(lorebooks) { lorebooks.sortedBy { it.name } }
 
             var selectedCharacter by rememberRetained { mutableStateOf(sortedCharacters.firstOrNull()) }
             var selectedGreetingIndex by rememberRetained { mutableStateOf<Int?>(null) }
-            var selectedLorebook by rememberRetained { mutableStateOf(lorebooks.firstOrNull()) }
+            var selectedLorebook by rememberRetained { mutableStateOf(sortedLorebooks.firstOrNull()) }
             var selectedPersona by rememberRetained { mutableStateOf(preferredPersona) }
             var selectedModel by rememberRetained { mutableStateOf(preferredModel) }
 
             RoleplayConfigurationView.State.Available(
                 availableModels = models,
                 availableCharacters = sortedCharacters,
-                availableLorebooks = lorebooks,
+                availableLorebooks = sortedLorebooks,
                 availablePersonas = personaSettings.personas,
                 selectedCharacter = selectedCharacter,
                 selectedGreetingIndex = selectedGreetingIndex,

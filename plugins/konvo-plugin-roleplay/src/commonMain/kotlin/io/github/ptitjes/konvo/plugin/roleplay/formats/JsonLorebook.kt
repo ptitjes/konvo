@@ -5,29 +5,30 @@ import kotlinx.serialization.json.*
 
 private val lenientJson = Json { ignoreUnknownKeys = true }
 
-internal fun JsonObject.parseLorebook(id: String): Lorebook {
-    val spec = this["spec"]?.jsonPrimitive?.content
-    val entries = this["entries"]
+internal fun String.parseLorebook(id: String): Lorebook {
+    val json = lenientJson.decodeFromString<JsonObject>(this)
+    val spec = json["spec"]?.jsonPrimitive?.content
+    val entries = json["entries"]
 
     return when (spec) {
         null if (entries != null && entries is JsonObject) -> {
             val data =
-                lenientJson.decodeFromJsonElement(SillyTavernWorldInfo.serializer(), this)
+                lenientJson.decodeFromJsonElement(SillyTavernWorldInfo.serializer(), json)
             data.toLorebook(id)
         }
 
         null if (entries != null && entries is JsonArray) -> {
             val data =
-                lenientJson.decodeFromJsonElement(CharacterBookV2.serializer(), this)
+                lenientJson.decodeFromJsonElement(CharacterBookV2.serializer(), json)
             data.toLorebook(id)
         }
 
         "lorebook_v3" -> {
-            val card = lenientJson.decodeFromJsonElement(LorebookV3.serializer(), this)
+            val card = lenientJson.decodeFromJsonElement(LorebookV3.serializer(), json)
             card.data.toLorebook(id)
         }
 
-        else -> error("Unknown character format")
+        else -> error("Unknown lorebook format")
     }
 }
 
