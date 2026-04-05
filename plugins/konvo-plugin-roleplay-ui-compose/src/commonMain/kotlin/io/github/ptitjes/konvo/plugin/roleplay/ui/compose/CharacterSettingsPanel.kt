@@ -5,21 +5,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.unit.*
-import com.slack.circuit.retained.*
 import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.settings.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.overlays.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.plugin.roleplay.*
-import io.github.ptitjes.konvo.plugin.roleplay.providers.*
 import io.github.vinceglb.filekit.*
 import io.github.vinceglb.filekit.dialogs.*
 import io.github.vinceglb.filekit.dialogs.compose.*
-import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import org.jetbrains.compose.resources.*
 
@@ -32,63 +30,55 @@ internal data object CharacterSettingsView {
 
     sealed interface CharactersState {
         data object Loading : CharactersState
-        data class Error(val error: String) : CharactersState
-        data class Loaded(val characters: List<CharacterCard>) : CharactersState
+        data class Loaded(
+            val characters: List<CharacterCard>,
+            val error: String?,
+        ) : CharactersState
     }
 
     sealed interface Event : CircuitUiEvent {
         data class UpdateSettings(val settings: CharacterSettings) : Event
         data class AddCharacter(val path: Path) : Event
         data class DeleteCharacter(val character: CharacterCard) : Event
+        data object AcknowledgeError : Event
     }
 }
 
 internal class CharacterSettingsPresenter(
     private val settingsRepository: SettingsRepository,
-    private val provider: FileSystemCharacterProvider,
+    private val characterManager: CharacterManager,
 ) : Presenter<CharacterSettingsView.State> {
     @Composable
     override fun present(): CharacterSettingsView.State {
+        val characters by characterManager.characters.collectAsState(null)
+        return state(characters)
+    }
+
+    @Composable
+    private fun state(
+        characters: Set<CharacterCard>?,
+    ): CharacterSettingsView.State {
         var settings by settingsRepository.mutableSettingsOf(CharacterSettingsKey)
+        var error by remember { mutableStateOf<String?>(null) }
 
-        var characters by rememberRetained { mutableStateOf<List<CharacterCard>?>(null) }
-        var loadError by rememberRetained { mutableStateOf<String?>(null) }
-
-        val scope = rememberCoroutineScope()
-
-        suspend fun reload() {
-            loadError = null
-            runCatching { provider.query() }
-                .onSuccess { list -> characters = list.sortedBy { it.name } }
-                .onFailure { ex ->
-                    loadError = ex.message
-                    characters = emptyList()
-                }
+        LaunchedEffect(Unit) {
+            characterManager.error.collect { error = it }
         }
 
-        LaunchedEffect(Unit) { reload() }
-
         val charactersState = when {
-            loadError != null -> CharacterSettingsView.CharactersState.Error(loadError!!)
             characters == null -> CharacterSettingsView.CharactersState.Loading
-            else -> CharacterSettingsView.CharactersState.Loaded(characters!!)
+            else -> CharacterSettingsView.CharactersState.Loaded(
+                characters = characters.sortedBy { it.name },
+                error = error,
+            )
         }
 
         return CharacterSettingsView.State(settings, charactersState) { event ->
             when (event) {
-                is CharacterSettingsView.Event.UpdateSettings -> {
-                    settings = event.settings
-                }
-
-                is CharacterSettingsView.Event.AddCharacter -> scope.launch {
-                    provider.add(event.path)
-                    reload()
-                }
-
-                is CharacterSettingsView.Event.DeleteCharacter -> scope.launch {
-                    provider.delete(event.character)
-                    reload()
-                }
+                is CharacterSettingsView.Event.UpdateSettings -> settings = event.settings
+                is CharacterSettingsView.Event.AddCharacter -> characterManager.add(event.path)
+                is CharacterSettingsView.Event.DeleteCharacter -> characterManager.delete(event.character)
+                is CharacterSettingsView.Event.AcknowledgeError -> error = null
             }
         }
     }
@@ -123,9 +113,7 @@ internal fun CharacterSettingsPanel(state: CharacterSettingsView.State) {
                 value = filteredTagsText,
                 onValueChange = { newValue ->
                     filteredTagsText = newValue
-                    val parsed = newValue.split(',')
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
+                    val parsed = newValue.split(',').map { it.trim() }.filter { it.isNotEmpty() }
                     state.eventSink(
                         CharacterSettingsView.Event.UpdateSettings(
                             settings.copy(filteredTags = parsed)
@@ -135,7 +123,7 @@ internal fun CharacterSettingsPanel(state: CharacterSettingsView.State) {
                 singleLine = true,
                 placeholder = { Text(i18n.roleplay.characterTagsPlaceholder) },
             )
-        }
+        },
     )
 
     ImportedCharactersSettingsBox(state)
@@ -145,6 +133,14 @@ internal fun CharacterSettingsPanel(state: CharacterSettingsView.State) {
 @Composable
 private fun ImportedCharactersSettingsBox(state: CharacterSettingsView.State) {
     val charactersState = state.charactersState
+
+    val snackbarHostState = LocalSnackbarHost.current
+    LaunchedEffect(charactersState) {
+        if (charactersState is CharacterSettingsView.CharactersState.Loaded && charactersState.error != null) {
+            snackbarHostState.showSnackbar(message = charactersState.error)
+            state.eventSink(CharacterSettingsView.Event.AcknowledgeError)
+        }
+    }
 
     val importLauncher = rememberFilePickerLauncher(
         mode = FileKitMode.Multiple(),
@@ -171,10 +167,6 @@ private fun ImportedCharactersSettingsBox(state: CharacterSettingsView.State) {
         },
         bottomContent = {
             when (charactersState) {
-                is CharacterSettingsView.CharactersState.Error -> Text(
-                    text = i18n.roleplay.failedToLoadCharacters(charactersState.error)
-                )
-
                 is CharacterSettingsView.CharactersState.Loading -> FullSizeProgressIndicator()
                 is CharacterSettingsView.CharactersState.Loaded if (charactersState.characters.isEmpty()) ->
                     Text(text = i18n.roleplay.noCharactersAvailable)
@@ -192,7 +184,7 @@ private fun ImportedCharactersSettingsBox(state: CharacterSettingsView.State) {
                     },
                 )
             }
-        }
+        },
     )
 
     pendingDelete?.let { toDelete ->
@@ -201,10 +193,14 @@ private fun ImportedCharactersSettingsBox(state: CharacterSettingsView.State) {
             title = { Text(i18n.roleplay.deleteCharacterDialogTitle) },
             text = { Text(i18n.roleplay.deleteCharacterDialogText(toDelete.name)) },
             confirmButton = {
-                TextButton(onClick = {
-                    state.eventSink(CharacterSettingsView.Event.DeleteCharacter(toDelete))
-                    pendingDelete = null
-                }) { Text(i18n.roleplay.deleteConfirm) }
+                TextButton(
+                    onClick = {
+                        state.eventSink(CharacterSettingsView.Event.DeleteCharacter(toDelete))
+                        pendingDelete = null
+                    }
+                ) {
+                    Text(i18n.roleplay.deleteConfirm)
+                }
             },
             dismissButton = { TextButton(onClick = { pendingDelete = null }) { Text(i18n.roleplay.cancel) } },
         )

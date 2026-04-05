@@ -15,7 +15,7 @@ internal fun ByteString.extractCharacterCard(id: String): CharacterCard {
     val charaChunk = chunks.firstOrNull { it.getKeyword() == "chara" }
     if (charaChunk != null) return charaChunk.extractChunkText().parseCharacterCard(id)
 
-    error("Unknown character format")
+    error("No character card found in PNG file")
 }
 
 private fun ByteString.extractTextChunks(): List<PngChunkText> {

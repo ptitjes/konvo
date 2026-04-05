@@ -19,7 +19,6 @@ object RoleplayPlugin : Plugin {
 
     override fun PluginSpecificationBuilder.specification() {
         exposedType<CharacterManager>()
-        exposedType<FileSystemCharacterProvider>()
         exposedType<LorebookManager>()
         exposedType<FileSystemLorebookProvider>()
 
@@ -41,21 +40,16 @@ object RoleplayPlugin : Plugin {
     }
 
     override fun DI.Builder.implementation() {
-        bindSet<CharacterProvider>()
+        bindSingleton<CharacterManager> { new(::DefaultCharacterManager) }
+
         bindSet<LorebookProvider>()
 
-        bindSingleton { new(::FileSystemCharacterProvider) }
         bindSingleton { new(::FileSystemLorebookProvider) }
-
-        inBindSet<CharacterProvider> {
-            addSingleton { instance<FileSystemCharacterProvider>() }
-        }
 
         inBindSet<LorebookProvider> {
             addSingleton { instance<FileSystemLorebookProvider>() }
         }
 
-        bindSingleton<CharacterManager> { new(::DiCharacterManager) }
         bindSingleton<LorebookManager> { new(::DiLorebookManager) }
     }
 }
