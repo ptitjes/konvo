@@ -22,11 +22,11 @@ data class RoleplaySettings(
     val defaultRecursiveScanning: Boolean = DEFAULT_RECURSIVE_SCANNING,
 )
 
-internal const val DEFAULT_SYSTEM_PROMPT =
+private const val DEFAULT_SYSTEM_PROMPT =
     "Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}."
-internal const val DEFAULT_SCAN_DEPTH = 2
-internal const val DEFAULT_TOKEN_BUDGET = 512
-internal const val DEFAULT_RECURSIVE_SCANNING = false
+private const val DEFAULT_SCAN_DEPTH = 2
+private const val DEFAULT_TOKEN_BUDGET = 512
+private const val DEFAULT_RECURSIVE_SCANNING = false
 
 /**
  * Key for Roleplay Agent settings persisted in the configuration directory.

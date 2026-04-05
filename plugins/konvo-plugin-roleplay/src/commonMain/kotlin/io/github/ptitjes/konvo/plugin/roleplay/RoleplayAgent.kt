@@ -16,7 +16,7 @@ import io.github.ptitjes.konvo.plugin.core.settings.*
 import kotlinx.coroutines.flow.*
 import kotlin.random.*
 
-class RoleplayAgent(
+internal class RoleplayAgent(
     private val modelProviderManager: ModelManager,
     private val characterProviderManager: CharacterManager,
     private val settingsRepository: SettingsRepository,
@@ -182,12 +182,6 @@ private fun buildRoleplaySystemPrompt(
     maybeAppendSection(character.scenario, "The scenario of the conversation")
     maybeAppendSection(character.dialogueExamples, "How \"{{char}}\" speaks")
 }.replaceTags(userName, character.name)
-
-fun String.replaceTags(userName: String, characterName: String): String = this
-    .replace("<user>", userName, true)
-    .replace("{{user}}", userName, true)
-    .replace("<bot>", characterName, true)
-    .replace("{{char}}", characterName, true)
 
 private val DEFAULT_ROLEPLAY_SYSTEM_PROMPT: String = """
     Write {{char}}'s next reply in a fictional chat between {{char}} and {{user}}.
