@@ -1,7 +1,6 @@
-package io.github.ptitjes.konvo.plugin.roleplay.providers
+package io.github.ptitjes.konvo.plugin.roleplay.formats
 
 import io.github.ptitjes.konvo.plugin.roleplay.*
-import io.github.ptitjes.konvo.plugin.roleplay.formats.*
 import kotlinx.serialization.json.*
 
 private val lenientJson = Json { ignoreUnknownKeys = true }

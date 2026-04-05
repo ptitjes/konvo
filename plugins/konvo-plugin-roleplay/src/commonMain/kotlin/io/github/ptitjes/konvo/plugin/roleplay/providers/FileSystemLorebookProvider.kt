@@ -3,6 +3,7 @@ package io.github.ptitjes.konvo.plugin.roleplay.providers
 import io.github.ptitjes.konvo.plugin.core.platform.*
 import io.github.ptitjes.konvo.plugin.core.util.*
 import io.github.ptitjes.konvo.plugin.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.formats.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
 import kotlinx.serialization.json.*
