@@ -7,7 +7,7 @@ import kotlinx.serialization.json.*
  * Serializable types to parse the Character Card V2 format as defined in docs/characters/spec_v2.md
  */
 @Serializable
-data class CharaCardV2(
+internal data class CharaCardV2(
     /** Must be "chara_card_v2" */
     @SerialName("spec") val spec: String = "chara_card_v2",
     /** Must be "2.0" */
@@ -16,7 +16,7 @@ data class CharaCardV2(
 )
 
 @Serializable
-data class DataV2(
+internal data class DataV2(
     val name: String,
     val description: String,
     val personality: String,
@@ -42,7 +42,7 @@ data class DataV2(
 )
 
 @Serializable
-data class CharacterBookV2(
+internal data class CharacterBookV2(
     val name: String? = null,
     val description: String? = null,
     @SerialName("scan_depth") val scanDepth: Int? = null,
@@ -53,7 +53,7 @@ data class CharacterBookV2(
 )
 
 @Serializable
-data class CharacterBookEntryV2(
+internal data class CharacterBookEntryV2(
     val keys: List<String>,
     val content: String,
     val extensions: JsonObject = buildJsonObject { },
@@ -79,7 +79,7 @@ data class CharacterBookEntryV2(
 )
 
 @Serializable
-enum class EntryPositionV2 {
+internal enum class EntryPositionV2 {
     @SerialName("before_char")
     BeforeChar,
 

@@ -32,7 +32,7 @@ internal fun String.parseLorebook(id: String): Lorebook {
     }
 }
 
-internal fun SillyTavernWorldInfo.toLorebook(id: String?): Lorebook = DefaultLorebook(
+private fun SillyTavernWorldInfo.toLorebook(id: String?): Lorebook = DefaultLorebook(
     id = id,
     name = name,
     description = description,
@@ -42,7 +42,7 @@ internal fun SillyTavernWorldInfo.toLorebook(id: String?): Lorebook = DefaultLor
     entries = entries.map { (_, entry) -> entry.toLorebookEntry() },
 )
 
-internal fun SillyTavernWorldInfoEntry.toLorebookEntry(): LorebookEntry = DefaultLorebookEntry(
+private fun SillyTavernWorldInfoEntry.toLorebookEntry(): LorebookEntry = DefaultLorebookEntry(
     enabled = !(disable ?: false),
     constant = constant ?: false,
     keys = keys,

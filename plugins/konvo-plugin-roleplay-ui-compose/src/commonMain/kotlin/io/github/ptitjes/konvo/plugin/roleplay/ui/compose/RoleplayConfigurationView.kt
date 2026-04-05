@@ -21,7 +21,7 @@ import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
 import io.github.ptitjes.konvo.plugin.roleplay.*
 import org.jetbrains.compose.resources.*
 
-data object RoleplayConfigurationView : Screen {
+internal data object RoleplayConfigurationView : Screen {
     sealed interface State : AgentConfigurationState<RoleplayAgentConfiguration> {
         data object Loading : State
 

@@ -7,7 +7,7 @@ import kotlinx.serialization.json.*
  * Serializable types to parse the Character Card V3 format as defined in docs/characters/spec_v3.md
  */
 @Serializable
-data class CharaCardV3(
+internal data class CharaCardV3(
     /** Must be "chara_card_v3" */
     @SerialName("spec") val spec: String = "chara_card_v3",
     /** Should be "3.0" but may vary in future */
@@ -16,14 +16,14 @@ data class CharaCardV3(
 )
 
 @Serializable
-data class LorebookV3(
+internal data class LorebookV3(
     /** Must be "lorebook_v3" */
     @SerialName("spec") val spec: String = "lorebook_v3",
     val data: CharacterBookV3,
 )
 
 @Serializable
-data class DataV3(
+internal data class DataV3(
     // Fields from CCv2
     val name: String,
     val description: String,
@@ -56,7 +56,7 @@ data class DataV3(
 )
 
 @Serializable
-data class AssetV3(
+internal data class AssetV3(
     val type: String,
     val uri: String,
     val name: String,
@@ -64,7 +64,7 @@ data class AssetV3(
 )
 
 @Serializable
-data class CharacterBookV3(
+internal data class CharacterBookV3(
     val name: String? = null,
     val description: String? = null,
     @SerialName("scan_depth") val scanDepth: Int? = null,
@@ -75,7 +75,7 @@ data class CharacterBookV3(
 )
 
 @Serializable
-data class CharacterBookEntryV3(
+internal data class CharacterBookEntryV3(
     val keys: List<String>,
     val content: String,
     val extensions: JsonObject = buildJsonObject { },
@@ -98,7 +98,7 @@ data class CharacterBookEntryV3(
 )
 
 @Serializable
-enum class EntryPositionV3 {
+internal enum class EntryPositionV3 {
     @SerialName("before_char")
     BeforeChar,
 

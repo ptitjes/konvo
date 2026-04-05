@@ -4,7 +4,7 @@ import kotlinx.serialization.*
 import kotlinx.serialization.json.*
 
 @Serializable
-data class SillyTavernWorldInfo(
+internal data class SillyTavernWorldInfo(
     val name: String? = null,
     val description: String? = null,
     @SerialName("is_creation") val isCreation: Boolean? = false,
@@ -16,7 +16,7 @@ data class SillyTavernWorldInfo(
 )
 
 @Serializable
-data class SillyTavernWorldInfoEntry(
+internal data class SillyTavernWorldInfoEntry(
     val uid: Int,
     @SerialName("key") val keys: List<String>,
     @SerialName("keysecondary") val secondaryKeys: List<String>? = null,
