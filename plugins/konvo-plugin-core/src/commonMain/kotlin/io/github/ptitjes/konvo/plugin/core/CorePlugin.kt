@@ -13,8 +13,6 @@ import io.github.ptitjes.konvo.plugin.core.mcp.*
 import io.github.ptitjes.konvo.plugin.core.models.*
 import io.github.ptitjes.konvo.plugin.core.platform.*
 import io.github.ptitjes.konvo.plugin.core.prompts.*
-import io.github.ptitjes.konvo.plugin.core.roleplay.*
-import io.github.ptitjes.konvo.plugin.core.roleplay.providers.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.tools.*
 import io.github.ptitjes.syrup.*
@@ -95,11 +93,6 @@ object CorePlugin : Plugin {
         Agents {
             contribution { new(::QuestionAnswerAgent) }
         }
-
-        exposedType<CharacterManager>()
-        exposedType<FileSystemCharacterProvider>()
-        exposedType<LorebookManager>()
-        exposedType<FileSystemLorebookProvider>()
     }
 
     override fun DI.Builder.implementation() {
@@ -112,8 +105,6 @@ object CorePlugin : Plugin {
 
         bindSet<PromptProvider>()
         bindSet<ToolProvider>()
-        bindSet<CharacterProvider>()
-        bindSet<LorebookProvider>()
 
         inBindSet<PromptProvider> {
             addSingleton { new(::McpPromptProvider) }
@@ -125,17 +116,6 @@ object CorePlugin : Plugin {
             addSingleton { new(::McpToolProvider) }
         }
 
-        bindSingleton { new(::FileSystemCharacterProvider) }
-        bindSingleton { new(::FileSystemLorebookProvider) }
-
-        inBindSet<CharacterProvider> {
-            addSingleton { instance<FileSystemCharacterProvider>() }
-        }
-
-        inBindSet<LorebookProvider> {
-            addSingleton { instance<FileSystemLorebookProvider>() }
-        }
-
         bindSingleton<McpServerSpecificationsManager> {
             new(::SettingsBasedMcpServerSpecificationsManager)
         }
@@ -144,8 +124,6 @@ object CorePlugin : Plugin {
 
         bindSingleton<PromptManager> { new(::DiPromptManager) }
         bindSingleton<ToolManager> { new(::DiToolManager) }
-        bindSingleton<CharacterManager> { new(::DiCharacterManager) }
-        bindSingleton<LorebookManager> { new(::DiLorebookManager) }
 
         bindSingleton<(CoroutineContext) -> McpHostSession> {
             { coroutineContext: CoroutineContext -> new(::McpHostSession, coroutineContext) }

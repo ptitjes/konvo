@@ -12,7 +12,6 @@ import io.github.ptitjes.konvo.plugin.core.agents.toolkit.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.*
 import io.github.ptitjes.konvo.plugin.core.conversations.model.events.*
 import io.github.ptitjes.konvo.plugin.core.models.*
-import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import kotlinx.coroutines.flow.*
 import kotlin.random.*
