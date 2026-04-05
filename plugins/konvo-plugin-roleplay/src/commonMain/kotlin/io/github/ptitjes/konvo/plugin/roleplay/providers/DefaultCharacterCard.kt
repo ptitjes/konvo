@@ -1,6 +1,6 @@
-package io.github.ptitjes.konvo.plugin.core.roleplay.providers
+package io.github.ptitjes.konvo.plugin.roleplay.providers
 
-import io.github.ptitjes.konvo.plugin.core.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.*
 
 internal data class DefaultCharacterCard(
     override val id: String,

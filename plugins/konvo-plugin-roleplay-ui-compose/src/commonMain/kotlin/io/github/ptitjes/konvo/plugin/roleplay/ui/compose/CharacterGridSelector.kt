@@ -15,10 +15,10 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
 import coil3.compose.*
-import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.i18n.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.widgets.*
+import io.github.ptitjes.konvo.plugin.roleplay.*
 import io.github.ptitjes.konvo.plugin.roleplay.ui.compose.resources.*
 import org.jetbrains.compose.resources.*
 

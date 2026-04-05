@@ -7,13 +7,13 @@ import kotlinx.io.files.*
 
 private val logger = KotlinLogging.logger {}
 
-internal fun <T> FileSystem.loadFiles(
+fun <T> FileSystem.loadFiles(
     directory: Path,
     extension: String,
     loader: FileSystem.(Path) -> T,
 ): List<T> = loadFiles(directory, listOf(extension), loader)
 
-internal fun <T> FileSystem.loadFiles(
+fun <T> FileSystem.loadFiles(
     directory: Path,
     extensions: List<String>,
     loader: FileSystem.(Path) -> T,
@@ -28,11 +28,11 @@ internal fun <T> FileSystem.loadFiles(
         }
 }
 
-internal fun FileSystem.readText(path: Path): String = source(path).buffered().use { it.readString() }
+fun FileSystem.readText(path: Path): String = source(path).buffered().use { it.readString() }
 
-internal fun FileSystem.readBytes(path: Path): ByteString = source(path).buffered().use { it.readByteString() }
+fun FileSystem.readBytes(path: Path): ByteString = source(path).buffered().use { it.readByteString() }
 
-internal fun FileSystem.copy(sourcePath: Path, destinationPath: Path) {
+fun FileSystem.copy(sourcePath: Path, destinationPath: Path) {
     val destinationDirectory = destinationPath.parent!!
     if (!exists(destinationDirectory)) createDirectories(destinationDirectory)
 
@@ -48,4 +48,4 @@ internal fun FileSystem.copy(sourcePath: Path, destinationPath: Path) {
     }
 }
 
-internal val Path.extension: String get() = name.substringAfterLast('.', "")
+val Path.extension: String get() = name.substringAfterLast('.', "")

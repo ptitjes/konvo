@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.roleplay
+package io.github.ptitjes.konvo.plugin.roleplay
 
 /**
  * Dedicated provider interface for Lorebook entries.

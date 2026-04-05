@@ -10,7 +10,6 @@ import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import com.slack.circuit.runtime.screen.Screen
 import io.github.ptitjes.konvo.plugin.core.models.*
-import io.github.ptitjes.konvo.plugin.core.roleplay.*
 import io.github.ptitjes.konvo.plugin.core.settings.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.agents.configuration.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.conversations.*

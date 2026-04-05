@@ -1,7 +1,7 @@
-package io.github.ptitjes.konvo.plugin.core.roleplay.providers
+package io.github.ptitjes.konvo.plugin.roleplay.providers
 
-import io.github.ptitjes.konvo.plugin.core.roleplay.*
-import io.github.ptitjes.konvo.plugin.core.roleplay.formats.*
+import io.github.ptitjes.konvo.plugin.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.formats.*
 import kotlinx.serialization.json.*
 
 internal fun JsonObject.parseCharacterCard(id: String): CharacterCard {

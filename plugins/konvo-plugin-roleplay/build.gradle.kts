@@ -8,6 +8,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":plugins:konvo-plugin-core"))
+
+            implementation(libs.kim)
         }
     }
 }

@@ -4,6 +4,7 @@ import dev.whyoleg.sweetspi.*
 import io.github.ptitjes.konvo.plugin.core.*
 import io.github.ptitjes.konvo.plugin.core.agents.*
 import io.github.ptitjes.konvo.plugin.core.conversations.storage.*
+import io.github.ptitjes.konvo.plugin.roleplay.providers.*
 import io.github.ptitjes.syrup.*
 import io.github.ptitjes.syrup.specification.*
 import kotlinx.serialization.*
@@ -17,6 +18,15 @@ object RoleplayPlugin : Plugin {
     override val dependencies: Set<Plugin> = setOf(CorePlugin)
 
     override fun PluginSpecificationBuilder.specification() {
+        exposedType<CharacterManager>()
+        exposedType<FileSystemCharacterProvider>()
+        exposedType<LorebookManager>()
+        exposedType<FileSystemLorebookProvider>()
+
+        Agents {
+            contribution { new(::RoleplayAgent) }
+        }
+
         ConversationSerializers {
             contribution {
                 SerializersModule {
@@ -28,9 +38,24 @@ object RoleplayPlugin : Plugin {
                 }
             }
         }
+    }
 
-        Agents {
-            contribution { new(::RoleplayAgent) }
+    override fun DI.Builder.implementation() {
+        bindSet<CharacterProvider>()
+        bindSet<LorebookProvider>()
+
+        bindSingleton { new(::FileSystemCharacterProvider) }
+        bindSingleton { new(::FileSystemLorebookProvider) }
+
+        inBindSet<CharacterProvider> {
+            addSingleton { instance<FileSystemCharacterProvider>() }
         }
+
+        inBindSet<LorebookProvider> {
+            addSingleton { instance<FileSystemLorebookProvider>() }
+        }
+
+        bindSingleton<CharacterManager> { new(::DiCharacterManager) }
+        bindSingleton<LorebookManager> { new(::DiLorebookManager) }
     }
 }

@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.core.roleplay.formats
+package io.github.ptitjes.konvo.plugin.roleplay.formats
 
 import kotlinx.serialization.*
 import kotlinx.serialization.json.*
