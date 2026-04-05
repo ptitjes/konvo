@@ -80,11 +80,16 @@ internal class RoleplayConfigurationPresenter(
         val characters by characterManager.characters.collectAsState(null)
         val lorebooks by lorebookManager.lorebooks.collectAsState(null)
 
-        val availableModels = models
-        val availableCharacters = characters
-        val availableLorebooks = lorebooks
+        return state(models, characters, lorebooks)
+    }
 
-        return if (availableModels == null || availableCharacters == null || availableLorebooks == null) {
+    @Composable
+    private fun state(
+        models: List<ModelCard>?,
+        characters: Set<CharacterCard>?,
+        lorebooks: List<Lorebook>?,
+    ): RoleplayConfigurationView.State {
+        return if (models == null || characters == null || lorebooks == null) {
             RoleplayConfigurationView.State.Loading
         } else {
             val roleplaySettings by settingsRepository.getSettings(RoleplaySettingsKey).collectAsState()
@@ -92,7 +97,7 @@ internal class RoleplayConfigurationPresenter(
             val defaultPersonaName = roleplaySettings.defaultPersonaName
 
             val preferredModel = defaultModelName?.let { name ->
-                availableModels.firstOrNull { it.name == name }
+                models.firstOrNull { it.name == name }
             }
 
             val personaSettings by settingsRepository.getSettings(PersonaSettingsKey).collectAsState()
@@ -100,16 +105,18 @@ internal class RoleplayConfigurationPresenter(
                 personaSettings.personas.firstOrNull { it.name == name }
             } ?: personaSettings.personas.firstOrNull()
 
-            var selectedCharacter by rememberRetained { mutableStateOf(availableCharacters.firstOrNull()) }
+            val sortedCharacters = remember(characters) { characters.sortedBy { it.name } }
+
+            var selectedCharacter by rememberRetained { mutableStateOf(sortedCharacters.firstOrNull()) }
             var selectedGreetingIndex by rememberRetained { mutableStateOf<Int?>(null) }
-            var selectedLorebook by rememberRetained { mutableStateOf(availableLorebooks.firstOrNull()) }
+            var selectedLorebook by rememberRetained { mutableStateOf(lorebooks.firstOrNull()) }
             var selectedPersona by rememberRetained { mutableStateOf(preferredPersona) }
             var selectedModel by rememberRetained { mutableStateOf(preferredModel) }
 
             RoleplayConfigurationView.State.Available(
-                availableModels = availableModels,
-                availableCharacters = availableCharacters,
-                availableLorebooks = availableLorebooks,
+                availableModels = models,
+                availableCharacters = sortedCharacters,
+                availableLorebooks = lorebooks,
                 availablePersonas = personaSettings.personas,
                 selectedCharacter = selectedCharacter,
                 selectedGreetingIndex = selectedGreetingIndex,
