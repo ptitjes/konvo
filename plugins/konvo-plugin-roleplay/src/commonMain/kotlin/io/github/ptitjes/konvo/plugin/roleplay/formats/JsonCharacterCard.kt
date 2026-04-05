@@ -1,10 +1,14 @@
-package io.github.ptitjes.konvo.plugin.roleplay.providers
+package io.github.ptitjes.konvo.plugin.roleplay.formats
 
 import io.github.ptitjes.konvo.plugin.roleplay.*
-import io.github.ptitjes.konvo.plugin.roleplay.formats.*
 import kotlinx.serialization.json.*
 
-internal fun JsonObject.parseCharacterCard(id: String): CharacterCard {
+internal fun String.parseCharacterCard(id: String): CharacterCard {
+    val json = Json.decodeFromString<JsonObject>(this)
+    return json.parseCharacterCard(id)
+}
+
+private fun JsonObject.parseCharacterCard(id: String): CharacterCard {
     val spec = this["spec"]?.jsonPrimitive?.content
 
     return when (spec) {

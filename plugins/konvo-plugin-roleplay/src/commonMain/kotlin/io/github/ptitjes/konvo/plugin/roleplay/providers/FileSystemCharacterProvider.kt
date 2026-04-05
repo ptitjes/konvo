@@ -3,9 +3,9 @@ package io.github.ptitjes.konvo.plugin.roleplay.providers
 import io.github.ptitjes.konvo.plugin.core.platform.*
 import io.github.ptitjes.konvo.plugin.core.util.*
 import io.github.ptitjes.konvo.plugin.roleplay.*
+import io.github.ptitjes.konvo.plugin.roleplay.formats.*
 import kotlinx.coroutines.*
 import kotlinx.io.files.*
-import kotlinx.serialization.json.*
 
 class FileSystemCharacterProvider(
     storagePaths: StoragePaths,
@@ -38,8 +38,8 @@ private fun FileSystem.readFileCard(path: Path): CharacterCard = when (path.exte
 }
 
 private fun FileSystem.readJsonFileCard(path: Path): CharacterCard {
-    val json = Json.decodeFromString<JsonObject>(readText(path))
-    return json.parseCharacterCard(path.name)
+    val text = readText(path)
+    return text.parseCharacterCard(path.name)
 }
 
 private fun FileSystem.readPngFileCard(path: Path): CharacterCard {

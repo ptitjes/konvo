@@ -1,4 +1,4 @@
-package io.github.ptitjes.konvo.plugin.roleplay.providers
+package io.github.ptitjes.konvo.plugin.roleplay.formats
 
 import io.github.ptitjes.konvo.plugin.roleplay.*
 
