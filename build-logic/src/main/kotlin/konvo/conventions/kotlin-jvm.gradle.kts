@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.*
 
 plugins {
     kotlin("jvm")
+    id("de.infix.testBalloon")
 }
 
 kotlin {
@@ -20,8 +21,11 @@ kotlin {
     }
 }
 
+val versionCatalog = versionCatalogs.named("libs")
+
 dependencies {
     testImplementation(kotlin("test"))
+    testImplementation(versionCatalog.findLibrary("testBalloonFrameworkCore").get())
 }
 
 tasks.withType<Test>().configureEach {

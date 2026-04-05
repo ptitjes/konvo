@@ -5,6 +5,7 @@ import org.jetbrains.kotlin.gradle.dsl.*
 
 plugins {
     kotlin("multiplatform")
+    id("de.infix.testBalloon")
 }
 
 kotlin {
@@ -19,12 +20,15 @@ kotlin {
         freeCompilerArgs.add("-Xcontext-parameters")
     }
 
+    val versionCatalog = versionCatalogs.named("libs")
+
     sourceSets {
         commonMain.dependencies {
         }
 
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(versionCatalog.findLibrary("testBalloonFrameworkCore").get())
         }
     }
 }
