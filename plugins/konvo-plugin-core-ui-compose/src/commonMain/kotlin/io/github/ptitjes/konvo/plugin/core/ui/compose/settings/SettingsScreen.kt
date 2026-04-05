@@ -11,6 +11,7 @@ import com.slack.circuit.runtime.*
 import com.slack.circuit.runtime.presenter.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.resources.*
 import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.adaptive.*
+import io.github.ptitjes.konvo.plugin.core.ui.compose.toolkit.overlays.*
 import kotlinx.serialization.*
 import org.jetbrains.compose.resources.*
 
@@ -68,6 +69,8 @@ internal fun SettingsSectionScreen(
 
     val paneType = LocalListDetailPaneType.current
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -100,18 +103,23 @@ internal fun SettingsSectionScreen(
                 },
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { paddingValues ->
-        Column(
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+        CompositionLocalProvider(LocalSnackbarHost provides snackbarHostState) {
             Column(
-                modifier = Modifier.widthIn(max = 800.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val baseModifier = if (state.scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
-                Column(modifier = baseModifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
-                    CircuitContent(SettingsSectionView(state.key))
+                Column(
+                    modifier = Modifier.widthIn(max = 800.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val baseModifier =
+                        if (state.scrollable) Modifier.verticalScroll(rememberScrollState()) else Modifier
+
+                    Column(modifier = baseModifier.padding(horizontal = 16.dp).padding(bottom = 16.dp)) {
+                        CircuitContent(SettingsSectionView(state.key))
+                    }
                 }
             }
         }
