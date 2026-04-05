@@ -15,6 +15,8 @@ ktor = "3.4.2"
 kotlinLogging = "8.0.01"
 slf4j = "2.0.17"
 
+testBalloon = "0.8.4-K2.3.20"
+
 # Plugin System
 syrup = "0.1.1"
 ksp = "2.3.6"
@@ -75,6 +77,9 @@ ktorServerCio = { module = "io.ktor:ktor-server-cio", version.ref = "ktor" }
 kotlinLogging = { module = "io.github.oshai:kotlin-logging", version.ref = "kotlinLogging" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
+testBalloonFrameworkCore = { module = "de.infix.testBalloon:testBalloon-framework-core", version.ref = "testBalloon" }
+
+# Plugin System
 syrupRuntime = { module = "io.github.ptitjes:syrup-runtime", version.ref = "syrup" }
 syrupHost = { module = "io.github.ptitjes:syrup-host", version.ref = "syrup" }
 
@@ -143,6 +148,8 @@ kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", 
 kotlinBenchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "kotlinxBenchmark" }
 kotlinKover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKover" }
 kotlinDokka = { id = "org.jetbrains.dokka", version.ref = "kotlinDokka" }
+
+testBalloon = { id = "de.infix.testBalloon", version.ref = "testBalloon" }
 
 # Plugin System
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

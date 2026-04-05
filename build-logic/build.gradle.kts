@@ -15,6 +15,7 @@ dependencies {
     implementation(plugin(libs.plugins.kotlinPluginSerialization))
     implementation(plugin(libs.plugins.ksp))
     implementation(plugin(libs.plugins.sweetSpi))
+    implementation(plugin(libs.plugins.testBalloon))
     implementation(plugin(libs.plugins.kotlinPluginCompose))
     implementation(plugin(libs.plugins.compose))
 }
