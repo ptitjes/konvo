@@ -45,7 +45,7 @@ circuit = "0.33.1"
 
 humanReadable = "1.12.3"
 
-markdownRenderer = "0.39.2"
+markdownRenderer = "0.40.2"
 fileKit = "0.13.0"
 coil = "3.4.0"
 reorderable = "3.0.0"
