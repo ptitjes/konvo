@@ -3,7 +3,6 @@ import org.jetbrains.compose.desktop.application.dsl.*
 plugins {
     id("konvo.conventions.library")
     id("konvo.conventions.compose")
-    alias(libs.plugins.composeHotReload)
 }
 
 kotlin {
