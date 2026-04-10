@@ -25,7 +25,7 @@ kodein = "7.31.0"
 
 koog = "0.7.2"
 mcp = "0.8.1"
-xemanticJsonSchema = "1.1.2"
+xemanticJsonSchema = "1.2.0"
 uriKmp = "0.0.21"
 kim = "0.28.0"
 
