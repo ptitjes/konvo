@@ -17,15 +17,14 @@ workflow(
     sourceFile = __FILE__,
 ) {
     buildJob(
-        id = "package-x64-linux",
-        name = "Package on Linux x64",
+        id = "package-linux-x64",
         runsOn = RunnerType.UbuntuLatest,
         buildArguments = ":apps:desktop-app:packageReleaseDeb :apps:desktop-app:packageReleaseRpm",
         afterBuild = {
             uses(
                 name = "Upload artifacts",
                 action = UploadArtifact(
-                    name = "linux-x64-packages",
+                    name = "app-linux-x64",
                     path = listOf(
                         "apps/desktop-app/build/compose/binaries/main-release/deb",
                         "apps/desktop-app/build/compose/binaries/main-release/rpm",
@@ -35,8 +34,7 @@ workflow(
         },
     )
     buildJob(
-        id = "package-arm64-linux",
-        name = "Package on Linux arm64",
+        id = "package-linux-arm64",
         runsOn = RunnerType.Custom("ubuntu-24.04-arm"),
         extraSetup = {
             run(name = "Update dependencies", command = "sudo apt-get update")
@@ -47,7 +45,7 @@ workflow(
             uses(
                 name = "Upload artifacts",
                 action = UploadArtifact(
-                    name = "linux-arm64-packages",
+                    name = "app-linux-arm64",
                     path = listOf(
                         "apps/desktop-app/build/compose/binaries/main-release/deb",
                         "apps/desktop-app/build/compose/binaries/main-release/rpm",
@@ -58,14 +56,13 @@ workflow(
     )
     buildJob(
         id = "package-windows",
-        name = "Package on Windows",
         runsOn = RunnerType.WindowsLatest,
         buildArguments = ":apps:desktop-app:packageReleaseMsi",
         afterBuild = {
             uses(
                 name = "Upload artifacts",
                 action = UploadArtifact(
-                    name = "windows-packages",
+                    name = "app-windows",
                     path = listOf(
                         "apps/desktop-app/build/compose/binaries/main-release/msi",
                     ),
@@ -75,14 +72,13 @@ workflow(
     )
     buildJob(
         id = "package-macos",
-        name = "Package on MacOS",
         runsOn = RunnerType.MacOSLatest,
         buildArguments = ":apps:desktop-app:packageReleaseDmg",
         afterBuild = {
             uses(
                 name = "Upload artifacts",
                 action = UploadArtifact(
-                    name = "macos-packages",
+                    name = "app-macos",
                     path = listOf(
                         "apps/desktop-app/build/compose/binaries/main-release/dmg",
                     ),

@@ -17,7 +17,6 @@ import io.github.typesafegithub.workflows.dsl.expressions.*
 
 fun WorkflowBuilder.buildJob(
     id: String,
-    name: String,
     runsOn: RunnerType,
     extraSetup: JobBuilder<JobOutputs.EMPTY>.() -> Unit = {},
     buildArguments: String,
@@ -25,7 +24,6 @@ fun WorkflowBuilder.buildJob(
 ) {
     job(
         id = id,
-        name = name,
         runsOn = runsOn
     ) {
         uses(name = "Checkout", action = Checkout())

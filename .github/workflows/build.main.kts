@@ -31,8 +31,7 @@ workflow(
     )
 ) {
     buildJob(
-        id = "linux-x64-build",
-        name = "Build on Linux x64",
+        id = "build-linux-x64",
         runsOn = RunnerType.UbuntuLatest,
         extraSetup = {
             run(name = "Update dependencies", command = "sudo apt-get update")
@@ -43,15 +42,14 @@ workflow(
                 name = "Publish Test Result",
                 `if` = expr("!cancelled()"),
                 action = PublishUnitTestResultAction(
-                    checkName = "Linux x64 Build",
+                    checkName = "Tests (linux x64)",
                     files = listOf("**/build/test-results/**/*.xml"),
                 ),
             )
         }
     )
     buildJob(
-        id = "linux-arm64-build",
-        name = "Build on Linux arm64",
+        id = "build-linux-arm64",
         runsOn = RunnerType.Custom("ubuntu-24.04-arm"),
         extraSetup = {
             run(name = "Update dependencies", command = "sudo apt-get update")
@@ -63,15 +61,14 @@ workflow(
                 name = "Publish Test Result",
                 `if` = expr("!cancelled()"),
                 action = PublishUnitTestResultAction(
-                    checkName = "Linux arm64 Build",
+                    checkName = "Tests (linux arm64)",
                     files = listOf("**/build/test-results/**/*.xml"),
                 ),
             )
         }
     )
     buildJob(
-        id = "windows-build",
-        name = "Build on Windows",
+        id = "build-windows",
         runsOn = RunnerType.WindowsLatest,
         buildArguments = "build -Dsplit_targets",
         afterBuild = {
@@ -79,15 +76,14 @@ workflow(
                 name = "Publish Test Result",
                 `if` = expr("!cancelled()"),
                 action = PublishUnitTestResultActionWindows(
-                    checkName = "Windows Build",
+                    checkName = "Tests (windows)",
                     files = listOf("**/build/test-results/**/*.xml"),
                 ),
             )
         }
     )
     buildJob(
-        id = "macos-build",
-        name = "Build on MacOS",
+        id = "build-macos",
         runsOn = RunnerType.MacOSLatest,
         buildArguments = "build -Dsplit_targets",
         afterBuild = {
@@ -95,7 +91,7 @@ workflow(
                 name = "Publish Test Result",
                 `if` = expr("!cancelled()"),
                 action = PublishUnitTestResultActionMacos(
-                    checkName = "MacOS Build",
+                    checkName = "Tests (macos)",
                     files = listOf("**/build/test-results/**/*.xml"),
                 ),
             )
