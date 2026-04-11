@@ -215,7 +215,7 @@ private class InteractionRunner<P : Action.Payload, S>(
         }
 
         val eventListener = launch {
-            logger.debug { "Listening to events for interaction $interaction" }
+            logger.debug { "Listening to events for interaction ${interaction.id} (protocol: ${interaction.protocol.id})" }
             device.actions
                 .filter { it.sender != device.participant }
                 // .filter { it.interactionId == id }
@@ -228,18 +228,18 @@ private class InteractionRunner<P : Action.Payload, S>(
 
         try {
             if (newlyStarted) {
-                logger.debug { "Starting interaction ${interaction.id}" }
+                logger.debug { "Starting interaction ${interaction.id} (protocol: ${interaction.protocol.id})" }
                 driver.onEnter?.invoke(context, scope, triggerAction)
             }
-            logger.debug { "Before execution of interaction ${interaction.id}" }
             driver.onExecute?.invoke(context, scope, triggerAction) ?: awaitCancellation()
-            logger.debug { "After execution of interaction ${interaction.id}" }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Throwable) {
-            logger.error(e) { "Error during execution of interaction ${interaction.id}" }
+            logger.error(e) { "Error during execution of interaction ${interaction.id} (protocol: ${interaction.protocol.id})" }
             driver.onError?.invoke(context, scope, e)
             throw e
         } finally {
-            logger.debug { "Ending interaction ${interaction.id}" }
+            logger.debug { "Ending interaction ${interaction.id} (protocol: ${interaction.protocol.id})" }
             eventListener.cancel()
 
             withContext(NonCancellable) {
