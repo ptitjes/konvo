@@ -19,7 +19,7 @@ testBalloon = "0.8.4-K2.3.20"
 
 # Plugin System
 syrup = "0.1.1"
-ksp = "2.3.6"
+ksp = "2.3.12"
 sweetSpi = "0.1.3"
 kodein = "7.31.0"
 
